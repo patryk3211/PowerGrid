@@ -125,13 +125,13 @@ public class ElectromagnetBlockEntity extends ElectricBlockEntity implements Mag
 
     @Override
     public float getFieldStrength() {
-        var I = wire.current();
+        double I = wire.current();
         if(isVirtual())
-            I = (float) (wire.potentialDifference() * wire.conductance());
-        var field = Math.abs(I * 0.1f);
-        if(field < 0.25f)
+            I = wire.potentialDifference() * wire.conductance();
+        double field = Math.abs(I * 0.1);
+        if(field < 0.25)
             return 0;
-        return field;
+        return (float) field;
     }
 
     private static final Container magnetizingInv = new SimpleContainer(1);

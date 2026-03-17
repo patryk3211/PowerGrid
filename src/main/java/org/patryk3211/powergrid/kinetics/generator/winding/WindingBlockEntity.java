@@ -88,15 +88,17 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         var coil = coilSupplier.get();
         if(coil == null)
             return;
-        var I_sat = ModdedConfigs.server().kinetics.generatorControls.fieldSaturationCurrent.getF();
-        var current = coil.current();
-        current = (float) (I_sat * Math.tanh(1.5 * current / I_sat)) + current * 0.05f;
-        var B = current * coilConstant();
-        var Bprev = handler.get();
+        double Bprev = handler.get();
+        if(!coil.isConverged())
+            handler.emit((float) Bprev);
+        float I_sat = ModdedConfigs.server().kinetics.generatorControls.fieldSaturationCurrent.getF();
+        double current = coil.current();
+        current = (I_sat * Math.tanh(1.5 * current / I_sat)) + current * 0.05;
+        double B = current * coilConstant() + 0.001;
         if(Bprev * B < 0) {
-            handler.emit(0.001f * Math.signum(B));
+            handler.emit((float) (0.001 * Math.signum(B)));
         } else {
-            handler.emit(B + 0.001f);
+            handler.emit((float) B);
         }
     }
 
@@ -482,7 +484,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         if(coilWire != null) {
-            tag.putFloat("Current", coilWire.current());
+            tag.putFloat("Current", (float) coilWire.current());
         }
         if(clientPacket) {
             if(isMain()) {
@@ -634,7 +636,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         var be = getSimElementHolder();
         if(be == null || !be.coilWire.isConverged())
             return 0;
-        return be.coilWire.current();
+        return (float) be.coilWire.current();
     }
 
     @Override

@@ -185,7 +185,7 @@ public class WirePreview {
         }
 
         if(!player.isCreative()) {
-            int requiredItemCount = Math.max(Math.round(length), 1);
+            int requiredItemCount = Math.max(Math.round(length * wireItem.getItemUseMultiplier()), 1);
             PlacementOverlay.setItemRequirement(wireStack.getItem(), requiredItemCount, wireStack.getCount() >= requiredItemCount);
         }
     }
@@ -208,10 +208,18 @@ public class WirePreview {
             return null;
         var hitPoint = target.getLocation();
         var distance = hitPoint.distanceTo(currentPos);
-        return Lang.translate("gui.endpoint_distance")
+        var msg = Lang.translate("gui.endpoint_distance")
                 .add(Lang.numberConstant(distance).style(distance < wire.getMaximumLength() ? ChatFormatting.GREEN : ChatFormatting.RED))
-                .style(ChatFormatting.WHITE)
-                .component();
+                .style(ChatFormatting.WHITE);
+        if(!endpoint.isValid(player.level())) {
+            msg.add(Component.literal(" "))
+                    .add(Lang.translate("message.no_original_connector")
+                    .style(ChatFormatting.YELLOW)
+                    .style(ChatFormatting.ITALIC));
+        }
+
+        return msg.component();
+
     }
 
     public static void notifyOfBlock(BlockPos pos) {

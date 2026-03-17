@@ -54,14 +54,14 @@ public class CurrentGaugeComponent extends GaugeComponent {
         if(placed.wires.isEmpty())
             return 0;
         var wire = placed.wires.get(0);
-        return Mth.clamp(Math.abs(wire.current()) / placed.get(MAX_CURRENT), 0, 1.125f);
+        return Mth.clamp((float) (Math.abs(wire.current()) / placed.get(MAX_CURRENT)), 0, 1.125f);
     }
 
     public float getValue(PlacedComponent placed) {
         if(placed.wires.isEmpty())
             return 0;
         var wire = placed.wires.get(0);
-        return Math.abs(wire.current());
+        return Math.abs((float) wire.current());
     }
 
     @Override

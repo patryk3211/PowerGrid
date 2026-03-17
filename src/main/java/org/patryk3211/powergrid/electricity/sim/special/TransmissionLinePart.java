@@ -185,14 +185,14 @@ public class TransmissionLinePart extends ElectricWire {
     }
 
     @Override
-    public float potentialDifference() {
+    public double potentialDifference() {
         if(line == null)
             return 0;
-        return (float) (line.current() * getResistance());
+        return line.current() * getResistance();
     }
 
     @Override
-    public float current() {
+    public double current() {
         if(line == null)
             return 0;
         return line.current();

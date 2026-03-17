@@ -91,12 +91,12 @@ public class ElectricFanBlockEntity extends ElectricBlockEntity implements IAirC
 
     @Override
     public float getSpeed() {
-        var speed = motor.current() * 64f;
+        double speed = motor.current() * 64;
         if(Math.abs(speed) < 1)
             return 0;
         if(speed > 256) speed = 256;
         else if(speed < -256) speed = -256;
-        return speed;
+        return (float) speed;
     }
 
     @Override

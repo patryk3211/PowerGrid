@@ -23,6 +23,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 
 @Environment(EnvType.CLIENT)
@@ -77,7 +78,7 @@ public class RotorSoundInstance extends AbstractTickableSoundInstance {
                 this.volume = 0.0f;
                 stop();
             } else {
-                var volume = (velocity / 128);
+                var volume = (velocity / 128) * ModdedConfigs.client().generatorSoundMultiplier.getF();
                 this.volume = Mth.clamp(volume, 0, 1);
             }
             this.pitch = Mth.clamp(pitch, 0.5f, 2f);

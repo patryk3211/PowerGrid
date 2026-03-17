@@ -106,20 +106,22 @@ public class TransmissionLine extends ElectricWire {
     }
 
     public void setNode1(@NotNull IWireEndpoint endpoint, OwnedFloatingNode node) {
-        if(getNetwork() == null && port1 != null) {
-            global.globalGraph.disconnect(node1, node2, this);
-            global.globalGraph.connect(node, node2, this);
-            makePortPair();
+        if(getNetwork() == null) {
+            if(global.globalGraph.disconnect(node1, node2, this))
+                global.globalGraph.connect(node, node2, this);
+            if(port1 != null)
+                makePortPair();
         }
         this.endpoint1 = endpoint;
         super.setNode1(node);
     }
 
     public void setNode2(@NotNull IWireEndpoint endpoint, OwnedFloatingNode node) {
-        if(getNetwork() == null && port2 != null) {
-            global.globalGraph.disconnect(node1, node2, this);
-            global.globalGraph.connect(node1, node, this);
-            makePortPair();
+        if(getNetwork() == null) {
+            if(global.globalGraph.disconnect(node1, node2, this))
+                global.globalGraph.connect(node1, node, this);
+            if(port2 != null)
+                makePortPair();
         }
         this.endpoint2 = endpoint;
         super.setNode2(node);
@@ -526,14 +528,14 @@ public class TransmissionLine extends ElectricWire {
         return id;
     }
 
-    public float voltageFor(OwnedFloatingNode node) {
+    public double voltageFor(OwnedFloatingNode node) {
         if(node == node1 || node == node2)
             return node.getVoltage();
-        float R = 0;
+        double R = 0;
         for(var segment : segments) {
             R += segment.getResistance();
             if(segment.getNode2() == node) {
-                var a = (float) (R / getResistance());
+                var a = R / getResistance();
                 return node1.getVoltage() * (1 - a) + node2.getVoltage() * a;
             }
         }

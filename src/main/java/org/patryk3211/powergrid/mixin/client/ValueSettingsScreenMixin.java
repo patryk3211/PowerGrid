@@ -36,7 +36,7 @@ public abstract class ValueSettingsScreenMixin {
             value = "INVOKE",
             target = "Lnet/minecraft/client/gui/GuiGraphics;drawString(Lnet/minecraft/client/gui/Font;Lnet/minecraft/network/chat/Component;IIIZ)I",
             ordinal = 2))
-    private void renderBar(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks, CallbackInfo ci, @Local(name = "x") int x, @Local(name = "y") int y) {
+    private void powerGrid$renderBar(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks, CallbackInfo ci, @Local(name = "x") int x, @Local(name = "y") int y) {
         if(!((Object) this instanceof TransformerWindingScreen screen))
             return;
         int valueBarX = x + maxLabelWidth + 14 + 4;
@@ -48,7 +48,7 @@ public abstract class ValueSettingsScreenMixin {
             target = "Lcom/simibubi/create/foundation/gui/AllGuiTextures;render(Lnet/minecraft/client/gui/GuiGraphics;II)V",
             ordinal = 1,
             shift = At.Shift.AFTER))
-    private void renderMilestone(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks, CallbackInfo ci, @Local(name = "milestoneX") int x, @Local(name = "y") int y, @Local(name = "milestone") int milestone) {
+    private void powerGrid$renderMilestone(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks, CallbackInfo ci, @Local(name = "milestoneX") int x, @Local(name = "y") int y, @Local(name = "milestone") int milestone) {
         if(!((Object) this instanceof TransformerWindingScreen screen))
             return;
         screen.renderBarCapMilestone(graphics, x, y, milestone, board);

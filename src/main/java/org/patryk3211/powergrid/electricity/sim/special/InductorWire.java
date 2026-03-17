@@ -40,13 +40,13 @@ public class InductorWire extends AbstractElectricWire implements ISolverHook, I
     }
 
     @Override
-    public float current() {
-        return (float) (super.current() + Ieq);
+    public double current() {
+        return super.current() + Ieq;
     }
 
-    public void setCurrent(float current) {
+    public void setCurrent(double current) {
         valueChange(current, I);
-        if(Float.isFinite(current)) {
+        if(Double.isFinite(current)) {
             Vprev = 0;
             I = current;
         }

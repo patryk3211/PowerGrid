@@ -116,7 +116,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             float y = (y1 + y2) * 0.5f + eY;
             if(y < minY.getValue())
                 minY.setValue(y);
-        });
+        }, 0.5f);
         return box.setMinY(minY.getValue()).inflate(0.1f);
     }
 
@@ -141,7 +141,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             return 0;
         if(!wire1.isConverged() || !wire2.isConverged())
             return 0;
-        return Math.abs(wire1.current()) + Math.abs(wire2.current());
+        return (float) (Math.abs(wire1.current()) + Math.abs(wire2.current()));
     }
 
     @Override
@@ -150,7 +150,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             return 0;
         if(!wire1.isConverged() || !wire2.isConverged())
             return 0;
-        return Math.abs(wire1.current() + wire2.current());
+        return (float) Math.abs(wire1.current() + wire2.current());
     }
 
     @Override

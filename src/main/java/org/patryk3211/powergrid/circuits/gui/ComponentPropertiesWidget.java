@@ -51,7 +51,20 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
         this.textRenderer = textRenderer;
     }
 
+    /**
+     * Populate this widget with settings for the provided component.
+     * @param component the component to create settings widgets for
+     */
     public void setComponent(@Nullable PlacedComponent component) {
+        setComponent(component, () -> {});
+    }
+
+    /**
+     * Populate this widget with settings for the provided component and set a callback to trigger when changes are made.
+     * @param component the component to create settings widgets for
+     * @param changeMadeCallback callback that will be called when the component's properties are modified
+     */
+    public void setComponent(@Nullable PlacedComponent component, Runnable changeMadeCallback) {
         this.component = component;
 
         // Accept inputs on all property widgets
@@ -84,12 +97,16 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
                 if(property.isHidden())
                     continue;
                 if(property instanceof FloatProperty || property instanceof IntProperty || property instanceof StringProperty) {
-                    propertyWidgets.add(new TextFieldPropertyWidget<>(textRenderer, x, y, component.getEntry(property)));
+                    propertyWidgets.add(new TextFieldPropertyWidget<>(textRenderer, x, y, component.getEntry(property), changeMadeCallback));
                 } else if(property instanceof BooleanProperty bProp) {
+<<<<<<< architectury-1.20.1/dev
                     propertyWidgets.add(new BooleanPropertyWidget(textRenderer, x, y, component.getEntry(bProp)));
                 } else if(property instanceof EnumProperty) {
                     var clazz = property.defaultValue().getClass();
                     propertyWidgets.add(new EnumPropertyWidget(textRenderer, x, y, component.getEntry(property), property.defaultValue().getClass()));
+=======
+                    propertyWidgets.add(new BooleanPropertyWidget(textRenderer, x, y, component.getEntry(bProp), changeMadeCallback));
+>>>>>>> architectury-1.20.1/dev
                 } else {
                     propertyWidgets.add(new ConstantPropertyWidget<>(textRenderer, x, y, component.getEntry(property)));
                 }

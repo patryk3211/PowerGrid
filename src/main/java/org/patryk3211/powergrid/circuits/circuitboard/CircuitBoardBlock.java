@@ -109,7 +109,7 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
         super.setPlacedBy(world, pos, state, placer, stack);
     }
 
-    private static VoxelShape rotate(VoxelShape shapeIn, float x, float y) {
+    public static VoxelShape rotate(VoxelShape shapeIn, float x, float y) {
         if(y == 0 && x == 0)
             return shapeIn;
 
@@ -164,20 +164,14 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
-        int x = getAngleX(state), y = getAngleY(state);
-        final var shape = new VoxelShape[] { rotate(SHAPE_PLATE, x, y) };
+        int x = getAngleX(state);
+        int y = getAngleY(state);
+        final VoxelShape[] shape = {rotate(SHAPE_PLATE, x, y)};
+
         withBlockEntityDo(world, pos, be -> {
-            var shapeCopy = shape[0];
-            for(int i = 0; i < be.terminalCount(); i++) {
-                var terminal = be.terminal(state, i);
-                shapeCopy = Shapes.or(((TerminalBoundingBox) terminal).getShape(), shapeCopy);
-            }
-            for(var placed : be.getComponents(IInteractableComponent.class)) {
-                var dynamic = (IInteractableComponent) placed.component;
-                shapeCopy = Shapes.or(rotate(dynamic.getShape(placed), x, y), shapeCopy);
-            }
-            shape[0] = shapeCopy;
+            shape[0] = be.getShape(state, shape[0]);
         });
+
         return shape[0];
     }
 

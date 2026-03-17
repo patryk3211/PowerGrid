@@ -327,7 +327,8 @@ public class JavaMNA implements IMNA {
         double norm = 0;
         boolean skipped = false;
         for (i = 0; i < maxIterations; ++i) {
-            iterHooks(i, maxIterations);
+            if(!skipped)
+                iterHooks(i, maxIterations);
             var workMatrix = Jacobian;
             computeResidual();
 
@@ -335,6 +336,7 @@ public class JavaMNA implements IMNA {
             CommonOps_DDRM.subtract(ErrorVector, ResidualVector, ErrorVector);
             var nextNorm = CommonOps_DDRM.elementMaxAbs(ErrorVector);
             if(i != 0 && nextNorm > norm && !skipped) {
+//                CommonOps_DDRM.add(StateVector, -1.1, StateDelta, StateVector);
                 CommonOps_DDRM.add(StateVector, -0.9, StateDelta, StateVector);
                 skipped = true; --i;
                 continue;

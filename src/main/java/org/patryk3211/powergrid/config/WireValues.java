@@ -34,6 +34,10 @@ public class WireValues {
         return get(wire, Provider::maxLength);
     }
 
+    public static float itemUseMultiplier(WireItem wire) {
+        return get(wire, Provider::itemUseMultiplier);
+    }
+
     public static float thermalMass(WireItem wire) {
         return get(wire, Provider::thermalMass);
     }
@@ -60,6 +64,8 @@ public class WireValues {
         DoubleSupplier resistance(WireItem wire);
         @Nullable
         DoubleSupplier maxLength(WireItem wire);
+        @Nullable
+        DoubleSupplier itemUseMultiplier(WireItem wire);
         @Nullable
         DoubleSupplier thermalMass(WireItem wire);
         @Nullable

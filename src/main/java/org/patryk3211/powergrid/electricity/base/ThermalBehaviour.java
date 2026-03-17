@@ -332,10 +332,10 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
         return temperature >= overheatTemperature;
     }
 
-    public void applyTickPower(float power) {
-        if(Float.isFinite(power)) {
+    public void applyTickPower(double power) {
+        if(Double.isFinite(power)) {
             var energy = power / 20f;
-            temperature += energy / thermalMass;
+            temperature += (float) (energy / thermalMass);
         }
     }
 
@@ -372,12 +372,12 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
     }
 
     @Override
-    public void writeToSync(FriendlyByteBuf buffer, Function<OwnedFloatingNode, TransmissionLine> lineLookup) {
+    public void writeToSync(FriendlyByteBuf buffer, boolean useDoubles, Function<OwnedFloatingNode, TransmissionLine> lineLookup) {
         buffer.writeFloat(temperature);
     }
 
     @Override
-    public void readFromSync(FriendlyByteBuf buffer) {
+    public void readFromSync(FriendlyByteBuf buffer, boolean useDoubles) {
         temperature = buffer.readFloat();
     }
 

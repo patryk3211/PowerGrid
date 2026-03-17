@@ -20,6 +20,7 @@ import net.createmod.catnip.data.Pair;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.Entity;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 
 import java.util.*;
@@ -63,6 +64,7 @@ public class SoundScapes {
     public static void play(AmbienceGroup group, BlockPos pos, float pitch, float volume) {
 //        if (!AllConfigs.client().enableAmbientSounds.get())
 //            return;
+        volume *= ModdedConfigs.client().hummingSoundMultiplier.getF();
         if (!outOfRange(pos) && volume > 0.05f)
             addSound(group, pos, pitch, volume);
     }

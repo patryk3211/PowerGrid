@@ -84,6 +84,7 @@
   "powergrid.tooltip.resistance.series": "Series resistance:",
   "powergrid.tooltip.resistance.switch": "Switch resistance:",
   "powergrid.tooltip.resistance.coil": "Coil resistance:",
+  "powergrid.tooltip.resistance.minimum": "Minimum resistance:",
   "powergrid.tooltip.voltage.max": "Maximum voltage:",
   "powergrid.tooltip.current.max": "Maximum current:",
   "powergrid.tooltip.range.max": "Maximum range:",
@@ -92,6 +93,12 @@
   "powergrid.tooltip.voltage.rated": "Rated voltage:",
   "powergrid.tooltip.voltage.min": "Minimum voltage:",
   "powergrid.tooltip.power.rated": "Rated power:",
+
+  "powergrid.tooltip.device_connector.header": "When converting to FE:",
+  "powergrid.tooltip.device_connector.rate": "Conversion rate:",
+  "powergrid.tooltip.device_connector.fe_w": "FE/W",
+  "powergrid.tooltip.device_connector.max_rate": "Max transfer rate:",
+  "powergrid.tooltip.device_connector.fe_v": "FE/t/V",
 
   "powergrid.tooltip.voltage.rpm": "RPM per Volt:",
 
@@ -172,7 +179,8 @@
   "powergrid.gui.circuit_designer.file_load": "Load from file",
   "powergrid.gui.circuit_designer.file_save": "Save to file",
   "powergrid.gui.circuit_designer.files": "Available Schematics",
-  "powergrid.gui.circuit_designer.file_scroll": "Scroll to Select or Type in a Name",
+
+  "powergrid.gui.edit_scroll_box.scroll": "Scroll to Select or Type in a Name",
 
   "powergrid.gui.punch_card.author": "by ",
   "powergrid.gui.punch_card.sign": "Sign",

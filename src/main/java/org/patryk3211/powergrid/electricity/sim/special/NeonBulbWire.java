@@ -78,8 +78,8 @@ public class NeonBulbWire extends AbstractElectricWire implements IOuterHook, IS
     }
 
     @Override
-    public float current() {
-        return (float) (super.current() - I);
+    public double current() {
+        return super.current() - I;
     }
 
     @Override
