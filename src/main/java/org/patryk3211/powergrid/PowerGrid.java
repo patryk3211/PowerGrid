@@ -110,6 +110,7 @@ public class PowerGrid {
 		SubstituteBlockEntityProvider.INSTANCE.registerDefault(PunchCardReaderBlockEntity.class, PunchCardReaderBlockEntity::new);
 		SubstituteBlockEntityProvider.INSTANCE.lock();
 
+		ModdedAdvancements.register();
 		ModdedDisplaySources.register();
 		ModdedBlocks.register();
 		ModdedItems.register();
