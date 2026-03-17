@@ -644,8 +644,6 @@
   "powergrid.tooltip.crt.grid": "Напряжение сетки:",
   "powergrid.tooltip.crt.heater": "Напряжение нити накала:",
   "powergrid.tooltip.current.max": "Максимальный ток:",
-  "powergrid.tooltip.device_connector.buffer": "Размер буфера:",
-  "powergrid.tooltip.device_connector.fe_v": "FE/В",
   "powergrid.tooltip.device_connector.fe_w": "FE/Вт",
   "powergrid.tooltip.device_connector.header": "При преобразовании в FE:",
   "powergrid.tooltip.device_connector.rate": "Коэффициент преобразования:",
