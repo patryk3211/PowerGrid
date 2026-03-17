@@ -99,14 +99,11 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
                 if(property instanceof FloatProperty || property instanceof IntProperty || property instanceof StringProperty) {
                     propertyWidgets.add(new TextFieldPropertyWidget<>(textRenderer, x, y, component.getEntry(property), changeMadeCallback));
                 } else if(property instanceof BooleanProperty bProp) {
-<<<<<<< architectury-1.20.1/dev
                     propertyWidgets.add(new BooleanPropertyWidget(textRenderer, x, y, component.getEntry(bProp)));
                 } else if(property instanceof EnumProperty) {
                     var clazz = property.defaultValue().getClass();
                     propertyWidgets.add(new EnumPropertyWidget(textRenderer, x, y, component.getEntry(property), property.defaultValue().getClass()));
-=======
                     propertyWidgets.add(new BooleanPropertyWidget(textRenderer, x, y, component.getEntry(bProp), changeMadeCallback));
->>>>>>> architectury-1.20.1/dev
                 } else {
                     propertyWidgets.add(new ConstantPropertyWidget<>(textRenderer, x, y, component.getEntry(property)));
                 }
