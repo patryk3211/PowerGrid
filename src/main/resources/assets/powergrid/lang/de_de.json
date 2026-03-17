@@ -644,8 +644,6 @@
   "powergrid.tooltip.crt.grid": "Gitterspannung:",
   "powergrid.tooltip.crt.heater": "Heizungsspannung:",
   "powergrid.tooltip.current.max": "Maximaler Strom:",
-  "powergrid.tooltip.device_connector.buffer": "Puffergröße:",
-  "powergrid.tooltip.device_connector.fe_v": "FE/V",
   "powergrid.tooltip.device_connector.fe_w": "FE/W",
   "powergrid.tooltip.device_connector.header": "Bei der Umwandlung in FE:",
   "powergrid.tooltip.device_connector.rate": "Umwandlungsrate:",
