@@ -15,8 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import dev.architectury.utils.Env;
-import dev.architectury.utils.EnvExecutor;
 import net.createmod.ponder.api.level.PonderLevel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -49,7 +47,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
 
     private boolean particlesSpawned = false;
 
-    public Object renderParams;
+    public CurveParameters curveParams;
 
     private int clearanceCheck = 0;
 
@@ -69,10 +67,8 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     }
 
     public void updateRenderParams() {
-        if(!level().isClientSide)
-            return;
         var item = getWireItem();
-        renderParams = new CurveParameters(terminalPos1, terminalPos2,
+        curveParams = new CurveParameters(terminalPos1, terminalPos2,
                 item.getHorizontalCoefficient(), item.getVerticalCoefficient(), item.getWireThickness());
         this.setBoundingBox(this.makeBoundingBox());
     }
@@ -80,13 +76,12 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     @Nullable
     @Environment(EnvType.CLIENT)
     public AABB calculateClientBoundingBox() {
-        if(renderParams == null)
+        if(curveParams == null)
             return null;
-        var curve = (CurveParameters) renderParams;
         var box = new AABB(terminalPos1, terminalPos2);
         var minY = new MutableFloat(box.minY);
         final float eY = (float) position().y;
-        curve.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
+        curveParams.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
             float y = (y1 + y2) * 0.5f + eY;
             if(y < minY.getValue())
                 minY.setValue(y);
@@ -146,8 +141,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         var pos = position();
         if(isOverheated()) {
             if(world.isClientSide && !particlesSpawned) {
-                var curveParams = (CurveParameters) renderParams;
-                var dx = curveParams.getCurveSpan();
+                float dx = curveParams.getCurveSpan();
                 int pointCount = Math.round(dx / 0.25f);
                 curveParams.runForPoints(pointCount, (x, y, z) -> {
                     world.addParticle(ParticleTypes.FLAME,
@@ -156,8 +150,8 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
                 });
                 particlesSpawned = true;
             }
-        } else if(temperature >= overheatTemperature - 50 && world.isClientSide && renderParams != null) {
-            var curvePoint = ((CurveParameters) renderParams).getRandomPoint(random);
+        } else if(temperature >= overheatTemperature - 50 && world.isClientSide && curveParams != null) {
+            var curvePoint = curveParams.getRandomPoint(random);
             double x = curvePoint.x + pos.x;
             double y = curvePoint.y + pos.y;
             double z = curvePoint.z + pos.z;
@@ -189,14 +183,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     @Override
     public boolean isPickable() {
         // Hits get handled by IComplexRaycast
-        return EnvExecutor.getInEnv(Env.CLIENT, () -> () -> {
-            if(renderParams instanceof CurveParameters rp) {
-                // Use Vanilla AABB based picking
-                return rp.isVertical();
-            } else {
-                return false;
-            }
-        }).orElse(false);
+        return curveParams != null && curveParams.isVertical();
     }
 
     @Override
@@ -237,7 +224,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         if(getWireItem() == null)
             return null;
         var thickness = getWireItem().getWireThickness() * 2;
-        if(renderParams instanceof CurveParameters params) {
+        if(curveParams != null) {
             Vec3 ray = max.subtract(min);
             var rayLength = ray.lengthSqr();
             ray = ray.normalize();
@@ -259,7 +246,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
                     var parallelDistance = Math.abs(planeXVector.dot(hitOriginVector));
                     var perpendicularDistance = Math.abs(planeNormal.dot(hitOriginVector));
 
-                    if(parallelDistance < params.getCurveSpan() / 2 && perpendicularDistance < thickness / 2) {
+                    if(parallelDistance < curveParams.getCurveSpan() / 2 && perpendicularDistance < thickness / 2) {
                         // Hit
                         return hit;
                     } else {
@@ -279,12 +266,12 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
                     // We can do that since the entity never has any pitch.
                     double y = hitOriginVector.y;
 
-                    double closeX = params.findClosestPoint(x, y);
-                    double span = params.getCurveSpan() / 2;
+                    double closeX = curveParams.findClosestPoint(x, y);
+                    double span = curveParams.getCurveSpan() / 2;
                     closeX = Math.min(Math.max(closeX, -span), span);
 
                     double dX = x - closeX;
-                    double dY = y - params.apply((float) closeX);
+                    double dY = y - curveParams.apply((float) closeX);
 
                     double squareDistance = dX * dX + dY * dY;
                     if(squareDistance < thickness * thickness) {

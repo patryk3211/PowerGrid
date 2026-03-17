@@ -74,15 +74,14 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
 
     @Override
     public void render(T entity, float yaw, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light) {
-        if(entity.renderParams == null)
+        if(entity.curveParams == null)
             return;
 
         if(entity.isOverheated())
             // Don't render since it's dead and only there to spawn particles.
             return;
 
-        assert entity.renderParams instanceof CurveParameters;
-        CurveParameters rp = (CurveParameters) entity.renderParams;
+        CurveParameters rp = entity.curveParams;
 
         // To introduce some subtle variety into the wires.
         var thicknessOffset = entity.getId() / 16f;

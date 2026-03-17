@@ -15,8 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
@@ -324,22 +322,18 @@ public class WireItem extends Item implements IWire {
         return WireValues.thermalMass(this);
     }
 
-    @Environment(EnvType.CLIENT)
     public ResourceLocation getWireTexture() {
         return wireTexture;
     }
 
-    @Environment(EnvType.CLIENT)
     public float getHorizontalCoefficient() {
         return horizontalCoefficient;
     }
 
-    @Environment(EnvType.CLIENT)
     public float getVerticalCoefficient() {
         return verticalCoefficient;
     }
 
-    @Environment(EnvType.CLIENT)
     public float getWireThickness() {
         return wireThickness;
     }
