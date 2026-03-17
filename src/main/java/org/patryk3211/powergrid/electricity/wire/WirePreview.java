@@ -191,7 +191,6 @@ public class WirePreview {
     }
 
     public static Component distanceOverlay(Player player) {
-        //TODO: add a warning if the original connector is missing
         ItemStack wireStack = getUsedWireStack(player);
         if(wireStack == null)
             return null;
