@@ -17,7 +17,6 @@ package org.patryk3211.powergrid.kinetics.generator.rotor;
 
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.content.kinetics.base.IRotate;
-import com.simibubi.create.foundation.advancement.AdvancementBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
@@ -39,6 +38,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.advancements.PGAdvancementBehaviour;
 import org.patryk3211.powergrid.kinetics.generator.IRotorAssemblyPart;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -55,7 +55,7 @@ public abstract class AbstractRotorBlock extends Block implements IRotorAssembly
     @Override
     public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         super.setPlacedBy(level, pos, state, placer, stack);
-        AdvancementBehaviour.setPlacedBy(level, pos, placer);
+        PGAdvancementBehaviour.setPlacedBy(level, pos, placer);
     }
 
     @Override

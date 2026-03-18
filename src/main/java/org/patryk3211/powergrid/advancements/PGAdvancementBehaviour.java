@@ -3,7 +3,6 @@ package org.patryk3211.powergrid.advancements;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
@@ -12,8 +11,11 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
+import org.patryk3211.powergrid.utility.PlayerUtilities;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 
 public class PGAdvancementBehaviour extends BlockEntityBehaviour {
     public static final BehaviourType<PGAdvancementBehaviour> TYPE = new BehaviourType<>();
@@ -118,7 +120,7 @@ public class PGAdvancementBehaviour extends BlockEntityBehaviour {
         var behaviour = BlockEntityBehaviour.get(worldIn, pos, TYPE);
         if(behaviour == null)
             return;
-        if(placer instanceof ServerPlayer player && !(player instanceof FakePlayer))
+        if(placer instanceof ServerPlayer player && !PlayerUtilities.isFake(player))
             behaviour.setPlayer(placer.getUUID());
     }
 
