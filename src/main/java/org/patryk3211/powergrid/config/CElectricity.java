@@ -61,6 +61,8 @@ public class CElectricity extends ConfigBase {
 
     public final ConfigFloat wireCutDamageCurrentThreshold = f(0.2f, 0, "wireCutDamageCurrentThreshold", Comments.wireCutDamageCurrentThreshold);
 
+    public final ConfigBool entityWireInteraction = b(true, "entityWireInteractions", Comments.entityWireInteractions);
+
     public final CSolver solver = nested(1, CSolver::new, Comments.solver);
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
     public final CThermal thermal = nested(1, CThermal::new, Comments.thermal);
@@ -119,5 +121,7 @@ public class CElectricity extends ConfigBase {
         public static final String mediumCoreK = "K parameter of medium transformer core (affects stray resistance)";
 
         public static final String wireCutDamageCurrentThreshold = "Minimum current flowing through a cut wire that will start causing damage";
+
+        public static final String entityWireInteractions = "Enables entities to form circuits when touching wires";
     }
 }
