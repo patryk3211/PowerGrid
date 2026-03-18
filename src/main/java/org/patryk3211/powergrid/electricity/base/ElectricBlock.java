@@ -16,11 +16,14 @@
 package org.patryk3211.powergrid.electricity.base;
 
 import com.google.common.collect.ImmutableMap;
+import com.simibubi.create.foundation.advancement.AdvancementBehaviour;
 import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -28,6 +31,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 
@@ -41,6 +45,12 @@ public abstract class ElectricBlock extends Block implements IElectric {
 
     public ElectricBlock(Properties settings) {
         super(settings);
+    }
+
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, placer, stack);
+        AdvancementBehaviour.setPlacedBy(level, pos, placer);
     }
 
     protected void setTerminalCollection(BlockStateTerminalCollection terminals) {

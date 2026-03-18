@@ -15,15 +15,25 @@
  */
 package org.patryk3211.powergrid.electricity.battery;
 
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedAdvancements;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+
+import java.util.List;
 
 public class PotatoBatteryBlockEntity extends BatteryBlockEntity {
     public PotatoBatteryBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    @Override
+    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+        super.addBehaviours(behaviours);
+        registerAwardables(behaviours, ModdedAdvancements.POTATO_BATTERY);
     }
 
     @Override
@@ -48,6 +58,7 @@ public class PotatoBatteryBlockEntity extends BatteryBlockEntity {
             return;
         }
         if(thermalBehaviour != null && thermalBehaviour.isOverheated() && !level.isClientSide) {
+            awardIfNear(ModdedAdvancements.POTATO_BATTERY, 8);
             level.setBlockAndUpdate(worldPosition, getBlockState().setValue(PotatoBatteryBlock.BAKED, true));
             notifyUpdate();
         }

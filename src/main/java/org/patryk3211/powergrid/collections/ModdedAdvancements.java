@@ -40,14 +40,14 @@ public class ModdedAdvancements implements DataProvider {
             .whenIconCollected()
             .after(ROOT)
             .special(NOISY)),
-    ELECTRONIC_WONDERS = create("electronic_wonders", b -> b
+    ELECTRICAL_GIZMO = create("electrical_gizmo", b -> b
             .icon(ModdedItems.ELECTRICAL_GIZMO)
             .title("Electronic wonders")
             .description("Obtain an Electrical Gizmo")
             .special(NOISY)
             .after(ELECTRICAL_AGE)
             .whenIconCollected()),
-    MAGIC_METAL = create("magic_metal", b -> b
+    MAGNET = create("magnet", b -> b
             .icon(ModdedItems.MAGNET)
             .title("Magic metal")
             .description("Obtain a Magnet")
@@ -58,7 +58,7 @@ public class ModdedAdvancements implements DataProvider {
             .icon(ModdedItems.ELECTROZAPPER)
             .title("I cast lightning bolt! ...gun")
             .description("Obtain an Electron-Zapper")
-            .after(ELECTRONIC_WONDERS)
+            .after(ELECTRICAL_GIZMO)
             .whenIconCollected()),
     ACID = create("acid", b -> b
             .icon(ModdedFluids.acid().getBucket())
@@ -82,12 +82,12 @@ public class ModdedAdvancements implements DataProvider {
             .icon(ModdedBlocks.ELECTRIC_MOTOR)
             .title("Stress through wires")
             .description("Place and activate an Electrical Motor")
-            .after(ELECTRICAL_AGE)),
+            .after(MAGNET)),
     BOOSTING_CHIP = create("boosting_chip", b -> b
             .icon(ModdedItems.INTEGRATED_CIRCUIT)
             .title("To another level")
             .description("Use a boosting chip")
-            .after(ELECTRONIC_WONDERS)),
+            .after(ELECTRICAL_GIZMO)),
     TRANSFORMER = create("transformer", b -> b
             .icon(ModdedBlocks.TRANSFORMER_CORE)
             .title("AC/DC wannabe")
@@ -100,12 +100,12 @@ public class ModdedAdvancements implements DataProvider {
             .after(ELECTRICAL_AGE)),
 
     /* -------======= Ooo, very ~secret~, don't look here =======------- */
-    INNOVATIVE_KITCHEN = create("innovative_kitchen", b -> b
+    POTATO_BATTERY = create("potato_battery", b -> b
             .icon(Items.BAKED_POTATO)
             .title("Innovative kitchen")
             .description("Cook a Potato Battery")
             .special(SECRET)),
-    WRONG_TOOL = create("wrong_tool", b -> b
+    WIRE_CUT = create("wire_cut", b -> b
             .icon(Items.SHEARS)
             .title("Wrong tool for the job")
             .description("Use shears to cut a wire")
