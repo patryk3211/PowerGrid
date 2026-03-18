@@ -56,9 +56,12 @@ public class PotatoBatteryBlockEntity extends BatteryBlockEntity {
             sourceCoupling.setVoltage(0);
             energy = 0;
             return;
+        } else {
+            super.electricalTick();
         }
         if(thermalBehaviour != null && thermalBehaviour.isOverheated() && !level.isClientSide) {
             awardIfNear(ModdedAdvancements.POTATO_BATTERY, 8);
+            thermalBehaviour.setTemperature(150);
             level.setBlockAndUpdate(worldPosition, getBlockState().setValue(PotatoBatteryBlock.BAKED, true));
             notifyUpdate();
         }

@@ -1,0 +1,31 @@
+{
+  "parent": "powergrid:magnet",
+  "criteria": {
+    "0": {
+      "conditions": {},
+      "trigger": "create:electric_motor_builtin"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "color": "#DBA213",
+      "translate": "advancement.powergrid.electric_motor.desc"
+    },
+    "frame": "task",
+    "hidden": false,
+    "icon": {
+      "item": "powergrid:electric_motor"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancement.powergrid.electric_motor"
+    }
+  },
+  "requirements": [
+    [
+      "0"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

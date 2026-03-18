@@ -72,6 +72,7 @@ public class ModdedAdvancements implements DataProvider {
             .icon(Items.TNT)
             .title("My mango, is to blow up")
             .description("Make something explode (be more careful next time)")
+            .special(NOISY)
             .after(ELECTRICAL_AGE)),
     LIGHTNING = create("lightning", b -> b
             .icon(Items.LIGHTNING_ROD)
