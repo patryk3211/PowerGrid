@@ -494,6 +494,53 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         return network;
     }
 
+    @Nullable
+    public ElectricalNetwork prepareForConnection(IWireEndpoint endpoint1, ElectricNode node2) {
+        var node1 = endpoint1.getNode(world);
+
+        if(node1 == node2)
+            return null;
+        if(node1 == null || node2 == null)
+            return null;
+
+        add(endpoint1);
+        globalGraph.addNode(node2);
+
+        // Split transmission lines if needed.
+        var line1 = findLineMiddle(node1);
+        if(line1 != null)
+            line1.splitAt(node1);
+
+        var net1 = node1.getNetwork();
+        var net2 = node2.getNetwork();
+
+        // Put both nodes into the same network.
+        ElectricalNetwork network;
+        if(net1 == null && net2 == null) {
+            network = newNetwork();
+            endpoint1.joinNetwork(world, network);
+            network.addNode(node2);
+        } else if(net1 == null) {
+            network = net2;
+            endpoint1.joinNetwork(world, network);
+        } else if(net2 == null) {
+            network = net1;
+            network.addNode(node2);
+        } else if(net1 != net2) {
+            if(net1.size() >= net2.size()) {
+                network = net1;
+                network.merge(net2);
+            } else {
+                network = net2;
+                network.merge(net1);
+            }
+        } else {
+            network = net1;
+        }
+
+        return network;
+    }
+
     public ElectricalNetwork prepareForTransmissionLine(@NotNull OwnedFloatingNode node1, @NotNull OwnedFloatingNode node2, TransmissionLine line, Runnable callback) {
         var endpoint1 = node1.endpoint;
         var endpoint2 = node2.endpoint;

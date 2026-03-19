@@ -25,6 +25,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -68,7 +69,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         return true;
     }
 
-    public void updateRenderParams() {
+    public void updateCurveParams() {
         var item = getWireItem();
         curveParams = new CurveParameters(terminalPos1, terminalPos2,
                 item.getHorizontalCoefficient(), item.getVerticalCoefficient(), item.getWireThickness());
@@ -128,6 +129,10 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     }
 
     private boolean isConnectedTo(LivingEntity entity) {
+        if(entity instanceof Player player) {
+            if(player.isSpectator())
+                return false;
+        }
         if(curveParams == null)
             return false;
         if(curveParams.isVertical())
@@ -168,7 +173,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         if(beginFlags != deferEndpointResolution) {
             terminalPos1 = getEndpoint1().getExactPosition(world);
             terminalPos2 = getEndpoint2().getExactPosition(world);
-            updateRenderParams();
+            updateCurveParams();
         }
 
         var temperature = getTemperature();
@@ -231,7 +236,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             var list = data.getList("V", Tag.TAG_FLOAT);
             terminalPos1 = new Vec3(list.getFloat(0), list.getFloat(1), list.getFloat(2));
             terminalPos2 = new Vec3(list.getFloat(3), list.getFloat(4), list.getFloat(5));
-            updateRenderParams();
+            updateCurveParams();
         } else {
             super.onEntityDataPacket(data);
         }
@@ -252,8 +257,8 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         } else {
             terminalPos1 = getEndpoint1().getExactPosition(world);
             terminalPos2 = getEndpoint2().getExactPosition(world);
-            updateRenderParams();
         }
+        updateCurveParams();
     }
 
     @Override

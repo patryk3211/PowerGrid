@@ -75,7 +75,7 @@ public class ElectricInstructions {
         var link = new ElementLinkImpl<>(WireElement.class);
         var element = new WireElement(level -> {
             var wire = HangingWireEntity.create(level, new BlockWireEndpoint(pos1, terminal1), new BlockWireEndpoint(pos2, terminal2), ModdedItems.WIRE.asStack(), resistance);
-            wire.updateRenderParams();
+            wire.updateCurveParams();
             return wire;
         });
         builder.addInstruction(new CreateWireInstruction(15, Direction.DOWN, element));
@@ -88,7 +88,7 @@ public class ElectricInstructions {
         var element = new WireElement(level -> {
             var wire = HangingWireEntity.create(level, new BlockWireEndpoint(pos1, terminal1), new BlockWireEndpoint(pos2, terminal2), ModdedItems.INSULATED_COPPER_WIRE.asStack(), resistance);
             wire.setColor(dye);
-            wire.updateRenderParams();
+            wire.updateCurveParams();
             return wire;
         });
         builder.addInstruction(new CreateWireInstruction(15, Direction.DOWN, element));
