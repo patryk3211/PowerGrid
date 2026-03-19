@@ -43,6 +43,7 @@ import org.patryk3211.powergrid.electricity.heater.HeaterFanProcessingTypes;
 import org.patryk3211.powergrid.electricity.light.string.StringLightCordRecipe;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.solver.NativeMNA;
+import org.patryk3211.powergrid.equipment.BoostRecipe;
 import org.patryk3211.powergrid.equipment.thunder.LightningRodMovementBehaviour;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlockEntity;
 import org.patryk3211.powergrid.utility.Lang;
@@ -155,6 +156,8 @@ public class PowerGrid {
 		RECIPE_TYPES.register(magnetizing.getId(), magnetizing::getType);
 
 		RECIPE_SERIALIZERS.register("crafting_special_string_light_cord", () -> StringLightCordRecipe.SERIALIZER);
+
+		RECIPE_SERIALIZERS.register("boost_recipe", () -> BoostRecipe.SERIALIZER);
 	}
 
 	@ExpectPlatform

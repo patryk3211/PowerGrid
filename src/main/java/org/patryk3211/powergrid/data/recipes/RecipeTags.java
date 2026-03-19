@@ -175,4 +175,8 @@ public class RecipeTags {
     public static ItemLike redstone() {
         return Items.REDSTONE;
     }
+
+    public static ItemLike diamond() {
+        return Items.DIAMOND;
+    }
 }

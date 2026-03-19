@@ -1,0 +1,19 @@
+{
+  "type": "powergrid:boost_recipe",
+  "ingredients": [
+    {
+      "item": "powergrid:electrobaton"
+    },
+    {
+      "item": "powergrid:integrated_circuit"
+    }
+  ],
+  "results": [
+    {
+      "item": "powergrid:electrobaton",
+      "nbt": {
+        "Damage": 0
+      }
+    }
+  ]
+}

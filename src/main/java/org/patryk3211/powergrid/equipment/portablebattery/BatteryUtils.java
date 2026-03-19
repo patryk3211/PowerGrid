@@ -24,6 +24,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.equipment.ItemBoostUtils;
 import org.patryk3211.powergrid.utility.ClientSideAccess;
 
 public class BatteryUtils {
@@ -32,8 +33,8 @@ public class BatteryUtils {
     }
 
     public static int getMaxCharge(int level) {
-        return ModdedConfigs.server().electricity.portableBatteryBaseCapacity.get() +
-                ModdedConfigs.server().electricity.portableBatteryEnchantCapacity.get() * level;
+        return ModdedConfigs.server().equipment.portableBatteryBaseCapacity.get() +
+                ModdedConfigs.server().equipment.portableBatteryEnchantCapacity.get() * level;
     }
 
     public static int getCurrentCharge(ItemStack stack) {
@@ -43,17 +44,27 @@ public class BatteryUtils {
         return nbt.getInt("Charge");
     }
 
-    public static boolean drawEnergy(Player player, int fe) {
+    public static float drawEnergy(Player player, int energy) {
         if(player.getAbilities().instabuild)
-            return true;
+            return 1.0f;
         var stack = player.getItemBySlot(EquipmentSlot.CHEST);
         if(stack.isEmpty() || !(stack.getItem() instanceof PortableBatteryItem))
-            return false;
+            return 0.0f;
         var charge = getCurrentCharge(stack);
-        if(charge < fe)
-            return false;
-        stack.getTag().putInt("Charge", charge - fe);
-        return true;
+        float chargePercent = (float) getCurrentCharge(stack) / getMaxCharge(stack);
+        float outputPercent = 1.0f;
+        if(chargePercent < 0.5f) {
+            // High ESR causing lower energy output
+            outputPercent = chargePercent / 0.5f;
+        }
+        energy = (int) (energy * outputPercent);
+        var tag = stack.getTag();
+        if(energy == 0 || tag == null)
+            return 0.0f;
+        tag.putInt("Charge", charge - energy);
+        if(charge < energy * outputPercent)
+            return 0.0f;
+        return outputPercent;
     }
 
     public static ItemStack getBattery(Player player) {
@@ -63,38 +74,57 @@ public class BatteryUtils {
         return stack;
     }
 
-    public static boolean isBarVisible(ItemStack stack, int fePerUse) {
-        if(fePerUse == 0)
+    public static float tryDrawEnergy(ItemStack battery, int energy) {
+        var charge = getCurrentCharge(battery);
+        float chargePercent = (float) getCurrentCharge(battery) / getMaxCharge(battery);
+        float outputPercent = 1.0f;
+        if(chargePercent < 0.5f) {
+            // High ESR causing lower energy output
+            outputPercent = chargePercent / 0.5f;
+        }
+        energy = (int) (energy * outputPercent);
+        var tag = battery.getTag();
+        if(energy == 0 || tag == null)
+            return 0.0f;
+        if(charge < energy * outputPercent)
+            return 0.0f;
+        return outputPercent;
+    }
+
+    public static boolean isBarVisible(ItemStack stack, int energyPerUse, float minPower) {
+        if(energyPerUse == 0)
             return false;
         return EnvExecutor.getInEnv(Env.CLIENT, () -> ClientSideAccess::player)
                 .map(player -> {
                     var battery = getBattery(player);
-                    if(battery != null && getCurrentCharge(battery) >= fePerUse)
+                    if(battery != null && tryDrawEnergy(battery, energyPerUse) >= minPower)
                         return true;
                     return stack.isDamaged();
                 }).orElse(false);
     }
 
-    public static int getBarWidth(ItemStack stack, int fePerUse) {
-        if(fePerUse == 0)
+    public static int getBarWidth(ItemStack stack, int energyPerUse, float minPower) {
+        if(energyPerUse == 0)
             return 13;
         return EnvExecutor.getInEnv(Env.CLIENT, () -> ClientSideAccess::player)
                 .map(player -> {
                     var battery = getBattery(player);
-                    if(battery == null || getCurrentCharge(battery) < fePerUse)
+                    if(battery == null || tryDrawEnergy(battery, energyPerUse) < minPower)
                         return Math.round(13.0F - (float) stack.getDamageValue() / stack.getMaxDamage() * 13.0F);
                     return battery.getBarWidth();
                 }).orElse(13);
     }
 
-    public static int getBarColor(ItemStack stack, int fePerUse) {
-        if(fePerUse == 0)
+    public static int getBarColor(ItemStack stack, int energyPerUse, float minPower) {
+        if(energyPerUse == 0)
             return 0;
         return EnvExecutor.getInEnv(Env.CLIENT, () -> ClientSideAccess::player)
                 .map(player -> {
                     var battery = getBattery(player);
-                    if(battery == null || getCurrentCharge(battery) < fePerUse)
+                    if(battery == null || tryDrawEnergy(battery, energyPerUse) < minPower)
                         return Mth.hsvToRgb(Math.max(0.0F, 1.0F - (float) stack.getDamageValue() / stack.getMaxDamage()) / 3.0F, 1.0F, 1.0F);
+                    if(ItemBoostUtils.isBoosted(stack))
+                        return 0x34a8eb;
                     return battery.getBarColor();
                 }).orElse(0);
     }
