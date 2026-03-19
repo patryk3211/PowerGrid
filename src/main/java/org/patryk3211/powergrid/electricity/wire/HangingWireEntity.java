@@ -350,6 +350,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             );
             setYRot(facingAngle);
 
+            updateCurveParams();
             if(!world.isClientSide) {
                 // I guess we have to do position update like that because otherwise,
                 // the update method would have to go into the tick function
