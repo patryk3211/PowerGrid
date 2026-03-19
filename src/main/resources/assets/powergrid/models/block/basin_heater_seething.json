@@ -8,7 +8,7 @@
 		"1": "powergrid:block/basin_heater",
 		"2": "powergrid:block/basin_heater_on",
 		"3": "powergrid:block/basin_heater_light",
-		"particle": "powergrid:block/basin_heater"
+		"particle": "powergrid:block/conductive_casing"
 	},
 	"elements": [
 		{

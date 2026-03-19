@@ -5,7 +5,7 @@
 	"texture_size": [64, 64],
 	"textures": {
 		"0": "powergrid:block/switches/hv_breaker",
-		"particle": "powergrid:block/switches/hv_breaker"
+		"particle": "powergrid:block/conductive_casing"
 	},
 	"elements": [
 		{

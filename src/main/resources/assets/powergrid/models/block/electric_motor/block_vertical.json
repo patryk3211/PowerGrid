@@ -5,7 +5,7 @@
 	"texture_size": [64, 64],
 	"textures": {
 		"1": "powergrid:block/electric_motor",
-		"particle": "powergrid:block/electric_motor"
+		"particle": "powergrid:block/conductive_casing"
 	},
 	"elements": [
 		{

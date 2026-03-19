@@ -6,7 +6,7 @@
 	"textures": {
 		"0": "powergrid:block/electromagnet",
 		"1": "powergrid:block/conductive_casing",
-		"particle": "powergrid:block/electromagnet"
+		"particle": "powergrid:block/conductive_casing"
 	},
 	"elements": [
 		{

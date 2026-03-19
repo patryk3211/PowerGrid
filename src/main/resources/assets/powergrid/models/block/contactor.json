@@ -5,7 +5,7 @@
 	"textures": {
 		"0": "powergrid:block/contactor",
 		"1": "powergrid:block/conductive_casing",
-		"particle": "powergrid:block/contactor"
+		"particle": "powergrid:block/conductive_casing"
 	},
 	"elements": [
 		{

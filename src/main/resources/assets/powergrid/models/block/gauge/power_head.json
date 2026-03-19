@@ -3,7 +3,7 @@
 	"credit": "Made with Blockbench",
 	"textures": {
 		"1": "powergrid:block/power_dial",
-		"particle": "powergrid:block/power_dial"
+		"particle": "powergrid:block/conductive_casing"
 	},
 	"elements": [
 		{
