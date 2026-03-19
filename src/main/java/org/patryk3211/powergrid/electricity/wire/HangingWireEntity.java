@@ -132,6 +132,8 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         if(entity instanceof Player player) {
             if(player.isSpectator())
                 return false;
+            if(player.isCreative() && !ModdedConfigs.server().electricity.creativePlayerShortsWires.get())
+                return false;
         }
         if(curveParams == null)
             return false;
@@ -152,16 +154,10 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
 
         var hitOriginVector = hit.subtract(planeOrigin);
         double x = planeXVector.dot(hitOriginVector);
-        double y = hitOriginVector.y;
-
-        double closeX = curveParams.findClosestPoint(x, y);
         double span = curveParams.getCurveSpan() / 2;
-        closeX = Math.min(Math.max(closeX, -span), span);
-
-        double dX = x - closeX;
-        double dY = y - curveParams.apply((float) closeX);
-
-        Vec3 closestPoint = planeOrigin.add(planeXVector.x * dX, dY, planeXVector.z * dX);
+        x = Math.min(Math.max(x, -span), span);
+        double y = curveParams.apply((float) x);
+        Vec3 closestPoint = planeOrigin.add(planeXVector.x * x, y, planeXVector.z * x);
         return bb.contains(closestPoint);
     }
 

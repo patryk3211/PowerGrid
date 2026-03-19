@@ -127,7 +127,7 @@ public class GroundingRodBlockEntity extends ElectricBlockEntity {
             var entities = level.getEntitiesOfClass(LivingEntity.class, bb, e -> e.position().distanceToSqr(center) <= sqrDist && e.onGround());
 
             Registry<DamageType> registry = level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE);
-            var source = new DamageSource(registry.getHolder(ModdedDamageTypes.ZAP).get());
+            var source = new DamageSource(registry.getHolderOrThrow(ModdedDamageTypes.ELECTROCUTION));
             for(var entity : entities) {
                 // TODO: Scale damage with potential.
                 entity.hurt(source, 1);
