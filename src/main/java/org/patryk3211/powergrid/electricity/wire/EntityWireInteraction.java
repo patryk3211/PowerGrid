@@ -67,6 +67,19 @@ public class EntityWireInteraction {
     public static void postTick(MinecraftServer server) {
         final var source = new DamageSource(server.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(ModdedDamageTypes.ELECTROCUTION));
         DATA.forEach((entity, data) -> {
+            if(entity.isRemoved()) {
+                for(var entry : data.wires) {
+                    entry.wire1.remove();
+                    entry.wire2.remove();
+                    TOUCHING.remove(entry.entity, entity);
+                }
+                if(data.ground != null)
+                    data.ground.remove();
+                var global = GlobalElectricNetworks.getWorldNetworks(entity.level());
+                global.scheduleIslandDiscovery(data.node.getNetwork());
+                data.node.remove();
+                return;
+            }
             double I = data.totalCurrent();
             double threshold = ModdedConfigs.server().electricity.entityCurrentDamageThreshold.get();
             if(I >= threshold) {
