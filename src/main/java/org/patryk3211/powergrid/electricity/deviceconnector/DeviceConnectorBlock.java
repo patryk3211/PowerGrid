@@ -50,6 +50,7 @@ import org.patryk3211.powergrid.electricity.base.DirectionalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
+import org.patryk3211.powergrid.electricity.febridge.IFEBridgeHandler;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.electricity.wire.powercord.AutoCordEndpoint;
@@ -248,7 +249,7 @@ public class DeviceConnectorBlock extends DirectionalElectricBlock implements IB
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         tooltip.add(Lang.translateDirect("tooltip.device_connector.header"));
-        Resistance.minimum(1000, player, tooltip);
+        Resistance.minimum(IFEBridgeHandler.MINIMUM_RESISTANCE, player, tooltip);
 
         Lang.translate("tooltip.device_connector.rate").style(ChatFormatting.GRAY).addTo(tooltip);
         LangBuilder valueText = Lang.builder().add(Component.nullToEmpty(" "));
@@ -257,7 +258,7 @@ public class DeviceConnectorBlock extends DirectionalElectricBlock implements IB
                 .add(Lang.translateDirect("tooltip.device_connector.fe_w"));
         valueText.style(ChatFormatting.DARK_AQUA).addTo(tooltip);
 
-        Lang.translate("tooltip.device_connector.buffer").style(ChatFormatting.GRAY).addTo(tooltip);
+        Lang.translate("tooltip.device_connector.max_rate").style(ChatFormatting.GRAY).addTo(tooltip);
         valueText = Lang.builder().add(Component.nullToEmpty(" "));
         valueText.add(Lang.number(ModdedConfigs.server().electricity.forgeEnergyPerVolt.getF()))
                 .add(Component.nullToEmpty(" "))

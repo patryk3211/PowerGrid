@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity.transformer;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
@@ -30,6 +31,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedAdvancements;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
@@ -79,6 +81,12 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     public abstract double couplingFactor();
 
     @Override
+    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+        super.addBehaviours(behaviours);
+        registerAwardables(behaviours, ModdedAdvancements.TRANSFORMER);
+    }
+
+    @Override
     public void tick() {
         float power = 0;
         lastCurrent = 0;
@@ -93,6 +101,9 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             var P3 = I3 * I3 * mutualInductance.getResistance();
             power += P3;
             lastCurrent += Math.abs(I3);
+            if(Math.abs(I3) > 0.001) {
+                award(ModdedAdvancements.TRANSFORMER);
+            }
         }
         if(thermalBehaviour != null && !level.isClientSide)
             thermalBehaviour.applyTickPower(power);

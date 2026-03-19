@@ -233,6 +233,10 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
         return lines;
     }
 
+    private void recordChange() {
+        this.changed = true;
+    }
+
     private void toolSelect(Tool tool) {
         if(currentComponent != null) {
             currentComponent = null;
@@ -329,9 +333,8 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
         }
 
         selectedComponent = placed;
-        propertiesWidget.setComponent(selectedComponent);
+        propertiesWidget.setComponent(selectedComponent, this::recordChange);
         playSound(ModdedSoundEvents.UI_SELECT_COMPONENT);
-        changed = true;
         return CircuitEditWidget.SelectionResult.BEGIN_NEW;
     }
 

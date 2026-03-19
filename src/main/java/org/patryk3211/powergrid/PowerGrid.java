@@ -84,6 +84,7 @@ public class PowerGrid {
 		LifecycleEvent.SERVER_LEVEL_UNLOAD.register(GlobalElectricNetworks::unloadWorld);
 		CommandRegistrationEvent.EVENT.register(ModdedCommands::register);
 		PlayerEvent.PLAYER_JOIN.register(PowerGrid::playerJoin);
+		LifecycleEvent.SETUP.register(PowerGrid::setup);
 	}
 
 	private static void playerJoin(ServerPlayer player) {
@@ -129,6 +130,10 @@ public class PowerGrid {
 		ModdedParticles.PARTICLE_TYPES.register();
 
 		MovementBehaviour.REGISTRY.register(Blocks.LIGHTNING_ROD, new LightningRodMovementBehaviour());
+	}
+
+	private static void setup() {
+		ModdedAdvancements.register();
 	}
 
 	public static ResourceLocation asResource(String path) {

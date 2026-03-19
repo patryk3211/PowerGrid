@@ -171,6 +171,7 @@ public class PowerGridImpl {
 
             providePonderLang(langConsumer);
             ModdedSoundEvents.provideLang(langConsumer);
+            ModdedAdvancements.provideLang(langConsumer);
         });
 
         generator.addProvider(true, new CookingRecipes(output));
@@ -184,6 +185,7 @@ public class PowerGridImpl {
         generator.addProvider(true, new SequencedAssemblyRecipes(output));
         generator.addProvider(true, new org.patryk3211.powergrid.data.recipe.forge.SequencedAssemblyRecipes(output));
         generator.addProvider(true, new DeployerApplicationRecipes(output));
+        generator.addProvider(true, new ModdedAdvancements(output));
 
         generator.addProvider(true, new BlockTagProvider(output, event.getLookupProvider()));
         generator.addProvider(true, new ItemTagProvider(output, event.getLookupProvider()));

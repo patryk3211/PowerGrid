@@ -26,8 +26,12 @@ import org.patryk3211.powergrid.collections.ModIcons;
 import static org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget.PROPERTIES;
 
 public class BooleanPropertyWidget extends PropertyWidget<Boolean, PropertyEntry<Boolean>> {
-    protected BooleanPropertyWidget(Font textRenderer, int x, int y, PropertyEntry<Boolean> property) {
+    private final Runnable changeMadeCallback;
+
+    protected BooleanPropertyWidget(Font textRenderer, int x, int y,
+                                    PropertyEntry<Boolean> property, Runnable changeMadeCallback) {
         super(textRenderer, x, y, property);
+        this.changeMadeCallback = changeMadeCallback;
     }
 
     @Override
@@ -54,6 +58,7 @@ public class BooleanPropertyWidget extends PropertyWidget<Boolean, PropertyEntry
         int y = getY();
         if(mouseX >= x + 29 && mouseY >= y + 1 && mouseX < x + 29 + 18 && mouseY < y + 1 + 18) {
             property.set(!property.get());
+            changeMadeCallback.run();
             return super.mouseClicked(mouseX, mouseY, button);
         } else {
             return false;
