@@ -193,7 +193,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             double z = curvePoint.z + pos.z;
             world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f);
         }
-        if(ModdedConfigs.server().electricity.entityWireInteraction.get()) {
+        if(!world.isClientSide && ModdedConfigs.server().electricity.entityWireInteraction.get()) {
             var living = world.getEntitiesOfClass(LivingEntity.class, getBoundingBox(), this::isConnectedTo);
             EntityWireInteraction.wireTouching(this, living);
         }

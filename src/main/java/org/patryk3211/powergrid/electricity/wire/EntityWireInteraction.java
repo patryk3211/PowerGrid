@@ -20,10 +20,12 @@ import java.util.List;
 import java.util.Map;
 
 public class EntityWireInteraction {
-    public static final float ENTITY_RESISTANCE = 10000;
-
     private static final Map<LivingEntity, CircuitData> DATA = new Reference2ReferenceOpenHashMap<>();
     private static final Multimap<WireEntity, LivingEntity> TOUCHING = HashMultimap.create();
+
+    public static float entityResistance() {
+        return ModdedConfigs.server().electricity.entityResistance.getF();
+    }
 
     public static void wireTouching(WireEntity wire, List<LivingEntity> touchingEntities) {
         var level = wire.level();
@@ -126,7 +128,7 @@ public class EntityWireInteraction {
                 return;
             }
             var node1 = entity.endpoint1.getNode(global.world);
-            var wire1 = new ElectricWire(ENTITY_RESISTANCE * 0.5, node1, node);
+            var wire1 = new ElectricWire(entityResistance() * 0.5, node1, node);
             network.addWire(wire1);
 
             network = global.prepareForConnection(entity.endpoint2, node);
@@ -135,7 +137,7 @@ public class EntityWireInteraction {
                 return;
             }
             var node2 = entity.endpoint2.getNode(global.world);
-            var wire2 = new ElectricWire(ENTITY_RESISTANCE * 0.5, node2, node);
+            var wire2 = new ElectricWire(entityResistance() * 0.5, node2, node);
             network.addWire(wire2);
 
             global.setDirty();
@@ -155,7 +157,7 @@ public class EntityWireInteraction {
                     this.grounded = false;
                     return;
                 }
-                ground = new ElectricWire(ENTITY_RESISTANCE, node, null);
+                ground = new ElectricWire(entityResistance(), node, null);
                 network.addWire(ground);
                 groundJustAdded = true;
             }

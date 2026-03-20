@@ -62,6 +62,7 @@ public class CElectricity extends ConfigBase {
     public final ConfigFloat wireCutDamageCurrentThreshold = f(0.2f, 0, "wireCutDamageCurrentThreshold", Comments.wireCutDamageCurrentThreshold);
     public final ConfigBool creativePlayerShortsWires = b(false, "creativePlayerShortsWires", Comments.creativePlayerShortsWires);
     public final ConfigFloat entityCurrentDamageThreshold = f(0.1f, 0, "entityCurrentDamageThreshold", Comments.entityCurrentDamageThreshold);
+    public final ConfigFloat entityResistance = f(5000, 0, "entityResistance", Comments.entityResistance);
 
     public final ConfigBool entityWireInteraction = b(true, "entityWireInteractions", Comments.entityWireInteractions);
 
@@ -125,6 +126,7 @@ public class CElectricity extends ConfigBase {
         public static final String wireCutDamageCurrentThreshold = "Minimum current flowing through a cut wire that will start causing damage";
         public static final String creativePlayerShortsWires = "Enable circuit forming interaction for players in creative mode";
         public static final String entityCurrentDamageThreshold = "Minimum current flowing through an entity for it to receive damage";
+        public static final String entityResistance = "Resistance of entities when they are shorting wires";
 
         public static final String entityWireInteractions = "Enables entities to form circuits when touching wires";
     }
