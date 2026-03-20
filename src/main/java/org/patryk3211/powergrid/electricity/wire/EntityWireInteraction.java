@@ -68,7 +68,11 @@ public class EntityWireInteraction {
 
     public static void postTick(MinecraftServer server) {
         final var source = new DamageSource(server.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(ModdedDamageTypes.ELECTROCUTION));
-        DATA.forEach((entity, data) -> {
+        var iter = DATA.entrySet().iterator();
+        while(iter.hasNext()) {
+            var entityEntry = iter.next();
+            var entity = entityEntry.getKey();
+            var data = entityEntry.getValue();
             if(entity.isRemoved()) {
                 for(var entry : data.wires) {
                     entry.wire1.remove();
@@ -80,15 +84,23 @@ public class EntityWireInteraction {
                 var global = GlobalElectricNetworks.getWorldNetworks(entity.level());
                 global.scheduleIslandDiscovery(data.node.getNetwork());
                 data.node.remove();
-                return;
+                iter.remove();
+                continue;
             }
             double I = data.totalCurrent();
             double threshold = ModdedConfigs.server().electricity.entityCurrentDamageThreshold.get();
             if(I >= threshold) {
                 entity.hurt(source, (float) (I / threshold));
             }
-            data.updateGrounding(entity.onGround());
-        });
+            if(data.wires.isEmpty()) {
+                if(data.ground != null)
+                    data.ground.remove();
+                data.node.remove();
+                iter.remove();
+            } else {
+                data.updateGrounding(entity.onGround());
+            }
+        }
     }
 
     private static class WireConnection {
@@ -167,7 +179,16 @@ public class EntityWireInteraction {
         public double totalCurrent() {
             double sum = !groundJustAdded && ground != null ? Math.abs(ground.current()) : 0;
             groundJustAdded = false;
-            for(var entry : wires) {
+            var iter = wires.iterator();
+            while(iter.hasNext()) {
+                var entry = iter.next();
+                if(entry.entity.isRemoved()) {
+                    entry.wire1.remove();
+                    entry.wire2.remove();
+                    GlobalElectricNetworks.getWorldNetworks(entry.entity.level()).scheduleIslandDiscovery(node.getNetwork());
+                    iter.remove();
+                    continue;
+                }
                 if(entry.justAdded) {
                     entry.justAdded = false;
                     continue;
