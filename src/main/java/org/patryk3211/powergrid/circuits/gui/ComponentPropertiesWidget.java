@@ -144,7 +144,7 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
         int centerSliceSize = Math.max(width - 120, 0);
         ctx.blit(PROPERTIES, 0, 0, 0, 0, 60, 16);
         if(width > 120) {
-            ctx.blitSprite(PROPERTIES, 60, 0, centerSliceSize, 16, 61, 0, 30, 16);
+            blitRepeating(ctx, PROPERTIES, 60, 0, centerSliceSize, 16, 61,0, 30, 16);
         }
         ctx.blit(PROPERTIES, 60 + centerSliceSize, 0, 92, 0, 60, 16);
 
