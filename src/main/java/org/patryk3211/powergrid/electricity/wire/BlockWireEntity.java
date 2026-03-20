@@ -24,6 +24,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -97,6 +98,22 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         return entity;
     }
 
+    private void optimizeSegments() {
+        if(segments.size() <= 1)
+            return;
+        int i = 1;
+        while(i < segments.size()) {
+            var prev = segments.get(i - 1);
+            var segment = segments.get(i);
+            if(prev.direction == segment.direction) {
+                segments.set(i - 1, new Point(prev.direction, prev.gridLength + segment.gridLength));
+                segments.remove(i);
+            } else {
+                ++i;
+            }
+        }
+    }
+
     @Override
     protected AABB makeBoundingBox() {
         if(mainBoundingBox != null) {
@@ -107,6 +124,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
     }
 
     public void bakeBoundingBoxes() {
+        optimizeSegments();
         boundingBoxes.clear();
         totalLength = 0;
 
@@ -146,6 +164,18 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
 
     public float getTotalLength() {
         return totalLength;
+    }
+
+    @Override
+    protected boolean isConnectedTo(LivingEntity entity) {
+        if(!super.isConnectedTo(entity))
+            return false;
+        var bb = entity.getBoundingBox();
+        for(var segmentBB : boundingBoxes) {
+            if(segmentBB.intersects(bb))
+                return true;
+        }
+        return false;
     }
 
     @Override

@@ -25,7 +25,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -33,7 +32,6 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableFloat;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
@@ -128,13 +126,9 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             return super.makeBoundingBox();
     }
 
-    private boolean isConnectedTo(LivingEntity entity) {
-        if(entity instanceof Player player) {
-            if(player.isSpectator())
-                return false;
-            if(player.isCreative() && !ModdedConfigs.server().electricity.creativePlayerShortsWires.get())
-                return false;
-        }
+    protected boolean isConnectedTo(LivingEntity entity) {
+        if(!super.isConnectedTo(entity))
+            return false;
         if(curveParams == null)
             return false;
         if(curveParams.isVertical())
@@ -192,10 +186,6 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             double y = curvePoint.y + pos.y;
             double z = curvePoint.z + pos.z;
             world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f);
-        }
-        if(!world.isClientSide && ModdedConfigs.server().electricity.entityWireInteraction.get()) {
-            var living = world.getEntitiesOfClass(LivingEntity.class, getBoundingBox(), this::isConnectedTo);
-            EntityWireInteraction.wireTouching(this, living);
         }
 
         if(!world.isClientSide && clearanceCheck++ >= CLEARANCE_CHECK_INTERVAL && terminalPos1 != null && terminalPos2 != null) {

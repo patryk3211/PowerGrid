@@ -44,6 +44,7 @@ public class WireItem extends Item implements IWire {
     protected float verticalCoefficient = 1.2f;
     protected float wireThickness = 1 / 16f;
     protected boolean colored = false;
+    protected boolean insulated = false;
 
     public WireItem(Properties settings) {
         super(settings);
@@ -320,6 +321,11 @@ public class WireItem extends Item implements IWire {
     @Override
     public float getThermalMass() {
         return WireValues.thermalMass(this);
+    }
+
+    @Override
+    public boolean isInsulated() {
+        return insulated;
     }
 
     public ResourceLocation getWireTexture() {

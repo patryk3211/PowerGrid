@@ -491,6 +491,10 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         return -1;
     }
 
+    public boolean isInsulated() {
+        return item.isInsulated();
+    }
+
     protected abstract void unloaded();
 
     public static void entityUnload(Entity entity, ServerLevel world) {

@@ -33,6 +33,8 @@ public interface IWire extends IHaveElectricProperties {
     float getDissipationFactor();
     float getThermalMass();
 
+    boolean isInsulated();
+
     boolean canBeColored();
 
     @Override

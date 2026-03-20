@@ -44,4 +44,8 @@ public class WireProperties {
             return b;
         };
     }
+
+    public static <I extends WireItem, P> NonNullUnaryOperator<ItemBuilder<I, P>> insulated() {
+        return b -> b.onRegister(item -> item.insulated = true);
+    }
 }

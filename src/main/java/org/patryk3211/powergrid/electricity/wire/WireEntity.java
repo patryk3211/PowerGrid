@@ -16,8 +16,11 @@
 package org.patryk3211.powergrid.electricity.wire;
 
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.WorldNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
@@ -77,6 +80,25 @@ public abstract class WireEntity extends BaseWireEntity {
         if(wire != null) {
             wire.remove();
             wire = null;
+        }
+    }
+
+    protected boolean isConnectedTo(LivingEntity entity) {
+        if(entity instanceof Player player) {
+            if(player.isSpectator())
+                return false;
+            return !player.isCreative() || ModdedConfigs.server().electricity.creativePlayerShortsWires.get();
+        }
+        return true;
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        var world = level();
+        if(!world.isClientSide && ModdedConfigs.server().electricity.entityWireInteraction.get() && !isInsulated()) {
+            var living = world.getEntitiesOfClass(LivingEntity.class, getBoundingBox(), this::isConnectedTo);
+            EntityWireInteraction.wireTouching(this, living);
         }
     }
 

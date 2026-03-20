@@ -279,6 +279,11 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     }
 
     @Override
+    public boolean isInsulated() {
+        return true;
+    }
+
+    @Override
     public void onEntityDataPacket(CompoundTag data) {
         if(data.contains("V")) {
             var list = data.getList("V", Tag.TAG_FLOAT);
