@@ -166,7 +166,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                                         .style(ChatFormatting.GRAY)
                                         .component(), true);
                             // Wipe all data
-                            saveModeData(stack, data);
+                            deleteModeData(stack);
                         }
                     }
                 }
