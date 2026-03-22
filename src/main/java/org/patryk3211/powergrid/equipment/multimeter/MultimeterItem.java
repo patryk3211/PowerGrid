@@ -83,7 +83,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                     if(hitLocalPos.y >= 2 / 16f && hitLocalPos.y <= 3 / 16f) {
                         int x = (int) (hitLocalPos.x * 16);
                         int y = (int) (hitLocalPos.z * 16);
-                        if(!be.getSchematic().getLayer(CircuitSchematic.Layer.FRONT, x, y))
+                        if(!be.getSchematic().hasTrace(CircuitSchematic.Layer.FRONT, x, y))
                             return InteractionResult.FAIL;
                         return onTerminal(context.getLevel(), new CircuitBoardEndpoint(pos, x, y), context.getItemInHand());
                     }

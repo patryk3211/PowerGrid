@@ -78,7 +78,7 @@ public class CircuitBoardEndpoint implements IWireEndpoint {
     @Override
     public boolean isValid(Level world) {
         var opt = world.getBlockEntity(pos, ModdedBlockEntities.CIRCUIT_BOARD.get());
-        return opt.map(be -> be.getSchematic().front().get(x, y))
+        return opt.map(be -> be.getSchematic().front().hasTrace(x, y))
                 .orElse(false);
     }
 

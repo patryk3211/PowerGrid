@@ -31,25 +31,30 @@ public class CircuitSchematicRender {
     public static final int COLOR_COMPONENT_OUTLINE = 0x80F078EE;
     public static final int COLOR_SELECT_OUTLINE = 0x80EBBA34;
 
+    private static final int TRACE_PADDING = 1;
+
     public static void render(CircuitSchematic schematic, GuiGraphics context, int x, int y, int scale) {
 
     }
 
     // It's not the most efficient, but it gets the job done. The only way to make this better is to dynamically create textures.
-    public static void renderLayer(List<Line> lines, GuiGraphics ctx, int x, int y, int scale, int color) {
-        for(var line : lines) {
-            int x1, x2, y1, y2;
-            if(line.vertical()) {
-                x1 = line.position() * scale + x;
-                x2 = line.position() * scale + scale + x;
-                y1 = line.start() * scale + y;
-                y2 = line.end() * scale + y;
-            } else {
-                x1 = line.start() * scale + x;
-                x2 = line.end() * scale + x;
-                y1 = line.position() * scale + y;
-                y2 = line.position() * scale + scale + y;
-            }
+    public static void renderLayer(List<Line> verticalLines, List<Line> horizontalLines,
+                                   GuiGraphics ctx, int x, int y, int scale, int color) {
+        int x1, x2, y1, y2;
+
+        for (var line : verticalLines) {
+            x1 = line.position() * scale + x + TRACE_PADDING;
+            x2 = line.position() * scale + scale + x - TRACE_PADDING;
+            y1 = line.start() * scale + y + TRACE_PADDING;
+            y2 = line.end() * scale + scale + y - TRACE_PADDING;
+            ctx.fill(x1, y1, x2, y2, color);
+        }
+
+        for (var line : horizontalLines) {
+            x1 = line.start() * scale + x + TRACE_PADDING;
+            x2 = line.end() * scale + scale + x - TRACE_PADDING;
+            y1 = line.position() * scale + y + TRACE_PADDING;
+            y2 = line.position() * scale + scale + y - TRACE_PADDING;
             ctx.fill(x1, y1, x2, y2, color);
         }
     }
