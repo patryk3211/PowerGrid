@@ -337,7 +337,7 @@ public class CircuitSchematic {
                     if (neighbor.x() < 0 || neighbor.y() < 0 || neighbor.x() >= GRID_SIZE || neighbor.y() >= GRID_SIZE) {
                         continue;
                     }
-                    if (!visitMap.canVisit(layer, neighbor.x(), neighbor.y())) {
+                    if (!visitMap.canVisit(layer, neighbor.x(), neighbor.y()) || !hasTrace(layer, neighbor.x(), neighbor.y())) {
                         continue;
                     }
 

@@ -155,8 +155,8 @@ public class TraceMatrix {
             }
             else if (x == 1) return RIGHT;
             else if (x == -1) return LEFT;
-            else if (y == 1) return UP;
-            else if (y == -1) return DOWN;
+            else if (y == 1) return DOWN;
+            else if (y == -1) return UP;
             else {
                 throw new IllegalArgumentException("Invalid XY (" + x + "," + y + ") for trace direction");
             }
