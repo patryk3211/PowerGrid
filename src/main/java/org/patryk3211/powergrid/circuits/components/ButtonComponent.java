@@ -104,6 +104,15 @@ public class ButtonComponent extends OrientableComponent implements IInteractabl
             component.onClientWorld(() -> world -> modelChanged(component.getPos()));
         }
         component.set(STATE, 10);
+        component.notifyClients(STATE);
         return InteractionResult.SUCCESS;
+    }
+
+    @Override
+    public void stateUpdated(@NotNull PlacedComponent placed) {
+        super.stateUpdated(placed);
+        if (placed.get(STATE) > 0){
+            placed.onClientWorld(() -> world -> modelChanged(placed.getPos()));
+        }
     }
 }
