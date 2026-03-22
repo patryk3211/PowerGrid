@@ -21,6 +21,7 @@ import net.minecraft.client.gui.GuiGraphics;
 
 import java.util.List;
 
+import static org.patryk3211.powergrid.circuits.editor.CircuitDesignTableEditScreen.TRACE_PADDING;
 import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_GRID_SCALE;
 
 @Environment(EnvType.CLIENT)
@@ -30,8 +31,6 @@ public class CircuitSchematicRender {
     public static final int COLOR_TRACE_BACK = 0x80FFFFFF;
     public static final int COLOR_COMPONENT_OUTLINE = 0x80F078EE;
     public static final int COLOR_SELECT_OUTLINE = 0x80EBBA34;
-
-    private static final int TRACE_PADDING = 1;
 
     public static void render(CircuitSchematic schematic, GuiGraphics context, int x, int y, int scale) {
 

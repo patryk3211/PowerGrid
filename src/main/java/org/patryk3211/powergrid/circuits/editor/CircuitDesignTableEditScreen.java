@@ -65,6 +65,7 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
     private static final int HEIGHT = 160;
 
     public static final int CIRCUIT_SCALE = 8;
+    public static final int TRACE_PADDING = 1;
 
     private static final net.minecraft.network.chat.Component TOOLTIP_SAVE = Lang.translateDirect("gui.circuit_designer.save");
     private static final net.minecraft.network.chat.Component TOOLTIP_DISCARD = Lang.translateDirect("gui.circuit_designer.discard");

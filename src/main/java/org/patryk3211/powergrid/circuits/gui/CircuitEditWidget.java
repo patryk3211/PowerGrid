@@ -26,6 +26,7 @@ import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import java.util.function.BiConsumer;
 
 import static org.patryk3211.powergrid.circuits.editor.CircuitDesignTableEditScreen.CIRCUIT_SCALE;
+import static org.patryk3211.powergrid.circuits.editor.CircuitDesignTableEditScreen.TRACE_PADDING;
 import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_SIZE;
 import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_GRID_SCALE;
 
@@ -85,35 +86,53 @@ public class CircuitEditWidget extends AbstractSimiWidget {
             return;
         }
 
-        if(selectMode == SelectMode.NONE || selectMode == SelectMode.POINT) {
+        ms.pushPose();
+        ms.scale(1f / scale, 1f / scale, 1f / scale);
+
+        if (selectMode == SelectMode.NONE || selectMode == SelectMode.POINT) {
             // Draw cursor
-            ms.pushPose();
-            ms.scale(1f / scale, 1f / scale, 1f / scale);
             ctx.renderOutline(gridX * scale, gridY * scale, scale, scale, 0xFFAAAAFF);
-            ms.popPose();
-        } else if(!selectStarted) {
-            ctx.fill(gridX, gridY, gridX + 1, gridY + 1, selectionColor);
-        } else if(selectMode == SelectMode.LINE) {
+        }
+        else if (!selectStarted) {
+            // Extend or reduce select cursor by the same rules for rendering selections below
+            int resize = selectMode == SelectMode.LINE ? TRACE_PADDING : -TRACE_PADDING;
+            ctx.fill(gridX * scale + resize, gridY * scale + resize,
+                    gridX * scale + scale - resize, gridY * scale + scale - resize,
+                    selectionColor);
+        }
+        else if (selectMode == SelectMode.LINE) {
             int lenX = Math.abs(gridX - startX) + 1;
             int lenY = Math.abs(gridY - startY) + 1;
-            if(lenX >= lenY) {
+            if (lenX >= lenY) {
                 // Horizontal
                 var x1 = Math.min(gridX, startX);
                 var x2 = x1 + lenX;
-                ctx.fill(x1, startY, x2, startY + 1, selectionColor);
-            } else {
+                ctx.fill(x1 * scale + TRACE_PADDING, startY * scale + TRACE_PADDING,
+                        x2 * scale - TRACE_PADDING, startY * scale + scale - TRACE_PADDING,
+                        selectionColor);
+            }
+            else {
                 // Vertical
                 var y1 = Math.min(gridY, startY);
                 var y2 = y1 + lenY;
-                ctx.fill(startX, y1, startX + 1, y2, selectionColor);
+                ctx.fill(startX * scale + TRACE_PADDING, y1 * scale + TRACE_PADDING,
+                        startX * scale + scale - TRACE_PADDING, y2 * scale - TRACE_PADDING,
+                        selectionColor);
             }
-        } else if(selectMode == SelectMode.AREA) {
+        }
+        else if (selectMode == SelectMode.AREA) {
             var x1 = Math.min(startX, gridX);
             var y1 = Math.min(startY, gridY);
             var x2 = Math.max(startX, gridX) + 1;
             var y2 = Math.max(startY, gridY) + 1;
-            ctx.fill(x1, y1, x2, y2, selectionColor);
+
+            // Go over boundaries by a bit to show that neighbors will be disconnected
+            ctx.fill(x1 * scale - TRACE_PADDING, y1 * scale - TRACE_PADDING,
+                    x2 * scale + TRACE_PADDING, y2 * scale + TRACE_PADDING,
+                    selectionColor);
         }
+
+        ms.popPose();
     }
 
     private void handleCallback(int endX, int endY) {

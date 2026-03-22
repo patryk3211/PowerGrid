@@ -137,8 +137,6 @@ public class CircuitLayer {
         }
         lines.removeAll(overlaps);
         lines.add(new Line(vertical, position, newStart, newEnd));
-
-        traces.debugTraces();
     }
 
     public void addVerticalLine(int x, int y1, int y2) {
@@ -168,7 +166,6 @@ public class CircuitLayer {
     }
 
     public void clear(int x1, int y1, int x2, int y2) {
-        System.err.println("CLEAR: (" + x1 + "," + y1 + ")..(" + x2 + "," + y2 + ")");
         traces.clear(x1, y1, x2, y2);
         recalculateLines();
         traces.debugTraces();
