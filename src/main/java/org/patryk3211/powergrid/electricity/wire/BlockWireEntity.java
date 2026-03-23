@@ -170,7 +170,8 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
     protected boolean isConnectedTo(LivingEntity entity) {
         if(!super.isConnectedTo(entity))
             return false;
-        var bb = entity.getBoundingBox();
+        var pos = position();
+        var bb = entity.getBoundingBox().move(-pos.x, -pos.y, -pos.z);
         for(var segmentBB : boundingBoxes) {
             if(segmentBB.intersects(bb))
                 return true;
@@ -269,15 +270,14 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
                 return InteractionResult.CONSUME;
             }
         } else if(stack.getItem() == ModdedItems.WIRE_CUTTER.get()) {
-            if(player.isShiftKeyDown()) {
-                // Cut the whole wire.
-                return super.interact(player, hand);
-            } else if(player.level().isClientSide) {
-                // Cut a segment of the wire.
-                return ClientWireInteractions.segmentCut(this);
-            } else {
-                // Server side.
-                return InteractionResult.CONSUME;
+            if(!player.isShiftKeyDown()) {
+                if(player.level().isClientSide) {
+                    // Cut a segment of the wire.
+                    return ClientWireInteractions.segmentCut(this);
+                } else {
+                    // Server side.
+                    return InteractionResult.CONSUME;
+                }
             }
         }
         return super.interact(player, hand);

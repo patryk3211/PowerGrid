@@ -7,6 +7,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedDamageTypes;
@@ -54,8 +55,7 @@ public class EntityWireInteraction {
             var connection = data.remove(wire);
             if(connection == null)
                 continue;
-            connection.wire1.remove();
-            connection.wire2.remove();
+            connection.remove();
             global.scheduleIslandDiscovery(data.node.getNetwork());
             if(data.wires.isEmpty()) {
                 if(data.ground != null)
@@ -75,8 +75,7 @@ public class EntityWireInteraction {
             var data = entityEntry.getValue();
             if(entity.isRemoved()) {
                 for(var entry : data.wires) {
-                    entry.wire1.remove();
-                    entry.wire2.remove();
+                    entry.remove();
                     TOUCHING.remove(entry.entity, entity);
                 }
                 if(data.ground != null)
@@ -105,14 +104,27 @@ public class EntityWireInteraction {
 
     private static class WireConnection {
         public final WireEntity entity;
+        @Nullable
         public final ElectricWire wire1;
+        @Nullable
         public final ElectricWire wire2;
         public boolean justAdded = true;
 
-        private WireConnection(WireEntity entity, ElectricWire wire1, ElectricWire wire2) {
+        private WireConnection(WireEntity entity, @Nullable ElectricWire wire1, @Nullable ElectricWire wire2) {
             this.entity = entity;
             this.wire1 = wire1;
             this.wire2 = wire2;
+        }
+
+        public void remove() {
+            if(wire1 != null)
+                wire1.remove();
+            if(wire2 != null)
+                wire2.remove();
+        }
+
+        public double current() {
+            return (wire1 != null ? Math.abs(wire1.current()) : 0) + (wire2 != null ? Math.abs(wire2.current()) : 0);
         }
     }
 
@@ -134,23 +146,35 @@ public class EntityWireInteraction {
         }
 
         public void add(WorldNetworks global, WireEntity entity, boolean grounded) {
-            var network = global.prepareForConnection(entity.endpoint1, node);
-            if(network == null) {
-                PowerGrid.LOGGER.error("Failed to unify networks for entity circuit");
+            if(entity.endpoint1 == null && entity.endpoint2 == null)
                 return;
+            ElectricWire wire1 = null, wire2 = null;
+            if(entity.endpoint1 != null) {
+                var network = global.prepareForConnection(entity.endpoint1, node);
+                if (network == null) {
+                    PowerGrid.LOGGER.error("Failed to unify networks for entity circuit");
+                    return;
+                }
+                var node1 = entity.endpoint1.getNode(global.world);
+                wire1 = new ElectricWire(entityResistance(), node1, node);
+                network.addWire(wire1);
             }
-            var node1 = entity.endpoint1.getNode(global.world);
-            var wire1 = new ElectricWire(entityResistance() * 0.5, node1, node);
-            network.addWire(wire1);
 
-            network = global.prepareForConnection(entity.endpoint2, node);
-            if(network == null) {
-                PowerGrid.LOGGER.error("Failed to unify networks for entity circuit");
-                return;
+            if(entity.endpoint2 != null) {
+                var network = global.prepareForConnection(entity.endpoint2, node);
+                if (network == null) {
+                    PowerGrid.LOGGER.error("Failed to unify networks for entity circuit");
+                    return;
+                }
+                var node2 = entity.endpoint2.getNode(global.world);
+                wire2 = new ElectricWire(entityResistance(), node2, node);
+                network.addWire(wire2);
             }
-            var node2 = entity.endpoint2.getNode(global.world);
-            var wire2 = new ElectricWire(entityResistance() * 0.5, node2, node);
-            network.addWire(wire2);
+            if(wire1 == null) {
+                wire2.setResistance(entityResistance() * 0.5);
+            } else if(wire2 == null) {
+                wire1.setResistance(entityResistance() * 0.5);
+            }
 
             global.setDirty();
             wires.add(new WireConnection(entity, wire1, wire2));
@@ -183,8 +207,7 @@ public class EntityWireInteraction {
             while(iter.hasNext()) {
                 var entry = iter.next();
                 if(entry.entity.isRemoved()) {
-                    entry.wire1.remove();
-                    entry.wire2.remove();
+                    entry.remove();
                     GlobalElectricNetworks.getWorldNetworks(entry.entity.level()).scheduleIslandDiscovery(node.getNetwork());
                     iter.remove();
                     continue;
@@ -193,8 +216,7 @@ public class EntityWireInteraction {
                     entry.justAdded = false;
                     continue;
                 }
-                sum += Math.abs(entry.wire1.current());
-                sum += Math.abs(entry.wire2.current());
+                sum += entry.current();
             }
             return sum;
         }
