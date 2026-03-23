@@ -100,12 +100,8 @@ public class CircuitDesignTableScreen extends AbstractSimiContainerScreen<Circui
 
         int x = leftPos + 44 - 11;
         int y = topPos + 20;
-        CircuitSchematicRender.renderLayer(
-                schematic.front().readVerticalLines(), schematic.front().readHorizontalLines(),
-                ctx, x, y, SCALE, COLOR_TRACE_FRONT);
-        CircuitSchematicRender.renderLayer(
-                schematic.back().readVerticalLines(), schematic.back().readHorizontalLines(),
-                ctx, x, y, SCALE, COLOR_TRACE_FRONT);
+        CircuitSchematicRender.renderLayer(schematic.front(), ctx, x, y, SCALE, COLOR_TRACE_FRONT);
+        CircuitSchematicRender.renderLayer(schematic.back(), ctx, x, y, SCALE, COLOR_TRACE_FRONT);
         CircuitSchematicRender.renderComponents(schematic, ctx, leftPos + 44 - 11, topPos + 20, SCALE);
 
         ctx.drawCenteredString(font, title, leftPos + (WIDTH - 8) / 2, topPos + 3, 0xFFFFFF);

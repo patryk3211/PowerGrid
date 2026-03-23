@@ -57,6 +57,14 @@ public class CircuitLayer {
         return traces.hasTrace(x, y);
     }
 
+    public boolean hasVerticalTrace(int x, int y) {
+        return traces.get(x, y, TraceMatrix.TraceDirection.UP) || traces.get(x, y, TraceMatrix.TraceDirection.DOWN);
+    }
+
+    public boolean hasHorizontalTrace(int x, int y) {
+        return traces.get(x, y, TraceMatrix.TraceDirection.LEFT) || traces.get(x, y, TraceMatrix.TraceDirection.RIGHT);
+    }
+
     public boolean get(int x, int y, TraceMatrix.TraceDirection dir) {
         return traces.get(x, y, dir);
     }

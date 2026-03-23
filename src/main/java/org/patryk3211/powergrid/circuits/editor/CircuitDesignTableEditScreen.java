@@ -344,12 +344,10 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
 
         int bpX = bgX + 13, bpY = topPos + 22;
 
-        CircuitSchematicRender.renderLayer(
-                schematic.back().readVerticalLines(), schematic.back().readHorizontalLines(),
-                ctx, bpX, bpY, CIRCUIT_SCALE, backLayer ? COLOR_TRACE_FRONT : COLOR_TRACE_BACK);
-        CircuitSchematicRender.renderLayer(
-                schematic.front().readVerticalLines(), schematic.front().readHorizontalLines(),
-                ctx, bpX, bpY, CIRCUIT_SCALE, backLayer ? COLOR_TRACE_BACK : COLOR_TRACE_FRONT);
+        CircuitSchematicRender.renderLayer(schematic.back(), ctx, bpX, bpY, CIRCUIT_SCALE,
+                backLayer ? COLOR_TRACE_FRONT : COLOR_TRACE_BACK);
+        CircuitSchematicRender.renderLayer(schematic.front(), ctx, bpX, bpY, CIRCUIT_SCALE,
+                backLayer ? COLOR_TRACE_BACK : COLOR_TRACE_FRONT);
 
         CircuitSchematicRender.renderComponents(schematic, ctx, bpX, bpY, CIRCUIT_SCALE, mouseX, mouseY);
 

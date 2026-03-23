@@ -32,30 +32,52 @@ public class CircuitSchematicRender {
     public static final int COLOR_COMPONENT_OUTLINE = 0x80F078EE;
     public static final int COLOR_SELECT_OUTLINE = 0x80EBBA34;
 
-    public static void render(CircuitSchematic schematic, GuiGraphics context, int x, int y, int scale) {
-
-    }
+    public static void render(CircuitSchematic schematic, GuiGraphics context, int x, int y, int scale) {}
 
     // It's not the most efficient, but it gets the job done. The only way to make this better is to dynamically create textures.
-    public static void renderLayer(List<Line> verticalLines, List<Line> horizontalLines,
-                                   GuiGraphics ctx, int x, int y, int scale, int color) {
-        int x1, x2, y1, y2;
-
-        for (var line : verticalLines) {
-            x1 = line.position() * scale + x + TRACE_PADDING;
-            x2 = line.position() * scale + scale + x - TRACE_PADDING;
-            y1 = line.start() * scale + y + TRACE_PADDING;
-            y2 = line.end() * scale + scale + y - TRACE_PADDING;
-            ctx.fill(x1, y1, x2, y2, color);
+    public static void renderLayer(CircuitLayer layer, GuiGraphics ctx, int xOffset, int yOffset, int scale, int color) {
+        for (var line : layer.readVerticalLines()) {
+            drawTrace(line.position(), line.start(), line.position(), line.end(), ctx, xOffset, yOffset, scale, color);
         }
 
-        for (var line : horizontalLines) {
-            x1 = line.start() * scale + x + TRACE_PADDING;
-            x2 = line.end() * scale + scale + x - TRACE_PADDING;
-            y1 = line.position() * scale + y + TRACE_PADDING;
-            y2 = line.position() * scale + scale + y - TRACE_PADDING;
-            ctx.fill(x1, y1, x2, y2, color);
+        int startX, startY, endY;
+
+        for (var line : layer.readHorizontalLines()) {
+            if ((color & 0xFF000000) != 0xFF000000) {
+                // Overlaps will be visible for non-opaque colors, so trade off more fill calls for avoiding overlaps
+                startX = layer.hasVerticalTrace(line.start(), line.position()) ?
+                        line.start() * scale + scale + xOffset - TRACE_PADDING :
+                        line.start() * scale + xOffset + TRACE_PADDING;
+
+                startY = line.position() * scale + yOffset + TRACE_PADDING;
+                endY = line.position() * scale + scale + yOffset - TRACE_PADDING;
+
+                for (int i = line.start(); i <= line.end(); i++) {
+                    if (layer.hasVerticalTrace(i, line.position())) {
+                        // Flush line, skip the center of this cell, and start a new line
+                        ctx.fill(startX, startY, i * scale + xOffset + TRACE_PADDING, endY, color);
+                        startX = i * scale + scale + xOffset - TRACE_PADDING;
+                    }
+                    else if (i == line.end()) {
+                        ctx.fill(startX, startY, i * scale + scale + xOffset - TRACE_PADDING, endY, color);
+                    }
+                }
+            }
+            else {
+                // Overlaps with vertical lines are invisible for opaque colors
+                drawTrace(line.start(), line.position(), line.end(), line.position(), ctx, xOffset, yOffset, scale, color);
+            }
         }
+    }
+
+    private static void drawTrace(int x1, int y1, int x2, int y2, GuiGraphics ctx, int xOffset, int yOffset, int scale, int color) {
+        ctx.fill(
+            x1 * scale + xOffset + TRACE_PADDING,
+            y1 * scale + yOffset + TRACE_PADDING,
+            x2 * scale + scale + xOffset - TRACE_PADDING,
+            y2 * scale + scale + yOffset - TRACE_PADDING,
+            color
+        );
     }
 
     public static void renderPoints(List<Point> points, GuiGraphics ctx, int x, int y, int scale, int color) {
