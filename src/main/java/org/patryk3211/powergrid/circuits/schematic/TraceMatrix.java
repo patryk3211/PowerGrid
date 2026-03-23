@@ -9,11 +9,12 @@ public class TraceMatrix {
     public static final int WIDTH = GRID_SIZE;
     public static final int HEIGHT = GRID_SIZE;
     private static final int CELL_SIZE = 4;
+    private static final int TOTAL_SIZE = WIDTH * HEIGHT * CELL_SIZE;
 
     private BitSet map;
 
     public TraceMatrix() {
-        map = new BitSet(WIDTH * HEIGHT * CELL_SIZE);
+        map = new BitSet(TOTAL_SIZE);
     }
 
     public TraceMatrix(TraceMatrix other) {
@@ -24,8 +25,27 @@ public class TraceMatrix {
         return new LongArrayTag(map.toLongArray());
     }
 
-    public void deserialize(long[] tag) {
-        map = BitSet.valueOf(tag);
+    public void deserialize(long[] tag, boolean fullPixelTraces) {
+        if (!fullPixelTraces || tag.length > 16) {
+            // Use new directional traces if requested or if there's too much data for this to be legacy
+            // 16 longs = 32 bytes = 256 bits
+            map = BitSet.valueOf(tag);
+        }
+        else {
+            // Legacy circuit with full pixel traces
+            map = new BitSet(TOTAL_SIZE);
+            BitSet old = BitSet.valueOf(tag);
+            for (int y = 0; y < HEIGHT; y++) {
+                for (int x = 0; x < WIDTH; x++) {
+                    if (old.get(y * WIDTH + x)) {
+                        set(x, y, TraceDirection.UP, y > 0 && old.get((y - 1) * WIDTH + x));
+                        set(x, y, TraceDirection.DOWN, y < HEIGHT - 1 && old.get((y + 1) * WIDTH + x));
+                        set(x, y, TraceDirection.LEFT, x > 0 && old.get(y * WIDTH + x - 1));
+                        set(x, y, TraceDirection.RIGHT, x < WIDTH - 1 && old.get(y * WIDTH + x + 1));
+                    }
+                }
+            }
+        }
     }
 
     private int cellIndex(int x, int y) {

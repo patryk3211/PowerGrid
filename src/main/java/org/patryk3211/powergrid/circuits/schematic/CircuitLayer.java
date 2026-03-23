@@ -48,8 +48,8 @@ public class CircuitLayer {
         return traces.serializeNbt();
     }
 
-    public void deserialize(long[] tag) {
-        traces.deserialize(tag);
+    public void deserialize(long[] tag, boolean fullPixelTraces) {
+        traces.deserialize(tag, fullPixelTraces);
         recalculateLines();
     }
 

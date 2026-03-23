@@ -83,6 +83,7 @@ public class CircuitSchematic {
         var tag = new CompoundTag();
         tag.put("Front", front.serializeNbt());
         tag.put("Back", back.serializeNbt());
+        tag.putBoolean("FullPixelTraces", false);
 
         var list = new ListTag();
         for(var component : components) {
@@ -97,8 +98,14 @@ public class CircuitSchematic {
 
     public void deserializeNbt(CompoundTag tag) {
         try {
-            front.deserialize(tag.getLongArray("Front"));
-            back.deserialize(tag.getLongArray("Back"));
+            // Default to legacy full pixel traces
+            boolean fullPixelTraces = true;
+            if (tag.contains("FullPixelTraces")) {
+                fullPixelTraces = tag.getBoolean("FullPixelTraces");
+            }
+
+            front.deserialize(tag.getLongArray("Front"), fullPixelTraces);
+            back.deserialize(tag.getLongArray("Back"), fullPixelTraces);
 
             if (tag.contains("Name")) {
                 name = tag.getString("Name");
