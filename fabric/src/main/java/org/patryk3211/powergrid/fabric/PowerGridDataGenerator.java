@@ -23,6 +23,7 @@ import net.fabricmc.fabric.api.datagen.v1.DataGeneratorEntrypoint;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataGenerator;
 import net.minecraft.data.DataProvider;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedAdvancements;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.data.BlockTagProvider;
 import org.patryk3211.powergrid.data.ItemTagProvider;
@@ -53,6 +54,7 @@ public class PowerGridDataGenerator implements DataGeneratorEntrypoint {
 		pack.addProvider(ItemTagProvider::new);
 		addProvider(pack, ItemApplicationRecipes::new);
 		addProvider(pack, DeployerApplicationRecipes::new);
+		addProvider(pack, ModdedAdvancements::new);
 
 		PowerGrid.REGISTRATE.addDataGenerator(ProviderType.LANG, provider -> {
 			BiConsumer<String, String> langConsumer = provider::add;
@@ -64,6 +66,7 @@ public class PowerGridDataGenerator implements DataGeneratorEntrypoint {
 
 			providePonderLang(langConsumer);
 			ModdedSoundEvents.provideLang(langConsumer);
+			ModdedAdvancements.provideLang(langConsumer);
 		});
 	}
 

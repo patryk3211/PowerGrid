@@ -1,24 +1,24 @@
 {
-  "type": "minecraft:crafting_shapeless",
+  "type": "minecraft:crafting_shaped",
   "category": "misc",
-  "ingredients": [
-    {
-      "tag": "c:copper_wires"
+  "key": {
+    "C": {
+      "item": "create:cardboard"
     },
-    {
-      "tag": "c:copper_wires"
-    },
-    {
-      "tag": "c:copper_wires"
-    },
-    {
-      "tag": "c:copper_wires"
-    },
-    {
+    "S": {
       "item": "minecraft:stick"
+    },
+    "W": {
+      "item": "powergrid:wire"
     }
+  },
+  "pattern": [
+    " WC",
+    "WSW",
+    "CW "
   ],
   "result": {
     "item": "powergrid:copper_coil"
-  }
+  },
+  "show_notification": true
 }

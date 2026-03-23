@@ -26,6 +26,7 @@ import com.simibubi.create.content.decoration.encasing.CasingBlock;
 import com.simibubi.create.content.decoration.encasing.EncasedCTBehaviour;
 import com.simibubi.create.content.decoration.encasing.EncasingRegistry;
 import com.simibubi.create.content.processing.AssemblyOperatorBlockItem;
+import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.data.SharedProperties;
 import com.tterrag.registrate.util.entry.BlockEntry;
@@ -193,6 +194,18 @@ public class ModdedBlocks {
     public static final BlockEntry<BasinHeaterBlock> BASIN_HEATER = REGISTRATE.block("basin_heater", BasinHeaterBlock::new)
             .blockstate(basinHeater("block/basin_heater"))
             .initialProperties(SharedProperties::softMetal)
+            .properties(p -> p.lightLevel(state -> {
+                BlazeBurnerBlock.HeatLevel heat = state.getValue(BasinHeaterBlock.HEAT_LEVEL);
+
+                if (heat == BlazeBurnerBlock.HeatLevel.NONE)
+                    return 0;
+                if (heat == BlazeBurnerBlock.HeatLevel.KINDLED)
+                    return 12;
+                if (heat == BlazeBurnerBlock.HeatLevel.SEETHING)
+                    return 15;
+
+                return 0;
+            }))
             .addLayer(() -> RenderType::cutoutMipped)
             .transform(pickaxeOnly())
             .transform(CResistance.setResistance(10))
@@ -206,7 +219,7 @@ public class ModdedBlocks {
             .blockstate(horizontalBlock("block/gauge/conductive/base"))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
-            .transform(CResistance.setResistance(2e5))
+            .transform(CResistance.setResistances("range_2kv", 2e7, "range_200v", 2e6, "range_20v", 2e5, "range_2v", 2e4))
             .transform(DisplaySource.displaySource(ModdedDisplaySources.ELECTRIC_GAUGE))
             .item()
                 .model(gauge("block/gauge/item_voltage", "block/conductive_gauge"))
@@ -228,7 +241,7 @@ public class ModdedBlocks {
     public static final BlockEntry<PowerGaugeBlock> POWER_METER = REGISTRATE.block("power_gauge", PowerGaugeBlock::new)
             .blockstate(horizontalBlock("block/gauge/conductive/base_power"))
             .initialProperties(SharedProperties::softMetal)
-            .transform(CResistance.setResistance(0.05f))
+            .transform(CResistance.setResistances("series", 0.05f, "shunt_range_20kw", 2e7, "shunt_range_2kw", 2e7, "shunt_range_200w", 2e6, "shunt_range_20w", 2e5))
             .transform(CThermal.maxPower(35, 2.0f))
             .transform(pickaxeOnly())
             .transform(DisplaySource.displaySource(ModdedDisplaySources.ELECTRIC_GAUGE))

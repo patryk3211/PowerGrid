@@ -1,6 +1,7 @@
 name: Bug Report
 description: "Report some other kind of issue."
 labels: [ "bug" ]
+title: "[Bug] "
 body:
   - type: textarea
     attributes:
@@ -37,4 +38,4 @@ body:
 
   - type: markdown
     attributes:
-      value: "Thank you for taking the time to make a report and help improve Create!"
+      value: "Thank you for taking the time to make a report and help improve Power Grid!"

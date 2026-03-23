@@ -105,12 +105,13 @@ public class CraftingRecipes extends StandardRecipeProvider {
 
     COPPER_COIL = create(ModdedItems.COPPER_COIL)
             .unlockedBy(ModdedItems.WIRE::get)
-            .viaShapeless(b -> b
-                    .requires(copperWire())
-                    .requires(copperWire())
-                    .requires(copperWire())
-                    .requires(copperWire())
-                    .requires(Items.STICK, 1)
+            .viaShaped(b -> b
+                    .pattern(" WC")
+                    .pattern("WSW")
+                    .pattern("CW ")
+                    .define('C', cardboard())
+                    .define('S', Items.STICK)
+                    .define('W', copperWire())
             ),
 
     HEATING_COIL = create(ModdedBlocks.HEATING_COIL)

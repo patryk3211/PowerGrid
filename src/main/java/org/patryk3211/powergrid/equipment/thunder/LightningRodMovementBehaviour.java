@@ -22,8 +22,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.patryk3211.powergrid.collections.ModdedAdvancements;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
@@ -48,6 +51,10 @@ public class LightningRodMovementBehaviour implements MovementBehaviour {
             lightningEntity.moveTo(Vec3.atBottomCenterOf(BlockPos.containing(context.position)));
             lightningEntity.setVisualOnly(false);
             ((ServerLevel) context.world).tryAddFreshEntityWithPassengers(lightningEntity);
+        }
+        var players = context.world.getEntitiesOfClass(Player.class, new AABB(BlockPos.containing(context.position)).inflate(16));
+        for(var player : players) {
+            ModdedAdvancements.LIGHTNING.awardTo(player);
         }
         ModdedPackets.sendToClientsTracking(new LightningSyncS2CPacket(context), context.contraption.entity);
     }

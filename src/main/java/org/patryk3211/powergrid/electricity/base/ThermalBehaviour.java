@@ -35,6 +35,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.advancements.PGAdvancementBehaviour;
+import org.patryk3211.powergrid.collections.ModdedAdvancements;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedDamageTypes;
 import org.patryk3211.powergrid.config.ThermalValues;
@@ -278,6 +280,9 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
                     // no more excuses, this device is exploding.
                     if (overheatCallback != null)
                         overheatCallback.run();
+                    var award = blockEntity.getBehaviour(PGAdvancementBehaviour.TYPE);
+                    if (award != null)
+                        award.awardPlayer(ModdedAdvancements.BLOW_UP);
                     if ((behaviourFlags & OVERHEAT_EXPLOSION) != 0) {
                         explode(world, pos, blockEntity.getBlockState(), 1.0f);
                     }

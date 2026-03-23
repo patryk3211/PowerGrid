@@ -75,11 +75,13 @@ public class GlobalElectricNetworks {
                 return new WorldNetworks(key);
             if(key.isClientSide) return makeClientWorldNetworks(key);
             if(world instanceof ServerLevel server) {
-                return server.getDataStorage().computeIfAbsent(
+                var global = server.getDataStorage().computeIfAbsent(
                         nbt -> new WorldNetworks(world, nbt),
                         () -> new WorldNetworks(world),
                         "powergrid_electric_network_data"
                 );
+                global.completeLoad();
+                return global;
             } else {
                 return new WorldNetworks(world);
             }

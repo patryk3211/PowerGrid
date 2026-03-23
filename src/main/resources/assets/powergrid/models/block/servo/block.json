@@ -4,7 +4,7 @@
 	"texture_size": [64, 64],
 	"textures": {
 		"1": "powergrid:block/servo",
-		"particle": "powergrid:block/servo"
+		"particle": "powergrid:block/conductive_casing"
 	},
 	"elements": [
 		{

@@ -97,8 +97,8 @@
   "powergrid.tooltip.device_connector.header": "When converting to FE:",
   "powergrid.tooltip.device_connector.rate": "Conversion rate:",
   "powergrid.tooltip.device_connector.fe_w": "FE/W",
-  "powergrid.tooltip.device_connector.buffer": "Buffer size:",
-  "powergrid.tooltip.device_connector.fe_v": "FE/V",
+  "powergrid.tooltip.device_connector.max_rate": "Max transfer rate:",
+  "powergrid.tooltip.device_connector.fe_v": "FE/t/V",
 
   "powergrid.tooltip.voltage.rpm": "RPM per Volt:",
 
@@ -121,6 +121,8 @@
   "powergrid.tooltip.crt.grid": "Grid voltage:",
 
   "powergrid.tooltip.string_light_cord_pattern": "Pattern: ",
+
+  "powergrid.tooltip.boosted": "Boosted",
 
   "powergrid.generic.positive_terminal": "Positive",
   "powergrid.generic.negative_terminal": "Negative",

@@ -21,7 +21,7 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 
 public class ConnectorBlock extends AbstractConnectorBlock {
-    private static final TerminalBoundingBox TERMINAL_DOWN = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 5, 0, 5, 11, 9, 11)
+    private static final TerminalBoundingBox TERMINAL_DOWN = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 5, 0, 5, 11, 10, 11)
             .withOrigin(8, 8, 8);
 
     public ConnectorBlock(Properties settings) {

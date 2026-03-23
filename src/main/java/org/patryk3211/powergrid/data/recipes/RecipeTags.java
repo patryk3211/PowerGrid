@@ -104,6 +104,10 @@ public class RecipeTags {
         return AllBlocks.SHAFT;
     }
 
+    public static ItemLike cardboard() {
+        return AllItems.CARDBOARD;
+    }
+
     public static ItemLike andesiteAlloy() {
         return AllItems.ANDESITE_ALLOY;
     }
@@ -170,5 +174,9 @@ public class RecipeTags {
 
     public static ItemLike redstone() {
         return Items.REDSTONE;
+    }
+
+    public static ItemLike diamond() {
+        return Items.DIAMOND;
     }
 }

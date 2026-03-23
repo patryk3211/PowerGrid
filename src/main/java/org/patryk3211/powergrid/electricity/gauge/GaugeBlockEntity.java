@@ -105,7 +105,7 @@ public abstract class GaugeBlockEntity extends ElectricBlockEntity implements IH
 
         @Override
         protected Vec3 getSouthLocation() {
-            return VecHelper.voxelSpace(8.0f, 8.0f, 14.5f);
+            return VecHelper.voxelSpace(8.0f, 8.0f, 13.5f);
         }
     }
 }

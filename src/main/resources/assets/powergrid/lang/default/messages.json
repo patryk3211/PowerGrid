@@ -8,6 +8,7 @@
   "powergrid.message.connection_no_path": "No valid path found to this terminal",
   "powergrid.message.connection_incorrect_wire_type": "This wire cannot go here",
   "powergrid.message.connection_two_wire_types": "Cannot connect wires of different types",
+  "powergrid.message.no_original_connector": "The starting connector is missing",
 
   "powergrid.message.cord_next": "Connect the second end of the cord",
   "powergrid.message.split_cord_too_far": "Terminals are too far apart",

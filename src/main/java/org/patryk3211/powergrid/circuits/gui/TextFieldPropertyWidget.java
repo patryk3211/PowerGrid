@@ -23,16 +23,21 @@ import net.minecraft.client.gui.navigation.FocusNavigationEvent;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.glfw.GLFW;
 import org.patryk3211.powergrid.circuits.components.properties.PropertyEntry;
 
 import static org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget.PROPERTIES;
 
 public class TextFieldPropertyWidget<T, P extends PropertyEntry<T>> extends PropertyWidget<T, P> {
     private final EditBox widget;
+    private final Runnable changeMadeCallback;
 
-    public TextFieldPropertyWidget(Font textRenderer, int x, int y, P property) {
+    public TextFieldPropertyWidget(Font textRenderer, int x, int y, P property, Runnable changeMadeCallback) {
         super(textRenderer, x, y, property);
-        widget = new EditBox(textRenderer, x + 8, y + 6, 46, 18, Component.empty());
+
+        this.changeMadeCallback = changeMadeCallback;
+
+        widget = new EditBox(textRenderer, x + 8, y + 6, 46, 12, Component.empty());
         widget.setValue(property.stringValue());
         widget.setTextColor(-1);
         widget.setTextColorUneditable(-1);
@@ -51,6 +56,9 @@ public class TextFieldPropertyWidget<T, P extends PropertyEntry<T>> extends Prop
     }
 
     public void acceptInput() {
+        if (!property.get().toString().equals(widget.getValue())) {
+            changeMadeCallback.run();
+        }
         property.setValue(widget.getValue());
         widget.setFocused(false);
         widget.setValue(property.stringValue());
@@ -73,7 +81,7 @@ public class TextFieldPropertyWidget<T, P extends PropertyEntry<T>> extends Prop
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if(scanCode == 36) {
+        if (keyCode == GLFW.GLFW_KEY_ENTER) {
             acceptInput();
             return true;
         }
@@ -91,10 +99,11 @@ public class TextFieldPropertyWidget<T, P extends PropertyEntry<T>> extends Prop
     }
 
     @Override
-    public void setFocused(boolean focused) {
-        if(!focused)
+    public void setFocused(boolean newFocused) {
+        if (widget.isFocused() && !newFocused) {
             acceptInput();
-        widget.setFocused(focused);
+        }
+        widget.setFocused(newFocused);
     }
 
     @Override
