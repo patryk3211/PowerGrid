@@ -176,7 +176,6 @@ public class CircuitLayer {
     public void clear(int x1, int y1, int x2, int y2) {
         traces.clear(x1, y1, x2, y2);
         recalculateLines();
-        traces.debugTraces();
     }
 
     public void clear() {

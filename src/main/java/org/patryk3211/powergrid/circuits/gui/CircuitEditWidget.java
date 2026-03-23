@@ -95,10 +95,20 @@ public class CircuitEditWidget extends AbstractSimiWidget {
         }
         else if (!selectStarted) {
             // Extend or reduce select cursor by the same rules for rendering selections below
-            int resize = selectMode == SelectMode.LINE ? TRACE_PADDING : -TRACE_PADDING;
-            ctx.fill(gridX * scale + resize, gridY * scale + resize,
-                    gridX * scale + scale - resize, gridY * scale + scale - resize,
-                    selectionColor);
+            if (selectMode == SelectMode.LINE) {
+                ctx.fill(gridX * scale + TRACE_PADDING, gridY * scale + TRACE_PADDING,
+                        gridX * scale + scale - TRACE_PADDING, gridY * scale + scale - TRACE_PADDING,
+                        selectionColor);
+            }
+            else {
+                ctx.fill(
+                    gridX * scale - (gridX > 0 ? TRACE_PADDING : 0),
+                    gridY * scale - (gridY > 0 ? TRACE_PADDING : 0),
+                    gridX * scale + scale + (gridX < GRID_SIZE - 1 ? TRACE_PADDING : 0),
+                    gridY * scale + scale + (gridY < GRID_SIZE - 1 ? TRACE_PADDING : 0),
+                    selectionColor
+                );
+            }
         }
         else if (selectMode == SelectMode.LINE) {
             int lenX = Math.abs(gridX - startX) + 1;
@@ -127,9 +137,13 @@ public class CircuitEditWidget extends AbstractSimiWidget {
             var y2 = Math.max(startY, gridY) + 1;
 
             // Go over boundaries by a bit to show that neighbors will be disconnected
-            ctx.fill(x1 * scale - TRACE_PADDING, y1 * scale - TRACE_PADDING,
-                    x2 * scale + TRACE_PADDING, y2 * scale + TRACE_PADDING,
-                    selectionColor);
+            ctx.fill(
+                x1 * scale - (x1 > 0 ? TRACE_PADDING : 0),
+                y1 * scale - (y1 > 0 ? TRACE_PADDING : 0),
+                x2 * scale + (x2 < GRID_SIZE - 1 ? TRACE_PADDING : 0),
+                y2 * scale + (y2 < GRID_SIZE - 1 ? TRACE_PADDING : 0),
+                selectionColor
+            );
         }
 
         ms.popPose();
