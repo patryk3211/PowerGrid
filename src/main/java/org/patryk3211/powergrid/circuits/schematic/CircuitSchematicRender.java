@@ -52,7 +52,7 @@ public class CircuitSchematicRender {
                 startY = line.position() * scale + yOffset + TRACE_PADDING;
                 endY = line.position() * scale + scale + yOffset - TRACE_PADDING;
 
-                for (int i = line.start(); i <= line.end(); i++) {
+                for (int i = line.start() + 1; i <= line.end(); i++) {
                     if (layer.hasVerticalTrace(i, line.position())) {
                         // Flush line, skip the center of this cell, and start a new line
                         ctx.fill(startX, startY, i * scale + xOffset + TRACE_PADDING, endY, color);
