@@ -276,6 +276,12 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
         var layer = backLayer ? schematic.back() : schematic.front();
         boolean isTrace = layer.hasTrace(clickX, clickY);
 
+        if (x1 == x2 && y1 == y2) {
+            // Don't allow single-cell traces (ones that don't connect to anything)
+            playSound(ModdedSoundEvents.UI_PLACE_TRACE);
+            return CircuitEditWidget.SelectionResult.BEGIN_NEW;
+        }
+
         if (x1 == x2) {
             layer.addVerticalLine(x1, y1, y2);
         }

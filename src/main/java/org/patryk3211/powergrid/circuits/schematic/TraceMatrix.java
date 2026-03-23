@@ -86,8 +86,7 @@ public class TraceMatrix {
         }
 
         // Clear incoming connections from area borders
-        // TODO: This prevents single cell traces from being created by clearing. They're still possible by directly
-        //       drawing them. Should they be allowed?
+        // Deletes single-cell traces (ones that don't connect to anything)
         if (y1 > 0) {
             for (int x = x1; x <= x2; x++) {
                 set(x, y1 - 1, TraceDirection.DOWN, false);

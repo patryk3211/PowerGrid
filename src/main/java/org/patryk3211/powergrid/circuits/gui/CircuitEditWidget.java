@@ -140,8 +140,8 @@ public class CircuitEditWidget extends AbstractSimiWidget {
             ctx.fill(
                 x1 * scale - (x1 > 0 ? TRACE_PADDING : 0),
                 y1 * scale - (y1 > 0 ? TRACE_PADDING : 0),
-                x2 * scale + (x2 < GRID_SIZE - 1 ? TRACE_PADDING : 0),
-                y2 * scale + (y2 < GRID_SIZE - 1 ? TRACE_PADDING : 0),
+                x2 * scale + (x2 < GRID_SIZE ? TRACE_PADDING : 0),
+                y2 * scale + (y2 < GRID_SIZE ? TRACE_PADDING : 0),
                 selectionColor
             );
         }
