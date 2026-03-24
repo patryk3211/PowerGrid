@@ -26,6 +26,7 @@ public class CCommon extends ConfigBase {
     public final ConfigBool lotsOfLogs = b(false, "lotsOfLogs", Comments.lotsOfLogs);
     public final ConfigInt stateSynchronization = i(100, 0, "fullStateSynchronizationInterval", Comments.stateSynchronization);
     public final ConfigBool syncWithDoubles = b(false, "syncWithDoubles", Comments.syncWithDoubles);
+    public final ConfigBool allocateUnpooledBuffers = b(false, "allocateUnpooledBuffers");
 
     @Override
     public void onReload() {
