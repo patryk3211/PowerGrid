@@ -27,9 +27,7 @@ public class CircuitLayer {
 
     private TraceMatrix traces;
 
-    // Mirror traces, recalculated when necessary
-    // TODO: it would be more efficient to access lines from a List<List<Line>> where e.g. verticalLines[x]
-    //       is a list containing all the vertical lines in column x
+    // Mirror data stored in traces; recalculated when necessary
     private final List<Line> verticalLines;
     private final List<Line> horizontalLines;
 
@@ -41,7 +39,7 @@ public class CircuitLayer {
 
     public void from(CircuitLayer other) {
         traces = new TraceMatrix(other.traces);
-        recalculateLines();
+        updateLines();
     }
 
     public LongArrayTag serializeNbt() {
@@ -50,7 +48,7 @@ public class CircuitLayer {
 
     public void deserialize(long[] tag, boolean fullPixelTraces) {
         traces.deserialize(tag, fullPixelTraces);
-        recalculateLines();
+        updateLines();
     }
 
     public boolean hasTrace(int x, int y) {
@@ -69,7 +67,7 @@ public class CircuitLayer {
         return traces.get(x, y, dir);
     }
 
-    private void recalculateLines() {
+    private void updateLines() {
         verticalLines.clear();
         horizontalLines.clear();
 
@@ -118,24 +116,13 @@ public class CircuitLayer {
         return Collections.unmodifiableList(horizontalLines);
     }
 
-    /**
-     * Determine whether two positive inclusive ranges overlap
-     * @return true if [start1, end1] and [start2, end2] overlap
-     */
-    private static boolean rangesOverlap(int start1, int end1, int start2, int end2) {
-        if (start1 > end1 || start2 > end2) {
-            throw new IllegalArgumentException("One of the ranges was negative: " + start1 + ".." + end1 + ", " + start2 + ".." + end2);
-        }
-        return start1 <= end2 && start2 <= end1;
-    }
-
     private void addLine(List<Line> lines, boolean vertical, int position, int start, int end) {
         List<Line> overlaps = new ArrayList<>();
         int newStart = start;
         int newEnd = end;
         for (var line : lines) {
             if (line.vertical() == vertical && line.position() == position &&
-                    rangesOverlap(start, end, line.start(), line.end())) {
+                    start <= line.end() && line.start() <= end) {
                 overlaps.add(line);
                 newStart = Math.min(newStart, line.start());
                 newEnd = Math.max(newEnd, line.end());
@@ -173,7 +160,7 @@ public class CircuitLayer {
 
     public void clear(int x1, int y1, int x2, int y2) {
         traces.clear(x1, y1, x2, y2);
-        recalculateLines();
+        updateLines();
     }
 
     public void clear() {

@@ -5,6 +5,28 @@ import net.minecraft.nbt.LongArrayTag;
 import java.util.BitSet;
 
 public class TraceMatrix {
+    private static final char[] CELL_TO_CHAR = new char[] {
+            ' ',  // 0b0000  ' '
+            '<',  // 0b0001  '←'
+            '>',  // 0b0010  '→'
+            '-',  // 0b0011  '─'
+
+            '^',  // 0b0100  '↑'
+            '/',  // 0b0101  '┌'
+            '\\', // 0b0110  '┐'
+            'T',  // 0b0111  '┬'
+
+            'V',  // 0b1000  '↓'
+            '\\', // 0b1001  '└'
+            '/',  // 0b1010  '┘'
+            'W',  // 0b1011  '┴'
+
+            '|',  // 0b1100  '│'
+            '}',  // 0b1101  '├'
+            '{',  // 0b1110  '┤'
+            '+',  // 0b1111  '┼'
+    };
+
     public static final int GRID_SIZE = 16;
     public static final int WIDTH = GRID_SIZE;
     public static final int HEIGHT = GRID_SIZE;
@@ -108,28 +130,6 @@ public class TraceMatrix {
             }
         }
     }
-
-    private static final char[] CELL_TO_CHAR = new char[] {
-            ' ',  // 0b0000  ' '
-            '<',  // 0b0001  '←'
-            '>',  // 0b0010  '→'
-            '-',  // 0b0011  '─'
-
-            '^',  // 0b0100  '↑'
-            '/',  // 0b0101  '┌'
-            '\\', // 0b0110  '┐'
-            'T',  // 0b0111  '┬'
-
-            'V',  // 0b1000  '↓'
-            '\\', // 0b1001  '└'
-            '/',  // 0b1010  '┘'
-            'W',  // 0b1011  '┴'
-
-            '|',  // 0b1100  '│'
-            '}',  // 0b1101  '├'
-            '{',  // 0b1110  '┤'
-            '+',  // 0b1111  '┼'
-    };
 
     public void debugTraces() {
         int startIdx, cell;
