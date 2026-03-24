@@ -41,7 +41,6 @@ import org.patryk3211.powergrid.circuits.gui.CircuitEditWidget;
 import org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender;
-import org.patryk3211.powergrid.circuits.schematic.Line;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.collections.ModIcons;
 import org.patryk3211.powergrid.collections.ModdedKeys;

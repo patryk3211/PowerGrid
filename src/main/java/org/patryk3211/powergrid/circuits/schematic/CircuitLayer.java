@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.circuits.schematic;
 
 import net.minecraft.nbt.LongArrayTag;
+import org.patryk3211.powergrid.PowerGrid;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -76,7 +77,7 @@ public class CircuitLayer {
         for (int x = 0; x < GRID_SIZE; x++) {
             for (int y = 0; y < GRID_SIZE; y++) {
                 if (start != null && !traces.get(x, y, TraceMatrix.TraceDirection.UP)) {
-                    System.out.println("Illegal state: broken vertical trace; repairing");
+                    PowerGrid.LOGGER.warn("Illegal state: broken vertical trace; repairing");
                     traces.set(x, y, TraceMatrix.TraceDirection.UP, true);
                 }
                 if (start == null && traces.get(x, y, TraceMatrix.TraceDirection.DOWN)) {
@@ -94,7 +95,7 @@ public class CircuitLayer {
         for (int y = 0; y < GRID_SIZE; y++) {
             for (int x = 0; x < GRID_SIZE; x++) {
                 if (start != null && !traces.get(x, y, TraceMatrix.TraceDirection.LEFT)) {
-                    System.out.println("Illegal state: broken horizontal trace; repairing");
+                    PowerGrid.LOGGER.warn("Illegal state: broken horizontal trace; repairing");
                     traces.set(x, y, TraceMatrix.TraceDirection.LEFT, true);
                 }
                 if (start == null && traces.get(x, y, TraceMatrix.TraceDirection.RIGHT)) {

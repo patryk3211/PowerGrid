@@ -27,14 +27,11 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.gui.CircuitEditButton;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender;
-import org.patryk3211.powergrid.circuits.schematic.Line;
 import org.patryk3211.powergrid.collections.ModIcons;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.network.packets.ChangeScreenC2SPacket;
 import org.patryk3211.powergrid.network.packets.SaveSchematicC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
-
-import java.util.List;
 
 import static com.simibubi.create.foundation.gui.AllGuiTextures.PLAYER_INVENTORY;
 import static org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender.COLOR_TRACE_BACK;
@@ -101,7 +98,7 @@ public class CircuitDesignTableScreen extends AbstractSimiContainerScreen<Circui
         int x = leftPos + 44 - 11;
         int y = topPos + 20;
         CircuitSchematicRender.renderLayer(schematic.front(), ctx, x, y, SCALE, COLOR_TRACE_FRONT);
-        CircuitSchematicRender.renderLayer(schematic.back(), ctx, x, y, SCALE, COLOR_TRACE_FRONT);
+        CircuitSchematicRender.renderLayer(schematic.back(), ctx, x, y, SCALE, COLOR_TRACE_BACK);
         CircuitSchematicRender.renderComponents(schematic, ctx, leftPos + 44 - 11, topPos + 20, SCALE);
 
         ctx.drawCenteredString(font, title, leftPos + (WIDTH - 8) / 2, topPos + 3, 0xFFFFFF);
