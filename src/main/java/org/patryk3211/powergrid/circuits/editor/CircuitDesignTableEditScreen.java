@@ -51,6 +51,7 @@ import org.patryk3211.powergrid.network.packets.ChangeScreenC2SPacket;
 import org.patryk3211.powergrid.network.packets.SaveSchematicC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
 
+import java.awt.*;
 import java.util.List;
 import java.util.UUID;
 
@@ -69,10 +70,14 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
 
     private static final net.minecraft.network.chat.Component TOOLTIP_SAVE = Lang.translateDirect("gui.circuit_designer.save");
     private static final net.minecraft.network.chat.Component TOOLTIP_DISCARD = Lang.translateDirect("gui.circuit_designer.discard");
-    private static final net.minecraft.network.chat.Component TOOLTIP_CONNECT = Lang.translateDirect("gui.circuit_designer.connect");
-    private static final net.minecraft.network.chat.Component TOOLTIP_DELETE = Lang.translateDirect("gui.circuit_designer.delete");
-    private static final net.minecraft.network.chat.Component TOOLTIP_SELECT = Lang.translateDirect("gui.circuit_designer.select");
-    private static final net.minecraft.network.chat.Component TOOLTIP_LAYER = Lang.translateDirect("gui.circuit_designer.layer");
+    private static final net.minecraft.network.chat.Component TOOLTIP_CONNECT =
+            Lang.translateDirect("gui.circuit_designer.connect", ModdedKeys.PLACE_TRACE.getBoundKey());
+    private static final net.minecraft.network.chat.Component TOOLTIP_DELETE =
+            Lang.translateDirect("gui.circuit_designer.delete", ModdedKeys.DELETE_AREA.getBoundKey());
+    private static final net.minecraft.network.chat.Component TOOLTIP_SELECT =
+            Lang.translateDirect("gui.circuit_designer.select", ModdedKeys.PICK_COMPONENT.getBoundKey());
+    private static final net.minecraft.network.chat.Component TOOLTIP_LAYER =
+            Lang.translateDirect("gui.circuit_designer.layer", ModdedKeys.SWITCH_LAYER.getBoundKey());
     private static final net.minecraft.network.chat.Component TOOLTIP_PLACEABLE = Lang.translate("gui.circuit_designer.placeable")
             .style(ChatFormatting.DARK_GREEN)
             .style(ChatFormatting.ITALIC)
