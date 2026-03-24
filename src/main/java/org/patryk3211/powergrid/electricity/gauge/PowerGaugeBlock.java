@@ -32,6 +32,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.config.ResistanceValues;
+import org.patryk3211.powergrid.config.ThermalValues;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
@@ -100,6 +102,9 @@ public class PowerGaugeBlock extends HorizontalElectricBlock implements IBE<Powe
 
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
-        Current.max(stack, player, tooltip);
+        var resistance = ResistanceValues.get(this, "series");
+        var power = ThermalValues.getPower(this);
+        var current = Math.sqrt(power / resistance);
+        Current.max((float) Math.round(current * 10) / 10, player, tooltip);
     }
 }
