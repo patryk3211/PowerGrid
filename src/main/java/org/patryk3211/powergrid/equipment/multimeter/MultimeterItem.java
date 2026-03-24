@@ -166,8 +166,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                                         .style(ChatFormatting.GRAY)
                                         .component(), true);
                             // Wipe all data
-                            data.remove("ModeData");
-                            saveModeData(stack, data);
+                            deleteModeData(stack);
                         }
                     }
                 }
@@ -179,13 +178,8 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                                     .style(ChatFormatting.GRAY)
                                     .component(), true);
                         // Wipe all data
-                        data.remove("ModeData");
+                        deleteModeData(stack);
                     }
-                }
-                if (data.isEmpty()) {
-                        stack.remove(DataComponents.CUSTOM_DATA);
-                } else {
-                    saveModeData(stack, data);
                 }
             }
         }
@@ -232,6 +226,14 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
         }
 
         return modeData;
+    }
+
+    public static void deleteModeData(ItemStack stack) {
+        CompoundTag root = stack
+                .getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
+                .copyTag();
+        root.remove("ModeData");
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(root));
     }
 
     public static void saveModeData(ItemStack stack, CompoundTag modeData) {
