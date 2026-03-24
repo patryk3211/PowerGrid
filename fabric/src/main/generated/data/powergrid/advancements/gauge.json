@@ -3,23 +3,23 @@
   "criteria": {
     "0": {
       "conditions": {},
-      "trigger": "create:blow_up_builtin"
+      "trigger": "create:gauge_builtin"
     }
   },
   "display": {
-    "announce_to_chat": true,
+    "announce_to_chat": false,
     "description": {
       "color": "#DBA213",
-      "translate": "advancement.powergrid.blow_up.desc"
+      "translate": "advancement.powergrid.gauge.desc"
     },
     "frame": "task",
     "hidden": false,
     "icon": {
-      "item": "minecraft:tnt"
+      "item": "powergrid:voltage_gauge"
     },
     "show_toast": true,
     "title": {
-      "translate": "advancement.powergrid.blow_up"
+      "translate": "advancement.powergrid.gauge"
     }
   },
   "requirements": [

@@ -1,25 +1,25 @@
 {
-  "parent": "powergrid:conductive_casing",
+  "parent": "powergrid:magnet",
   "criteria": {
     "0": {
       "conditions": {},
-      "trigger": "create:blow_up_builtin"
+      "trigger": "create:electric_motor_builtin"
     }
   },
   "display": {
-    "announce_to_chat": true,
+    "announce_to_chat": false,
     "description": {
       "color": "#DBA213",
-      "translate": "advancement.powergrid.blow_up.desc"
+      "translate": "advancement.powergrid.electric_motor.desc"
     },
     "frame": "task",
     "hidden": false,
     "icon": {
-      "item": "minecraft:tnt"
+      "item": "powergrid:electric_motor"
     },
     "show_toast": true,
     "title": {
-      "translate": "advancement.powergrid.blow_up"
+      "translate": "advancement.powergrid.electric_motor"
     }
   },
   "requirements": [

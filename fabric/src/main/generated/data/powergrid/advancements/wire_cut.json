@@ -1,25 +1,25 @@
 {
-  "parent": "powergrid:conductive_casing",
   "criteria": {
     "0": {
       "conditions": {},
-      "trigger": "create:blow_up_builtin"
+      "trigger": "create:wire_cut_builtin"
     }
   },
   "display": {
     "announce_to_chat": true,
     "description": {
       "color": "#DBA213",
-      "translate": "advancement.powergrid.blow_up.desc"
+      "translate": "advancement.powergrid.wire_cut.desc"
     },
-    "frame": "task",
-    "hidden": false,
+    "frame": "goal",
+    "hidden": true,
     "icon": {
-      "item": "minecraft:tnt"
+      "item": "minecraft:shears",
+      "nbt": "{Damage:0}"
     },
     "show_toast": true,
     "title": {
-      "translate": "advancement.powergrid.blow_up"
+      "translate": "advancement.powergrid.wire_cut"
     }
   },
   "requirements": [

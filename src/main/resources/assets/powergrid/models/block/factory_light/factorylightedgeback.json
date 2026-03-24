@@ -3,7 +3,7 @@
 	"credit": "Made with Blockbench",
 	"texture_size": [32, 32],
 	"textures": {
-		"2": "powergrid:block/factory_ligth/factorylightedgeback",
+		"2": "powergrid:block/factory_light/factorylightedgeback",
 		"particle": "powergrid:block/factory_light/factorylightedgeback"
 	},
 	"elements": [

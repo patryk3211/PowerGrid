@@ -1,0 +1,31 @@
+{
+  "variants": {
+    "axis=x,part=0": {
+      "model": "powergrid:block/factory_light/factorylight"
+    },
+    "axis=x,part=1": {
+      "model": "powergrid:block/factory_light/factorylightedgeback",
+      "y": 90
+    },
+    "axis=x,part=2": {
+      "model": "powergrid:block/factory_light/factorylightcenter",
+      "y": 90
+    },
+    "axis=x,part=3": {
+      "model": "powergrid:block/factory_light/factorylightedgefront",
+      "y": 90
+    },
+    "axis=z,part=0": {
+      "model": "powergrid:block/factory_light/factorylight"
+    },
+    "axis=z,part=1": {
+      "model": "powergrid:block/factory_light/factorylightedgeback"
+    },
+    "axis=z,part=2": {
+      "model": "powergrid:block/factory_light/factorylightcenter"
+    },
+    "axis=z,part=3": {
+      "model": "powergrid:block/factory_light/factorylightedgefront"
+    }
+  }
+}

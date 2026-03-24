@@ -1,25 +1,25 @@
 {
-  "parent": "powergrid:conductive_casing",
+  "parent": "powergrid:electrical_gizmo",
   "criteria": {
     "0": {
       "conditions": {},
-      "trigger": "create:blow_up_builtin"
+      "trigger": "create:boosting_chip_builtin"
     }
   },
   "display": {
-    "announce_to_chat": true,
+    "announce_to_chat": false,
     "description": {
       "color": "#DBA213",
-      "translate": "advancement.powergrid.blow_up.desc"
+      "translate": "advancement.powergrid.boosting_chip.desc"
     },
     "frame": "task",
     "hidden": false,
     "icon": {
-      "item": "minecraft:tnt"
+      "item": "powergrid:integrated_circuit"
     },
     "show_toast": true,
     "title": {
-      "translate": "advancement.powergrid.blow_up"
+      "translate": "advancement.powergrid.boosting_chip"
     }
   },
   "requirements": [

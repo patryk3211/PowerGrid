@@ -9,7 +9,7 @@
       "item": "minecraft:stick"
     },
     "W": {
-      "item": "powergrid:wire"
+      "tag": "forge:wires/copper"
     }
   },
   "pattern": [

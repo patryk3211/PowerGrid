@@ -523,9 +523,23 @@ public class DataProviderUtilityImpl {
     }
 
     public static NonNullBiConsumer<DataGenContext<Block, FactoryLightBlock>, RegistrateBlockstateProvider> factoryLight(String baseFolder) {
-        return (ctx, prov) -> {
-            // TODO: Implement
-        };
+        return (ctx, prov) -> prov.getVariantBuilder(ctx.get()).forAllStates(state -> {
+            var builder = ConfiguredModel.builder();
+            var part = state.getValue(FactoryLightBlock.PART);
+            builder.modelFile(modModel(prov, baseFolder + "/factorylight" + switch(part) {
+                case 0 -> "";
+                case 1 -> "edgeback";
+                case 2 -> "center";
+                case 3 -> "edgefront";
+                default -> throw new IllegalStateException();
+            }));
+            if(part != 0) {
+                if(state.getValue(FactoryLightBlock.HORIZONTAL_AXIS) == Direction.Axis.X) {
+                    builder.rotationY(90);
+                }
+            }
+            return builder.build();
+        });
     }
 
     public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> cubeColumn(String side, String end) {
