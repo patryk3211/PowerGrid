@@ -148,7 +148,7 @@ public class CircuitBoardModel implements BakedModel {
         var circuit = data.get(ENTITY);
         if(circuit != null) {
             if(circuit.quads != null) {
-                var cached = circuit.quads.getQuads(side, renderType);
+                var cached = circuit.quads.getQuads(state, side, renderType);
                 if (cached != null)
                     return cached;
             } else {
@@ -221,11 +221,11 @@ public class CircuitBoardModel implements BakedModel {
             ));
             var trQuads = transformer.process(quads);
             if(circuit != null && circuit.quads != null)
-                circuit.quads.putQuads(side, renderType, trQuads);
+                circuit.quads.putQuads(state, side, renderType, trQuads);
             return trQuads;
         }
         if(circuit != null && circuit.quads != null)
-            circuit.quads.putQuads(side, renderType, quads);
+            circuit.quads.putQuads(state, side, renderType, quads);
         return quads;
     }
 

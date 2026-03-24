@@ -855,6 +855,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                         makeTransmissionLine(part);
                         return true;
                     }
+                } else {
+                    PowerGrid.LOGGER.warn("[1] Part was expected to have this endpoint");
                 }
                 break;
             }
@@ -871,6 +873,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     makeTransmissionLine(part);
                     continueResolving = true;
                 }
+            } else {
+                PowerGrid.LOGGER.warn("[2] Part was expected to have this endpoint");
             }
         }
         return continueResolving;
@@ -972,6 +976,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                         line.setNode2(newNode);
                         if(ModdedConfigs.logsEnabled())
                             PowerGrid.LOGGER.debug("Line {} has had its node migrated", line);
+                    } else {
+                        PowerGrid.LOGGER.warn("Line connected to old node in graph, but doesn't have it as an endpoint?");
                     }
                 }
                 unified.removeNode(oldNode);
