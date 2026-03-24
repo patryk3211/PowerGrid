@@ -77,6 +77,7 @@ import org.patryk3211.powergrid.electricity.gauge.PowerGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
 import org.patryk3211.powergrid.electricity.grounding.GroundingRodBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
+import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.light.string.StringLightBlock;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlock;
@@ -472,11 +473,20 @@ public class ModdedBlocks {
     public static final BlockEntry<LightFixtureBlock> LIGHT_FIXTURE = REGISTRATE.block("light_fixture", LightFixtureBlock::new)
             .blockstate(lightFixture("block/fixtures/light_fixture"))
             .initialProperties(SharedProperties::softMetal)
-            .transform(axeOrPickaxe())
+            .transform(pickaxeOnly())
             .transform(LightFixtureBlock.setBulbModelOffset(0, 3 / 16f, 0))
             .defaultLoot()
             .item()
                 .model(itemWithParent("block/fixtures/light_fixture_v"))
+                .build()
+            .register();
+
+    public static final BlockEntry<FactoryLightBlock> FACTORY_LIGHT = REGISTRATE.block("factory_light", FactoryLightBlock::new)
+            .blockstate(factoryLight("block/factory_light"))
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
+            .item()
+                .model(itemWithParent("block/factory_light/factorylightcenter"))
                 .build()
             .register();
 
