@@ -267,7 +267,7 @@
   "powergrid.gui.circuit_designer.placeable": "배치 가능",
   "powergrid.gui.circuit_designer.save": "변경 사항 저장",
   "powergrid.gui.circuit_designer.saving": "저장 중...",
-  "powergrid.gui.circuit_designer.select": "부품 선택",
+  "powergrid.gui.circuit_designer.select": "부품 선택(%s)",
   "powergrid.gui.clutch_mode": "클러치 모드",
   "powergrid.gui.clutch_mode.generator": "발전기",
   "powergrid.gui.clutch_mode.motor": "모터",
