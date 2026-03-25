@@ -528,14 +528,14 @@ public class DataProviderUtilityImpl {
             var part = state.getValue(FactoryLightBlock.PART);
             builder.modelFile(modModel(prov, baseFolder + "/factorylight" + switch(part) {
                 case 0 -> "";
-                case 1 -> "edgeback";
+                case 1 -> "edgefront";
                 case 2 -> "center";
-                case 3 -> "edgefront";
+                case 3 -> "edgeback";
                 default -> throw new IllegalStateException();
             }));
             if(part != 0) {
                 if(state.getValue(FactoryLightBlock.HORIZONTAL_AXIS) == Direction.Axis.X) {
-                    builder.rotationY(90);
+                    builder.rotationY(-90);
                 }
             }
             return builder.build();
