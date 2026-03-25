@@ -1,20 +1,23 @@
 package org.patryk3211.powergrid.electricity.light.factorylight;
 
+import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.HorizontalAxisElectricBlock;
 import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
 import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 
-public class FactoryLightBlock extends HorizontalAxisElectricBlock implements IAcceptCord, IAcceptConnector {
+public class FactoryLightBlock extends HorizontalAxisElectricBlock implements IAcceptCord, IAcceptConnector, IBE<FactoryLightBlockEntity> {
     public static final IntegerProperty PART = IntegerProperty.create("part", 0, 3);
     public static final IntegerProperty POWER = IntegerProperty.create("power", 0, 3);
 
@@ -62,7 +65,7 @@ public class FactoryLightBlock extends HorizontalAxisElectricBlock implements IA
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
         var dir = ctx.getClickedFace();
         var clickedState = ctx.getLevel().getBlockState(ctx.getClickedPos().relative(dir, -1));
-        if(clickedState.is(this)) {
+        if(clickedState.is(this) && dir.getAxis() != Direction.Axis.Y) {
             if(canConnect(dir, clickedState)) {
                 return defaultBlockState()
                         .setValue(HORIZONTAL_AXIS, dir.getAxis())
@@ -115,5 +118,15 @@ public class FactoryLightBlock extends HorizontalAxisElectricBlock implements IA
     @Override
     public boolean renderPlug() {
         return true;
+    }
+
+    @Override
+    public Class<FactoryLightBlockEntity> getBlockEntityClass() {
+        return FactoryLightBlockEntity.class;
+    }
+
+    @Override
+    public BlockEntityType<? extends FactoryLightBlockEntity> getBlockEntityType() {
+        return ModdedBlockEntities.FACTORY_LIGHT.get();
     }
 }

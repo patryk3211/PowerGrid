@@ -34,6 +34,7 @@ import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
@@ -483,6 +484,10 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
 
     public void setSyncAppender(@Nullable SyncAppender syncAppender) {
         this.syncAppender = syncAppender;
+    }
+
+    public Collection<TransmissionLinePart> wires() {
+        return GlobalElectricNetworks.getWorldNetworks(getWorld()).findConnectedWires(this);
     }
 
     public interface SyncAppender {
