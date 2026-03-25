@@ -82,10 +82,12 @@ public class GlobalElectricNetworks {
                         (nbt, registries) -> new WorldNetworks(world, nbt),
                         DataFixTypes.LEVEL
                 );
-                return server.getDataStorage().computeIfAbsent(
+                var global = server.getDataStorage().computeIfAbsent(
                         factory,
                         "powergrid_electric_network_data"
                 );
+                global.completeLoad();
+                return global;
             } else {
                 return new WorldNetworks(world);
             }

@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.network.packets;
 
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.LevelAccessor;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
@@ -51,6 +52,8 @@ public class EndpointTrackingC2SPacket implements C2SPacket {
     @Override
     public void handle(ServerPlayer player) {
         var level = player.level();
-        GlobalElectricNetworks.getWorldNetworks(level).tracking(player, endpoint, end);
+        var global = GlobalElectricNetworks.getWorldNetworks((LevelAccessor) level);
+        if(global != null)
+            global.tracking(player, endpoint, end);
     }
 }

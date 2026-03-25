@@ -26,6 +26,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
+import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 
 import java.util.List;
 
@@ -34,6 +35,7 @@ public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
 
     private IElectricNode node1;
     private IElectricNode node2;
+    private ElectricWire connection;
 
     public VoltageGaugeBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -46,7 +48,7 @@ public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
         gaugeValue = new GaugeValueBehaviour(Component.translatable("powergrid.devices.gauge.voltage"),
                 Unit.VOLTAGE.get().component(), MAX_VALUES, this, new BoxTransform());
         gaugeValue.withCallback(i -> {
-            maxValue = MAX_VALUES[i];
+            setMaxValue(MAX_VALUES[i]);
             sendData();
         });
         behaviours.add(gaugeValue);
@@ -55,7 +57,7 @@ public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
     @Override
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
-        maxValue = MAX_VALUES[gaugeValue.getValue()];
+        setMaxValue(MAX_VALUES[gaugeValue.getValue()]);
     }
 
     @Override
@@ -74,12 +76,31 @@ public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
         builder.setTerminalCount(2);
         node1 = builder.terminalNode(0);
         node2 = builder.terminalNode(1);
-        builder.connect(resistance(), node1, node2);
+        connection = builder.connect(resistance("range_2v"), node1, node2);
     }
 
     @Override
     public float getMaxValue() {
         return maxValue;
+    }
+
+    private void setMaxValue(float value) {
+      maxValue = value;
+      if (connection != null) {
+        float resistance;
+        if (maxValue == 2) {
+          resistance = resistance("range_2v");
+        } else if (maxValue == 20) {
+          resistance = resistance("range_20v");
+        } else if (maxValue == 200) {
+          resistance = resistance("range_200v");
+        } else if (maxValue == 2000) {
+          resistance = resistance("range_2kv");
+        } else {
+          throw new IllegalArgumentException("Maximum value must match valid range");
+        }
+        connection.setResistance(resistance);
+      }
     }
 
     @Override

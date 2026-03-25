@@ -34,20 +34,23 @@ import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_SIZE
 import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_GRID_SCALE;
 
 public class CircuitSchematic {
+    private static final Point[] MANHATTAN_NEIGHBORHOOD = new Point[] {
+            new Point(-1, 0), new Point(1, 0),
+            new Point(0, -1), new Point(0, 1),
+    };
+
     private final CircuitLayer front = new CircuitLayer();
     private final CircuitLayer back = new CircuitLayer();
 
-    // This layer is generated from components.
-    private final CircuitLayer pads = new CircuitLayer();
+    // Stores locations of component thru holes (pads); generated from components
+    private final PadLayer pads = new PadLayer();
 
     private final List<PlacedComponent> components = new ArrayList<>();
 
     @Nullable
     private String name;
 
-    public CircuitSchematic() {
-
-    }
+    public CircuitSchematic() {}
 
     public CircuitSchematic(CircuitSchematic schematic) {
         this.name = schematic.name;
@@ -82,6 +85,7 @@ public class CircuitSchematic {
         var tag = new CompoundTag();
         tag.put("Front", front.serializeNbt());
         tag.put("Back", back.serializeNbt());
+        tag.putBoolean("FullPixelTraces", false);
 
         var list = new ListTag();
         for(var component : components) {
@@ -96,8 +100,14 @@ public class CircuitSchematic {
 
     public void deserializeNbt(CompoundTag tag) {
         try {
-            front.deserialize(tag.getLongArray("Front"));
-            back.deserialize(tag.getLongArray("Back"));
+            // Default to legacy full pixel traces
+            boolean fullPixelTraces = true;
+            if (tag.contains("FullPixelTraces")) {
+                fullPixelTraces = tag.getBoolean("FullPixelTraces");
+            }
+
+            front.deserialize(tag.getLongArray("Front"), fullPixelTraces);
+            back.deserialize(tag.getLongArray("Back"), fullPixelTraces);
 
             if (tag.contains("Name")) {
                 name = tag.getString("Name");
@@ -173,8 +183,8 @@ public class CircuitSchematic {
         return layer == Layer.FRONT ? front : back;
     }
 
-    public boolean getLayer(Layer layer, int x, int y) {
-        return getLayer(layer).get(x, y);
+    public boolean hasTrace(Layer layer, int x, int y) {
+        return getLayer(layer).hasTrace(x, y);
     }
 
     public CircuitLayer front() {
@@ -185,7 +195,7 @@ public class CircuitSchematic {
         return back;
     }
 
-    public CircuitLayer pads() {
+    public PadLayer pads() {
         return pads;
     }
 
@@ -204,7 +214,8 @@ public class CircuitSchematic {
     }
 
     private boolean getAreaState(CircuitLayer layer, int x, int y) {
-        return layer.get(x, y);
+        // TODO: Using hasTrace here means rendering traces in the world will ignore directions & paint full pixels
+        return layer.hasTrace(x, y);
     }
 
     public List<Area> calculateAreas(Layer forLayer) {
@@ -301,50 +312,51 @@ public class CircuitSchematic {
         return -1;
     }
 
-    private boolean shouldVisit(Layer layer, int x, int y, VisitMap visitMap) {
-        if(x < 0 || y < 0 || x >= GRID_SIZE || y >= GRID_SIZE)
-            return false;
-        if(!visitMap.canVisit(layer, x, y))
-            return false;
-        return getLayer(layer, x, y);
-    }
-
     @NotNull
     public Collection<Node> flood(Layer layer, int x, int y, VisitMap visitMap) {
-        if(!visitMap.canVisit(layer, x, y))
+        if (!visitMap.canVisit(layer, x, y))
             return List.of();
 
         var toVisit = new ArrayList<Point>();
         toVisit.add(new Point(x, y));
 
         var nodes = new HashSet<Node>();
-        while(!toVisit.isEmpty()) {
+        while (!toVisit.isEmpty()) {
             var node = toVisit.remove(0);
             int nX = node.x();
             int nY = node.y();
 
-            if(visitMap.visit(layer, nX, nY)) {
-                if(isPad(nX, nY)) {
+            if (visitMap.visit(layer, nX, nY)) {
+                if (isPad(nX, nY)) {
                     // We need to trace the other layer and check for component node.
                     var componentNode = makeComponentNode(nX, nY);
                     componentNode.ifPresent(nodes::add);
 
                     // Flood opposite layer.
-                    if(getLayer(layer.opposite(), nX, nY)) {
+                    if (hasTrace(layer.opposite(), nX, nY)) {
                         var componentNodes = flood(layer.opposite(), nX, nY, visitMap);
                         nodes.addAll(componentNodes);
                     }
                 }
 
                 // Add neighbors that haven't been visited.
-                if(shouldVisit(layer, nX + 1, nY, visitMap))
-                    toVisit.add(new Point(nX + 1, nY));
-                if(shouldVisit(layer, nX - 1, nY, visitMap))
-                    toVisit.add(new Point(nX - 1, nY));
-                if(shouldVisit(layer, nX, nY + 1, visitMap))
-                    toVisit.add(new Point(nX, nY + 1));
-                if(shouldVisit(layer, nX, nY - 1, visitMap))
-                    toVisit.add(new Point(nX, nY - 1));
+                for (Point delta : MANHATTAN_NEIGHBORHOOD) {
+                    Point neighbor = new Point(nX + delta.x(), nY + delta.y());
+
+                    if (neighbor.x() < 0 || neighbor.y() < 0 || neighbor.x() >= GRID_SIZE || neighbor.y() >= GRID_SIZE) {
+                        continue;
+                    }
+                    if (!visitMap.canVisit(layer, neighbor.x(), neighbor.y()) || !hasTrace(layer, neighbor.x(), neighbor.y())) {
+                        continue;
+                    }
+
+                    // Visit if this node has correct trace direction and neighbor has complementary trace direction
+                    // (should never be the case that only one of these is true)
+                    if (getLayer(layer).get(nX, nY, TraceMatrix.TraceDirection.fromXY(delta.x(), delta.y())) &&
+                            getLayer(layer).get(neighbor.x(), neighbor.y(), TraceMatrix.TraceDirection.fromXY(-delta.x(), -delta.y()))) {
+                        toVisit.add(neighbor);
+                    }
+                }
             }
         }
         return nodes;
@@ -352,11 +364,13 @@ public class CircuitSchematic {
 
     @NotNull
     public Collection<Node> flood(int x, int y, VisitMap visitMap) {
-        if(getLayer(Layer.FRONT, x, y)) {
+        if (hasTrace(Layer.FRONT, x, y)) {
             return flood(Layer.FRONT, x, y, visitMap);
-        } else if(getLayer(Layer.BACK, x, y)) {
+        }
+        else if (hasTrace(Layer.BACK, x, y)) {
             return flood(Layer.BACK, x, y, visitMap);
-        } else {
+        }
+        else {
             return List.of();
         }
     }

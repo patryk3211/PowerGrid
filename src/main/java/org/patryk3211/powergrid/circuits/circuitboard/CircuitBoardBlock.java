@@ -38,7 +38,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
@@ -111,7 +110,7 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
         super.setPlacedBy(world, pos, state, placer, stack);
     }
 
-    private static VoxelShape rotate(VoxelShape shapeIn, float x, float y) {
+    public static VoxelShape rotate(VoxelShape shapeIn, float x, float y) {
         if(y == 0 && x == 0)
             return shapeIn;
 
@@ -166,20 +165,14 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
-        int x = getAngleX(state), y = getAngleY(state);
-        final var shape = new VoxelShape[] { rotate(SHAPE_PLATE, x, y) };
+        int x = getAngleX(state);
+        int y = getAngleY(state);
+        final VoxelShape[] shape = {rotate(SHAPE_PLATE, x, y)};
+
         withBlockEntityDo(world, pos, be -> {
-            var shapeCopy = shape[0];
-            for(int i = 0; i < be.terminalCount(); i++) {
-                var terminal = be.terminal(state, i);
-                shapeCopy = Shapes.or(((TerminalBoundingBox) terminal).getShape(), shapeCopy);
-            }
-            for(var placed : be.getComponents(IInteractableComponent.class)) {
-                var dynamic = (IInteractableComponent) placed.component;
-                shapeCopy = Shapes.or(rotate(dynamic.getShape(placed), x, y), shapeCopy);
-            }
-            shape[0] = shapeCopy;
+            shape[0] = be.getShape(state, shape[0]);
         });
+
         return shape[0];
     }
 
@@ -380,14 +373,6 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
         if(beResult != InteractionResult.PASS)
             return beResult;
         return super.useWithoutItem(state, level, pos, player, hit);
-    }
-
-    @Override
-    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
-        var result = super.onWrenched(state, context);
-        if(result.consumesAction() && context.getLevel().isClientSide)
-            withBlockEntityDo(context.getLevel(), context.getClickedPos(), CircuitBoardBlockEntity::refreshModel);
-        return result;
     }
 
     @Override

@@ -68,6 +68,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     private boolean runningDiscovery = false;
     private int syncTicks = 0;
 
+    private CompoundTag nbt;
+
     private record SyncState(int lod) { }
     private final Map<ServerPlayer, Map<ISynchronizedElement, SyncState>> syncStates = new HashMap<>();
 
@@ -79,7 +81,14 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     public WorldNetworks(Level world, CompoundTag nbt) {
         this(world);
-        readNbt(nbt);
+        this.nbt = nbt;
+    }
+
+    void completeLoad() {
+        if(nbt != null) {
+            readNbt(nbt);
+            nbt = null;
+        }
     }
 
     @Override
@@ -502,6 +511,17 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         if(node1 == node2)
             return null;
 
+        var nNode1 = endpoint1.getNode(world);
+        if(node1 != nNode1) {
+            addAndMigrateNode(node1, nNode1);
+            node1 = nNode1;
+        }
+        var nNode2 = endpoint2.getNode(world);
+        if(node2 != nNode2) {
+            addAndMigrateNode(node2, nNode2);
+            node2 = nNode2;
+        }
+
         add(endpoint1);
         add(endpoint2);
 
@@ -846,6 +866,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                         makeTransmissionLine(part);
                         return true;
                     }
+                } else {
+                    PowerGrid.LOGGER.warn("[1] Part was expected to have this endpoint");
                 }
                 break;
             }
@@ -862,6 +884,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     makeTransmissionLine(part);
                     continueResolving = true;
                 }
+            } else {
+                PowerGrid.LOGGER.warn("[2] Part was expected to have this endpoint");
             }
         }
         return continueResolving;
@@ -963,6 +987,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                         line.setNode2(newNode);
                         if(ModdedConfigs.logsEnabled())
                             PowerGrid.LOGGER.debug("Line {} has had its node migrated", line);
+                    } else {
+                        PowerGrid.LOGGER.warn("Line connected to old node in graph, but doesn't have it as an endpoint?");
                     }
                 }
                 unified.removeNode(oldNode);
