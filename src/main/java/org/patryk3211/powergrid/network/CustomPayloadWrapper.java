@@ -20,6 +20,15 @@ public record CustomPayloadWrapper(Type<CustomPayloadWrapper> type, FriendlyByte
     }
 
     /**
+     * Call this when you are done with the payload data
+     */
+    public void release() {
+        if (data != null && data.refCnt() > 0) {
+            data.release();
+        }
+    }
+
+    /**
      * Returns a {@link StreamCodec} for serializing and deserializing {@link CustomPayloadWrapper} instances.
      * <p>
      * This method is intended to be used for registering the codec with Minecraft's networking system
@@ -38,9 +47,9 @@ public record CustomPayloadWrapper(Type<CustomPayloadWrapper> type, FriendlyByte
                     buf.writeBytes(payload.data, payload.data.readerIndex(), payload.data.readableBytes());
                 },
                 (buf) -> {
-                    // Read all available bytes into a new retained buffer slice
+                    // Read all available bytes into a new buffer
                     int readableBytes = buf.readableBytes();
-                    FriendlyByteBuf data = new FriendlyByteBuf(buf.readRetainedSlice(readableBytes));
+                    FriendlyByteBuf data = new FriendlyByteBuf(buf.readBytes(readableBytes).asReadOnly());
                     return new CustomPayloadWrapper(new Type<>(id), data);
                 }
         );

@@ -160,8 +160,12 @@ public class PowerGridImpl {
                 CustomPayloadWrapper.type(packets.c2sPacket),
                 CustomPayloadWrapper.codec(packets.c2sPacket),
                 (payload, context) -> {
-                    if (context.player() instanceof ServerPlayer serverPlayer) {
-                        packets.handleC2SPacket(serverPlayer, payload.data());
+                    try {
+                        if (context.player() instanceof ServerPlayer serverPlayer) {
+                            packets.handleC2SPacket(serverPlayer, payload.data());
+                        }
+                    } finally {
+                        payload.release();
                     }
                 }
         );
@@ -169,8 +173,12 @@ public class PowerGridImpl {
                 CustomPayloadWrapper.type(packets.s2cPacket),
                 CustomPayloadWrapper.codec(packets.s2cPacket),
                 (payload, context) -> {
-                    var mc = net.minecraft.client.Minecraft.getInstance();
-                    packets.handleS2CPacket(mc, payload.data());
+                    try {
+                        var mc = net.minecraft.client.Minecraft.getInstance();
+                        packets.handleS2CPacket(mc, payload.data());
+                    } finally {
+                        payload.release();
+                    }
                 }
         );
     }
