@@ -510,6 +510,15 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         if(node1 == node2)
             return null;
 
+        var nNode1 = endpoint1.getNode(world);
+        if(node1 != nNode1) {
+            addAndMigrateNode(node1, nNode1);
+        }
+        var nNode2 = endpoint2.getNode(world);
+        if(node2 != nNode2) {
+            addAndMigrateNode(node2, nNode2);
+        }
+
         add(endpoint1);
         add(endpoint2);
 
