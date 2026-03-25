@@ -48,6 +48,9 @@
 
   "powergrid.component.property.current_gauge_max": "Max Current",
   "powergrid.component.property.voltage_gauge_max": "Max Voltage",
+  "powergrid.component.property.gauge_equation": "Display equation",
+  "powergrid.component.property.gauge_equation.summary": "Equation to be applied to the measured voltage before displaying it",
+  "powergrid.component.property.gauge_unit": "Unit",
 
   "powergrid.component.property.regulator_tube_vh": "Holding Voltage",
   "powergrid.component.property.regulator_tube_vh.summary": "Regulated voltage held by the regulator tube when it is lit and current is steady",
