@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.kinetics.generator.inductionrotor;
 
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang3.mutable.MutableObject;
@@ -29,6 +30,8 @@ import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
+import org.patryk3211.powergrid.electricity.sim.calculation.Precalculated;
+import org.patryk3211.powergrid.electricity.sim.calculation.PrecalculatedN;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.electricity.sim.special.GeneratorCoupling;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
@@ -36,7 +39,6 @@ import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public class CommutatorBlockEntity extends RotorBlockEntity implements IElectricEntity {
     protected ElectricBehaviour electricBehaviour;
@@ -44,7 +46,16 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     protected GeneratorCoupling source;
     private float resistance = 0;
     private boolean updateBehaviour = true;
-    private final Set<InductionRotorBlockEntity> rotors = new HashSet<>();
+
+    private final PrecalculatedN<Float, Precalculated<Float>> totalFieldStrength = new PrecalculatedN<>(CommutatorBlockEntity::fieldSum, 0.0f);
+
+    private static void fieldSum(Precalculated<Float>[] rotors, Precalculated<Float>.ValueHandler valueHandler) {
+        float totalField = 0;
+        for(var rotor : rotors) {
+            totalField += rotor.get();
+        }
+        valueHandler.emit(totalField);
+    }
 
     public CommutatorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -59,6 +70,7 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
         source = builder.addInternalNode(GeneratorCoupling.class, builder.terminalNode(0), builder.terminalNode(1), resistance, rotorBehaviour);
+        source.setFieldStrengthProvider(totalFieldStrength);
     }
 
     private void assemblyChanged() {
@@ -116,17 +128,33 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     }
 
     @Override
+    protected void read(CompoundTag tag, boolean clientPacket) {
+        super.read(tag, clientPacket);
+        if(source != null) {
+            source.setEmfValue(tag.getFloat("EmfState"));
+        }
+    }
+
+    @Override
+    protected void write(CompoundTag tag, boolean clientPacket) {
+        super.write(tag, clientPacket);
+        if(source != null) {
+            tag.putFloat("EmfState", (float) source.getEmfValue());
+        }
+    }
+
+    @Override
     public void tick() {
         assert level != null;
         super.tick();
         if(updateBehaviour) {
-            rotors.clear();
+            var rotors = new HashSet<Precalculated<Float>>();
             resistance = 0;
             var proxyTarget = new MutableObject<BlockPos>(null);
             rotorBehaviour.forEachSegment(segment -> {
                 if(segment.blockEntity instanceof InductionRotorBlockEntity rotor) {
                     resistance += ResistanceValues.get(rotor.getBlockState().getBlock());
-                    rotors.add(rotor);
+                    rotors.add(rotor.totalField);
                 } else if(segment.blockEntity instanceof CommutatorBlockEntity commutator) {
                     if(commutator.source != null) {
                         // Source already exists on a different block, this will be a proxy.
@@ -154,14 +182,11 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
                 // Rewire connected wires.
                 wires.forEach(TransmissionLinePart::refreshEndpointNodes);
             }
+            totalFieldStrength.updateDependency(rotors.toArray(Precalculated[]::new));
         }
-        if(!level.isClientSide || isVirtual()) {
-            float totalField = 0;
-            if (source != null) {
-                for (var rotor : rotors) {
-                    totalField += rotor.totalField.get();
-                }
-                source.tick(totalField);
+        if(!level.isClientSide) {
+            if(source != null) {
+                level.blockEntityChanged(worldPosition);
             }
         } else {
             var angular = rotorBehaviour.getAngularVelocityRadians();
