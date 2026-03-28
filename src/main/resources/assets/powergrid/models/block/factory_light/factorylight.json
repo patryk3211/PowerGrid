@@ -2,6 +2,7 @@
 	"format_version": "1.21.11",
 	"credit": "Made with Blockbench",
 	"texture_size": [32, 32],
+	"parent": "block/block",
 	"textures": {
 		"0": "powergrid:block/factory_light/factorylight",
 		"particle": "powergrid:block/factory_light/factorylight"
