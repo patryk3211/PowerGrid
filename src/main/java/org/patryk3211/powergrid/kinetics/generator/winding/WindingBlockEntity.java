@@ -84,29 +84,25 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         return getBlockState().getValue(PART) == 0;
     }
 
+    private static double fieldStrength(double current) {
+        final float I_sat = ModdedConfigs.server().kinetics.generatorControls.fieldSaturationCurrent.getF();
+        current = (I_sat * Math.tanh(1.5 * current / I_sat)) + current * 0.05;
+        return current * coilConstant() + 0.001;
+    }
+
     private static void fieldCalc(Supplier<LRSeriesWire> coilSupplier, Precalculated<Float>.ValueHandler handler) {
         var coil = coilSupplier.get();
         if(coil == null)
             return;
-        double Bprev = handler.get();
         if(!coil.isConverged())
-            handler.emit((float) Bprev);
-        float I_sat = ModdedConfigs.server().kinetics.generatorControls.fieldSaturationCurrent.getF();
-        double current = coil.current();
-        current = (I_sat * Math.tanh(1.5 * current / I_sat)) + current * 0.05;
-        double B = current * coilConstant() + 0.001;
+            return;
+        double Bprev = handler.get();
+        double B = fieldStrength(coil.current());
         if(Bprev * B < 0) {
             handler.emit((float) (0.001 * Math.signum(B)));
         } else {
             handler.emit((float) B);
         }
-    }
-
-    public float fieldStrength() {
-        var be = getSimElementHolder();
-        if(be == null)
-            return 0;
-        return be.fieldValue.get();
     }
 
     public Precalculated<Float> fieldStrengthCalc() {
@@ -477,6 +473,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         if(coilWire != null) {
             coilWire.valueChange(current, coilWire.current(), 5);
             coilWire.setCurrent(current);
+            fieldValue.setValue((float) fieldStrength(current));
         }
     }
 

@@ -282,7 +282,7 @@
   "powergrid.generic.unit.amp": "A",
   "powergrid.generic.unit.amp.name": "安培",
   "powergrid.generic.unit.block": "方块",
-  "powergrid.generic.unit.charge": "Wh",
+  "powergrid.generic.unit.energy": "Wh",
   "powergrid.generic.unit.ohm": "Ω",
   "powergrid.generic.unit.ohm.name": "欧姆",
   "powergrid.generic.unit.temperature": "°C",

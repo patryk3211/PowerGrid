@@ -60,6 +60,11 @@ public class PowerGridClient {
 		ClientTickEvent.CLIENT_LEVEL_PRE.register(GlobalElectricNetworks::preTick);
 		ClientTickEvent.CLIENT_LEVEL_POST.register(TerminalHandler::tick);
 		ClientTickEvent.CLIENT_POST.register(PowerGridClient::clientTick);
+		ClientPlayerEvent.CLIENT_PLAYER_RESPAWN.register(PowerGridClient::clientRespawn);
+	}
+
+	private static void clientRespawn(LocalPlayer localPlayer, LocalPlayer localPlayer1) {
+		ModdedPackets.sendToServer(new NegotiateSyncC2SPacket(ModdedConfigs.common().syncWithDoubles.get()));
 	}
 
 	private static void clientJoin(LocalPlayer player) {

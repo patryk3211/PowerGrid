@@ -26,7 +26,7 @@ import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.electricity.sim.special.BJTWire;
 
-public abstract class BJTComponent extends OrientableComponent {
+public abstract class BJTComponent extends MirrorableComponent {
     public static final FloatProperty GAIN = new FloatProperty(PowerGrid.MOD_ID, "bjt_gain", 20, 5, 100);
 
     private final boolean pnp;

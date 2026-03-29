@@ -73,7 +73,7 @@
   "powergrid.generic.unit.watt": "W",
   "powergrid.generic.unit.temperature": "°C",
   "powergrid.generic.unit.block": "blocks",
-  "powergrid.generic.unit.charge": "Wh",
+  "powergrid.generic.unit.energy": "Wh",
 
   "powergrid.generic.unit.volt.name": "Volt",
   "powergrid.generic.unit.amp.name": "Ampere",
