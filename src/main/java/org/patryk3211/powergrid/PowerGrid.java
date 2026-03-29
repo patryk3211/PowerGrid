@@ -46,6 +46,7 @@ import org.patryk3211.powergrid.electricity.sim.solver.NativeMNA;
 import org.patryk3211.powergrid.equipment.BoostRecipe;
 import org.patryk3211.powergrid.equipment.thunder.LightningRodMovementBehaviour;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlockEntity;
+import org.patryk3211.powergrid.network.packets.NegotiateSyncC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.proxy.SubstituteBlockEntityProvider;
 import org.slf4j.Logger;
@@ -83,9 +84,14 @@ public class PowerGrid {
 		TickEvent.ServerLevelTick.SERVER_LEVEL_PRE.register(GlobalElectricNetworks::preTick);
 		TickEvent.ServerLevelTick.SERVER_LEVEL_POST.register(GlobalElectricNetworks::postTick);
 		LifecycleEvent.SERVER_LEVEL_UNLOAD.register(GlobalElectricNetworks::unloadWorld);
+        LifecycleEvent.SETUP.register(PowerGrid::setup);
 		CommandRegistrationEvent.EVENT.register(ModdedCommands::register);
 		PlayerEvent.PLAYER_JOIN.register(PowerGrid::playerJoin);
-		LifecycleEvent.SETUP.register(PowerGrid::setup);
+		PlayerEvent.PLAYER_QUIT.register(PowerGrid::playerQuit);
+	}
+
+	private static void playerQuit(ServerPlayer player) {
+		NegotiateSyncC2SPacket.SYNC_TYPES.remove(player);
 	}
 
 	private static void playerJoin(ServerPlayer player) {

@@ -60,7 +60,7 @@ public class DebugItem extends Item {
             user.sendSystemMessage(Component.literal("Mechanical Power: " + power + " W"));
         }
         if(be instanceof InductionRotorBlockEntity rotorBE) {
-            var field = rotorBE.field;
+            var field = rotorBE.totalField.get();
             user.sendSystemMessage(Component.literal("Field Strength: " + field));
         }
         return InteractionResult.SUCCESS;

@@ -32,6 +32,13 @@ public abstract class Precalculated<T> implements IStamped {
         this.value = defaultValue;
     }
 
+    public void setValue(T value) {
+        if(!this.value.equals(value)) {
+            this.value = value;
+            ++ourStamp;
+        }
+    }
+
     public abstract T get();
     public abstract int getStamp();
     public abstract void invalidate();
