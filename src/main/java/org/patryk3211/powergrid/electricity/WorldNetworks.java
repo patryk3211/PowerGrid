@@ -330,8 +330,16 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             // Synchronize state with clients
             if(syncTicks % 5 == 0) {
                 syncStates.clear();
-                for (var entry : trackers.entrySet()) {
-                    for (var player : entry.getValue()) {
+                var trackerEntryIter = trackers.entrySet().iterator();
+                while(trackerEntryIter.hasNext()) {
+                    var entry = trackerEntryIter.next();
+                    var playerIter = entry.getValue().iterator();
+                    while(playerIter.hasNext()) {
+                        var player = playerIter.next();
+                        if(player.isRemoved()) {
+                            playerIter.remove();
+                            continue;
+                        }
                         var endpoint = entry.getKey();
                         if(endpoint instanceof BlockWireEndpoint bwe) {
                             var eb = bwe.getElectricBehaviour(world);
@@ -362,6 +370,9 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                             syncStates.computeIfAbsent(player, $ -> new HashMap<>())
                                     .put(eb, new SyncState(eb.getPos().distManhattan(player.blockPosition()) / 16 + 1));
                         }
+                    }
+                    if(entry.getValue().isEmpty()) {
+                        trackerEntryIter.remove();
                     }
                 }
             }
