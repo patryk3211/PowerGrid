@@ -1,0 +1,4 @@
+// 1.20.1	2026-03-29T03:27:46.9705239	Tags for minecraft:block mod id vanilla
+4b173f9ab8a38e8c77ea3b5a6f17db60609f8097 data/powergrid/tags/blocks/affected_by_lamp.json
+150da1135a6d5d7b9cb1ec65250c0aceaa835dff data/powergrid/tags/blocks/carbon_pile_block.json
+08243309fd5d19870505b2047bc09efe23ee6109 data/powergrid/tags/blocks/conductive_ground.json
