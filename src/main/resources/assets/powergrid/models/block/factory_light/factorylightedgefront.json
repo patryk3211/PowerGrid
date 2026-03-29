@@ -1,0 +1,25 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Made with Blockbench",
+	"parent": "block/block",
+	"texture_size": [32, 32],
+	"textures": {
+		"1": "powergrid:block/factory_light/factorylightedgefront",
+		"particle": "powergrid:block/factory_light/factorylightedgefront"
+	},
+	"elements": [
+		{
+			"from": [1, 8, 1],
+			"to": [15, 16, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 0, 1]},
+			"faces": {
+				"north": {"uv": [0, 11.5, 7, 15.5], "texture": "#1"},
+				"east": {"uv": [0, 7.5, 7.5, 11.5], "texture": "#1"},
+				"south": {"uv": [7, 11.5, 14, 15.5], "texture": "#1"},
+				"west": {"uv": [7.5, 7.5, 15, 11.5], "texture": "#1"},
+				"up": {"uv": [7, 7.5, 0, 0], "texture": "#1"},
+				"down": {"uv": [14, 0, 7, 7.5], "texture": "#1"}
+			}
+		}
+	]
+}

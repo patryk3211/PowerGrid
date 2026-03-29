@@ -54,7 +54,6 @@
 		{
 			"name": "godrays",
 			"origin": [2, 6, 0],
-			"scope": 0,
 			"color": 0,
 			"children": [0, 1, 2]
 		}
