@@ -162,7 +162,6 @@
   "powergrid.gui.circuit_designer.placeable": "設置可能",
   "powergrid.gui.circuit_designer.save": "変更を保存する",
   "powergrid.gui.circuit_designer.saving": "保存中…",
-  "powergrid.gui.circuit_designer.select": "部品の選択",
   "powergrid.gui.creative_resistor.current": "電流",
   "powergrid.gui.creative_resistor.info_header": "クリエイティブ抵抗器の情報",
   "powergrid.gui.creative_resistor.power": "消費電力",
