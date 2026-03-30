@@ -56,7 +56,7 @@ public class GrowthLamp extends LightBulb {
                 return;
 
             var origin = fixture.getBlockPos();
-            var facing = fixture.getBlockState().getValue(FACING).getOpposite();
+            var facing = fixture.getBlockState().getValue(FACING);
             final var radius = ModdedConfigs.server().electricity.growthLampRadius.get();
             int xMin = -radius, xMax = radius;
             int yMin = -radius, yMax = radius;
