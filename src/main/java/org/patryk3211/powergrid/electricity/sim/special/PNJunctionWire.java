@@ -86,6 +86,12 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
     @Override
     public void startIteration(int iteration) {
         // TODO: reverse breakdown
+
+        //Reverse breakdown crap
+        double Vbr = 100; //TODO: make it a config or something.
+        double Ibv = 0.1; //current at the breakdown knee or whatever it was in uni
+        double n_br = idealityFactor; //how ideal the breakdown is, helps tune this crap
+        //
         double k = 1.380649e-23; // Boltzmann constant in J/K
         double q = 1.602176634e-19; // Elementary charge in C
         double V_T = (k * (temperatureCelsius + 273.15)) / q; // Thermal voltage in V
@@ -116,6 +122,26 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         network.updateConductance(this, G - this.G);
         this.G = G;
         double I = V_T * n * WTerm / R_s - I_s2;
+
+        //reverse breakdown crap
+        double kneeFraction = 0.05; // 5% of the VBR value
+        double V_over = -Vbr - V;
+
+        if (V_over > 0) {
+            double slope = Ibv / (kneeFraction * Vbr);
+            double Ibreak = -Ibv - slope * V_over;
+            double Gbreak = slope;
+
+            // now add the values to the network
+            I += Ibreak;
+            G += Gbreak;
+        }
+
+        // Update the network AFTER all this math
+        network.updateConductance(this, G - this.G);
+        this.G = G;
+
+        // Compute Ieq
         this.Ieq = I - G * V;
     }
 
