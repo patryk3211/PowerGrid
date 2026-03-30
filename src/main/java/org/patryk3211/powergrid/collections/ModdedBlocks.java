@@ -74,6 +74,7 @@ import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.PowerGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
+import org.patryk3211.powergrid.electricity.gpu.GPUBlock;
 import org.patryk3211.powergrid.electricity.grounding.GroundingRodBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
@@ -741,6 +742,17 @@ public class ModdedBlocks {
 
     public static BlockEntry<StringLightBlock> STRING_LIGHT_BLOCK = REGISTRATE.block("string_light_block", StringLightBlock::new)
             .blockstate(air())
+            .register();
+
+    public static BlockEntry<GPUBlock> GPU = REGISTRATE.block("gpu", GPUBlock::new)
+            .blockstate(horizontalBlock("block/gpu/block"))
+            .addLayer(() -> RenderType::cutoutMipped)
+            .lang("Graphics Card")
+            .transform(CResistance.setResistance(0.5f))
+            .transform(CThermal.maxPower(300, 1.0f))
+            .item()
+                .model(itemWithParent("block/gpu/item"))
+                .build()
             .register();
 
     public static void register() {

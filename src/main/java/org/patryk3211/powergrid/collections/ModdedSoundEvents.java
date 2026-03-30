@@ -159,6 +159,10 @@ public class ModdedSoundEvents {
             .category(SoundSource.BLOCKS)
             .build(),
 
+    GPU = create("gpu").subtitle("GPU Fan")
+            .category(SoundSource.BLOCKS)
+            .build(),
+
     ALARM_BELL = create("alarm_bell").subtitle("Alarm bell rings")
             .category(SoundSource.BLOCKS)
             .build(),

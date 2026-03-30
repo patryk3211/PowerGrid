@@ -97,6 +97,15 @@
     ],
     "subtitle": "powergrid.subtitle.generator"
   },
+  "gpu": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:gpu"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.gpu"
+  },
   "hv_switch_connect": {
     "sounds": [
       {

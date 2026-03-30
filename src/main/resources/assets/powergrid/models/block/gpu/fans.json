@@ -1,0 +1,36 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Made with Blockbench",
+	"texture_size": [128, 128],
+	"textures": {
+		"0": "powergrid:block/gpu"
+	},
+	"elements": [
+		{
+			"name": "fan2",
+			"from": [4, 5.1, 13],
+			"to": [11, 5.1, 20],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7.5, 5.1, 16.5]},
+			"faces": {
+				"up": {"uv": [5.25, 7, 4.375, 6.125], "texture": "#0"}
+			}
+		},
+		{
+			"name": "fan3",
+			"from": [4, 5.1, 4],
+			"to": [11, 5.1, 11],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7.5, 5.1, 7.5]},
+			"faces": {
+				"up": {"uv": [5.25, 7, 4.375, 6.125], "texture": "#0"}
+			}
+		}
+	],
+	"groups": [
+		{
+			"name": "bone",
+			"origin": [8, 7, 7],
+			"color": 0,
+			"children": [0, 1]
+		}
+	]
+}

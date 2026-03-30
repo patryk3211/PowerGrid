@@ -41,6 +41,8 @@ import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.GaugeRenderer;
 import org.patryk3211.powergrid.electricity.gauge.PowerGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlockEntity;
+import org.patryk3211.powergrid.electricity.gpu.GPUBlockEntity;
+import org.patryk3211.powergrid.electricity.gpu.GPURenderer;
 import org.patryk3211.powergrid.electricity.grounding.GroundingRodBlockEntity;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
@@ -347,6 +349,12 @@ public class ModdedBlockEntities {
                     .visual(() -> ShaftVisual::new)
                     .validBlock(ModdedBlocks.PUNCH_CARD_READER)
                     .renderer(() -> PunchCardReaderRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<GPUBlockEntity> GPU =
+            REGISTRATE.blockEntity("gpu", GPUBlockEntity::new)
+                    .validBlock(ModdedBlocks.GPU)
+                    .renderer(() -> GPURenderer::new)
                     .register();
 
     @SuppressWarnings("EmptyMethod")
