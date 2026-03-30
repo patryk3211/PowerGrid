@@ -125,17 +125,12 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
 
         //reverse breakdown crap
         double kneeFraction = 0.05; // 5% of the VBR value
-        double V_over = -Vbr - V;
-
-        if (V_over > 0) {
-            double slope = Ibv / (kneeFraction * Vbr);
-            double Ibreak = -Ibv - slope * V_over;
-            double Gbreak = slope;
-
-            // now add the values to the network
-            I += Ibreak;
-            G += Gbreak;
-        }
+        double V_over = Math.max(0.0,-Vbr - V); //so only when in reverse bias
+        double slope = Ibv / (kneeFraction * Vbr);
+        double Ibreak = -Ibv - slope * V_over;
+        double Gbreak = slope;
+        I += Ibreak;
+        G += Gbreak;
 
         // Update the network AFTER all this math
         network.updateConductance(this, G - this.G);
