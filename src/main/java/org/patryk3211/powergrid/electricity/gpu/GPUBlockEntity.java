@@ -8,6 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -28,6 +29,7 @@ public class GPUBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
     private boolean hasSoundSource = false;
 
     public float angle, anglePrev;
+    private int honseDelay = 0;
 
     public GPUBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -76,7 +78,17 @@ public class GPUBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
                 }
             }
             if(enabled(3)) {
-
+                if(honseDelay > 40) {
+                    var horse = EntityType.HORSE.create(level);
+                    if(horse != null) {
+                        horse.setPos(worldPosition.getX() + 0.5f, worldPosition.getY() + 1.5f, worldPosition.getZ() + 0.5f);
+                        level.addFreshEntity(horse);
+                    }
+                } else {
+                    ++honseDelay;
+                }
+            } else {
+                honseDelay = 0;
             }
         }
     }
@@ -161,7 +173,7 @@ public class GPUBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
             Lang.text("- Firewall").forGoggles(tooltip, 1);
         }
         if(enabled(3)) {
-            Lang.text("- ???").forGoggles(tooltip, 1);
+            Lang.text("- Trojan Horse").forGoggles(tooltip, 1);
         }
         return true;
     }
