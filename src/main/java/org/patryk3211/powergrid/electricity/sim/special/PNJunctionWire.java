@@ -89,7 +89,7 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
 
         //Reverse breakdown crap
         double Vbr = 100; //TODO: make it a config or something.
-        double Ibv = 0.1; //current at the breakdown knee or whatever it was in uni
+        double Ibv = 10; //cap of the breakdown current
         double n_br = idealityFactor; //how ideal the breakdown is, helps tune this crap
         //
         double k = 1.380649e-23; // Boltzmann constant in J/K
@@ -124,11 +124,15 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         double I = V_T * n * WTerm / R_s - I_s2;
 
         //reverse breakdown crap
-        double kneeFraction = 0.05; // 5% of the VBR value
+
+        /*Formula based on Shockley diode equation*/
         double V_over = Math.max(0.0,-Vbr - V); //so only when in reverse bias
-        double slope = Ibv / (kneeFraction * Vbr);
-        double Ibreak = -Ibv - slope * V_over;
-        double Gbreak = slope;
+        double knee = 0.1; // volts over which breakdown ramps
+        double x = V_over / knee;
+        double expVal = 1 - Math.exp(-Math.min(x, 40));
+        double Ibreak = -Ibv * expVal;
+        double Gbreak = (Ibv / knee) * Math.exp(-Math.min(x, 40));
+
         I += Ibreak;
         G += Gbreak;
 
