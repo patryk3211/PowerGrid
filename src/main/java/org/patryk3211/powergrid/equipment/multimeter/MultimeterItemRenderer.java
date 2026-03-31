@@ -97,37 +97,41 @@ public class MultimeterItemRenderer extends CustomRenderedItemModelRenderer {
     /* -------=========   Probe Rendering   =========------- */
     public static void renderProbe(Vec3 point, SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player, int color) {
         HangingWireRenderer.renderFromPositions(matrixStack, buffer.getBuffer(RenderType.entitySolid(TEXTURE)),
-                player.getRopeHoldPosition(AnimationTickHolder.getPartialTicks()),
+                Vec3.ZERO,
                 point, 1.01f, 1.01f, 1 / 16f, world, color);
     }
 
-    public static void render(SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player, ItemStack stack) {
+    public static void render(SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player, ItemStack stack, Vec3 cameraPos) {
         if(!(stack.getItem() instanceof MultimeterItem multimeter))
             return;
+        var origin = player.getRopeHoldPosition(AnimationTickHolder.getPartialTicks());
+        matrixStack.pushPose();
+        matrixStack.translate(origin.x - cameraPos.x, origin.y - cameraPos.y, origin.z - cameraPos.z);
         var data = multimeter.getModeData(stack);
         switch(multimeter.getMode(stack)) {
             case 0 -> {
                 var pos = WireEndpointType.deserialize(data.getCompound("Pos"));
                 if(pos != null && pos.isValid(world)) {
-                    renderProbe(pos.getExactPosition(world), buffer, matrixStack, world, player, 0xFFFF4040);
+                    renderProbe(pos.getExactPosition(world).subtract(origin), buffer, matrixStack, world, player, 0xFFFF4040);
                 }
                 var neg = WireEndpointType.deserialize(data.getCompound("Neg"));
                 if(neg != null && neg.isValid(world)) {
-                    renderProbe(neg.getExactPosition(world), buffer, matrixStack, world, player, 0xFF202020);
+                    renderProbe(neg.getExactPosition(world).subtract(origin), buffer, matrixStack, world, player, 0xFF202020);
                 }
             }
             case 1 -> {
                 if(data.contains("X")) {
                     var pos = new Vec3(data.getFloat("X"), data.getFloat("Y"), data.getFloat("Z"));
-                    renderProbe(pos, buffer, matrixStack, world, player, 0xFF202020);
+                    renderProbe(pos.subtract(origin), buffer, matrixStack, world, player, 0xFF202020);
                 }
             }
         }
+        matrixStack.popPose();
     }
 
-    public static void render(SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player) {
-        render(buffer, matrixStack, world, player, player.getMainHandItem());
-        render(buffer, matrixStack, world, player, player.getOffhandItem());
+    public static void render(SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player, Vec3 cameraPos) {
+        render(buffer, matrixStack, world, player, player.getMainHandItem(), cameraPos);
+        render(buffer, matrixStack, world, player, player.getOffhandItem(), cameraPos);
     }
 
     public static Component multimeterOverlayText(Player player) {

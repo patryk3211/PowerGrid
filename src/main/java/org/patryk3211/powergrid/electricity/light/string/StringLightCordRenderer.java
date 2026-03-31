@@ -44,8 +44,8 @@ public class StringLightCordRenderer extends CordRenderer<StringLightCordEntity>
 
     @Override
     protected void segmentRenderHook(StringLightCordEntity entity, PoseStack matrices, MultiBufferSource vertexConsumers,
-                                     float x1, float y1, float z1, float x2, float y2, float z2,
-                                     float offset, float length, boolean first, boolean last, int light) {
+                                     double x1, double y1, double z1, double x2, double y2, double z2,
+                                     double offset, double length, boolean first, boolean last, int light) {
         if(last)
             return;
         var power = Mth.lerp(AnimationTickHolder.getPartialTicks(), entity.prevPower, entity.power);
@@ -72,7 +72,7 @@ public class StringLightCordRenderer extends CordRenderer<StringLightCordEntity>
         }
     }
 
-    private static void bulb(PoseStack ms, VertexConsumer buffer, float x, float y, float z, int light, int color) {
+    private static void bulb(PoseStack ms, VertexConsumer buffer, double x, double y, double z, int light, int color) {
         final float SIZE = 2 / 16f;
         final float HALF_SIZE = SIZE * 0.5f;
 
@@ -120,7 +120,7 @@ public class StringLightCordRenderer extends CordRenderer<StringLightCordEntity>
                 2 / 16f, 2 / 16f, -2 / 16f, 2 / 16f);
     }
 
-    private static void glow(PoseStack ms, VertexConsumer buffer, float x, float y, float z, int color) {
+    private static void glow(PoseStack ms, VertexConsumer buffer, double x, double y, double z, int color) {
         final float SMALL_OFFSET = 0.125f / 16f;
         final float SIZE = 2.25f / 16f;
         final float HALF_SIZE = SIZE * 0.5f;

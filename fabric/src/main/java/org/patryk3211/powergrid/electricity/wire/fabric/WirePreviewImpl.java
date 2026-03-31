@@ -40,7 +40,7 @@ public class WirePreviewImpl {
         var world = context.world();
         var target = Minecraft.getInstance().hitResult;
         if(player != null && target != null) {
-            WirePreview.render(buffer, matrixStack, world, player, target);
+            WirePreview.render(buffer, matrixStack, world, player, target, cameraPos);
         }
 
         buffer.draw();

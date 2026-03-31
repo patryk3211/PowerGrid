@@ -30,6 +30,7 @@ import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.info.TerminalHandler;
 import org.patryk3211.powergrid.electricity.transformer.TransformerWindingScreen;
 import org.patryk3211.powergrid.electricity.wire.ClientWireInteractions;
+import org.patryk3211.powergrid.electricity.wire.WirePreview;
 import org.patryk3211.powergrid.equipment.zapper.ElectroZapperRenderHandler;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItemRenderer;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerItemRenderer;
@@ -80,6 +81,7 @@ public class PowerGridClient {
 		ELECTRO_ZAPPER_RENDER_HANDLER.tick();
 		CustomValueSettingsScreen.clientTick();
 		WindingPreview.tick();
+		WirePreview.tick();
 		TransformerWindingScreen.clientTick();
 		ClientWireInteractions.clientTick();
 		ThermometerItemRenderer.clientTick();
