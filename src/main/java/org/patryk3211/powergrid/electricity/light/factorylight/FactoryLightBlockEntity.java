@@ -57,18 +57,6 @@ public class FactoryLightBlockEntity extends AbstractLightFixtureBlockEntity imp
         return super.specifyElectricBehaviour();
     }
 
-    @Override
-    public void initialize() {
-        super.initialize();
-        int part = getBlockState().getValue(PART);
-        boolean shouldBeController = part == 0 || FactoryLightBlock.isNegativeEdge(part);
-        if(shouldBeController) {
-            spreadFilament();
-        } else {
-            grabFilament();
-        }
-    }
-
     private void spreadFilament() {
         // Trace and spread the master filament everywhere
         var axis = getBlockState().getValue(HORIZONTAL_AXIS);
@@ -111,6 +99,18 @@ public class FactoryLightBlockEntity extends AbstractLightFixtureBlockEntity imp
 
     @Override
     public void tick() {
+        if(filament.getSimWire() == null) {
+            int part = getBlockState().getValue(PART);
+            boolean shouldBeController = part == 0 || FactoryLightBlock.isNegativeEdge(part);
+            if (shouldBeController) {
+                filament.setSimWire(masterFilament);
+                if (FactoryLightBlock.isNegativeEdge(part)) {
+                    spreadFilament();
+                }
+            } else {
+                grabFilament();
+            }
+        }
         super.tick();
         int part = getBlockState().getValue(PART);
         boolean shouldBeController = part == 0 || FactoryLightBlock.isNegativeEdge(part);
@@ -131,6 +131,7 @@ public class FactoryLightBlockEntity extends AbstractLightFixtureBlockEntity imp
 
             wires.forEach(TransmissionLinePart::refreshEndpointNodes);
             old.remove();
+            filament.setSimWire(masterFilament);
             if(FactoryLightBlock.isNegativeEdge(part)) {
                 spreadFilament();
             }
@@ -150,7 +151,18 @@ public class FactoryLightBlockEntity extends AbstractLightFixtureBlockEntity imp
         builder.setTerminalCount(2);
         masterFilament = new TopLevelSharedFilamentWire(builder.terminalNode(0), builder.terminalNode(1));
         builder.add(masterFilament);
-        filament.setSimWire(masterFilament);
+    }
+
+    @Override
+    protected void lightBulbChanged() {
+        super.lightBulbChanged();
+        if(level != null && !level.isClientSide) {
+            if(bulbState == null) {
+                level.setBlock(worldPosition, getBlockState().setValue(FactoryLightBlock.POWER, 0), UPDATE_ALL_IMMEDIATE);
+            } else {
+                level.setBlock(worldPosition, getBlockState().setValue(FactoryLightBlock.POWER, 1), UPDATE_ALL_IMMEDIATE);
+            }
+        }
     }
 
     @Override
@@ -172,8 +184,12 @@ public class FactoryLightBlockEntity extends AbstractLightFixtureBlockEntity imp
     @Override
     public void setPowerLevel(int bulbPower) {
         assert level != null;
-        level.setBlock(worldPosition, getBlockState().setValue(FactoryLightBlock.POWER, bulbPower + 1), UPDATE_ALL_IMMEDIATE);
-        projectDown();
+        if(bulbState != null) {
+            level.setBlock(worldPosition, getBlockState().setValue(FactoryLightBlock.POWER, bulbPower + 1), UPDATE_ALL_IMMEDIATE);
+            projectDown();
+        } else {
+            level.setBlock(worldPosition, getBlockState().setValue(FactoryLightBlock.POWER, 0), UPDATE_ALL_IMMEDIATE);
+        }
     }
 
     private void projectDown() {

@@ -1,12 +1,14 @@
 package org.patryk3211.powergrid.electricity.light.factorylight;
 
 import com.simibubi.create.foundation.block.IBE;
+import net.createmod.catnip.math.VoxelShaper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
@@ -16,6 +18,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.HorizontalAxisElectricBlock;
@@ -27,12 +31,30 @@ public class FactoryLightBlock extends HorizontalAxisElectricBlock implements IA
     public static final IntegerProperty PART = IntegerProperty.create("part", 0, 6);
     public static final IntegerProperty POWER = IntegerProperty.create("power", 0, 3);
 
+    public static final VoxelShape SHAPE_SINGLE = box(2, 8, 2, 14, 16, 14);
+    public static final VoxelShaper SHAPER_ENDS = VoxelShaper.forHorizontal(box(2, 8, 2, 14, 16, 16), Direction.NORTH);
+    public static final VoxelShaper SHAPER_MIDDLE = VoxelShaper.forHorizontalAxis(box(2, 8, 0, 14, 16, 16), Direction.Axis.Z);
+
     public FactoryLightBlock(Properties settings) {
         super(settings.noOcclusion().lightLevel(state -> switch(state.getValue(POWER)) {
             case 2 -> 10;
             case 3 -> 15;
             default -> 0;
         }));
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        return switch(state.getValue(PART)) {
+            case 0 -> SHAPE_SINGLE;
+            case 1 -> SHAPER_ENDS.get(Direction.NORTH);
+            case 2 -> SHAPER_MIDDLE.get(Direction.Axis.Z);
+            case 3 -> SHAPER_ENDS.get(Direction.SOUTH);
+            case 4 -> SHAPER_ENDS.get(Direction.WEST);
+            case 5 -> SHAPER_MIDDLE.get(Direction.Axis.X);
+            case 6 -> SHAPER_ENDS.get(Direction.EAST);
+            default -> throw new IllegalStateException();
+        };
     }
 
     @Override

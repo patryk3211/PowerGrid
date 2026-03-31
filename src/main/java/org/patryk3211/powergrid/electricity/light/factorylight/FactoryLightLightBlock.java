@@ -2,6 +2,7 @@ package org.patryk3211.powergrid.electricity.light.factorylight;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -9,6 +10,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class FactoryLightLightBlock extends Block {
     public static final IntegerProperty POWER = IntegerProperty.create("power", 0, 1);
@@ -20,8 +24,13 @@ public class FactoryLightLightBlock extends Block {
                 .noLootTable()
                 .noOcclusion()
                 .replaceable()
-                .pushReaction(PushReaction.DESTROY)
-                .air());
+                .noParticlesOnBreak()
+                .pushReaction(PushReaction.DESTROY));
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        return Shapes.empty();
     }
 
     @Override

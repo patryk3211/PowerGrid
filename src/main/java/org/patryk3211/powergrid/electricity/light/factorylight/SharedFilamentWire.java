@@ -1,6 +1,7 @@
 package org.patryk3211.powergrid.electricity.light.factorylight;
 
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 
 public class SharedFilamentWire extends SwitchedWire {
@@ -55,5 +56,19 @@ public class SharedFilamentWire extends SwitchedWire {
         if(simWire == null)
             return false;
         return simWire.isConverged();
+    }
+
+    @Override
+    public ElectricalNetwork getNetwork() {
+        return simWire != null ? simWire.getNetwork() : null;
+    }
+
+    @Override
+    public void setNetwork(ElectricalNetwork network) {
+        throw new UnsupportedOperationException("Shared filament cannot be in a network!");
+    }
+
+    public TopLevelSharedFilamentWire getSimWire() {
+        return simWire;
     }
 }

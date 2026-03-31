@@ -59,7 +59,7 @@ public abstract class AbstractLightFixtureBlockEntity extends ElectricBlockEntit
         }
     }
 
-    private void lightBulbChanged() {
+    protected void lightBulbChanged() {
         var filament = getFilament();
         if(bulbState == null) {
             filament.setState(false);
@@ -118,7 +118,7 @@ public abstract class AbstractLightFixtureBlockEntity extends ElectricBlockEntit
         if(result) {
             lightBulbChanged();
             if(!level.isClientSide && bulbState == null) {
-                level.setBlock(worldPosition, getBlockState().setValue(LightFixtureBlock.POWER, 0), LightFixtureBlock.UPDATE_ALL);
+                setPowerLevel(0);
             }
         }
         return result;

@@ -51,6 +51,7 @@ public abstract class LightBulbState implements ElectricBehaviour.SyncAppender {
     protected boolean burned;
     private int overheatTicks;
     private boolean playEffect;
+    private boolean cooldown;
 
     @Nullable
     protected DyeColor color;
@@ -104,8 +105,16 @@ public abstract class LightBulbState implements ElectricBehaviour.SyncAppender {
         if(!world.isClientSide) {
             var filament = fixtureLogic.getFilament();
             float dissipatedPower = dissipationFactor * (temperature - BASE_TEMPERATURE);
-            if(filament.isConverged())
+            if(filament.isConverged()) {
                 applyPower(filament.power() - dissipatedPower);
+                cooldown = false;
+            } else if(filament.getNetwork() == null) {
+                if(cooldown) {
+                    applyPower(-dissipatedPower);
+                } else {
+                    cooldown = true;
+                }
+            }
             if(!Float.isFinite(temperature))
                 temperature = BASE_TEMPERATURE;
             filament.setResistance(bulb.resistanceFunction(temperature));
