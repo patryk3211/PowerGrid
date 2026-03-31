@@ -138,10 +138,10 @@ public class GPUBlockEntity extends ElectricBlockEntity implements IHaveGoggleIn
     @Override
     public void tickAudio() {
         super.tickAudio();
-        if(!hasSoundSource && fan() > 0.25f) {
+        if(!hasSoundSource && fan() > 0.05f) {
             Minecraft.getInstance().getSoundManager().play(new GPUSoundInstance(this));
             hasSoundSource = true;
-        } else if(hasSoundSource && fan() < 0.25f) {
+        } else if(hasSoundSource && fan() < 0.05f) {
             hasSoundSource = false;
         }
     }

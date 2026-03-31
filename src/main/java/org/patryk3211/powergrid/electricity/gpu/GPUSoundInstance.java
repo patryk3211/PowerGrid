@@ -44,7 +44,7 @@ public class GPUSoundInstance extends AbstractTickableSoundInstance {
 
     @Override
     public void tick() {
-        if(be.isRemoved() || be.fan() < 0.25f) {
+        if(be.isRemoved() || be.fan() < 0.05f) {
             stop();
         } else {
             this.volume = be.fan();

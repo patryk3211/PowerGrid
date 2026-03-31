@@ -35,6 +35,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -753,6 +754,12 @@ public class ModdedBlocks {
             .item()
                 .model(itemWithParent("block/gpu/item"))
                 .build()
+            .register();
+
+    public static BlockEntry<Block> BLOCKCHAIN = REGISTRATE.block("blockchain", Block::new)
+            .blockstate(cubeAllWithItem("block/blockchain"))
+            .initialProperties(() -> Blocks.CHAIN)
+            .simpleItem()
             .register();
 
     public static void register() {

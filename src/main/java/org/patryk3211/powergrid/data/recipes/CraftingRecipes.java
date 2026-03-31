@@ -30,6 +30,15 @@ import static org.patryk3211.powergrid.data.recipes.RecipeTags.*;
 public class CraftingRecipes extends StandardRecipeProvider {
     GeneratedRecipe
 
+    BLOCKCHAIN = create(ModdedBlocks.BLOCKCHAIN)
+            .unlockedBy(() -> Items.CHAIN)
+            .viaShaped(b -> b
+                    .pattern("CCC")
+                    .pattern("CCC")
+                    .pattern("CCC")
+                    .define('C', Items.CHAIN)
+            ),
+
     WIRE_CONNECTOR = create(ModdedBlocks.WIRE_CONNECTOR)
             .unlockedBy(AllItems.ANDESITE_ALLOY::get)
             .viaShaped(b -> b
