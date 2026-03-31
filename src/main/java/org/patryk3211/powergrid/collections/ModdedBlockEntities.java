@@ -44,6 +44,7 @@ import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.grounding.GroundingRodBlockEntity;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightBlockEntity;
+import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightRenderer;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureRenderer;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlockEntity;
@@ -353,6 +354,7 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<FactoryLightBlockEntity> FACTORY_LIGHT =
             REGISTRATE.blockEntity("factory_light", FactoryLightBlockEntity::new)
                     .validBlock(ModdedBlocks.FACTORY_LIGHT)
+                    .renderer(() -> FactoryLightRenderer::new)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

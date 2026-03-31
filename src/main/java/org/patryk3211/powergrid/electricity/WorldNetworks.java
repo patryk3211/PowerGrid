@@ -32,6 +32,7 @@ import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.config.CSolver;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
+import org.patryk3211.powergrid.electricity.base.IMultipartSync;
 import org.patryk3211.powergrid.electricity.base.ISynchronizedElement;
 import org.patryk3211.powergrid.electricity.sim.*;
 import org.patryk3211.powergrid.electricity.sim.node.*;
@@ -39,7 +40,6 @@ import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePort;
 import org.patryk3211.powergrid.electricity.wire.*;
-import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
 import org.patryk3211.powergrid.network.packets.NegotiateSyncC2SPacket;
 import org.patryk3211.powergrid.network.packets.StateS2CPacket;
 
@@ -346,8 +346,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                             if (eb == null)
                                 continue;
                             var syncState = new SyncState(eb.getPos().distManhattan(player.blockPosition()) / 16 + 1);
-                            if(eb.blockEntity instanceof WindingBlockEntity winding) {
-                                winding.forSync(sync -> {
+                            if(eb.blockEntity instanceof IMultipartSync multipart) {
+                                multipart.forSync(sync -> {
                                     if(sync == null)
                                         return;
                                     syncStates.computeIfAbsent(player, $ -> new HashMap<>())

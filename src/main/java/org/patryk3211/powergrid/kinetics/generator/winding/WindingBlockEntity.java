@@ -45,7 +45,7 @@ import java.util.stream.Stream;
 import static org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock.AXIS;
 import static org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock.PART;
 
-public class WindingBlockEntity extends ElectricBlockEntity {
+public class WindingBlockEntity extends ElectricBlockEntity implements IMultipartSync {
     /**
      * This is the main block entity of multiple windings connected by housings.
      */
@@ -694,6 +694,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         setUnsaved();
     }
 
+    @Override
     public void forSync(Consumer<ISynchronizedElement> consumer) {
         consumer.accept(electricBehaviour);
         if(collectedBEs != null) {

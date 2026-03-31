@@ -3,7 +3,11 @@ package org.patryk3211.powergrid.electricity.light.factorylight;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -11,10 +15,12 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.HorizontalAxisElectricBlock;
 import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
+import org.patryk3211.powergrid.electricity.light.bulb.ILightBulb;
 import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 
 public class FactoryLightBlock extends HorizontalAxisElectricBlock implements IAcceptCord, IAcceptConnector, IBE<FactoryLightBlockEntity> {
@@ -94,15 +100,15 @@ public class FactoryLightBlock extends HorizontalAxisElectricBlock implements IA
 
         return super.getStateForPlacement(ctx);
     }
-    private static boolean isCenter(int part) {
+    public static boolean isCenter(int part) {
         return part == 2 || part == 5;
     }
 
-    private static boolean isNegativeEdge(int part) {
+    public static boolean isNegativeEdge(int part) {
         return part == 1 || part == 4;
     }
 
-    private static boolean isPositiveEdge(int part) {
+    public static boolean isPositiveEdge(int part) {
         return part == 3 || part == 6;
     }
 
@@ -178,6 +184,22 @@ public class FactoryLightBlock extends HorizontalAxisElectricBlock implements IA
         }
 
         return super.updateShape(state, direction, neighborState, level, pos, neighborPos);
+    }
+
+    @Override
+    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if(hand != InteractionHand.MAIN_HAND)
+            return InteractionResult.PASS;
+        var stack = player.getItemInHand(hand);
+        if(stack.isEmpty() || stack.getItem() instanceof ILightBulb) {
+            return onBlockEntityUse(world, pos, be ->
+                    be.replaceBulb(player, hand, stack)
+                            ? InteractionResult.SUCCESS
+                            : InteractionResult.FAIL);
+        } else {
+            // Holding something else.
+            return InteractionResult.PASS;
+        }
     }
 
     @Override

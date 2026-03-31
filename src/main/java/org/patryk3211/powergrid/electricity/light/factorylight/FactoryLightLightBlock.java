@@ -46,7 +46,7 @@ public class FactoryLightLightBlock extends Block {
                 int power = neighborState.getValue(POWER);
                 return state.setValue(POWER, power);
             } else if(neighborState.getBlock() instanceof FactoryLightBlock) {
-                int power = state.getValue(FactoryLightBlock.POWER);
+                int power = neighborState.getValue(FactoryLightBlock.POWER);
                 return state.setValue(POWER, power - 2);
             }
         }

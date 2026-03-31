@@ -15,9 +15,12 @@
  */
 package org.patryk3211.powergrid.electricity.light.bulb;
 
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -27,20 +30,19 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
-import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 
 import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
-import static org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock.POWER;
 
 public abstract class LightBulbState implements ElectricBehaviour.SyncAppender {
     protected final Item item;
     protected final ILightBulb bulb;
-    protected final LightFixtureBlockEntity fixture;
+    protected final IFixtureEntity fixtureLogic;
+    protected final SmartBlockEntity fixtureBE;
 
     protected final float thermalMass;
     protected final float dissipationFactor;
@@ -53,10 +55,11 @@ public abstract class LightBulbState implements ElectricBehaviour.SyncAppender {
     @Nullable
     protected DyeColor color;
 
-    public <T extends Item&ILightBulb> LightBulbState(T bulb, LightFixtureBlockEntity fixture) {
+    public <T extends Item&ILightBulb, F extends SmartBlockEntity&IFixtureEntity> LightBulbState(T bulb, F fixture) {
         this.item = bulb;
         this.bulb = bulb;
-        this.fixture = fixture;
+        this.fixtureBE = fixture;
+        this.fixtureLogic = fixture;
 
         var properties = bulb.thermalProperties();
         thermalMass = properties.thermalMass();
@@ -76,21 +79,19 @@ public abstract class LightBulbState implements ElectricBehaviour.SyncAppender {
     }
 
     protected void updatePowerLevel(int newLevel) {
-        var world = fixture.getLevel();
-        var state = fixture.getBlockState();
-        if(newLevel != state.getValue(POWER)) {
-            world.setBlock(fixture.getBlockPos(), state.setValue(POWER, newLevel), Block.UPDATE_ALL_IMMEDIATE);
+        if(newLevel != fixtureLogic.getPowerLevel()) {
+            fixtureLogic.setPowerLevel(newLevel);
         }
     }
 
     public int getPowerLevel() {
-        return fixture.getBlockState().getValue(POWER);
+        return fixtureLogic.getPowerLevel();
     }
 
     private void burnEffect() {
-        var world = fixture.getLevel();
+        var world = fixtureBE.getLevel();
         if(world.isClientSide) {
-            var pos = fixture.getBlockPos().getCenter();
+            var pos = fixtureBE.getBlockPos().getCenter();
             world.addParticle(ParticleTypes.FLASH, pos.x, pos.y, pos.z, 0, 0, 0);
         }
     }
@@ -99,9 +100,9 @@ public abstract class LightBulbState implements ElectricBehaviour.SyncAppender {
         if(burned)
             return;
 
-        var world = fixture.getLevel();
+        var world = fixtureBE.getLevel();
         if(!world.isClientSide) {
-            var filament = fixture.getFilament();
+            var filament = fixtureLogic.getFilament();
             float dissipatedPower = dissipationFactor * (temperature - BASE_TEMPERATURE);
             if(filament.isConverged())
                 applyPower(filament.power() - dissipatedPower);
@@ -114,7 +115,7 @@ public abstract class LightBulbState implements ElectricBehaviour.SyncAppender {
                 playEffect = true;
                 filament.setState(false);
                 updatePowerLevel(0);
-                fixture.notifyUpdate();
+                fixtureBE.notifyUpdate();
                 return;
             } else if (!isOverheated()) {
                 overheatTicks = 0;
@@ -127,6 +128,16 @@ public abstract class LightBulbState implements ElectricBehaviour.SyncAppender {
             }
             updatePowerLevel(powerLevel);
         }
+    }
+
+    protected void specialEffects(BlockPos pos, @Nullable Direction facing) {
+
+    }
+
+    public void runSpecialEffects(Level level, BlockPos pos, @Nullable Direction facing) {
+        if(burned || level.isClientSide || getPowerLevel() == 0)
+            return;
+        specialEffects(pos, facing);
     }
 
     public boolean isOverheated() {
@@ -184,7 +195,7 @@ public abstract class LightBulbState implements ElectricBehaviour.SyncAppender {
         }
         temperature = nbt.getFloat("Temperature");
         burned = nbt.getBoolean("Burned");
-        fixture.getFilament().setState(!burned);
+        fixtureLogic.getFilament().setState(!burned);
         if(nbt.getBoolean("Effect")) {
             burnEffect();
         }

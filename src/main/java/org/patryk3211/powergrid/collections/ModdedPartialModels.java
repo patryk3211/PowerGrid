@@ -80,6 +80,11 @@ public class ModdedPartialModels {
             AllCTTypes.OMNIDIRECTIONAL,
             PowerGrid.asResource("block/conductive_casing"),
             PowerGrid.asResource("block/conductive_casing_connected"));
+    
+    public static final PartialModel FL_RAYS_CENTER = block("factory_light/godrayscenter");
+    public static final PartialModel FL_RAYS_BACK = block("factory_light/godraysedgeback");
+    public static final PartialModel FL_RAYS_FRONT = block("factory_light/godraysedgefront");
+    public static final PartialModel FL_RAYS_SINGLE = block("factory_light/godrayssingular");
 
     private static PartialModel block(String path) {
         return PartialModel.of(PowerGrid.asResource("block/" + path));

@@ -15,14 +15,14 @@
  */
 package org.patryk3211.powergrid.electricity.light.bulb;
 
-import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 
 public interface ILightBulb {
     record Properties(float dissipationFactor, float thermalMass, float overheatTemperature) { }
 
     float resistanceFunction(float temperature);
     Properties thermalProperties();
-    LightBulbState createState(LightFixtureBlockEntity fixture);
+    <F extends SmartBlockEntity & IFixtureEntity> LightBulbState createState(F fixture);
 
     boolean canBeDyed();
 }
