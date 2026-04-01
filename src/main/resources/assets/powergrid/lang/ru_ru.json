@@ -177,7 +177,6 @@
   "item.powergrid.unetched_circuit": "Непротравленная плата",
   "item.powergrid.varistor": "Варистор",
   "item.powergrid.vfet": "Статический индукционный транзистор",
-  "item.powergrid.wire": "Провод",
   "item.powergrid.wire_cutter": "Кусачки",
   "item.powergrid.wire_cutter.tooltip.behaviour1": "Удаляет подвесной провод или выбранный сегмент провода",
   "item.powergrid.wire_cutter.tooltip.behaviour2": "Удаляет весь провод",
