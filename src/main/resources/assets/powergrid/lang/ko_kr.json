@@ -177,7 +177,6 @@
   "item.powergrid.unetched_circuit": "에칭 전 회로",
   "item.powergrid.varistor": "바리스터",
   "item.powergrid.vfet": "정전 유도 트랜지스터",
-  "item.powergrid.wire": "전선",
   "item.powergrid.wire_cutter": "전선 절단기",
   "item.powergrid.wire_cutter.tooltip.behaviour1": "걸려있는 전선이나 블록 상태의 전선의 일부분을 제거합니다.",
   "item.powergrid.wire_cutter.tooltip.behaviour2": "블록 상태의 전선을 제거합니다.",
