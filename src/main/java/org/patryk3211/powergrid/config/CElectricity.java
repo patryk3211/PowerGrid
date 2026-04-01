@@ -50,6 +50,7 @@ public class CElectricity extends ConfigBase {
     public final ConfigFloat mediumCoreAl = f(10.0f, 0, "mediumCoreAl", Comments.mediumCoreAl);
     public final ConfigFloat mediumCoreK = f(0.99999f, 0, 1, "mediumCoreK", Comments.mediumCoreK);
 
+    public final ConfigInt factoryLightProjectionRange = i(16, 0, "factoryLightProjectionRange", Comments.factoryLightProjectionRange);
 
     public final CSolver solver = nested(1, CSolver::new, Comments.solver);
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
@@ -98,5 +99,7 @@ public class CElectricity extends ConfigBase {
         public static final String smallCoreK = "K parameter of small transformer core (affects stray resistance)";
         public static final String mediumCoreAl = "Al parameter of medium transformer core (affects resistance per turn)";
         public static final String mediumCoreK = "K parameter of medium transformer core (affects stray resistance)";
+
+        public static final String factoryLightProjectionRange = "Maximum block range of the factory light projected light blocks";
     }
 }

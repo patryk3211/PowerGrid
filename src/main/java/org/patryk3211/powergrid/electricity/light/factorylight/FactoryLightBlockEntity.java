@@ -4,6 +4,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IMultipartSync;
 import org.patryk3211.powergrid.electricity.base.ISynchronizedElement;
@@ -31,7 +32,7 @@ public class FactoryLightBlockEntity extends AbstractLightFixtureBlockEntity imp
     }
 
     public static int projectionDistance() {
-        return 16;
+        return ModdedConfigs.server().electricity.factoryLightProjectionRange.get();
     }
 
     private BlockPos getController() {
