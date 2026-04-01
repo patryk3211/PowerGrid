@@ -66,5 +66,9 @@
   "powergrid.component.property.barretter_resistance": "Minimum Resistance",
 
   "powergrid.component.property.varistor_voltage": "Threshold Voltage",
-  "powergrid.component.property.varistor_voltage.summary": "Voltage around which the varistor starts to conduct major current"
+  "powergrid.component.property.varistor_voltage.summary": "Voltage around which the varistor starts to conduct major current",
+
+  "powergrid.component.property.modular_display_current": "Minimum Current",
+  "powergrid.component.property.modular_display_current.summary":"Minimum current required to actuate this component",
+  "powergrid.component.property.modular_display_resistance": "Coil resistance"
 }

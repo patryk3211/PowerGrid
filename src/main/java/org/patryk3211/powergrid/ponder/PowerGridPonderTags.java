@@ -107,7 +107,8 @@ public class PowerGridPonderTags {
                 .add(ModdedItems.GROWTH_LAMP)
                 .add(ModdedBlocks.PLOTTER)
                 .add(ModdedBlocks.CRT)
-                .add(ModdedBlocks.PUNCH_CARD_READER);
+                .add(ModdedBlocks.PUNCH_CARD_READER)
+                .add(ModdedBlocks.MODULAR_DISPLAY);
 
         HELPER.addToTag(CIRCUIT_COMPONENTS)
                 .add(ModdedBlocks.WIRE_CONNECTOR)
@@ -129,7 +130,8 @@ public class PowerGridPonderTags {
                 .add(ModdedItems.POTENTIOMETER)
                 .add(ModdedBlocks.VOLTAGE_METER)
                 .add(ModdedBlocks.CURRENT_METER)
-                .add(ModdedItems.VARISTOR);
+                .add(ModdedItems.VARISTOR)
+                .add(ModdedItems.DISPLAY_MODULE);
 
         HELPER.addToTag(AllCreatePonderTags.KINETIC_APPLIANCES)
                 .add(ModdedBlocks.GENERATOR_CLUTCH)

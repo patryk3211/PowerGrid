@@ -40,6 +40,17 @@ public class Current {
                 .style(ChatFormatting.RED).addTo(tooltip);
     }
 
+    public static void min(float value, Player player, List<Component> tooltip) {
+
+        Lang.translate("tooltip.current.min")
+                .style(ChatFormatting.GRAY).addTo(tooltip);
+        Lang.builder()
+                .add(Component.nullToEmpty(" ")).add(Lang.number(value))
+                .add(Component.nullToEmpty(" ")).add(Unit.CURRENT.get())
+                .style(ChatFormatting.RED).addTo(tooltip);
+    }
+
+
     public static void max(ItemStack stack, Player player, List<Component> tooltip) {
         if(stack.getItem() instanceof BlockItem blockItem) {
             var block = blockItem.getBlock();

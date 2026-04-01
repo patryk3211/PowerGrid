@@ -62,6 +62,14 @@ public interface IDecoratedTerminal {
             .translate("generic.output")
             .style(ChatFormatting.GRAY)
             .component();
+    Component RESET = Lang.builder()
+            .translate("generic.reset")
+            .style(ChatFormatting.GRAY)
+            .component();
+    Component CASE_GROUND = Lang.builder()
+            .translate("generic.case_ground")
+            .style(ChatFormatting.GRAY)
+            .component();
 
     int RED = 0xFF3B3B;
     int BLUE = 0x3B80FF;

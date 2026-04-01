@@ -78,6 +78,7 @@ import org.patryk3211.powergrid.electricity.grounding.GroundingRodBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.light.string.StringLightBlock;
+import org.patryk3211.powergrid.electricity.modulardisplay.ModularDisplayBlock;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlock;
 import org.patryk3211.powergrid.electricity.socket.SocketBlock;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlock;
@@ -742,6 +743,16 @@ public class ModdedBlocks {
 
     public static BlockEntry<StringLightBlock> STRING_LIGHT_BLOCK = REGISTRATE.block("string_light_block", StringLightBlock::new)
             .blockstate(air())
+            .register();
+
+    public static BlockEntry<ModularDisplayBlock> MODULAR_DISPLAY = REGISTRATE.block("modular_display", ModularDisplayBlock::new)
+            .initialProperties(SharedProperties::stone)
+            .blockstate(horizontalBlock("block/modular_display/block"))
+            .transform(pickaxeOnly())
+            .defaultLoot()
+            .item()
+            .model(itemWithParent("block/modular_display/block"))
+            .build()
             .register();
 
     public static void register() {
