@@ -119,7 +119,6 @@
   "item.powergrid.relay": "Relevador",
   "item.powergrid.relay_dpdt": "Relevador De Doble Polo",
   "item.powergrid.resistor": "Resistencia",
-  "item.powergrid.wire": "Alambre",
   "item.powergrid.wire_cutter": "Alicate",
   "powergrid.circuit_board.tooltip.schematic": "Esquema: ",
   "powergrid.ponder.encased_fan.header": "Enfriando",
