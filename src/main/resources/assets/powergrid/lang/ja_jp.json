@@ -120,7 +120,6 @@
   "item.powergrid.resistive_coil": "抵抗コイル",
   "item.powergrid.resistor": "抵抗器",
   "item.powergrid.unetched_circuit": "未エッチングの回路",
-  "item.powergrid.wire": "銅のワイヤー",
   "item.powergrid.zinc_sheet": "亜鉛の板",
   "itemGroup.powergrid.main": "Power Grid",
   "powergrid.circuit_board.tooltip.schematic": "回路図: ",
