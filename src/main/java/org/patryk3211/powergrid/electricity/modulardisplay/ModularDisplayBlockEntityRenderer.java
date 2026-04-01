@@ -106,21 +106,25 @@ public class ModularDisplayBlockEntityRenderer extends SafeBlockEntityRenderer<M
         float g = rgb[1];
         float b = rgb[2];
 
-        vc.vertex(matrix, x + width, y, 0f).color(r, g, b, 255)
+        vc.vertex(matrix, x + width, y, 0f).color(r, g, b, 1)
                 .uv(uMin, vMax).overlayCoords(packedOverlay).uv2(packedLight)
-                .normal(0f, 0f, 1f);
+                .normal(0f, 0f, -1f)
+                .endVertex();
 
-        vc.vertex(matrix, x, y, 0f).color(r, g, b, 255)
+        vc.vertex(matrix, x, y, 0f).color(r, g, b, 1)
                 .uv(uMax, vMax).overlayCoords(packedOverlay).uv2(packedLight)
-                .normal(0f, 0f, 1f);
+                .normal(0f, 0f, -1f)
+                .endVertex();
 
-        vc.vertex(matrix, x, y + height, 0f).color(r, g, b, 255)
+        vc.vertex(matrix, x, y + height, 0f).color(r, g, b, 1)
                 .uv(uMax, vMin).overlayCoords(packedOverlay).uv2(packedLight)
-                .normal(0f, 0f, 1f);
+                .normal(0f, 0f, -1f)
+                .endVertex();
 
-        vc.vertex(matrix, x + width, y + height, 0f).color(r, g, b, 255)
+        vc.vertex(matrix,x + width, y + height, 0f).color(r, g, b, 1)
                 .uv(uMin, vMin).overlayCoords(packedOverlay).uv2(packedLight)
-                .normal(0f, 0f, 1f);
+                .normal(0f, 0f, -1f)
+                .endVertex();
 
     }
 }
