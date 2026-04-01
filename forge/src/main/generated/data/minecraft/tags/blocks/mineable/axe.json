@@ -7,6 +7,7 @@
     "powergrid:mv_switch",
     "powergrid:hv_switch",
     "powergrid:spark_gap",
+    "powergrid:ceiling_tile",
     "powergrid:electric_fan",
     "powergrid:circuit_design_table",
     "powergrid:fuse_holder",

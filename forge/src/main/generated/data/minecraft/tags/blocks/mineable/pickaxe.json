@@ -30,6 +30,7 @@
     "powergrid:power_resistor",
     "powergrid:light_fixture",
     "powergrid:factory_light",
+    "powergrid:ceiling_tile",
     "powergrid:transformer_core",
     "powergrid:transformer_small",
     "powergrid:transformer_medium",
