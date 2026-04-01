@@ -177,7 +177,6 @@
   "item.powergrid.unetched_circuit": "Ungeätzte Leiterplatte",
   "item.powergrid.varistor": "Varistor",
   "item.powergrid.vfet": "",
-  "item.powergrid.wire": "Draht",
   "item.powergrid.wire_cutter": "Seitenschneider",
   "item.powergrid.wire_cutter.tooltip.behaviour1": "Entfernt einen hängenden Draht oder ein ausgewähltes Verlegekabel-Segment",
   "item.powergrid.wire_cutter.tooltip.behaviour2": "Entfernt das gesamte Verlegekabel",
