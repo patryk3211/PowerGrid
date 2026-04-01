@@ -158,7 +158,6 @@
   "item.powergrid.resistor": "Rezystor",
   "item.powergrid.unetched_circuit": "Niewytrawiony Obwód",
   "item.powergrid.varistor": "Warystor",
-  "item.powergrid.wire": "Przewód",
   "item.powergrid.wire_cutter": "Cęgi Do Cięcia Drutu",
   "itemGroup.powergrid.main": "Power Grid",
   "powergrid.circuit_board.tooltip.schematic": "Schemat: ",
