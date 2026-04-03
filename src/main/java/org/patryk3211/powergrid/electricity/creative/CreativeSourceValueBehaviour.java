@@ -34,14 +34,20 @@ public class CreativeSourceValueBehaviour extends ScrollValueBehaviour {
     public CreativeSourceValueBehaviour(Component label, SmartBlockEntity be, float multiplier, ValueBoxTransform slot) {
         super(label, be, slot);
         this.multiplier = multiplier;
-        between(-250, 250);
-        withFormatter(i -> String.format("%.1f", Math.abs(i) * multiplier));
+        between(-1000, 1002);
+        withFormatter(i -> String.format("%.1f%s", Math.abs(i >> 2) * multiplier,
+                (i & 1) > 0 ? "" : (i & 2) > 0 ? "m" : "k"));
+        setValue(1);
     }
 
     public ValueSettingsBoard createBoard(Player player, BlockHitResult hitResult) {
         ImmutableList<Component> rows = ImmutableList.of(
-                Component.literal("+"),//.formatted(Formatting.BOLD),
-                Component.literal("-")//.formatted(Formatting.BOLD)
+                Component.literal("+k"),//.formatted(Formatting.BOLD),
+                Component.literal("+1"),//.formatted(Formatting.BOLD),
+                Component.literal("+m"),//.formatted(Formatting.BOLD),
+                Component.literal("-k"),//.formatted(Formatting.BOLD),
+                Component.literal("-1"),//.formatted(Formatting.BOLD),
+                Component.literal("-m")//.formatted(Formatting.BOLD)
         );
         ValueSettingsFormatter formatter = new ValueSettingsFormatter(this::formatSettings);
         return new ValueSettingsBoard(this.label, 250, 20, rows, formatter);
@@ -52,12 +58,12 @@ public class CreativeSourceValueBehaviour extends ScrollValueBehaviour {
         if (!valueSetting.equals(this.getValueSettings())) {
             this.playFeedbackSound(this);
         }
-
-        this.setValue(valueSetting.row() == 0 ? value : -value);
+        int row = valueSetting.row();
+        this.setValue(value != 0 ? ((row < 3 ? value : -value) << 2) | row % 3 : 1);
     }
 
     public ValueSettingsBehaviour.ValueSettings getValueSettings() {
-        return new ValueSettingsBehaviour.ValueSettings(this.value < 0 ? 1 : 0, Math.abs(this.value));
+        return new ValueSettingsBehaviour.ValueSettings((this.value < 0 ? 3 : 0) + (this.value & 3), Math.abs(this.value >> 2));
     }
 
     public MutableComponent formatSettings(ValueSettingsBehaviour.ValueSettings settings) {

@@ -68,8 +68,8 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
 
         value = new CreativeSourceValueBehaviour(label, this, multiplier, new CreativeSourceBoxTransform());
         value.withCallback(i -> {
-            if(!overwrite)
-                setValue(i * multiplier);
+            if (!overwrite)
+                setValue(((i >> 2) * ((i & 1) > 0 ? 1 : (i & 2) > 0 ? 0.001f : 1000)) * multiplier);
         });
         behaviours.add(value);
     }
