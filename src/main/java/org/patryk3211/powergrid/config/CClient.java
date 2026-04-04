@@ -18,9 +18,11 @@ package org.patryk3211.powergrid.config;
 import net.createmod.catnip.config.ConfigBase;
 
 public class CClient extends ConfigBase {
-    public final CCircuit Circuit = nested(0, CCircuit::new);
-    public final ConfigBool HighContrastTraces = b(false,"HighContrastTraces",Comments.HighContrastTraces);
 
+
+
+    public final CCircuit Circuit = nested(0, CCircuit::new, "Circuit editor stuff");
+    public final ConfigBool HighContrastTraces = b(false,"HighContrastTraces",Comments.HighContrastTraces);
 
     public final ConfigInt crtRed = i(64, 0, 255, "crtRed", Comments.crtRed);
     public final ConfigInt crtGreen = i(4, 0, 255, "crtGreen", Comments.crtGreen);
@@ -57,6 +59,7 @@ public class CClient extends ConfigBase {
         public static final String hummingSoundMultiplier = "Multiplier for all humming ambient sounds";
         public static final String generatorSoundMultiplier = "Multiplier for generator ambient sound";
         public static final String HighContrastTraces = "Higher contrast between traces in the circuit editor";
+
 
     }
 }

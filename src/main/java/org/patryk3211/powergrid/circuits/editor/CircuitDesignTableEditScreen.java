@@ -47,7 +47,6 @@ import org.patryk3211.powergrid.network.packets.ChangeScreenC2SPacket;
 import org.patryk3211.powergrid.network.packets.SaveSchematicC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
 
-import java.awt.*;
 import java.util.List;
 import java.util.UUID;
 
@@ -64,10 +63,23 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
     public static final int CIRCUIT_SCALE = 8;
     public static final int TRACE_PADDING = 1;
 
-    public final int frontTraceColor = (ModdedConfigs.client().Circuit.traceAlpha.get()<< 24)|
-                                       (ModdedConfigs.client().Circuit.traceRed.get()<<16)|
-                                       (ModdedConfigs.client().Circuit.traceGreen.get()<<8)|
-                                       (ModdedConfigs.client().Circuit.traceBlue.get());
+    public final int activeFrontTraceColor = (ModdedConfigs.client().Circuit.traceAlphaTop.get()<< 24)|
+                                       (ModdedConfigs.client().Circuit.traceRedTop.get()<<16)|
+                                       (ModdedConfigs.client().Circuit.traceGreenTop.get()<<8)|
+                                       (ModdedConfigs.client().Circuit.traceBlueTop.get());
+    public final int activeBackTraceColor = (ModdedConfigs.client().Circuit.traceAlphaBottom.get()<< 24)|
+            (ModdedConfigs.client().Circuit.traceRedBottom.get()<<16)|
+            (ModdedConfigs.client().Circuit.traceGreenBottom.get()<<8)|
+            (ModdedConfigs.client().Circuit.traceBlueBottom.get());
+
+    public final int FrontTraceColor = (ModdedConfigs.client().Circuit.traceAlphaTopBehind.get()<< 24)|
+            (ModdedConfigs.client().Circuit.traceRedTop.get()<<16)|
+            (ModdedConfigs.client().Circuit.traceGreenTop.get()<<8)|
+            (ModdedConfigs.client().Circuit.traceBlueTop.get());
+    public final int BackTraceColor = (ModdedConfigs.client().Circuit.traceAlphaBottomBehind.get()<< 24)|
+            (ModdedConfigs.client().Circuit.traceRedBottom.get()<<16)|
+            (ModdedConfigs.client().Circuit.traceGreenBottom.get()<<8)|
+            (ModdedConfigs.client().Circuit.traceBlueBottom.get());
 
     private static final net.minecraft.network.chat.Component TOOLTIP_SAVE = Lang.translateDirect("gui.circuit_designer.save");
     private static final net.minecraft.network.chat.Component TOOLTIP_DISCARD = Lang.translateDirect("gui.circuit_designer.discard");
@@ -357,10 +369,13 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
         int bpX = bgX + 13, bpY = topPos + 22;
 
         if(ModdedConfigs.client().HighContrastTraces.get()){ //added support for high contrast traces
+
+            //when back is selected
             CircuitSchematicRender.renderLayer(schematic.back(), ctx, bpX, bpY, CIRCUIT_SCALE,
-                    backLayer ? COLOR_TRACE_FRONT_HC : COLOR_TRACE_BACK_HC);
+                backLayer ? activeBackTraceColor  : BackTraceColor );
+            //when front is selected
             CircuitSchematicRender.renderLayer(schematic.front(), ctx, bpX, bpY, CIRCUIT_SCALE,
-                    backLayer ? COLOR_TRACE_BACK : COLOR_TRACE_FRONT);
+                    backLayer ? FrontTraceColor : activeFrontTraceColor);
 
         }else {
             CircuitSchematicRender.renderLayer(schematic.back(), ctx, bpX, bpY, CIRCUIT_SCALE,

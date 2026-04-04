@@ -1,10 +1,19 @@
 package org.patryk3211.powergrid.config;
 import net.createmod.catnip.config.ConfigBase;
 public class CCircuit extends ConfigBase{
-    public final ConfigInt traceRed = i(255,0,255,"traceRed", CCircuit.Comments.traceRed);
-    public final ConfigInt traceGreen = i(255,0,255,"traceRed", CCircuit.Comments.traceGreen);
-    public final ConfigInt traceBlue = i(255,0,255,"traceRed", CCircuit.Comments.traceBlue);
-    public final ConfigInt traceAlpha = i(255,0,255,"traceRed", CCircuit.Comments.traceAlpha);
+
+    public final ConfigInt traceRedTop = i(255,0,255,"traceRedTop", Comments.traceRed);
+    public final ConfigInt traceGreenTop = i(255,0,255,"traceGreenTop", Comments.traceGreen);
+    public final ConfigInt traceBlueTop = i(255,0,255,"traceBlueTop", Comments.traceBlue);
+    public final ConfigInt traceAlphaTop = i(255,0,255,"traceAlphaTop", Comments.traceAlpha);
+    public final ConfigInt traceAlphaTopBehind = i(128,0,255,"traceAlphaTopBehind", Comments.traceAlpha);
+
+    public final ConfigInt traceRedBottom = i(255,0,255,"traceRedBottom", Comments.traceRed);
+    public final ConfigInt traceGreenBottom = i(255,0,255,"traceGreenBottom", Comments.traceGreen);
+    public final ConfigInt traceBlueBottom= i(255,0,255,"traceBlueBottom", Comments.traceBlue);
+    public final ConfigInt traceAlphaBottom = i(255,0,255,"traceAlphaBottom", Comments.traceAlphaBack);
+    public final ConfigInt traceAlphaBottomBehind = i(128,0,255,"traceAlphaBottomBehind", Comments.traceAlphaBack);
+
     @Override
     public String getName() {
         return "CCircuit";
@@ -15,5 +24,6 @@ public class CCircuit extends ConfigBase{
         public static final String traceGreen = "Amount of green in traces";
         public static final String traceBlue = "Amount of blue in traces";
         public static final String traceAlpha = "Amount of alpha in traces";
+        public static final String traceAlphaBack = "Amount of alpha in traces on the back";
     }
 }
