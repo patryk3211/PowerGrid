@@ -1,7 +1,7 @@
 package org.patryk3211.powergrid.config;
 import net.createmod.catnip.config.ConfigBase;
 public class CCircuit extends ConfigBase{
-
+    public final ConfigBool HighContrastTraces = b(false,"HighContrastTraces", Comments.HighContrastTraces);
     public final ConfigInt traceRedTop = i(255,0,255,"traceRedTop", Comments.traceRed);
     public final ConfigInt traceGreenTop = i(255,0,255,"traceGreenTop", Comments.traceGreen);
     public final ConfigInt traceBlueTop = i(255,0,255,"traceBlueTop", Comments.traceBlue);
@@ -16,7 +16,7 @@ public class CCircuit extends ConfigBase{
 
     @Override
     public String getName() {
-        return "CCircuit";
+        return "Circuit Design Table";
     }
 
     private static class Comments {
@@ -25,5 +25,6 @@ public class CCircuit extends ConfigBase{
         public static final String traceBlue = "Amount of blue in traces";
         public static final String traceAlpha = "Amount of alpha in traces";
         public static final String traceAlphaBack = "Amount of alpha in traces on the back";
+        public static final String HighContrastTraces = "Higher contrast between traces in the circuit editor";
     }
 }

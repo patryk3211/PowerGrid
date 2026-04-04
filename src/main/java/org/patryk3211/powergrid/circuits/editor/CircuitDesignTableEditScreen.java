@@ -368,7 +368,7 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
 
         int bpX = bgX + 13, bpY = topPos + 22;
 
-        if(ModdedConfigs.client().HighContrastTraces.get()){ //added support for high contrast traces
+        if(ModdedConfigs.client().Circuit.HighContrastTraces.get()){ //added support for high contrast traces
 
             //when back is selected
             CircuitSchematicRender.renderLayer(schematic.back(), ctx, bpX, bpY, CIRCUIT_SCALE,
