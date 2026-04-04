@@ -38,7 +38,7 @@ import org.patryk3211.powergrid.electricity.sim.special.ElectronTubeWire;
 
 import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
 
-public class ElectronTubeComponent extends OrientableComponent implements IRenderedComponent {
+public class ElectronTubeComponent extends MirrorableComponent implements IRenderedComponent {
     public static final FloatProperty GAIN = new FloatProperty(PowerGrid.MOD_ID, "tube_gain", 5, 1, 100);
     public static final FloatProperty K_G = new FloatProperty(PowerGrid.MOD_ID, "tube_kg", 6800, 200, 10_000);
     public static final FloatProperty SATURATION_CURRENT = new FloatProperty(PowerGrid.MOD_ID, "tube_saturation_current", 0.1f, 0.001f, 20);

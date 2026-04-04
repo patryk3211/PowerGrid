@@ -54,6 +54,13 @@ public class CapacitorWire extends AbstractElectricWire implements IStaticResidu
     }
 
     @Override
+    public double potentialDifference() {
+        if(network == null)
+            return V;
+        return super.potentialDifference();
+    }
+
+    @Override
     public double current() {
         return super.current() + Ieq;
     }
@@ -64,13 +71,13 @@ public class CapacitorWire extends AbstractElectricWire implements IStaticResidu
             Iprev = (potentialDifference() - V) * capacitance / getDeltaTime();
             // Save voltage with a bit of leakage
             V = potentialDifference() * 0.99999;
-            var G = conductance();
-            Ieq = -G * V - Iprev;
         }
     }
 
     @Override
     public void addStaticResidual(IResidualAdder residual) {
+        var G = conductance();
+        Ieq = -G * V - Iprev;
         if(node1 != null)
             residual.add(node1.getIndex(), -Ieq);
         if(node2 != null)

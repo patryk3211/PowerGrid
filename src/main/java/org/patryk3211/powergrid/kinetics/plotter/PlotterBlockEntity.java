@@ -40,6 +40,7 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.gauge.GaugeValueBehaviour;
+import org.patryk3211.powergrid.electricity.info.customdisplay.CustomDisplayBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 import org.patryk3211.powergrid.utility.ClientSideAccess;
@@ -52,6 +53,7 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
     private static final float[] MAX_VALUES = new float[] { 2, 20, 200, 2000 };
 
     private GaugeValueBehaviour gaugeValue;
+    private CustomDisplayBehaviour displayBehaviour;
     private float maxValue = MAX_VALUES[0];
 
     private ElectricWire wire;
@@ -78,6 +80,8 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
             sendData();
         });
         behaviours.add(gaugeValue);
+        displayBehaviour = new CustomDisplayBehaviour(this, Unit.VOLTAGE, true, () -> maxValue, value -> ChatFormatting.AQUA);
+        behaviours.add(displayBehaviour);
     }
 
     @Override
@@ -213,9 +217,7 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
                         .add(Lang.numberConstant((1 - coord) * sampleBuffer.length / 20f))
                         .add(Component.literal("s"))
                         .forGoggles(tooltip);
-                Unit.VOLTAGE.formatWithPrefixes(x * maxValue)
-                        .style(ChatFormatting.AQUA)
-                        .forGoggles(tooltip, 1);
+                displayBehaviour.format(x * maxValue).forGoggles(tooltip, 1);
             }
         });
         return true;

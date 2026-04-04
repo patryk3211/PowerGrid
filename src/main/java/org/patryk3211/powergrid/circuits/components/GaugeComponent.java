@@ -21,6 +21,7 @@ import com.simibubi.create.Create;
 import net.createmod.catnip.render.CachedBuffers;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.network.chat.Component;
@@ -30,15 +31,18 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
 import org.patryk3211.powergrid.circuits.components.properties.IntProperty;
+import org.patryk3211.powergrid.circuits.components.properties.StringProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
+import org.patryk3211.powergrid.electricity.info.customdisplay.Expression;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
 public abstract class GaugeComponent extends OrientableComponent implements IRedstoneComponent, IRenderedComponent, IComponentGoggleInformation {
-    public static final IntProperty LEVEL = (IntProperty) new IntProperty(PowerGrid.MOD_ID, "redstone_level", 0, 0, 15).hidden();
+    public static final IntProperty LEVEL = new IntProperty(PowerGrid.MOD_ID, "redstone_level", 0, 0, 15).hidden().cast();
+    public static final StringProperty EQUATION = new StringProperty(PowerGrid.MOD_ID, "gauge_equation", "x");
 
     public GaugeComponent(ComponentFootprint footprint) {
         super(footprint);
@@ -47,7 +51,7 @@ public abstract class GaugeComponent extends OrientableComponent implements IRed
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(LEVEL, LABEL);
+        properties.add(LEVEL, LABEL, EQUATION);
     }
 
     @Override
@@ -61,6 +65,11 @@ public abstract class GaugeComponent extends OrientableComponent implements IRed
     }
 
     public abstract float getTarget(PlacedComponent placed);
+    public abstract float getValue(PlacedComponent placed);
+
+    public abstract float getMaxValue(PlacedComponent placed);
+    public abstract String getUnit(PlacedComponent placed);
+    public abstract ChatFormatting getColor(float value, float maxValue);
 
     @Override
     public boolean tick(@NotNull PlacedComponent placed) {
@@ -79,6 +88,7 @@ public abstract class GaugeComponent extends OrientableComponent implements IRed
                 data = current;
             } else {
                 data = new RenderData();
+                data.expression = Expression.tryParse(placed.get(EQUATION)).orElse(null);
                 placed.customData = data;
             }
             data.prevState = data.state;
@@ -94,6 +104,7 @@ public abstract class GaugeComponent extends OrientableComponent implements IRed
     public static class RenderData {
         private float prevState;
         private float state;
+        private Expression expression;
     }
 
     @Override
@@ -126,6 +137,50 @@ public abstract class GaugeComponent extends OrientableComponent implements IRed
             }
         } else {
             Lang.builder(Create.ID).translate("gui.gauge.info_header").forGoggles(tooltip);
+        }
+        if(component.customData instanceof RenderData data && data.expression != null) {
+            var expr = data.expression;
+            float value = getValue(component);
+            float maxValue = getMaxValue(component);
+            StringBuilder line = new StringBuilder();
+            if(Math.abs(value) > maxValue) {
+                line.append(value >= 0 ? "> " : "< ");
+                if(value < 0)
+                    value = -maxValue;
+                else
+                    value = maxValue;
+            }
+            var evaluatedValue = expr.eval(value);
+            if(evaluatedValue >= 0)
+                line.append(" ");
+            String prefix = "";
+//            if(prefixes) {
+//                var abs = Math.abs(evaluatedValue);
+//                if (abs < 1) {
+//                    // Milli
+//                    evaluatedValue *= 1000;
+//                    prefix = "m";
+//                } else if (abs < 1000) {
+//                    prefix = "";
+//                } else if (abs < 1000000) {
+//                    // Kilo
+//                    evaluatedValue /= 1000;
+//                    prefix = "k";
+//                } else {
+//                    // Mega
+//                    evaluatedValue /= 1000000;
+//                    prefix = "M";
+//                }
+//            } else {
+//                prefix = "";
+//            }
+            line.append(String.format("%.2f %s", evaluatedValue, prefix));
+            var textComponent = Lang.text(line.toString())
+                    .style(getColor(Math.abs(value), maxValue));
+            textComponent.add(Component.literal(getUnit(component)));
+            textComponent.forGoggles(tooltip);
+        } else {
+            Lang.translate("gui.invalid_equation").style(ChatFormatting.RED).forGoggles(tooltip);
         }
         return true;
     }

@@ -72,7 +72,7 @@ public class GlobalElectricNetworks {
     }
 
     public static WorldNetworks getWorldNetworks(Level world) {
-        return worldNetworks.computeIfAbsent(world, key -> {
+        var global = worldNetworks.computeIfAbsent(world, key -> {
             if(key instanceof PonderLevel)
                 return new WorldNetworks(key);
             if(key.isClientSide) return makeClientWorldNetworks(key);
@@ -82,16 +82,16 @@ public class GlobalElectricNetworks {
                         (nbt, registries) -> new WorldNetworks(world, nbt),
                         DataFixTypes.LEVEL
                 );
-                var global = server.getDataStorage().computeIfAbsent(
+                return server.getDataStorage().computeIfAbsent(
                         factory,
                         "powergrid_electric_network_data"
                 );
-                global.completeLoad();
-                return global;
             } else {
                 return new WorldNetworks(world);
             }
         });
+        global.completeLoad();
+        return global;
     }
 
     @Nullable

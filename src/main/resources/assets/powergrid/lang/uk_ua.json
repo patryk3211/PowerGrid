@@ -206,7 +206,7 @@
   "powergrid.generic.unit.amp": "А",
   "powergrid.generic.unit.amp.name": "Ампер",
   "powergrid.generic.unit.block": "блоків",
-  "powergrid.generic.unit.charge": "Вт·год",
+  "powergrid.generic.unit.energy": "Вт·год",
   "powergrid.generic.unit.ohm": "Ом",
   "powergrid.generic.unit.ohm.name": "Ом",
   "powergrid.generic.unit.temperature": "°C",

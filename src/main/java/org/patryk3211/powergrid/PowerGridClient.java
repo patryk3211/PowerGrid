@@ -30,6 +30,7 @@ import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.info.TerminalHandler;
 import org.patryk3211.powergrid.electricity.transformer.TransformerWindingScreen;
 import org.patryk3211.powergrid.electricity.wire.ClientWireInteractions;
+import org.patryk3211.powergrid.electricity.wire.WirePreview;
 import org.patryk3211.powergrid.equipment.zapper.ElectroZapperRenderHandler;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItemRenderer;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerItemRenderer;
@@ -60,6 +61,11 @@ public class PowerGridClient {
 		ClientTickEvent.CLIENT_LEVEL_PRE.register(GlobalElectricNetworks::preTick);
 		ClientTickEvent.CLIENT_LEVEL_POST.register(TerminalHandler::tick);
 		ClientTickEvent.CLIENT_POST.register(PowerGridClient::clientTick);
+		ClientPlayerEvent.CLIENT_PLAYER_RESPAWN.register(PowerGridClient::clientRespawn);
+	}
+
+	private static void clientRespawn(LocalPlayer localPlayer, LocalPlayer localPlayer1) {
+		ModdedPackets.sendToServer(new NegotiateSyncC2SPacket(ModdedConfigs.common().syncWithDoubles.get()));
 	}
 
 	private static void clientJoin(LocalPlayer player) {
@@ -75,6 +81,7 @@ public class PowerGridClient {
 		ELECTRO_ZAPPER_RENDER_HANDLER.tick();
 		CustomValueSettingsScreen.clientTick();
 		WindingPreview.tick();
+		WirePreview.tick();
 		TransformerWindingScreen.clientTick();
 		ClientWireInteractions.clientTick();
 		ThermometerItemRenderer.clientTick();

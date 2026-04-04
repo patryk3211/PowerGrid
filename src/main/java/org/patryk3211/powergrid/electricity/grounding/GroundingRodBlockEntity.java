@@ -17,13 +17,16 @@ package org.patryk3211.powergrid.electricity.grounding;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -128,10 +131,31 @@ public class GroundingRodBlockEntity extends ElectricBlockEntity {
             var entities = level.getEntitiesOfClass(LivingEntity.class, bb, e -> e.position().distanceToSqr(center) <= sqrDist && e.onGround());
 
             Registry<DamageType> registry = level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE);
-            var source = new DamageSource(registry.getHolder(ModdedDamageTypes.ZAP).get());
+            var source = new GroundingRodDamageSource(registry.getHolder(ModdedDamageTypes.ZAP).get(), this.getBlockState().getBlock());
             for(var entity : entities) {
                 // TODO: Scale damage with potential.
                 entity.hurt(source, 1);
+            }
+        }
+    }
+
+    public static class GroundingRodDamageSource extends DamageSource {
+        private final Block rod;
+
+        public GroundingRodDamageSource(Holder<DamageType> type, Block rod) {
+            super(type);
+            this.rod = rod;
+        }
+
+        @Override
+        public Component getLocalizedDeathMessage(LivingEntity killed) {
+            var translationId = "death.attack." + this.type().msgId();
+            var primeAdversary = killed.getKillCredit();
+            var machineName = Component.translatable(rod.getDescriptionId());
+            if(primeAdversary != null) {
+                return Component.translatable(translationId + ".player", killed.getDisplayName(), machineName, primeAdversary.getDisplayName());
+            } else {
+                return Component.translatable(translationId, killed.getDisplayName(), machineName);
             }
         }
     }

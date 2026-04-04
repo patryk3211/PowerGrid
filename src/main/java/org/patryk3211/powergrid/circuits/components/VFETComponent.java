@@ -29,7 +29,7 @@ import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.special.ElectronTubeWire;
 import org.patryk3211.powergrid.utility.Unit;
 
-public class VFETComponent extends OrientableComponent {
+public class VFETComponent extends MirrorableComponent {
     public static final FloatProperty GAIN = new FloatProperty(PowerGrid.MOD_ID, "vfet_gain", 10, 1, 100);
     public static final FloatProperty K_G = new FloatProperty(PowerGrid.MOD_ID, "vfet_kg", 250, 10, 500);
     public static final ConstantProperty SATURATION_CURRENT = new ConstantProperty(PowerGrid.MOD_ID, "vfet_isat",

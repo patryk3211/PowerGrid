@@ -46,6 +46,7 @@ import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Voltage;
+import org.patryk3211.powergrid.electricity.info.customdisplay.CustomDisplayBehaviour;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 
 import java.util.List;
@@ -79,6 +80,8 @@ public class PlotterBlock extends ElectricKineticBlock implements IBE<PlotterBlo
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if(CustomDisplayBehaviour.use(level, pos, player, hand))
+            return InteractionResult.SUCCESS;
         if(hand == InteractionHand.MAIN_HAND) {
             var item = player.getItemInHand(hand);
             if(item.getItem() instanceof DyeItem dye) {

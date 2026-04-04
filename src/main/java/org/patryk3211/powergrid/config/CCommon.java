@@ -15,26 +15,13 @@
  */
 package org.patryk3211.powergrid.config;
 
-import dev.architectury.utils.Env;
-import dev.architectury.utils.EnvExecutor;
 import net.createmod.catnip.config.ConfigBase;
-import org.patryk3211.powergrid.collections.ModdedConfigs;
-import org.patryk3211.powergrid.collections.ModdedPackets;
-import org.patryk3211.powergrid.network.packets.NegotiateSyncC2SPacket;
 
 public class CCommon extends ConfigBase {
     public final ConfigBool lotsOfLogs = b(false, "lotsOfLogs", Comments.lotsOfLogs);
     public final ConfigInt stateSynchronization = i(100, 0, "fullStateSynchronizationInterval", Comments.stateSynchronization);
     public final ConfigBool syncWithDoubles = b(false, "syncWithDoubles", Comments.syncWithDoubles);
     public final ConfigBool allocateUnpooledBuffers = b(false, "allocateUnpooledBuffers");
-
-    @Override
-    public void onReload() {
-        super.onReload();
-        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
-            ModdedPackets.sendToServer(new NegotiateSyncC2SPacket(ModdedConfigs.common().syncWithDoubles.get()));
-        });
-    }
 
     @Override
     public String getName() {
