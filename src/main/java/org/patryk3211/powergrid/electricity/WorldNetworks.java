@@ -852,6 +852,9 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         Collection<TransmissionLinePart> parts = partNodeMap.get(globalExternalNodes.get(endpoint));
         if(parts == null)
             return false;
+        // Make sure endpoints are always up to date in line parts.
+        // TODO: Verify that this doesn't brake a bunch of things
+        addAndMigrateNode(endpoint);
         parts = List.copyOf(parts);
         boolean continueResolving = false;
         for(var part : parts) {
@@ -870,7 +873,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                         return true;
                     }
                 } else if(part.getEndpoint2().equals(endpoint)) {
-//                    assert part.getEndpoint2().equals(endpoint);
                     // Check endpoint1
                     if(part.getEndpoint1().isValid(world)) {
                         // Resolve segment
@@ -890,7 +892,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     continueResolving = true;
                 }
             } else if(part.getEndpoint2().equals(endpoint)) {
-//                assert part.getEndpoint2().equals(endpoint);
                 if(traceTree(part.getEndpoint1(), visited)) {
                     makeTransmissionLine(part);
                     continueResolving = true;

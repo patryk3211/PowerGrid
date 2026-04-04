@@ -16,9 +16,12 @@
 package org.patryk3211.powergrid.kinetics.generator.winding;
 
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
@@ -293,7 +296,7 @@ public class WindingBlockEntity extends ElectricBlockEntity implements IMultipar
                         be.coilWire = null;
                     }
                 }
-                if(parallelPositions == null && (!level.isClientSide || isVirtual())) {
+                if(!level.isClientSide || isVirtual()) {
                     // Check for parallel windings and housings
                     checkParallelPosition(pos1, Direction.get(Direction.AxisDirection.POSITIVE, parallelCheckAxis), false);
                     checkParallelPosition(pos1, Direction.get(Direction.AxisDirection.NEGATIVE, parallelCheckAxis), false);
@@ -362,7 +365,7 @@ public class WindingBlockEntity extends ElectricBlockEntity implements IMultipar
                     });
                 });
                 otherMain.parallelPositions = null;
-            } else if(otherMain.ownerPosition != null) {
+            } else if(otherMain.ownerPosition != null && !otherMain.ownerPosition.equals(worldPosition)) {
                 var be = level.getBlockEntity(otherMain.ownerPosition, ModdedBlockEntities.WINDING.get());
                 // Merge owners
                 be.ifPresent(this::addParallel);
@@ -715,6 +718,34 @@ public class WindingBlockEntity extends ElectricBlockEntity implements IMultipar
                         }
                     }
                 });
+            }
+        }
+    }
+
+    public void debugDump(Player user) {
+        if(!isMain()) {
+            user.sendSystemMessage(Component.literal("Non-main, main dump:"));
+            mainBE.debugDump(user);
+            return;
+        } else {
+            user.sendSystemMessage(Component.literal("Main").withStyle(ChatFormatting.BOLD));
+        }
+        if(ownerPosition != null) {
+            user.sendSystemMessage(Component.literal("Owned winding").withStyle(ChatFormatting.GRAY));
+            user.sendSystemMessage(Component.literal(" Owner: " + ownerPosition).withStyle(ChatFormatting.RED));
+            var opt = level.getBlockEntity(ownerPosition, ModdedBlockEntities.WINDING.get());
+            opt.ifPresentOrElse(be -> {
+                user.sendSystemMessage(Component.literal("Owner dump:").withStyle(ChatFormatting.GRAY));
+                be.debugDump(user);
+            }, () -> {
+                user.sendSystemMessage(Component.literal("Invalid or unloaded owner").withStyle(ChatFormatting.RED).withStyle(ChatFormatting.BOLD));
+            });
+        }
+        if(parallelPositions != null) {
+            user.sendSystemMessage(Component.literal("Owner winding").withStyle(ChatFormatting.GRAY).withStyle(ChatFormatting.BOLD));
+            user.sendSystemMessage(Component.literal(" Owned windings (n = " + parallelPositions.size() + ")").withStyle(ChatFormatting.DARK_GRAY));
+            for(var pos : parallelPositions) {
+                user.sendSystemMessage(Component.literal(" - " + pos).withStyle(ChatFormatting.DARK_AQUA));
             }
         }
     }

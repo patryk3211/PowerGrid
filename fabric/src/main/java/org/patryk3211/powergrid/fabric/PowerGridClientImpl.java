@@ -61,10 +61,8 @@ public class PowerGridClientImpl implements ClientModInitializer, ModelLoadingPl
 
     private void onLevelRender(WorldRenderContext context) {
         var matrixStack = context.matrixStack();
-        matrixStack.pushPose();
 
         var cameraPos = context.camera().getPosition();
-        matrixStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
         var buffer = DefaultSuperRenderTypeBuffer.getInstance();
         var player = Minecraft.getInstance().player;
@@ -72,12 +70,11 @@ public class PowerGridClientImpl implements ClientModInitializer, ModelLoadingPl
         var world = Minecraft.getInstance().level;
         var target = Minecraft.getInstance().hitResult;
         if (player != null && target != null) {
-            WirePreview.render(buffer, matrixStack, world, player, target);
-            MultimeterItemRenderer.render(buffer, matrixStack, world, player);
+            WirePreview.render(buffer, matrixStack, world, player, cameraPos);
+            MultimeterItemRenderer.render(buffer, matrixStack, world, player, cameraPos);
         }
 
         buffer.draw();
-        matrixStack.popPose();
     }
 
     @Override

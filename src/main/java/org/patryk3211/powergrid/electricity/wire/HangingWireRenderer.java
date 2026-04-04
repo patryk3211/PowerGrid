@@ -103,27 +103,27 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
                     x1, y1, z1,
                     x2, y2, z2,
                     rp.cross1, rp.cross2, LightTexture.pack(block, sky), color,
-                    rp.thickness, thicknessOffset, length, offset, simpleModel);
+                    rp.thickness, thicknessOffset, (float) length, (float) offset, simpleModel);
         }, segmentSize);
     }
 
     public static void renderFromPositions(PoseStack matrices, VertexConsumer buffer, Vec3 t1, Vec3 t2, double horizontalCoefficient, double verticalCoefficient, double thickness, int light, int color) {
-        float x = (float) (t1.x + t2.x) * 0.5f;
-        float y = (float) t1.y;
-        float z = (float) (t1.z + t2.z) * 0.5f;
+        double x = (t1.x + t2.x) * 0.5;
+        double y = t1.y;
+        double z = (t1.z + t2.z) * 0.5;
         var curve = new CurveParameters(t1, t2, horizontalCoefficient, verticalCoefficient, thickness);
         curve.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) ->
                 renderSegment(matrices, buffer,
                         x1 + x, y1 + y, z1 + z,
                         x2 + x, y2 + y, z2 + z,
                         curve.cross1, curve.cross2, light, color,
-                        curve.thickness, 0, length, offset, !Minecraft.useFancyGraphics()), 0.5f);
+                        curve.thickness, 0, (float) length, (float) offset, !Minecraft.useFancyGraphics()), 0.5f);
     }
 
     public static void renderFromPositions(PoseStack matrices, VertexConsumer buffer, Vec3 t1, Vec3 t2, double horizontalCoefficient, double verticalCoefficient, double thickness, BlockAndTintGetter lightProvider, int color) {
-        float x = (float) (t1.x + t2.x) * 0.5f;
-        float y = (float) t1.y;
-        float z = (float) (t1.z + t2.z) * 0.5f;
+        double x = (t1.x + t2.x) * 0.5;
+        double y = t1.y;
+        double z = (t1.z + t2.z) * 0.5;
         var curve = new CurveParameters(t1, t2, horizontalCoefficient, verticalCoefficient, thickness);
         curve.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
                 var blockPos = BlockPos.containing((x1 + x2) * 0.5 + x, (y1 + y2) * 0.5 + y, (z1 + z2) * 0.5 + z);
@@ -133,12 +133,12 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
                         x1 + x, y1 + y, z1 + z,
                         x2 + x, y2 + y, z2 + z,
                         curve.cross1, curve.cross2, LightTexture.pack(block, sky), color,
-                        curve.thickness, 0, length, offset, !Minecraft.useFancyGraphics());
+                        curve.thickness, 0, (float) length, (float) offset, !Minecraft.useFancyGraphics());
         }, 0.5f);
     }
 
     public static void renderSegment(PoseStack ms, VertexConsumer buffer,
-                                     float x1, float y1, float z1, float x2, float y2, float z2,
+                                     double x1, double y1, double z1, double x2, double y2, double z2,
                                      Vec3 cross1, Vec3 cross2, int light, int color,
                                      float thickness, float thicknessOffset, float uvLength, float lengthOffset, boolean simpleModel) {
         if(simpleModel) {

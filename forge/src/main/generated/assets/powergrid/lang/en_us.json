@@ -213,7 +213,7 @@
   "item.powergrid.unetched_circuit": "Unetched Circuit",
   "item.powergrid.varistor": "Varistor",
   "item.powergrid.vfet": "Static Induction Transistor",
-  "item.powergrid.wire": "Wire",
+  "item.powergrid.wire": "Copper Wire",
   "item.powergrid.wire_cutter": "Wire Cutters",
   "item.powergrid.wire_cutter.tooltip.behaviour1": "Removes a hanging wire, or selected segment of a block wire",
   "item.powergrid.wire_cutter.tooltip.behaviour2": "Removes the whole block wire",

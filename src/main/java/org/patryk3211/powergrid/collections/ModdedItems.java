@@ -62,6 +62,7 @@ public class ModdedItems {
             .transform(CWire.set(0.0015f, 24, 0.5f, 1.0f, 80))
             .transform(WireProperties.setRenderingParams(PowerGrid.texture("special/copper_wire"), 1.01f, 1.2f, 0.0625f))
             .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag, wires("copper"))
+            .lang("Copper Wire")
             .register();
     public static final ItemEntry<WireItem> IRON_WIRE = REGISTRATE.item("iron_wire", WireItem::new)
             .transform(CWire.set(0.005f, 64, 0.5f, 2.0f, 160))

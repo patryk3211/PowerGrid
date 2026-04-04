@@ -113,7 +113,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
         var minY = new MutableFloat(box.minY);
         final float eY = (float) position().y;
         curve.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
-            float y = (y1 + y2) * 0.5f + eY;
+            double y = (y1 + y2) * 0.5 + eY;
             if(y < minY.getValue())
                 minY.setValue(y);
         }, 0.5f);
@@ -255,7 +255,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             if(world.isClientSide && !particlesSpawned) {
                 var curveParams = (CurveParameters) renderParams;
                 var dx = curveParams.getCurveSpan();
-                int pointCount = Math.round(dx / 0.25f);
+                int pointCount = (int) Math.round(dx / 0.25f);
                 curveParams.runForPoints(pointCount, (x, y, z) -> {
                     world.addParticle(ParticleTypes.FLAME,
                             pos.x + x, pos.y + y, pos.z + z,
