@@ -42,10 +42,7 @@ import org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
-import org.patryk3211.powergrid.collections.ModIcons;
-import org.patryk3211.powergrid.collections.ModdedKeys;
-import org.patryk3211.powergrid.collections.ModdedPackets;
-import org.patryk3211.powergrid.collections.ModdedSoundEvents;
+import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.network.packets.ChangeScreenC2SPacket;
 import org.patryk3211.powergrid.network.packets.SaveSchematicC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
@@ -66,6 +63,11 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
 
     public static final int CIRCUIT_SCALE = 8;
     public static final int TRACE_PADDING = 1;
+
+    public final int frontTraceColor = (ModdedConfigs.client().Circuit.traceAlpha.get()<< 24)|
+                                       (ModdedConfigs.client().Circuit.traceRed.get()<<16)|
+                                       (ModdedConfigs.client().Circuit.traceGreen.get()<<8)|
+                                       (ModdedConfigs.client().Circuit.traceBlue.get());
 
     private static final net.minecraft.network.chat.Component TOOLTIP_SAVE = Lang.translateDirect("gui.circuit_designer.save");
     private static final net.minecraft.network.chat.Component TOOLTIP_DISCARD = Lang.translateDirect("gui.circuit_designer.discard");
@@ -354,11 +356,18 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
 
         int bpX = bgX + 13, bpY = topPos + 22;
 
-        CircuitSchematicRender.renderLayer(schematic.back(), ctx, bpX, bpY, CIRCUIT_SCALE,
-                backLayer ? COLOR_TRACE_FRONT : COLOR_TRACE_BACK);
-        CircuitSchematicRender.renderLayer(schematic.front(), ctx, bpX, bpY, CIRCUIT_SCALE,
-                backLayer ? COLOR_TRACE_BACK : COLOR_TRACE_FRONT);
+        if(ModdedConfigs.client().HighContrastTraces.get()){ //added support for high contrast traces
+            CircuitSchematicRender.renderLayer(schematic.back(), ctx, bpX, bpY, CIRCUIT_SCALE,
+                    backLayer ? COLOR_TRACE_FRONT_HC : COLOR_TRACE_BACK_HC);
+            CircuitSchematicRender.renderLayer(schematic.front(), ctx, bpX, bpY, CIRCUIT_SCALE,
+                    backLayer ? COLOR_TRACE_BACK : COLOR_TRACE_FRONT);
 
+        }else {
+            CircuitSchematicRender.renderLayer(schematic.back(), ctx, bpX, bpY, CIRCUIT_SCALE,
+                    backLayer ? COLOR_TRACE_FRONT : COLOR_TRACE_BACK);
+            CircuitSchematicRender.renderLayer(schematic.front(), ctx, bpX, bpY, CIRCUIT_SCALE,
+                    backLayer ? COLOR_TRACE_BACK : COLOR_TRACE_FRONT);
+        }
         CircuitSchematicRender.renderComponents(schematic, ctx, bpX, bpY, CIRCUIT_SCALE, mouseX, mouseY);
 
         if(currentTool.y > 0) {
