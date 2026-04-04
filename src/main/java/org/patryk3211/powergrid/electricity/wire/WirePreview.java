@@ -85,7 +85,7 @@ public class WirePreview {
             return;
         renderedItem = wireItem;
         if(wireStack.getItem() instanceof CordItem cordItem) {
-            var endpoint = WireEndpointType.deserialize(wireStack.getTagElement("Connection"));
+            var endpoint = wireStack.getOrDefault(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.EMPTY).endpoint();
             if(!(endpoint instanceof ICordEndpoint cordEndpoint))
                 return;
             renderedCordEndpoint = cordEndpoint;
@@ -110,8 +110,8 @@ public class WirePreview {
         if(endpoint == null)
             return;
 
-        var currentPos = endpoint.getExactPosition(world);
         var world = Minecraft.getInstance().level;
+        var currentPos = endpoint.getExactPosition(world);
         Direction continueDir = null;
         if(endpoint instanceof BlockWireEntityEndpoint bwe) {
             var entity = bwe.getEntity(world);
