@@ -50,6 +50,8 @@ public class LRSeriesWire extends AbstractElectricWire implements IStaticResidua
     public double current() {
         if(network == null)
             return I;
+        if(network.isLeaf(node1) || network.isLeaf(node2))
+            return 0;
         return super.current() + Ieq;
     }
 
