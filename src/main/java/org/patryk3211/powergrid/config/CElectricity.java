@@ -36,6 +36,7 @@ public class CElectricity extends ConfigBase {
     public final ConfigInt portableBatteryBaseCapacity = i(10000, 1, "portableBatteryBaseCapacity", Comments.portableBatteryBaseCapacity);
     public final ConfigInt portableBatteryEnchantCapacity = i(10000, 1, "portableBatteryEnchantCapacity", Comments.portableBatteryEnchantCapacity);
 
+    public final ConfigFloat acidBatteryCapacity = f(720f, 0, "acidBatteryCapacity", Comments.acidBatteryCapacity);
     public final ConfigFloat acidBatteryInitialCharge = f(0.9f, 0, 1.0f, "acidBatteryInitialCharge", Comments.acidBatteryInitialCharge);
 
     public final ConfigFloat transformerMutualInductanceMultiplier = f(10, 1, "transformerMutualInductanceMultiplier", Comments.transformerMutualInductanceMultiplier);
@@ -95,6 +96,7 @@ public class CElectricity extends ConfigBase {
         public static final String portableBatteryEnchantCapacity = "Portable Battery Forge Energy capacity increase per level of Capacity enchant";
 
         public static final String acidBatteryInitialCharge = "Initial charge of the acid battery";
+        public static final String acidBatteryCapacity = "Capacity of the acid battery, measured in joules";
 
         public static final String transformerMutualInductanceMultiplier = "Multiplies the mutual inductance of transformers to get a resistance. Bigger values make transformers use less electricity.";
 
