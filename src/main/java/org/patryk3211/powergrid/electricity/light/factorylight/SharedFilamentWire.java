@@ -40,15 +40,19 @@ public class SharedFilamentWire extends SwitchedWire {
 
     @Override
     public double potentialDifference() {
-        if(simWire == null)
-            return 0;
-        return simWire.potentialDifference();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public double current() {
-        // Avoid network check
-        return potentialDifference() * conductance();
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public double power() {
+        if(simWire == null)
+            return 0;
+        return simWire.power() * conductance() / simWire.conductance();
     }
 
     @Override
