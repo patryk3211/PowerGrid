@@ -26,10 +26,12 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
     private final double reverseSaturationCurrent;
     private final double seriesResistance;
     private final double idealityFactor;
+    private final double breakdownVoltage;
+    private final double breakdownSaturationCurrent;
+
     private double G = ElectricalNetwork.G_MIN;
     private double Ieq = 0;
     private double prevV;
-    private double intDelta;
 
     public PNJunctionWire(double reverseSaturationCurrent, double seriesResistance, double temperatureCelsius, double idealityFactor, IElectricNode node1, IElectricNode node2) {
         super(node1, node2);
@@ -37,10 +39,21 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         this.seriesResistance = seriesResistance;
         this.temperatureCelsius = temperatureCelsius;
         this.idealityFactor = idealityFactor;
+        this.breakdownVoltage = 0;
+        this.breakdownSaturationCurrent = 0;
     }
 
-    public static double WrightOmega(double z)
-    {
+    public PNJunctionWire(double reverseSaturationCurrent, double seriesResistance, double temperatureCelsius, double idealityFactor, double breakdownVoltage, double breakdownSaturationCurrent, IElectricNode node1, IElectricNode node2) {
+        super(node1, node2);
+        this.reverseSaturationCurrent = reverseSaturationCurrent;
+        this.seriesResistance = seriesResistance;
+        this.temperatureCelsius = temperatureCelsius;
+        this.idealityFactor = idealityFactor;
+        this.breakdownVoltage = breakdownVoltage;
+        this.breakdownSaturationCurrent = breakdownSaturationCurrent;
+    }
+
+    public static double WrightOmega(double z) {
         // D'Angelo, Gabrielli and Turchet (2019) approximation
         double x1 = -3.341459552768620;
         double x2 = 8;
@@ -85,22 +98,13 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
 
     @Override
     public void startIteration(int iteration) {
-        // TODO: reverse breakdown
-
-        //Reverse breakdown crap
-        double Vbr = 100; //TODO: make it a config or something.
-        double Ibv = 10; //cap of the breakdown current
-        double n_br = idealityFactor; //how ideal the breakdown is, helps tune this crap
-        //
         double k = 1.380649e-23; // Boltzmann constant in J/K
         double q = 1.602176634e-19; // Elementary charge in C
         double V_T = (k * (temperatureCelsius + 273.15)) / q; // Thermal voltage in V
         double n = idealityFactor;
         double V = potentialDifference();
         double Vcrit = n * V_T * Math.log(V_T / (reverseSaturationCurrent * Math.sqrt(2)));
-        var dV = V - prevV;
         prevV = V = pnLim(V, prevV, Vcrit);
-        intDelta = intDelta * 0.999 + Math.abs(dV);
         double I_s1 = reverseSaturationCurrent;
         double E_g = 1.12; // Silicon bandgap energy in eV
         double T_1 = 22 + 273.15; // Reference temperature in K
@@ -113,30 +117,24 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         double Omega_arg = Math.log(IsRs / n / V_T) + (IsRs + V) / (n * V_T);
         double WTerm = WrightOmega(Omega_arg);
         double G = Math.max(WTerm / (R_s * (1 + WTerm)), ElectricalNetwork.G_MIN);
+
+        double I = V_T * n * WTerm / R_s - I_s2;
+        if(breakdownVoltage > 0) {
+            // Reverse breakdown using a shifted diode current curve
+            double V_over = -breakdownVoltage - V; //so only when in reverse bias
+            double B_IsRs = breakdownSaturationCurrent * R_s;
+            double B_Omega_arg = Math.log(B_IsRs / n / V_T) + (B_IsRs + V_over) / (n * V_T);
+            double B_WTerm = WrightOmega(B_Omega_arg);
+            G += Math.max(B_WTerm / (R_s * (1 + B_WTerm)), ElectricalNetwork.G_MIN);
+            I -= V_T * n * B_WTerm / R_s - breakdownSaturationCurrent;
+        }
+
         // Adding a resistor across the diode helps with convergence in certain cases.
         double G_add = 1e-6;
         if(iteration > 100) {
             G_add = Math.min((iteration - 100) * 1e-3, 0.01);
         }
         G += G_add;
-        network.updateConductance(this, G - this.G);
-        this.G = G;
-        double I = V_T * n * WTerm / R_s - I_s2;
-
-        //reverse breakdown crap
-
-        /*Formula based on Shockley diode equation*/
-        double V_over = Math.max(0.0,-Vbr - V); //so only when in reverse bias
-        double knee = 0.1; // volts over which breakdown ramps
-        double x = V_over / knee;
-        double expVal = 1 - Math.exp(-Math.min(x, 40));
-        double Ibreak = -Ibv * expVal;
-        double Gbreak = (Ibv / knee) * Math.exp(-Math.min(x, 40));
-
-        I += Ibreak;
-        G += Gbreak;
-
-        // Update the network AFTER all this math
         network.updateConductance(this, G - this.G);
         this.G = G;
 
