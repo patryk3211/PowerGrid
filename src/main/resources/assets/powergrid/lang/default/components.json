@@ -66,5 +66,8 @@
   "powergrid.component.property.barretter_resistance": "Minimum Resistance",
 
   "powergrid.component.property.varistor_voltage": "Threshold Voltage",
-  "powergrid.component.property.varistor_voltage.summary": "Voltage around which the varistor starts to conduct major current"
+  "powergrid.component.property.varistor_voltage.summary": "Voltage around which the varistor starts to conduct major current",
+
+  "powergrid.component.property.diode_vb": "Breakdown Voltage",
+  "powergrid.component.property.diode_vb.summary": "Reverse breakdown voltage of the diode"
 }

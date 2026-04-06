@@ -231,6 +231,8 @@
   "powergrid.component.property.current": "ʇuǝɹɹnƆ",
   "powergrid.component.property.current.summary": "ǝɯıʇ ɟo spoıɹǝd pǝbuoןoɹd ɹoɟ ǝןpuɐɥ uɐɔ ʇuǝuodɯoɔ sıɥʇ ʇɐɥʇ ʇuǝɹɹnɔ ɯnɯıxɐW",
   "powergrid.component.property.current_gauge_max": "ʇuǝɹɹnƆ xɐW",
+  "powergrid.component.property.diode_vb": "ǝbɐʇןoΛ uʍopʞɐǝɹᗺ",
+  "powergrid.component.property.diode_vb.summary": "ǝpoıp ǝɥʇ ɟo ǝbɐʇןoʌ uʍopʞɐǝɹq ǝsɹǝʌǝᴚ",
   "powergrid.component.property.gauge_equation": "uoıʇɐnbǝ ʎɐןdsıᗡ",
   "powergrid.component.property.gauge_equation.summary": "ʇı buıʎɐןdsıp ǝɹoɟǝq ǝbɐʇןoʌ pǝɹnsɐǝɯ ǝɥʇ oʇ pǝıןddɐ ǝq oʇ uoıʇɐnbƎ",
   "powergrid.component.property.gauge_unit": "ʇıu∩",
