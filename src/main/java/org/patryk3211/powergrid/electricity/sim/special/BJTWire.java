@@ -142,7 +142,7 @@ public class BJTWire extends CompoundWire implements ISolverHook {
     }
 
     @Override
-    public double power() {
+    public double internalPower() {
         return power;
     }
 

@@ -129,7 +129,7 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
     }
 
     @Override
-    public double power() {
+    public double internalPower() {
         return Ptube;
     }
 
