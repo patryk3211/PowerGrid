@@ -92,13 +92,13 @@ public class RelayComponent extends MirrorableComponent {
                 NC.setState(true);
                 NO.setState(false);
                 placed.set(STATE, false);
-                placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), 0.75f, 1.9f));
+                placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), (0.75f*ModdedConfigs.client().relaySoundMultiplier.getF()), 1.9f));
             } else if(!placed.get(STATE) && current > confCurrent) {
                 // Above the threshold current the relay can turn on
                 NC.setState(false);
                 NO.setState(true);
                 placed.set(STATE, true);
-                placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), 0.75f, 2.0f));
+                placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), (0.75f*ModdedConfigs.client().relaySoundMultiplier.getF()), 2.0f));
             }
         }
 
