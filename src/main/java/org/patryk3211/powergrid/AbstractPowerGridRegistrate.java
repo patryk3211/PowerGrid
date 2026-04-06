@@ -17,6 +17,7 @@ package org.patryk3211.powergrid;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.mojang.serialization.JsonOps;
 import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.api.behaviour.display.DisplayTarget;
 import com.simibubi.create.api.registry.CreateRegistries;
@@ -46,6 +47,7 @@ import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.ComponentBuilder;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
+import org.patryk3211.powergrid.electricity.wire.registry.WireItemEntry;
 import org.patryk3211.powergrid.utility.SimpleBlockEntityVisualFactory;
 
 import javax.annotation.Nullable;
@@ -213,6 +215,45 @@ public abstract class AbstractPowerGridRegistrate extends AbstractRegistrate<Abs
 
         public void add(String componentId, ItemLike item) {
             entries.put(componentId, item.asItem());
+        }
+    }
+
+    public static ProviderType<WireItemEntryProvider> WIRE_ITEMS;
+    public abstract static class WireItemEntryProvider implements RegistrateProvider {
+        private final Map<String, WireItemEntry> entries = new HashMap<>();
+        private final AbstractRegistrate<?> owner;
+        private final PackOutput output;
+
+        public WireItemEntryProvider(AbstractRegistrate<?> owner, PackOutput output) {
+            this.owner = owner;
+            this.output = output;
+        }
+
+        @NotNull
+        @Override
+        public CompletableFuture<?> run(@NotNull CachedOutput output) {
+            entries.clear();
+            owner.genData(WIRE_ITEMS, this);
+            var namespace = owner.getModid();
+
+            // Generate all item mappings
+            var path = this.output.getOutputFolder().resolve("data/" + namespace + "/powergrid/wire_types");
+            return CompletableFuture.allOf(entries.entrySet().stream().map(entry -> {
+                var result = WireItemEntry.CODEC.encode(entry.getValue(), JsonOps.INSTANCE, new JsonObject());
+                return result.result()
+                        .map(json -> DataProvider.saveStable(output, json, path.resolve(entry.getKey() + ".json")))
+                        .orElseThrow();
+            }).toArray(CompletableFuture[]::new));
+        }
+
+        @NotNull
+        @Override
+        public String getName() {
+            return "Wire Item Mapping";
+        }
+
+        public void add(String itemId, WireItemEntry entry) {
+            entries.put(itemId, entry);
         }
     }
 }

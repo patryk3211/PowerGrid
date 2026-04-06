@@ -47,6 +47,8 @@ import org.patryk3211.powergrid.collections.fabric.ModdedSoundEventsImpl;
 import org.patryk3211.powergrid.commands.PerformanceCommand;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
+import org.patryk3211.powergrid.electricity.wire.registry.WireItemEntry;
+import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardMenu;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlockEntity;
 import org.patryk3211.powergrid.kinetics.punchcard.fabric.PunchCardMenuImpl;
@@ -59,6 +61,8 @@ public class PowerGridImpl implements ModInitializer {
                 .createSimple(ComponentRegistry.REGISTRY_KEY)
                 .buildAndRegister();
         DynamicRegistries.registerSynced(ComponentRegistry.ITEM_REGISTRY_KEY, ComponentRegistry.ITEM_CODEC,
+                DynamicRegistries.SyncOption.SKIP_WHEN_EMPTY);
+        DynamicRegistries.registerSynced(WireRegistry.KEY, WireItemEntry.CODEC,
                 DynamicRegistries.SyncOption.SKIP_WHEN_EMPTY);
 
         var tab = FabricItemGroup.builder()
@@ -93,6 +97,7 @@ public class PowerGridImpl implements ModInitializer {
 
     public static AbstractPowerGridRegistrate createRegistrate() {
         AbstractPowerGridRegistrate.COMPONENT_ITEMS = ProviderType.register("component_items", ComponentItemEntryProviderImpl::new);
+        AbstractPowerGridRegistrate.WIRE_ITEMS = ProviderType.register("wire_types", WireItemEntryProviderImpl::new);
         return FabricPowerGridRegistrate.create(PowerGrid.MOD_ID)
                 .setTooltipModifierFactory(item ->
                         new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)

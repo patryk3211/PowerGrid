@@ -69,7 +69,7 @@ public class WindingBlockEntity extends ElectricBlockEntity implements IMultipar
     private float resistance = 0.1f;
     private int totalCoilCount = 0;
     private LRSeriesWire coilWire;
-    private final Precalculated1<Float, StampedSupplier<LRSeriesWire>> fieldValue = new Precalculated1<>(WindingBlockEntity::fieldCalc, 0f);
+    private final Precalculated1<Float, StampedSupplier<LRSeriesWire>> fieldValue = new Precalculated1<>(WindingBlockEntity::fieldCalc, 0.001f);
 
     private boolean rebuildParallels = false;
 

@@ -44,8 +44,8 @@ public class TerminalHandler {
 
         var mainItem = client.player.getMainHandItem();
         var offItem = client.player.getOffhandItem();
-        if(!(mainItem != null && !mainItem.isEmpty() && mainItem.getItem() instanceof IWire) &&
-                !(offItem != null && !offItem.isEmpty() && offItem.getItem() instanceof IWire) &&
+        if(!(mainItem != null && !mainItem.isEmpty() && IWire.isWire(world, mainItem.getItem())) &&
+                !(offItem != null && !offItem.isEmpty() && IWire.isWire(world, offItem.getItem())) &&
                 !GogglesItem.isWearingGoggles(client.player))
             return;
 
@@ -58,8 +58,8 @@ public class TerminalHandler {
                 terminal = electric.terminalAt(state, blockHit.getLocation().subtract(blockPos.getX(), blockPos.getY(), blockPos.getZ()));
             }
             if(terminal == null &&
-                    ((mainItem != null && mainItem.getItem() instanceof CordItem) ||
-                            (offItem != null && offItem.getItem() instanceof CordItem))) {
+                    ((mainItem != null && IWire.isCord(world, mainItem.getItem())) ||
+                     (offItem != null && IWire.isCord(world, offItem.getItem())))) {
                 for(var handler : CordItem.PLACEMENT_HANDLERS) {
                     terminal = handler.terminal(state, world, blockHit);
                     if(terminal != null)
