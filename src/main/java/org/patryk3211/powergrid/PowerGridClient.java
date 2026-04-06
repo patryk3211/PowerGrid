@@ -19,6 +19,7 @@ import com.mojang.blaze3d.platform.Window;
 import dev.architectury.event.events.client.ClientGuiEvent;
 import dev.architectury.event.events.client.ClientPlayerEvent;
 import dev.architectury.event.events.client.ClientTickEvent;
+import dev.architectury.event.events.client.ClientTooltipEvent;
 import net.createmod.ponder.foundation.PonderIndex;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
@@ -30,10 +31,11 @@ import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.info.TerminalHandler;
 import org.patryk3211.powergrid.electricity.transformer.TransformerWindingScreen;
 import org.patryk3211.powergrid.electricity.wire.ClientWireInteractions;
+import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.WirePreview;
-import org.patryk3211.powergrid.equipment.zapper.ElectroZapperRenderHandler;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItemRenderer;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerItemRenderer;
+import org.patryk3211.powergrid.equipment.zapper.ElectroZapperRenderHandler;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingPreview;
 import org.patryk3211.powergrid.network.packets.NegotiateSyncC2SPacket;
 import org.patryk3211.powergrid.ponder.PowerGridPonderPlugin;
@@ -62,6 +64,7 @@ public class PowerGridClient {
 		ClientTickEvent.CLIENT_LEVEL_POST.register(TerminalHandler::tick);
 		ClientTickEvent.CLIENT_POST.register(PowerGridClient::clientTick);
 		ClientPlayerEvent.CLIENT_PLAYER_RESPAWN.register(PowerGridClient::clientRespawn);
+		ClientTooltipEvent.ITEM.register(WireItem::tooltip);
 	}
 
 	private static void clientRespawn(LocalPlayer localPlayer, LocalPlayer localPlayer1) {

@@ -20,9 +20,13 @@ import com.tterrag.registrate.builders.ItemBuilder;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import dev.architectury.event.CompoundEventResult;
 import dev.architectury.event.EventResult;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -32,6 +36,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
@@ -39,6 +44,8 @@ import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
+import org.patryk3211.powergrid.electricity.info.*;
+import org.patryk3211.powergrid.electricity.light.string.StringLightCordItem;
 import org.patryk3211.powergrid.electricity.wire.powercord.CordItem;
 import org.patryk3211.powergrid.electricity.wire.registry.WireItemEntry;
 import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
@@ -47,6 +54,7 @@ import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class WireItem extends Item implements IWire {
     public WireItem(Properties settings) {
@@ -320,5 +328,24 @@ public class WireItem extends Item implements IWire {
             }
         }
         return EventResult.pass();
+    }
+
+    private static final IHaveElectricProperties WIRE_DISPLAY = (stack, player, tooltip) -> {
+        var entry = WireRegistry.forItem(stack.getItem());
+        if(entry == null)
+            return;
+        Resistance.series(entry.resistancePerItem(), player, tooltip);
+        Current.max(entry.maximumCurrent(), player, tooltip);
+        Range.max((int) entry.maximumLength(), tooltip);
+        if(stack.getItem() instanceof StringLightCordItem cord)
+            cord.appendProperties(stack, player, tooltip);
+    };
+
+    @Environment(EnvType.CLIENT)
+    public static void tooltip(ItemStack stack, List<Component> components, TooltipFlag tooltipFlag) {
+        var entry = WireRegistry.forItem(stack.getItem());
+        if(entry == null)
+            return;
+        ElectricPropertiesUtils.modify(WIRE_DISPLAY, stack, Minecraft.getInstance().player, tooltipFlag, components);
     }
 }

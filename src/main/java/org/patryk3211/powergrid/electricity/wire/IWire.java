@@ -15,28 +15,12 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import org.patryk3211.powergrid.electricity.info.Current;
-import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
-import org.patryk3211.powergrid.electricity.info.Range;
-import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
 
-import java.util.List;
-
-public interface IWire extends IHaveElectricProperties {
-    @Override
-    default void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
-        var entry = WireRegistry.forItem(player.level(), stack.getItem());
-        Resistance.series(entry.resistancePerItem(), player, tooltip);
-        Current.max(entry.maximumCurrent(), player, tooltip);
-        Range.max((int) entry.maximumLength(), tooltip);
-    }
-
+public interface IWire {
     static boolean holdsWire(Player player) {
         var stack1 = player.getMainHandItem();
         if(stack1 != null && !stack1.isEmpty() && isWire(player.level(), stack1.getItem()))

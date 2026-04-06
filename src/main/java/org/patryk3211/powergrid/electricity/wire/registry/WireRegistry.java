@@ -1,5 +1,8 @@
 package org.patryk3211.powergrid.electricity.wire.registry;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
@@ -12,6 +15,17 @@ import org.patryk3211.powergrid.PowerGrid;
 
 public class WireRegistry {
     public static final ResourceKey<Registry<WireItemEntry>> KEY = ResourceKey.createRegistryKey(PowerGrid.asResource("wire_types"));
+
+    @Environment(EnvType.CLIENT)
+    @Contract("null -> null")
+    public static WireItemEntry forItem(Item item) {
+        if(item == null)
+            return null;
+        var level = Minecraft.getInstance().level;
+        if(level == null)
+            return null;
+        return forItem(level, item);
+    }
 
     @Contract("_, null -> null")
     public static WireItemEntry forItem(@NotNull Level level, Item item) {
