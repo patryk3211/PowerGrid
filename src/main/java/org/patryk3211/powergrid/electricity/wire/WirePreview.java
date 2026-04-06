@@ -42,9 +42,10 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
-import org.patryk3211.powergrid.electricity.wire.powercord.CordItem;
 import org.patryk3211.powergrid.electricity.wire.powercord.CordRenderer;
 import org.patryk3211.powergrid.electricity.wire.powercord.ICordEndpoint;
+import org.patryk3211.powergrid.electricity.wire.registry.WireItemEntry;
+import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
 import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlacementOverlay;
@@ -56,7 +57,7 @@ public class WirePreview {
 
     private static int renderPath = 0;
     private static ICordEndpoint renderedCordEndpoint;
-    private static WireItem renderedItem;
+    private static WireItemEntry renderedItem;
     private static Pair<BlockTrace.TraceState, BlockTrace.TraceResult> renderedTrace;
     private static Vec3 renderedPos1, renderedPos2;
     private static int renderedColor;
@@ -65,9 +66,9 @@ public class WirePreview {
     public static ItemStack getUsedWireStack(Player player) {
         var stack1 = player.getMainHandItem();
         var stack2 = player.getOffhandItem();
-        if(stack1 != null && stack1.getItem() instanceof IWire && stack1.hasTag()) {
+        if(stack1 != null && IWire.isWire(player.level(), stack1.getItem()) && stack1.hasTag()) {
             return stack1;
-        } else if(stack2 != null && stack2.getItem() instanceof IWire && stack2.hasTag()) {
+        } else if(stack2 != null && IWire.isWire(player.level(), stack2.getItem()) && stack2.hasTag()) {
             return stack2;
         } else {
             return null;
@@ -80,10 +81,10 @@ public class WirePreview {
         ItemStack wireStack = getUsedWireStack(player);
         if(wireStack == null)
             return;
-        if(!(wireStack.getItem() instanceof WireItem wireItem))
+        if(!IWire.isWire(player.level(), wireStack.getItem()))
             return;
-        renderedItem = wireItem;
-        if(wireStack.getItem() instanceof CordItem cordItem) {
+        renderedItem = WireRegistry.forItem(player.level(), wireStack.getItem());
+        if(IWire.isCord(player.level(), wireStack.getItem())) {
             var endpoint = WireEndpointType.deserialize(wireStack.getTagElement("Connection"));
             if(!(endpoint instanceof ICordEndpoint cordEndpoint))
                 return;
@@ -168,33 +169,25 @@ public class WirePreview {
                 }
             }
         } else {
-            renderedColor = length < wireItem.getMaximumLength() ? 0x80AAFFAA : 0x80FFAAAA;
+            renderedColor = length < renderedItem.maximumLength() ? 0x80AAFFAA : 0x80FFAAAA;
             renderedPos1 = currentPos;
             renderedPos2 = hitPoint;
             renderPath = 1;
         }
 
         if(!player.isCreative()) {
-            int requiredItemCount = Math.max(Math.round(length * wireItem.getItemUseMultiplier()), 1);
+            int requiredItemCount = Math.max(Math.round(length * renderedItem.itemsPerMeter()), 1);
             PlacementOverlay.setItemRequirement(wireStack.getItem(), requiredItemCount, wireStack.getCount() >= requiredItemCount);
         }
     }
-
-//    private static void renderCord(SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player, HitResult target, ItemStack wireStack) {
-//        var endpoint = WireEndpointType.deserialize(wireStack.getTagElement("Connection"));
-//        if(!(endpoint instanceof ICordEndpoint cordEndpoint))
-//            return;
-//        CordRenderer.renderPreview(cordEndpoint, player.getRopeHoldPosition(AnimationTickHolder.getPartialTicks()),
-//                matrixStack, buffer, world, (CordItem) wireStack.getItem(), 0xFF413C31);
-//    }
 
     public static void render(SuperRenderTypeBuffer buffer, PoseStack matrixStack, ClientLevel world, LocalPlayer player, Vec3 cameraPos) {
         matrixStack.pushPose();
         switch(renderPath) {
             case 1 -> {
                 matrixStack.translate(renderedPos1.x - cameraPos.x, renderedPos1.y - cameraPos.y, renderedPos1.z - cameraPos.z);
-                float thickness = renderedItem.getWireThickness();
-                var consumer = buffer.getBuffer(RenderType.entityTranslucent(renderedItem.getWireTexture()));
+                float thickness = renderedItem.wireThickness();
+                var consumer = buffer.getBuffer(RenderType.entityTranslucent(renderedItem.texture()));
                 HangingWireRenderer.renderFromPositions(matrixStack, consumer, Vec3.ZERO, renderedPos2.subtract(renderedPos1), 1.01, 1.2, thickness, LightTexture.FULL_BRIGHT, renderedColor);
             }
             case 2 -> {
@@ -216,8 +209,8 @@ public class WirePreview {
                     matrixStack.translate(renderedPos1.x - cameraPos.x, renderedPos1.y - cameraPos.y, renderedPos1.z - cameraPos.z);
                     var currentPos = Vec3.ZERO;
                     var points = renderedTrace.getSecond();
-                    float thickness = renderedItem.getWireThickness();
-                    var consumer = buffer.getBuffer(RenderType.entityTranslucent(renderedItem.getWireTexture()));
+                    float thickness = renderedItem.wireThickness();
+                    var consumer = buffer.getBuffer(RenderType.entityTranslucent(renderedItem.texture()));
                     if(points != null) {
                         for(var p : points.points()) {
                             var nextPos = currentPos.add(p.vector());
@@ -230,7 +223,7 @@ public class WirePreview {
             }
             case 3 -> {
                 CordRenderer.renderPreview(renderedCordEndpoint, player.getRopeHoldPosition(AnimationTickHolder.getPartialTicks()),
-                        matrixStack, buffer, world, (CordItem) renderedItem, 0xFF413C31, cameraPos);
+                        matrixStack, buffer, world, renderedItem, 0xFF413C31, cameraPos);
             }
         }
         matrixStack.popPose();
@@ -350,8 +343,9 @@ public class WirePreview {
         ItemStack wireStack = getUsedWireStack(player);
         if(wireStack == null)
             return null;
-        if(!(wireStack.getItem() instanceof WireItem wire))
+        if(!IWire.isWire(player.level(), wireStack.getItem()))
             return null;
+        var wireEntry = WireRegistry.forItem(player.level(), wireStack.getItem());
 
         var tag = wireStack.getTagElement("Connection");
         var endpoint = WireEndpointType.deserialize(tag);
@@ -365,7 +359,7 @@ public class WirePreview {
         var hitPoint = target.getLocation();
         var distance = hitPoint.distanceTo(currentPos);
         var msg = Lang.translate("gui.endpoint_distance")
-                .add(Lang.numberConstant(distance).style(distance < wire.getMaximumLength() ? ChatFormatting.GREEN : ChatFormatting.RED))
+                .add(Lang.numberConstant(distance).style(distance < wireEntry.maximumLength() ? ChatFormatting.GREEN : ChatFormatting.RED))
                 .style(ChatFormatting.WHITE);
         if(!endpoint.isValid(player.level())) {
             msg.add(Component.literal(" "))

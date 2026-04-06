@@ -79,4 +79,9 @@ public class PlayerUtilities {
     public static boolean cancelBreak(Level world, BlockPos pos, Player player) {
         throw new AssertionError();
     }
+
+    @ExpectPlatform
+    public static float getReachDistance(Player player) {
+        throw new AssertionError();
+    }
 }

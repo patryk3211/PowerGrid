@@ -106,6 +106,7 @@
   "death.attack.overloaded_machine.player": "%s ǝdɐɔsǝ oʇ buıʎɹʇ ʇsןıɥʍ %s pǝpɐoןɹǝʌo uɐ ʎq pǝןןıʞ sɐʍ %s",
   "death.attack.zap": "%2$s ʎq pǝddɐz sɐʍ %1$s",
   "death.attack.zap.item": "%3$s buısn %2$s ʎq pǝddɐz sɐʍ %1$s",
+  "death.attack.zap.player": "%3$s ǝdɐɔsǝ oʇ buıʎɹʇ ʇsןıɥʍ %2$s ʎq pǝddɐz sɐʍ %1$s",
   "entity.powergrid.block_wire": "ǝɹıM ʞɔoןᗺ",
   "entity.powergrid.cord": "pɹoƆ",
   "entity.powergrid.hanging_wire": "ǝɹıM buıbuɐH",

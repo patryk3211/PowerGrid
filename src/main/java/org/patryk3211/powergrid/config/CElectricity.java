@@ -64,7 +64,6 @@ public class CElectricity extends ConfigBase {
     public final CSolver solver = nested(1, CSolver::new, Comments.solver);
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
     public final CThermal thermal = nested(1, CThermal::new, Comments.thermal);
-    public final CWire wires = nested(1, CWire::new, Comments.wires);
 
     @Override
     public String getName() {
@@ -75,7 +74,6 @@ public class CElectricity extends ConfigBase {
         public static final String solver = "Things related to how the simulation is handled (probably shouldn't be altered unless you know what you are doing)";
         public static final String resistance = "Resistance values for all devices";
         public static final String thermal = "Thermal properties for all devices";
-        public static final String wires = "Configuration of server-side wire properties";
 
         public static final String explosiveDeconstruction = "Controls the behaviour of overheated devices. If false, instead of exploding, they break without dropping items.";
         public static final String overheating = "Controls the overheat mechanic. Devices which are overheated, break.";

@@ -1,0 +1,13 @@
+{
+  "colorable": false,
+  "cord": false,
+  "horizontalCoefficient": 1.02,
+  "itemsPerMeter": 0.5,
+  "maximumCurrent": 160.0,
+  "maximumLength": 12.0,
+  "resistancePerItem": 0.003,
+  "texture": "powergrid:textures/special/golden_wire.png",
+  "thermalMass": 0.8,
+  "verticalCoefficient": 1.4,
+  "wireThickness": 0.0625
+}
