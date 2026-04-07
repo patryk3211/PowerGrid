@@ -24,7 +24,7 @@ import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
-import org.patryk3211.powergrid.electricity.sim.special.CapacitorWire;
+import org.patryk3211.powergrid.electricity.sim.special.CRSeriesWire;
 
 public class CapacitorComponent extends OrientableComponent {
     public static final FloatProperty CAPACITANCE = new FloatProperty(PowerGrid.MOD_ID, "capacitor_value", 0.1f, 1e-9f, 1000.0f);
@@ -42,7 +42,7 @@ public class CapacitorComponent extends OrientableComponent {
 
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
-        var capacitorWire = new CapacitorWire(placed.get(CAPACITANCE) / 1000, builder.terminalNode(0), builder.terminalNode(1));
+        var capacitorWire = new CRSeriesWire(placed.get(CAPACITANCE) / 1000, 0.1f, builder.terminalNode(0), builder.terminalNode(1));
         capacitorWire.setVoltage(placed.get(CHARGE));
         builder.add(capacitorWire);
         placed.add(capacitorWire);
@@ -52,7 +52,7 @@ public class CapacitorComponent extends OrientableComponent {
     public boolean tick(@NotNull PlacedComponent placed) {
         if(!placed.wires.isEmpty()) {
             // Make charge persistent
-            placed.set(CHARGE, (float) placed.wires.get(0).potentialDifference());
+            placed.set(CHARGE, (float) ((CRSeriesWire) placed.wires.get(0)).capacitorVoltage());
         }
         return true;
     }
@@ -61,7 +61,7 @@ public class CapacitorComponent extends OrientableComponent {
     public void stateUpdated(@NotNull PlacedComponent placed) {
         if(placed.wires.isEmpty())
             return;
-        var wire = (CapacitorWire) placed.wires.get(0);
+        var wire = (CRSeriesWire) placed.wires.get(0);
         wire.setVoltage(placed.get(CHARGE));
     }
 
