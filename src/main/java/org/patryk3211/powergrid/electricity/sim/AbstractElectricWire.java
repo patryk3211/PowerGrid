@@ -30,8 +30,8 @@ public abstract class AbstractElectricWire implements INetworkElement, IMultiHoo
 
     protected ElectricalNetwork network;
 
-    private double[] powerSamples;
-    private int currentTick;
+    private double aggregatePower;
+    private int tickCount;
 
     public AbstractElectricWire(IElectricNode node1, IElectricNode node2) {
         this.node1 = node1;
@@ -121,13 +121,9 @@ public abstract class AbstractElectricWire implements INetworkElement, IMultiHoo
     }
 
     public double power() {
-        if(powerSamples == null)
+        if(tickCount <= 1)
             return internalPower();
-        double sum = 0;
-        for(int i = 0; i < powerSamples.length; ++i) {
-            sum += powerSamples[i];
-        }
-        return sum;
+        return aggregatePower;
     }
 
     public double internalPower() {
@@ -136,18 +132,13 @@ public abstract class AbstractElectricWire implements INetworkElement, IMultiHoo
 
     @Override
     public void prepare(int multiTicks) {
-        currentTick = 0;
-        if(multiTicks == 1) {
-            powerSamples = null;
-        } else if(powerSamples == null || powerSamples.length != multiTicks) {
-            powerSamples = new double[multiTicks];
-        }
+        tickCount = multiTicks;
+        aggregatePower = 0;
     }
 
     @Override
     public void postMicroTick() {
-        powerSamples[currentTick] = internalPower();
-        ++currentTick;
+        aggregatePower += internalPower() / tickCount;
     }
 
     public abstract double conductance();
