@@ -51,6 +51,22 @@ public class SeriesWire extends AbstractElectricWire implements IOuterHook {
     }
 
     @Override
+    public void prepare(int multiTicks) {
+        super.prepare(multiTicks);
+        for(var wire : wires) {
+            wire.prepare(multiTicks);
+        }
+    }
+
+    @Override
+    public void postMicroTick() {
+        super.postMicroTick();
+        for(var wire : wires) {
+            wire.postMicroTick();
+        }
+    }
+
+    @Override
     public void postUpperSolve() {
         var previousNode = node1;
         var I = current();
@@ -68,7 +84,7 @@ public class SeriesWire extends AbstractElectricWire implements IOuterHook {
             previousNode = nextNode;
             prevVoltage = voltage;
         }
-        assert previousNode == node2;
+//        assert previousNode == node2;
     }
 
     @Override

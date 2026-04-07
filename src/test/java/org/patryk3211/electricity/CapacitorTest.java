@@ -17,6 +17,7 @@ package org.patryk3211.electricity;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.patryk3211.powergrid.electricity.sim.special.CRSeriesWire;
 import org.patryk3211.powergrid.electricity.sim.special.CapacitorWire;
 
 public class CapacitorTest extends TestHelper {
@@ -86,6 +87,34 @@ public class CapacitorTest extends TestHelper {
             Net.calculate();
             Assertions.assertEquals(5.0f, C.potentialDifference(), 0.01f, "Capacitor voltage is incorrect");
         }
+    }
+
+    @Test
+    void testCompoundWire() {
+        var Net1 = new TestHelper.Network();
+        var V1 = Net1.V(3);
+        var GND1 = Net1.V(0);
+
+        var N1 = Net1.N();
+
+        Net1.W(2.0f, V1, N1);
+        var C = new CapacitorWire(0.1f, N1, GND1);
+        Net1.network.addWire(C);
+
+        var Net2 = new TestHelper.Network();
+        var V2 = Net2.V(3);
+        var GND2 = Net2.V(0);
+        var CR = new CRSeriesWire(0.1f, 2.0f, V2, GND2);
+        Net2.network.addWire(CR);
+
+        // Simulate for 1 second
+        for(int i = 0; i < 20; ++i) {
+            Net1.calculate();
+            Net2.calculate();
+        }
+
+        Assertions.assertEquals(V1.getCurrent(), V2.getCurrent(), 1e-5f, "Voltage source current is incorrect");
+        Assertions.assertEquals(C.current(), CR.current(), 1e-5f, "Capacitor current is incorrect");
     }
 
     @Test

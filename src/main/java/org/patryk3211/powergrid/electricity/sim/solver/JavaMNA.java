@@ -335,12 +335,12 @@ public class JavaMNA implements IMNA {
             workMatrix.mult(StateVector, ErrorVector);
             CommonOps_DDRM.subtract(ErrorVector, ResidualVector, ErrorVector);
             var nextNorm = CommonOps_DDRM.elementMaxAbs(ErrorVector);
-            if(i != 0 && nextNorm > norm && !skipped) {
-//                CommonOps_DDRM.add(StateVector, -1.1, StateDelta, StateVector);
-                CommonOps_DDRM.add(StateVector, -0.9, StateDelta, StateVector);
-                skipped = true; --i;
-                continue;
-            }
+//            if(i != 0 && nextNorm > norm && !skipped) {
+////                CommonOps_DDRM.add(StateVector, -1.1, StateDelta, StateVector);
+//                CommonOps_DDRM.add(StateVector, -0.95, StateDelta, StateVector);
+//                skipped = true; --i;
+//                continue;
+//            }
             var dNorm = Math.abs(nextNorm - norm);
             norm = nextNorm;
             if (norm < absoluteStoppingCriterion || dNorm < relativeStoppingCriterion)
@@ -401,6 +401,8 @@ public class JavaMNA implements IMNA {
                 if(SCALING)
                     CommonOps_DDRM.multRows(columnScales, StateVector);
                 CommonOps_DDRM.subtract(StateVector, StateDelta, StateDelta);
+                if(i > 0)
+                    CommonOps_DDRM.add(StateVector, -0.25, StateDelta, StateVector);
             } else {
                 StateVector.zero();
                 StateDelta.zero();

@@ -32,6 +32,10 @@ public class PlotterWire extends ElectricWire implements ElectricBehaviour.SyncA
 
     @Override
     public void writeToSync(FriendlyByteBuf buffer) {
+        if(samples == null || network == null) {
+            buffer.writeInt(0);
+            return;
+        }
         buffer.writeInt(samples.length);
         for(int i = 0; i < samples.length; ++i) {
             buffer.writeDouble(samples[i]);
@@ -41,6 +45,10 @@ public class PlotterWire extends ElectricWire implements ElectricBehaviour.SyncA
     @Override
     public void readFromSync(FriendlyByteBuf buffer) {
         int length = buffer.readInt();
+        if(length == 0) {
+            samples = null;
+            return;
+        }
         if(samples == null || samples.length != length)
             samples = new double[length];
         for(int i = 0; i < length; ++i) {
