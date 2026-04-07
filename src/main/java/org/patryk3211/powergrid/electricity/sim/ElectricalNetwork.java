@@ -123,6 +123,10 @@ public class ElectricalNetwork implements IStamped {
         return 0.05f / currentMultiTick;
     }
 
+    public int getMultiTick() {
+        return currentMultiTick;
+    }
+
     public void warmUp(int ticks) {
         if(mna != null)
             mna.warmUp(ticks > 0 ? 1 : ticks);

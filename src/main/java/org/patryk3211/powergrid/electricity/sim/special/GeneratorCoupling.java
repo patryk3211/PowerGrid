@@ -8,12 +8,10 @@ import org.patryk3211.powergrid.electricity.sim.solver.IOuterHook;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
 
 public class GeneratorCoupling extends VoltageSourceCoupling implements IOuterHook {
-    private static final float DT = 0.05f;
-
     private final IRotor rotor;
     private float field;
     private float baseResistance;
-    private float backEmf;
+    private double backEmf;
     private double emfValue;
 
     private Precalculated<Float> fieldStrength;
@@ -26,8 +24,9 @@ public class GeneratorCoupling extends VoltageSourceCoupling implements IOuterHo
 
     public void setField(float field) {
         this.field = field;
-        backEmf = field * field * DT / rotor.getInertia();
-        super.setResistance(baseResistance + backEmf);
+        double dt = network == null ? 0.05 : network.getDeltaTime();
+        backEmf = field * field * dt / rotor.getInertia();
+        super.setResistance((float) (baseResistance + backEmf));
     }
 
     public void setEmfValue(double value) {
@@ -53,7 +52,7 @@ public class GeneratorCoupling extends VoltageSourceCoupling implements IOuterHo
     @Override
     public void setResistance(float resistance) {
         this.baseResistance = resistance;
-        super.setResistance(resistance + backEmf);
+        super.setResistance((float) (resistance + backEmf));
     }
 
     public void setFieldStrengthProvider(Precalculated<Float> fieldStrength) {
@@ -69,7 +68,7 @@ public class GeneratorCoupling extends VoltageSourceCoupling implements IOuterHo
     @Override
     public void postUpperSolve() {
         if(isConverged()) {
-            rotor.applyTickForce((float) (field * getCurrent()));
+            rotor.applyTickForce((float) (field * getCurrent() / network.getMultiTick()));
         }
     }
 }
