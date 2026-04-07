@@ -66,6 +66,7 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
 
     public PlotterBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
+        electricBehaviour.setSyncAppender(wire);
     }
 
     @Override
@@ -163,7 +164,7 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
         super.tick();
         if(!isSpeedRequirementFulfilled())
             return;
-        var ticks = wire.getNetwork() == null ? 1 : wire.getNetwork().getMultiTick();
+        var ticks = wire.samples == null ? 1 : wire.samples.length;
         int newSize = (int) (128 / Math.abs(getSpeed()) * 40 * ticks);
         if(newSize != sampleBuffer.length)
             resample(newSize);
@@ -171,7 +172,8 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
 
         headTarget = 0;
         for(int i = 0; i < ticks; ++i) {
-            float sampleValue = Mth.clamp((float) (wire.potentialDifference() / maxValue), -1, 1);
+            var voltage = wire.samples == null ? wire.potentialDifference() : wire.samples[i];
+            float sampleValue = Mth.clamp((float) (voltage / maxValue), -1, 1);
             sampleBuffer[head] = sampleValue;
             head = (head + 1) % sampleBuffer.length;
             headTarget += sampleValue / ticks;

@@ -1,9 +1,11 @@
 package org.patryk3211.powergrid.kinetics.plotter;
 
+import net.minecraft.network.FriendlyByteBuf;
+import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
-public class PlotterWire extends ElectricWire {
+public class PlotterWire extends ElectricWire implements ElectricBehaviour.SyncAppender {
     public double[] samples;
     private int currentTick;
 
@@ -26,5 +28,23 @@ public class PlotterWire extends ElectricWire {
     public void postMicroTick() {
         super.postMicroTick();
         samples[currentTick++] = potentialDifference();
+    }
+
+    @Override
+    public void writeToSync(FriendlyByteBuf buffer) {
+        buffer.writeInt(samples.length);
+        for(int i = 0; i < samples.length; ++i) {
+            buffer.writeDouble(samples[i]);
+        }
+    }
+
+    @Override
+    public void readFromSync(FriendlyByteBuf buffer) {
+        int length = buffer.readInt();
+        if(samples == null || samples.length != length)
+            samples = new double[length];
+        for(int i = 0; i < length; ++i) {
+            samples[i] = buffer.readDouble();
+        }
     }
 }
