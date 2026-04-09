@@ -81,6 +81,8 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         if(V0 < Vcrit * 0.5f && V1 < Vcrit * 0.5f)
             return V1;
         var dV = V1 - V0;
+        if(V1 > Vcrit && Math.abs(dV) > V_T * 2 && dV / V_T > 0)
+            return V0 + V_T * Math.log1p(dV / V_T);
         return V0 + dV * network.bjtSmoothAlpha;
     }
 

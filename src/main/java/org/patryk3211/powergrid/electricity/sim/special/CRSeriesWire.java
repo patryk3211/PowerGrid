@@ -57,9 +57,7 @@ public class CRSeriesWire extends AbstractElectricWire implements IStaticResidua
     }
 
     public double capacitorVoltage() {
-        var G_C = (2 * capacitance) / getDeltaTime();
-        double residualScale = 1 - G_C / (1 / resistance + G_C);
-        return potentialDifference() * residualScale;
+        return potentialDifference() - current() * resistance;
     }
 
     @Override
@@ -76,7 +74,7 @@ public class CRSeriesWire extends AbstractElectricWire implements IStaticResidua
     public void postUpperSolve() {
         if(isConverged()) {
             var Vcap = capacitorVoltage();
-            Iprev = (Vcap - V) * capacitance / getDeltaTime();
+            Iprev = (Vcap - V) * 0.5 * capacitance / getDeltaTime();
             // Save voltage with a bit of leakage
             V = Vcap * 0.99999;
         }
