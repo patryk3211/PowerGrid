@@ -37,8 +37,8 @@ import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
-import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
 import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
+import org.patryk3211.powergrid.electricity.sim.special.SplitTransformerControllerWire;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 import org.patryk3211.powergrid.utility.sound.SoundScapes;
@@ -46,9 +46,9 @@ import org.patryk3211.powergrid.utility.sound.SoundScapes;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class TransformerBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
-    private static final int AVG_SAMPLE_COUNT = 10;
+import static org.patryk3211.powergrid.electricity.sim.special.SplitTransformerControllerWire.AVG_SAMPLE_COUNT;
 
+public abstract class TransformerBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
     protected TransformerCoilParameters primaryCoil;
     protected TransformerCoilParameters secondaryCoil;
 
@@ -56,15 +56,8 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     protected ElectricWire mutualInductance;
     protected TransformerCoupling coupling;
 
-    protected CurrentSourceWire couplingI1;
-    protected CurrentSourceWire couplingI2;
-
-    private double sinkConductance;
-    private double sourceConductance;
-
-    private int avgHead = 0;
-    private final double[] avgV1 = new double[AVG_SAMPLE_COUNT];
-    private final double[] avgV2 = new double[AVG_SAMPLE_COUNT];
+    protected SplitTransformerControllerWire couplingI1;
+    protected SplitTransformerControllerWire couplingI2;
 
     public float lastCurrent;
 
@@ -113,53 +106,6 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     @Override
     public void electricalTick() {
         if(couplingI1 != null && couplingI1.isConverged() && couplingI2.isConverged()) {
-            assert couplingI1.getNode2() != null && couplingI2.getNode2() != null;
-            double V1 = couplingI1.getNetwork() != null
-                    ? couplingI1.potentialDifference()
-                    : couplingI1.getCurrent() / couplingI1.conductance();
-            double V2 = couplingI2.getNetwork() != null
-                    ? couplingI2.potentialDifference()
-                    : couplingI2.getCurrent() / couplingI2.conductance();
-
-            // No ratio multiplication since only 1:1 transformers are allowed here for now.
-            var I1S = V1 * couplingI1.conductance() - couplingI1.getCurrent();
-            var I2S = V2 * couplingI2.conductance() - couplingI2.getCurrent();
-
-            boolean s1 = Math.signum(I1S) != Math.signum(V1), s2 = Math.signum(I2S) != Math.signum(V2);
-            if(s1 && !s2) {
-                // Sourced current.
-                var Is = V1 * couplingI1.conductance() - couplingI1.getCurrent();
-                V1 = Is / couplingI2.conductance();
-                if(Math.abs(Is) > 1e-6) {
-                    couplingI1.setConductance(sourceConductance);
-                    couplingI2.setConductance(sinkConductance);
-                }
-            } else if(s2 && !s1) {
-                // Sourced current.
-                var Is = V2 * couplingI2.conductance() - couplingI2.getCurrent();
-                V2 = Is / couplingI1.conductance();
-                if(Math.abs(Is) > 1e-6) {
-                    couplingI1.setConductance(sinkConductance);
-                    couplingI2.setConductance(sourceConductance);
-                }
-            } else {
-                couplingI1.setConductance(sinkConductance);
-                couplingI2.setConductance(sinkConductance);
-            }
-
-            avgV1[avgHead] = V1;
-            avgV2[avgHead] = V2;
-
-            double V1a = 0, V2a = 0;
-            avgHead = (avgHead + 1) % AVG_SAMPLE_COUNT;
-            for(int i = 0; i < AVG_SAMPLE_COUNT; ++i) {
-                V1a += avgV1[i] * (1.0f / AVG_SAMPLE_COUNT);
-                V2a += avgV2[i] * (1.0f / AVG_SAMPLE_COUNT);
-            }
-
-            couplingI1.setCurrent(V2a * couplingI1.conductance());
-            couplingI2.setCurrent(V1a * couplingI2.conductance());
-
             setUnsaved();
         }
     }
@@ -191,13 +137,14 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             tag.remove("Rebuild");
         }
 
-        if(splittingTransformers()) {
+        if(splittingTransformers() && couplingI1 != null && couplingI2 != null) {
             var avgData = tag.getList("TrAvgDat", CompoundTag.TAG_DOUBLE);
             for(int i = 0; i < AVG_SAMPLE_COUNT; ++i) {
-                avgV1[i] = avgData.getDouble(i * 2);
-                avgV2[i] = avgData.getDouble(i * 2 + 1);
+                couplingI1.samples[i] = avgData.getDouble(i * 2);
+                couplingI2.samples[i] = avgData.getDouble(i * 2 + 1);
             }
-            avgHead = tag.getInt("TrAvgHead");
+            couplingI1.avgHead = tag.getInt("PAvgHead");
+            couplingI2.avgHead = tag.getInt("SAvgHead");
         }
 
         super.read(tag, clientPacket);
@@ -219,14 +166,15 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             tag.put("Secondary", secondary);
         }
 
-        if(splittingTransformers()) {
+        if(splittingTransformers() && couplingI1 != null && couplingI2 != null) {
             var avgData = new ListTag();
             for(int i = 0; i < AVG_SAMPLE_COUNT; ++i) {
-                avgData.add(DoubleTag.valueOf(avgV1[i]));
-                avgData.add(DoubleTag.valueOf(avgV2[i]));
+                avgData.add(DoubleTag.valueOf(couplingI1.samples[i]));
+                avgData.add(DoubleTag.valueOf(couplingI2.samples[i]));
             }
             tag.put("TrAvgDat", avgData);
-            tag.putInt("TrAvgHead", avgHead);
+            tag.putInt("PAvgHead", couplingI1.avgHead);
+            tag.putInt("SAvgHead", couplingI2.avgHead);
         }
     }
 
@@ -387,11 +335,13 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             this.mutualInductance = builder.connect((float) mutualInductance * mutualMultiplier(), Tnode, P2);
             if(primaryTurns == secondaryTurns && splittingTransformers()) {
                 // TODO: Consider allowing more variation in the ratio that splits networks.
-                this.couplingI1 = new CurrentSourceWire(P1, P2, 1 / secondaryStray);
-                this.couplingI2 = new CurrentSourceWire(builder.terminalNode(secondaryCoil.getTerminal1()),
-                        builder.terminalNode(secondaryCoil.getTerminal2()), 1 / secondaryStray);
-                sourceConductance = 1 / secondaryStray;
-                sinkConductance = 1 / mutualInductance;
+                double sourceConductance = 1 / secondaryStray;
+                double sinkConductance = 1 / mutualInductance;
+                this.couplingI1 = new SplitTransformerControllerWire(P1, P2, sinkConductance, sourceConductance);
+                this.couplingI2 = new SplitTransformerControllerWire(builder.terminalNode(secondaryCoil.getTerminal1()),
+                        builder.terminalNode(secondaryCoil.getTerminal2()), sinkConductance, sourceConductance);
+                this.couplingI1.secondary = this.couplingI2;
+                this.couplingI2.secondary = this.couplingI1;
                 builder.add(couplingI1);
                 builder.add(couplingI2);
             } else {
