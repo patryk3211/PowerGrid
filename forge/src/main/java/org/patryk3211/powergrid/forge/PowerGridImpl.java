@@ -124,7 +124,7 @@ public class PowerGridImpl {
     @SubscribeEvent
     public static void newDynamicRegistryEvent(DataPackRegistryEvent.NewRegistry event) {
         event.dataPackRegistry(ComponentRegistry.ITEM_REGISTRY_KEY, ComponentRegistry.ITEM_CODEC, ComponentRegistry.ITEM_CODEC);
-        event.dataPackRegistry(WireRegistry.KEY, WireItemEntry.CODEC, WireItemEntry.CODEC);
+        event.dataPackRegistry(WireRegistry.KEY, WireItemEntry.CODEC.orElse(null), WireItemEntry.CODEC);
     }
 
     @SubscribeEvent

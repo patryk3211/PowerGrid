@@ -171,7 +171,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         var pos = position();
         if(isOverheated()) {
             if(world.isClientSide && !particlesSpawned) {
-                float dx = curveParams.getCurveSpan();
+                double dx = curveParams.getCurveSpan();
                 int pointCount = (int) Math.round(dx / 0.25f);
                 curveParams.runForPoints(pointCount, (x, y, z) -> {
                     world.addParticle(ParticleTypes.FLAME,

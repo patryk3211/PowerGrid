@@ -503,7 +503,7 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
     }
 
     public boolean isInsulated() {
-        return item.isInsulated();
+        return wireEntry.insulated();
     }
 
     protected abstract void unloaded();

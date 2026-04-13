@@ -59,37 +59,37 @@ public class ModdedItems {
     public static final ItemEntry<WireItem> WIRE = REGISTRATE.item("wire", WireItem::new)
             .transform(WireItem.properties(0.0015f, 24, 0.5f, 1.0f, 80,
                     PowerGrid.texture("special/copper_wire"), 1.01f, 1.2f, 0.0625f,
-                    false, false))
+                    false, false, false))
             .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag, wires("copper"))
             .lang("Copper Wire")
             .register();
     public static final ItemEntry<WireItem> IRON_WIRE = REGISTRATE.item("iron_wire", WireItem::new)
             .transform(WireItem.properties(0.005f, 64, 0.5f, 2.0f, 160,
                     PowerGrid.texture("special/iron_wire"), 1.0075f, 1.125f, 0.125f,
-                    false, false))
+                    false, false, false))
             .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.FUSE_RESETTING.tag, wires("iron"))
             .register();
     public static final ItemEntry<WireItem> GOLDEN_WIRE = REGISTRATE.item("golden_wire", WireItem::new)
             .transform(WireItem.properties(0.003f, 12, 0.5f, 0.8f, 160,
                     PowerGrid.texture("special/golden_wire"), 1.02f, 1.4f, 0.0625f,
-                    false, false))
+                    false, false, false))
             .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag, wires("gold"))
             .register();
     public static final ItemEntry<WireItem> INSULATED_COPPER_WIRE = REGISTRATE.item("insulated_copper_wire", WireItem::new)
             .transform(WireItem.properties(0.0015f, 16, 0.5f, 1.2f, 70,
                     PowerGrid.texture("special/insulated_wire"), 1.01f, 1.2f, 0.0625f,
-                    true, false))
+                    true, false, true))
             .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag)
             .register();
     public static final ItemEntry<CordItem> CORD = REGISTRATE.item("copper_cord", CordItem::new)
             .transform(WireItem.properties(0.0015f, 16, 0.5f, 2.0f, 60,
                     PowerGrid.texture("special/insulated_wire"), 1.005f, 1.005f, 0.125f,
-                    true, true))
+                    true, true, true))
             .register();
     public static final ItemEntry<StringLightCordItem> STRING_LIGHT_CORD = REGISTRATE.item("string_light_cord", StringLightCordItem::new)
             .transform(WireItem.properties(0.0015f, 16, 0.5f, 2.0f, 60,
                     PowerGrid.texture("special/insulated_wire"), 1.005f, 1.005f, 0.125f,
-                    false, true))
+                    false, true, true))
             .register();
 
     public static final ItemEntry<Item> WIRE_CUTTER = REGISTRATE.item("wire_cutter", Item::new)
