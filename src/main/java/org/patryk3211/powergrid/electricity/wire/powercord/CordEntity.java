@@ -40,8 +40,8 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.CurveParameters;
+import org.patryk3211.powergrid.electricity.wire.IWire;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
 
@@ -59,10 +59,10 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     private boolean particlesSpawned;
 
     public static CordEntity create(Level world, ICordEndpoint endpoint1, ICordEndpoint endpoint2, ItemStack item, @Nullable Float resistance) {
-        if(!(item.getItem() instanceof CordItem))
+        if(!IWire.isCord(world, item.getItem()))
             throw new IllegalArgumentException("ItemStack must be of a CordItem");
         var entity = new CordEntity(ModdedEntities.CORD_ENTITY.get(), world);
-        entity.setItem((WireItem) item.getItem(), item.getCount());
+        entity.setItem(item.getItem(), item.getCount());
 
         entity.resistanceOverride = resistance;
 
@@ -74,7 +74,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
         entity.setOldPosAndRot();
         entity.reapplyPosition();
 
-        if(entity.getWireItem().canBeColored())
+        if(entity.getWireEntry().colorable())
             entity.setColor(0x413c31);
 
         return entity;
@@ -93,9 +93,9 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     }
 
     public void updateRenderParams() {
-        var item = getWireItem();
+        var item = getWireEntry();
         curveParams = new CurveParameters(terminalPos1, terminalPos2,
-                item.getHorizontalCoefficient(), item.getVerticalCoefficient(), item.getWireThickness());
+                item.horizontalCoefficient(), item.verticalCoefficient(), item.wireThickness());
         this.setBoundingBox(this.makeBoundingBox());
     }
 
@@ -108,7 +108,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
         var minY = new MutableFloat(box.minY);
         final float eY = (float) position().y;
         curveParams.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
-            float y = (y1 + y2) * 0.5f + eY;
+            double y = (y1 + y2) * 0.5 + eY;
             if(y < minY.getValue())
                 minY.setValue(y);
         }, 0.5f);
@@ -249,7 +249,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
         if(isOverheated()) {
             if(world.isClientSide && !particlesSpawned) {
                 var dx = curveParams.getCurveSpan();
-                int pointCount = Math.round(dx / 0.25f);
+                int pointCount = (int) Math.round(dx / 0.25f);
                 curveParams.runForPoints(pointCount, (x, y, z) -> {
                     world.addParticle(ParticleTypes.FLAME,
                             pos.x + x, pos.y + y, pos.z + z,
@@ -318,9 +318,9 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     @Environment(EnvType.CLIENT)
     public @Nullable Vec3 raycast(Vec3 min, Vec3 max) {
         // TODO: Sometimes this raycast is really finicky
-        if(getWireItem() == null)
+        if(getWireEntry() == null)
             return null;
-        var thickness = getWireItem().getWireThickness() * 2;
+        var thickness = getWireEntry().wireThickness() * 2;
         if(curveParams != null) {
             Vec3 ray = max.subtract(min);
             var rayLength = ray.lengthSqr();

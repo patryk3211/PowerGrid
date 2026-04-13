@@ -148,18 +148,25 @@
 			"rotation": [0, 45, 0],
 			"translation": [0, 2, 0],
 			"scale": [0.4, 0.4, 0.4]
+		},
+		"gui": {
+			"rotation": [30, -135, 0],
+			"translation": [0, 2.25, 0],
+			"scale": [0.8, 0.8, 0.8]
 		}
 	},
 	"groups": [
 		{
 			"name": "Body",
 			"origin": [8, 8, 8],
+			"scope": 0,
 			"color": 0,
 			"children": [0, 1, 2, 3, 4, 5]
 		},
 		{
 			"name": "Lever",
 			"origin": [8, 8, 8],
+			"scope": 0,
 			"color": 0,
 			"children": [6, 7, 8, 9]
 		}

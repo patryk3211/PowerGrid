@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.utility.fabric;
 
+import com.simibubi.create.foundation.utility.fabric.ReachUtil;
 import io.github.fabricators_of_create.porting_lib.event.common.BlockEvents;
 import net.fabricmc.fabric.api.entity.FakePlayer;
 import net.minecraft.core.BlockPos;
@@ -30,5 +31,9 @@ public class PlayerUtilitiesImpl {
         var event = new BlockEvents.BreakEvent(world, pos, world.getBlockState(pos), player);
         BlockEvents.BLOCK_BREAK.invoker().onBlockBreak(event);
         return event.isCanceled();
+    }
+
+    public static float getReachDistance(Player player) {
+        return (float) ReachUtil.reach(player);
     }
 }

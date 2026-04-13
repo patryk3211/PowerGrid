@@ -15,9 +15,9 @@
  */
 package org.patryk3211.powergrid.electricity.light.bulb;
 
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.minecraft.world.item.Item;
-import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -28,14 +28,15 @@ public class LvLightBulb extends LightBulb {
     }
 
     @Override
-    public LightBulbState createState(LightFixtureBlockEntity fixture) {
+    public <F extends SmartBlockEntity & IFixtureEntity> LightBulbState createState(F fixture) {
         return new State(this, fixture, modelSupplier, dyedModelSupplier);
     }
 
     public static class State extends LightBulb.SimpleState {
-        public <T extends Item & ILightBulb> State(T bulb, LightFixtureBlockEntity fixture,
-                                                   Supplier<Function<LightBulb.State, PartialModel>> modelProviderSupplier,
-                                                   Supplier<Function<DyedState, PartialModel>> dyedModelProviderSupplier) {
+        public <T extends Item & ILightBulb,
+                F extends SmartBlockEntity & IFixtureEntity> State(T bulb, F fixture,
+                                                                   Supplier<Function<LightBulb.State, PartialModel>> modelProviderSupplier,
+                                                                   Supplier<Function<DyedState, PartialModel>> dyedModelProviderSupplier) {
             super(bulb, fixture, modelProviderSupplier, dyedModelProviderSupplier);
         }
 

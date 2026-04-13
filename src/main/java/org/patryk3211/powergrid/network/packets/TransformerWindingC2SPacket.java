@@ -51,7 +51,7 @@ public class TransformerWindingC2SPacket implements SimplePacket {
         var ctx = context.get();
         ctx.queue(() -> {
             var stack = ctx.getPlayer().getItemInHand(hand);
-            if(!(stack.getItem() instanceof IWire) || !stack.hasTag())
+            if(!IWire.isWire(ctx.getPlayer().level(), stack.getItem()) || !stack.hasTag())
                 return;
             if(stack.getTag().contains("Turns")) {
                 // Alter existing tag

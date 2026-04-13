@@ -35,9 +35,7 @@ public class StringLightCordItem extends CordItem {
         super(settings, StringLightCordEntity::create);
     }
 
-    @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
-        super.appendProperties(stack, player, tooltip);
         Voltage.rated(120, player, tooltip);
         Power.rated(3, player, tooltip);
     }

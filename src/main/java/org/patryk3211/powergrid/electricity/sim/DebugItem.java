@@ -33,6 +33,7 @@ import org.patryk3211.powergrid.electricity.wire.powercord.CordEntity;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.InductionRotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBehaviour;
+import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
 
 public class DebugItem extends Item {
     public DebugItem(Properties settings) {
@@ -60,8 +61,11 @@ public class DebugItem extends Item {
             user.sendSystemMessage(Component.literal("Mechanical Power: " + power + " W"));
         }
         if(be instanceof InductionRotorBlockEntity rotorBE) {
-            var field = rotorBE.field;
+            var field = rotorBE.totalField.get();
             user.sendSystemMessage(Component.literal("Field Strength: " + field));
+        }
+        if(be instanceof WindingBlockEntity windingBE) {
+            windingBE.debugDump(user);
         }
         return InteractionResult.SUCCESS;
     }

@@ -43,16 +43,9 @@ public class TransmissionLinePart extends ElectricWire {
     public final WorldNetworks.PartId persistentOwnerId;
     public ChunkPos lastKnownChunk;
 
-    @NotNull
-    public IWireEndpoint endpoint1;
-    @NotNull
-    public IWireEndpoint endpoint2;
-
     private TransmissionLinePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, WorldNetworks.PartId ownerId, ChunkPos lastKnownChunk, @NotNull WorldNetworks global) {
         super(resistance, global.holderOrPlaceholderNode(endpoint1), global.holderOrPlaceholderNode(endpoint2));
         this.global = global;
-        this.endpoint1 = endpoint1;
-        this.endpoint2 = endpoint2;
         this.persistentOwnerId = ownerId;
         this.lastKnownChunk = lastKnownChunk;
         global.registerPart(persistentOwnerId, this);
@@ -62,8 +55,6 @@ public class TransmissionLinePart extends ElectricWire {
         super(resistance, global.holderOrPlaceholderNode(endpoint1), global.holderOrPlaceholderNode(endpoint2));
         this.global = global;
         this.owner = owner;
-        this.endpoint1 = endpoint1;
-        this.endpoint2 = endpoint2;
         this.persistentOwnerId = id;
         this.lastKnownChunk = new ChunkPos(owner.blockPosition());
         global.registerPart(persistentOwnerId, this);
@@ -83,10 +74,6 @@ public class TransmissionLinePart extends ElectricWire {
         var part = global.getPart(ownerId);
         if(part == null)
             return new TransmissionLinePart(resistance, endpoint1, endpoint2, ownerId, lastKnownChunk, global);
-        if(!endpoint1.equals(part.endpoint1))
-            throw new IllegalStateException();
-        if(!endpoint2.equals(part.endpoint2))
-            throw new IllegalStateException();
         return part;
     }
 
@@ -94,10 +81,6 @@ public class TransmissionLinePart extends ElectricWire {
         var part = global.getPart(id);
         if(part == null)
             return new TransmissionLinePart(resistance, endpoint1, endpoint2, owner, global, id);
-        if(!endpoint1.equals(part.endpoint1))
-            throw new IllegalStateException();
-        if(!endpoint2.equals(part.endpoint2))
-            throw new IllegalStateException();
         return part;
     }
 
@@ -114,14 +97,6 @@ public class TransmissionLinePart extends ElectricWire {
     }
 
     @Override
-    public void flipNodes() {
-        super.flipNodes();
-        var endpoint = endpoint1;
-        endpoint1 = endpoint2;
-        endpoint2 = endpoint;
-    }
-
-    @Override
     public OwnedFloatingNode getNode1() {
         return (OwnedFloatingNode) node1;
     }
@@ -133,12 +108,12 @@ public class TransmissionLinePart extends ElectricWire {
 
     @NotNull
     public IWireEndpoint getEndpoint1() {
-        return endpoint1;
+        return getNode1().endpoint;
     }
 
     @NotNull
     public IWireEndpoint getEndpoint2() {
-        return endpoint2;
+        return getNode2().endpoint;
     }
 
     @Nullable
@@ -207,13 +182,13 @@ public class TransmissionLinePart extends ElectricWire {
 
     @Override
     public String toString() {
-        return String.format("LinePart[id=%s, %s, %s]", persistentOwnerId, endpoint1, endpoint2);
+        return String.format("LinePart[id=%s, %s, %s]", persistentOwnerId, getEndpoint1(), getEndpoint2());
     }
 
     public CompoundTag toNbt() {
         var tag = new CompoundTag();
-        tag.put("Node1", endpoint1.serialize());
-        tag.put("Node2", endpoint2.serialize());
+        tag.put("Node1", getEndpoint1().serialize());
+        tag.put("Node2", getEndpoint2().serialize());
         if(persistentOwnerId instanceof WorldNetworks.SimpleId id) {
             tag.putUUID("Owner", id.id());
         } else if(persistentOwnerId instanceof WorldNetworks.ComplexId id) {
@@ -229,12 +204,12 @@ public class TransmissionLinePart extends ElectricWire {
     }
 
     public void refreshEndpointNodes() {
-        var node1 = endpoint1.getNode(global.world);
+        var node1 = getEndpoint1().getNode(global.world);
         if(this.node1 != node1 && node1 != null) {
             global.addAndMigrateNode(getNode1().endpoint, node1);
             setNode1(node1);
         }
-        var node2 = endpoint2.getNode(global.world);
+        var node2 = getEndpoint2().getNode(global.world);
         if(this.node2 != node2 && node2 != null) {
             global.addAndMigrateNode(getNode2().endpoint, node2);
             setNode2(node2);

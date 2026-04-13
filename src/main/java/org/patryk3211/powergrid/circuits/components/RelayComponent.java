@@ -31,7 +31,7 @@ import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.utility.Unit;
 
-public class RelayComponent extends OrientableComponent {
+public class RelayComponent extends MirrorableComponent {
     public static final FloatProperty THRESHOLD_VOLTAGE = new FloatProperty(PowerGrid.MOD_ID, "relay_threshold", 12, 1, 120);
     public static final BooleanProperty STATE = new BooleanProperty(PowerGrid.MOD_ID, "relay_state").hidden().cast();
     public static final CalculatedProperty<Float> THRESHOLD_CURRENT = new CalculatedProperty<>(PowerGrid.MOD_ID, "relay_current",
@@ -92,13 +92,13 @@ public class RelayComponent extends OrientableComponent {
                 NC.setState(true);
                 NO.setState(false);
                 placed.set(STATE, false);
-                placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), 0.75f, 1.9f));
+                placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), (0.75f*ModdedConfigs.client().relaySoundMultiplier.getF()), 1.9f));
             } else if(!placed.get(STATE) && current > confCurrent) {
                 // Above the threshold current the relay can turn on
                 NC.setState(false);
                 NO.setState(true);
                 placed.set(STATE, true);
-                placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), 0.75f, 2.0f));
+                placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), (0.75f*ModdedConfigs.client().relaySoundMultiplier.getF()), 2.0f));
             }
         }
 

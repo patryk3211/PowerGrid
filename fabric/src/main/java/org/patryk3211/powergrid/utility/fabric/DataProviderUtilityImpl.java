@@ -37,6 +37,7 @@ import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseState;
+import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
@@ -519,6 +520,25 @@ public class DataProviderUtilityImpl {
                 part.addModel().condition(FACING, facing).condition(FuseHolderBlock.STATE, FuseState.BLOWN);
             }
         };
+    }
+
+    public static NonNullBiConsumer<DataGenContext<Block, FactoryLightBlock>, RegistrateBlockstateProvider> factoryLight(String baseFolder) {
+        return (ctx, prov) -> prov.getVariantBuilder(ctx.get()).forAllStates(state -> {
+            var builder = ConfiguredModel.builder();
+            var part = state.getValue(FactoryLightBlock.PART);
+            builder.modelFile(modModel(prov, baseFolder + "/factorylight" + switch(part) {
+                case 0 -> "";
+                case 1 -> "northedge";
+                case 2 -> "centerns";
+                case 3 -> "southedge";
+                case 4 -> "westedge";
+                case 5 -> "centerew";
+                case 6 -> "eastedge";
+
+                default -> throw new IllegalStateException();
+            }));
+            return builder.build();
+        });
     }
 
     public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> cubeColumn(String side, String end) {

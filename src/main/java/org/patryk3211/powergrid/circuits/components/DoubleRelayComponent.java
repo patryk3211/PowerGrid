@@ -28,7 +28,7 @@ import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 
 import static org.patryk3211.powergrid.circuits.components.RelayComponent.*;
 
-public class DoubleRelayComponent extends OrientableComponent {
+public class DoubleRelayComponent extends MirrorableComponent {
     public DoubleRelayComponent(ComponentFootprint footprint) {
         super(footprint);
     }

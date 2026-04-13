@@ -1,0 +1,45 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Made with Blockbench",
+	"texture_size": [64, 64],
+	"textures": {
+		"0": "powergrid:block/ceiling_tile/ceiling_tile",
+		"particle": "powergrid:block/ceiling_tile/ceiling_tile"
+	},
+	"elements": [
+		{
+			"from": [0, 0, 0],
+			"to": [16, 2, 16],
+			"faces": {
+				"north": {"uv": [8, 0, 16, 1], "texture": "#0"},
+				"east": {"uv": [8, 1, 16, 2], "texture": "#0"},
+				"south": {"uv": [8, 2, 16, 3], "texture": "#0"},
+				"west": {"uv": [8, 3, 16, 4], "texture": "#0"},
+				"up": {"uv": [8, 8, 0, 0], "texture": "#0"},
+				"down": {"uv": [8, 8, 0, 16], "texture": "#0"}
+			}
+		},
+		{
+			"from": [1, 1, 1],
+			"to": [15, 0, 15],
+			"rotation": {"angle": 0, "axis": "y", "origin": [1, 1, 10]},
+			"faces": {
+				"north": {"uv": [8, 0, 15, 0.5], "texture": "#0"},
+				"east": {"uv": [8, 0, 15, 0.5], "texture": "#0"},
+				"south": {"uv": [8, 0, 15, 0.5], "texture": "#0"},
+				"west": {"uv": [8, 0, 15, 0.5], "texture": "#0"},
+				"up": {"uv": [8.5, 8.5, 15.5, 15.5], "texture": "#0"},
+				"down": {"uv": [8.5, 8.5, 15.5, 15.5], "texture": "#0"}
+			}
+		}
+	],
+	"groups": [
+		{
+			"name": "tile",
+			"origin": [0, 0, 16],
+			"scope": 0,
+			"color": 0,
+			"children": [0, 1]
+		}
+	]
+}

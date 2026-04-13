@@ -15,42 +15,27 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import org.patryk3211.powergrid.electricity.info.Current;
-import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
-import org.patryk3211.powergrid.electricity.info.Range;
-import org.patryk3211.powergrid.electricity.info.Resistance;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.Level;
+import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
 
-import java.util.List;
-
-public interface IWire extends IHaveElectricProperties {
-    float getResistance();
-    float getMaximumLength();
-    float getItemUseMultiplier();
-
-    float getDissipationFactor();
-    float getThermalMass();
-
-    boolean isInsulated();
-
-    boolean canBeColored();
-
-    @Override
-    default void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
-        Resistance.series(getResistance(), player, tooltip);
-        Current.max(getResistance(), getDissipationFactor() * 150, player, tooltip);
-        Range.max((int) getMaximumLength(), tooltip);
-    }
-
+public interface IWire {
     static boolean holdsWire(Player player) {
         var stack1 = player.getMainHandItem();
-        if(stack1 != null && !stack1.isEmpty() && stack1.getItem() instanceof IWire)
+        if(stack1 != null && !stack1.isEmpty() && isWire(player.level(), stack1.getItem()))
             return true;
         var stack2 = player.getOffhandItem();
-        if(stack2 != null && !stack2.isEmpty() && stack2.getItem() instanceof IWire)
+        if(stack2 != null && !stack2.isEmpty() && isWire(player.level(), stack2.getItem()))
             return true;
         return false;
+    }
+
+    static boolean isWire(Level level, Item item) {
+        return item instanceof IWire || WireRegistry.forItem(level, item) != null;
+    }
+
+    static boolean isCord(Level level, Item item) {
+        return isWire(level, item) && WireRegistry.forItem(level, item).cord();
     }
 }

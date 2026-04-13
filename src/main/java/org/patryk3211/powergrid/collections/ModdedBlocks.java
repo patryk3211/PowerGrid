@@ -77,6 +77,8 @@ import org.patryk3211.powergrid.electricity.gauge.PowerGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
 import org.patryk3211.powergrid.electricity.grounding.GroundingRodBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
+import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightBlock;
+import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightLightBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.light.string.StringLightBlock;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlock;
@@ -92,6 +94,7 @@ import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryBlock;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerBlock;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerItem;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerItemRenderer;
+import org.patryk3211.powergrid.general.ceilingtile.CeilingTileBlock;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.housing.VerticalGeneratorHousing;
@@ -472,12 +475,31 @@ public class ModdedBlocks {
     public static final BlockEntry<LightFixtureBlock> LIGHT_FIXTURE = REGISTRATE.block("light_fixture", LightFixtureBlock::new)
             .blockstate(lightFixture("block/fixtures/light_fixture"))
             .initialProperties(SharedProperties::softMetal)
-            .transform(axeOrPickaxe())
+            .transform(pickaxeOnly())
             .transform(LightFixtureBlock.setBulbModelOffset(0, 3 / 16f, 0))
             .defaultLoot()
             .item()
                 .model(itemWithParent("block/fixtures/light_fixture_v"))
                 .build()
+            .register();
+
+    public static final BlockEntry<FactoryLightBlock> FACTORY_LIGHT = REGISTRATE.block("factory_light", FactoryLightBlock::new)
+            .blockstate(factoryLight("block/factory_light"))
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
+            .item()
+                .model(itemWithParent("block/factory_light/factorylight"))
+                .build()
+            .register();
+
+    public static final BlockEntry<FactoryLightLightBlock> FACTORY_LIGHT_LIGHT = REGISTRATE.block("factory_light_light", FactoryLightLightBlock::new)
+            .blockstate(air())
+            .register();
+
+    public static final BlockEntry<CeilingTileBlock> CEILING_TILE = REGISTRATE.block("ceiling_tile", CeilingTileBlock::new)
+            .blockstate(simple("block/ceiling_tile/ceiling_tile"))
+            .transform(axeOrPickaxe())
+            .simpleItem()
             .register();
 
     public static final BlockEntry<TransformerCoreBlock> TRANSFORMER_CORE = REGISTRATE.block("transformer_core", TransformerCoreBlock::new)

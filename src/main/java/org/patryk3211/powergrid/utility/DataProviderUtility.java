@@ -27,6 +27,7 @@ import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
+import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
@@ -73,6 +74,11 @@ public class DataProviderUtility {
 
     @ExpectPlatform
     public static NonNullBiConsumer<DataGenContext<Block, LightFixtureBlock>, RegistrateBlockstateProvider> lightFixture(String baseName) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static NonNullBiConsumer<DataGenContext<Block, FactoryLightBlock>, RegistrateBlockstateProvider> factoryLight(String baseFolder) {
         throw new AssertionError();
     }
 

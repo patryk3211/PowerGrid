@@ -53,10 +53,7 @@ public abstract class WireEntity extends BaseWireEntity {
 
     @Override
     public void makeWire() {
-        // Client doesn't make a wire, connections are handled differently.
         var world = level();
-//        if(world.isClientSide && !(world instanceof PonderLevel))
-//            return;
 
         dropWire();
 

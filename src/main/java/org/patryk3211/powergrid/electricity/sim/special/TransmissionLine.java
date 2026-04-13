@@ -71,13 +71,13 @@ public class TransmissionLine extends ElectricWire {
     }
 
     private int validateEndpoints(TransmissionLinePart part, BaseWireEntity owner) {
-        if(part.endpoint1.equals(owner.getEndpoint1())) {
-            if(part.endpoint2.equals(owner.getEndpoint2())) {
+        if(part.getEndpoint1().equals(owner.getEndpoint1())) {
+            if(part.getEndpoint2().equals(owner.getEndpoint2())) {
                 return 1;
             }
-        } else if(part.endpoint2.equals(owner.getEndpoint1())) {
+        } else if(part.getEndpoint2().equals(owner.getEndpoint1())) {
             // Endpoints are flipped
-            if(part.endpoint1.equals(owner.getEndpoint2())) {
+            if(part.getEndpoint1().equals(owner.getEndpoint2())) {
                 return 2;
             }
         }
@@ -86,18 +86,18 @@ public class TransmissionLine extends ElectricWire {
 
     public void validateLine() {
         PowerGrid.LOGGER.info("Validating {}", this);
-        if(!segments.get(0).endpoint1.equals(endpoint1)) {
+        if(!segments.get(0).getEndpoint1().equals(endpoint1)) {
             PowerGrid.LOGGER.error("Line doesn't start where its first segment starts");
         }
-        if(!segments.get(segments.size() - 1).endpoint2.equals(endpoint2)) {
+        if(!segments.get(segments.size() - 1).getEndpoint2().equals(endpoint2)) {
             PowerGrid.LOGGER.error("Line doesn't end where its last segment ends");
         }
         var prevEndpoint = endpoint1;
         for(var segment : segments) {
-            if(!segment.endpoint1.equals(prevEndpoint)) {
-                PowerGrid.LOGGER.error("Line not continuous, divergence between {} and {}", segment.endpoint1, prevEndpoint);
+            if(!segment.getEndpoint1().equals(prevEndpoint)) {
+                PowerGrid.LOGGER.error("Line not continuous, divergence between {} and {}", segment.getEndpoint1(), prevEndpoint);
             }
-            prevEndpoint = segment.endpoint2;
+            prevEndpoint = segment.getEndpoint2();
         }
     }
 
@@ -172,8 +172,8 @@ public class TransmissionLine extends ElectricWire {
             // If the owner id matches then the endpoints should match too
             var endpointArrangement = validateEndpoints(part, owner);
             if(endpointArrangement == 1 || endpointArrangement == 2) {
-                var node1 = part.endpoint1.getNode(owner.level());
-                var node2 = part.endpoint2.getNode(owner.level());
+                var node1 = part.getEndpoint1().getNode(owner.level());
+                var node2 = part.getEndpoint2().getNode(owner.level());
                 global.movePartMap(part.getNode1(), node1, part);
                 global.movePartMap(part.getNode2(), node2, part);
                 part.setNode1(node1);
@@ -182,7 +182,7 @@ public class TransmissionLine extends ElectricWire {
                     owner.flipEndpoints();
             } else {
                 PowerGrid.LOGGER.warn("Endpoint of wire and unloaded line segment do not match\n{}, {} vs {}, {}",
-                        part.endpoint1, part.endpoint2, owner.getEndpoint1(), owner.getEndpoint2());
+                        part.getEndpoint1(), part.getEndpoint2(), owner.getEndpoint1(), owner.getEndpoint2());
                 remove();
                 return;
             }
@@ -214,7 +214,7 @@ public class TransmissionLine extends ElectricWire {
         var oldNode = getNode2();
 
         // Move boundary
-        setNode2(wire.endpoint2, wire.getNode2());
+        setNode2(wire.getEndpoint2(), wire.getNode2());
         oldNode.remove();
         if(ENABLE_VALIDATION)
             validateLine();
@@ -228,7 +228,7 @@ public class TransmissionLine extends ElectricWire {
         var oldNode = getNode1();
 
         // Move boundary
-        setNode1(wire.endpoint1, wire.getNode1());
+        setNode1(wire.getEndpoint1(), wire.getNode1());
         oldNode.remove();
         if(ENABLE_VALIDATION)
             validateLine();
@@ -278,12 +278,12 @@ public class TransmissionLine extends ElectricWire {
                 if (splitNode == atNode) {
                     // This is the last segment of this line.
                     // All other segments go to the next line.
-                    line2 = new TransmissionLine(1, segment.endpoint2, endpoint2, global);
+                    line2 = new TransmissionLine(1, segment.getEndpoint2(), endpoint2, global);
                     global.prepareForTransmissionLine(getNode1(), splitNode, this,
                             () -> setNode2(segment.getEndpoint2(), splitNode));
                 } else if(segment.getEndpoint2().equals(atNode.endpoint)) {
                     // Nodes do not match but the endpoint does. Split should occur.
-                    line2 = new TransmissionLine(1, segment.endpoint2, endpoint2, global);
+                    line2 = new TransmissionLine(1, segment.getEndpoint2(), endpoint2, global);
                     // Get the most up-to-date node.
                     var newNode = atNode.endpoint.getNode(global.world);
                     global.prepareForTransmissionLine(getNode1(), newNode, this,
@@ -444,10 +444,10 @@ public class TransmissionLine extends ElectricWire {
             }
             setResistance(resistance - removed.getResistance());
 
-            var node1 = wire.endpoint2.getNode(global.world);
+            var node1 = wire.getEndpoint2().getNode(global.world);
             var optiNode = getNode1();
             global.prepareForTransmissionLine(node1, getNode2(), this,
-                    () -> setNode1(wire.endpoint2, node1));
+                    () -> setNode1(wire.getEndpoint2(), node1));
             optimizeNode(optiNode);
             if(ENABLE_VALIDATION)
                 validateLine();
@@ -464,10 +464,10 @@ public class TransmissionLine extends ElectricWire {
             }
             setResistance(resistance - removed.getResistance());
 
-            var node2 = wire.endpoint1.getNode(global.world);
+            var node2 = wire.getEndpoint1().getNode(global.world);
             var optiNode = getNode2();
             global.prepareForTransmissionLine(getNode1(), node2, this,
-                    () -> setNode2(wire.endpoint1, node2));
+                    () -> setNode2(wire.getEndpoint1(), node2));
             optimizeNode(optiNode);
             if(ENABLE_VALIDATION)
                 validateLine();
@@ -486,7 +486,7 @@ public class TransmissionLine extends ElectricWire {
             var removed = segments.remove(segments.size() - 1);
             assert removed == wire;
             removed.setLine(null);
-            var terminatingNode = wire.endpoint1.getNode(global.world);
+            var terminatingNode = wire.getEndpoint1().getNode(global.world);
             if(segments.isEmpty()) {
                 if(ModdedConfigs.logsEnabled())
                     PowerGrid.LOGGER.debug("{}: Split and remove resulted in an empty line", this);
@@ -495,7 +495,7 @@ public class TransmissionLine extends ElectricWire {
             }
             setResistance(resistance - removed.getResistance());
             global.prepareForTransmissionLine(getNode1(), terminatingNode, this,
-                    () -> setNode2(wire.endpoint1, terminatingNode));
+                    () -> setNode2(wire.getEndpoint1(), terminatingNode));
             if(ENABLE_VALIDATION)
                 validateLine();
         }

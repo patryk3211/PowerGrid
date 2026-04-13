@@ -132,7 +132,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
                 // Since holders' size was 2 we must get 2 wires, otherwise the set was altered before the loop started.
                 throw new ConcurrentModificationException();
             }
-            assert wire1.getWireItem() == wire2.getWireItem();
+            assert wire1.getWireEntry() == wire2.getWireEntry();
             var wire1End = this.equals(wire1.getEndpoint2());
             var wire2End = this.equals(wire2.getEndpoint2());
 
@@ -156,25 +156,40 @@ public class JunctionWireEndpoint implements IWireEndpoint {
                 target = wire2;
             }
 
-            var lastIndex = target.segments.size() - 1;
-            var last = target.segments.get(lastIndex);
-            if(!targetFlipped)
-                target.segments.set(lastIndex, new BlockWireEntity.Point(last.direction, last.gridLength + 1));
-
-            if(flipped) {
-                var segments = new ArrayList<BlockWireEntity.Point>();
-                for(var segment : source.segments) {
-                    segments.add(0, new BlockWireEntity.Point(segment.direction.getOpposite(), segment.gridLength));
+            if(target.segments.isEmpty()) {
+                target.dropWire();
+                if(source.segments.isEmpty()) {
+                    source.dropWire();
+                    source.discard();
+                } else {
+                    if(flipped) {
+                        source.setEndpoint2(target.getEndpoint1());
+                    } else {
+                        source.setEndpoint1(target.getEndpoint1());
+                    }
                 }
-                source.dropWire();
-                target.setEndpoint2(source.getEndpoint1());
-                target.extend(segments, source.getWireCount());
+                target.discard();
             } else {
-                source.dropWire();
-                target.setEndpoint2(source.getEndpoint2());
-                target.extend(source.segments, source.getWireCount());
+                int lastIndex = target.segments.size() - 1;
+                var last = target.segments.get(lastIndex);
+                if(!targetFlipped)
+                    target.segments.set(lastIndex, new BlockWireEntity.Point(last.direction, last.gridLength + 1));
+
+                if(flipped) {
+                    var segments = new ArrayList<BlockWireEntity.Point>();
+                    for(var segment : source.segments) {
+                        segments.add(0, new BlockWireEntity.Point(segment.direction.getOpposite(), segment.gridLength));
+                    }
+                    source.dropWire();
+                    target.setEndpoint2(source.getEndpoint1());
+                    target.extend(segments, source.getWireCount());
+                } else {
+                    source.dropWire();
+                    target.setEndpoint2(source.getEndpoint2());
+                    target.extend(source.segments, source.getWireCount());
+                }
+                source.discard();
             }
-            source.discard();
             entry.holders.clear();
             removeEntry(entity.level(), this.id);
         } else if(entry.holders.size() == 1) {

@@ -41,12 +41,8 @@ import org.patryk3211.powergrid.circuits.gui.CircuitEditWidget;
 import org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender;
-import org.patryk3211.powergrid.circuits.schematic.Line;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
-import org.patryk3211.powergrid.collections.ModIcons;
-import org.patryk3211.powergrid.collections.ModdedKeys;
-import org.patryk3211.powergrid.collections.ModdedPackets;
-import org.patryk3211.powergrid.collections.ModdedSoundEvents;
+import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.network.packets.ChangeScreenC2SPacket;
 import org.patryk3211.powergrid.network.packets.SaveSchematicC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
@@ -65,13 +61,36 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
     private static final int HEIGHT = 160;
 
     public static final int CIRCUIT_SCALE = 8;
+    public static final int TRACE_PADDING = 1;
+
+    public final int activeFrontTraceColor = (ModdedConfigs.client().Circuit.traceAlphaTop.get()<< 24)|
+                                       (ModdedConfigs.client().Circuit.traceRedTop.get()<<16)|
+                                       (ModdedConfigs.client().Circuit.traceGreenTop.get()<<8)|
+                                       (ModdedConfigs.client().Circuit.traceBlueTop.get());
+    public final int activeBackTraceColor = (ModdedConfigs.client().Circuit.traceAlphaBottom.get()<< 24)|
+            (ModdedConfigs.client().Circuit.traceRedBottom.get()<<16)|
+            (ModdedConfigs.client().Circuit.traceGreenBottom.get()<<8)|
+            (ModdedConfigs.client().Circuit.traceBlueBottom.get());
+
+    public final int FrontTraceColor = (ModdedConfigs.client().Circuit.traceAlphaTopBehind.get()<< 24)|
+            (ModdedConfigs.client().Circuit.traceRedTop.get()<<16)|
+            (ModdedConfigs.client().Circuit.traceGreenTop.get()<<8)|
+            (ModdedConfigs.client().Circuit.traceBlueTop.get());
+    public final int BackTraceColor = (ModdedConfigs.client().Circuit.traceAlphaBottomBehind.get()<< 24)|
+            (ModdedConfigs.client().Circuit.traceRedBottom.get()<<16)|
+            (ModdedConfigs.client().Circuit.traceGreenBottom.get()<<8)|
+            (ModdedConfigs.client().Circuit.traceBlueBottom.get());
 
     private static final net.minecraft.network.chat.Component TOOLTIP_SAVE = Lang.translateDirect("gui.circuit_designer.save");
     private static final net.minecraft.network.chat.Component TOOLTIP_DISCARD = Lang.translateDirect("gui.circuit_designer.discard");
-    private static final net.minecraft.network.chat.Component TOOLTIP_CONNECT = Lang.translateDirect("gui.circuit_designer.connect");
-    private static final net.minecraft.network.chat.Component TOOLTIP_DELETE = Lang.translateDirect("gui.circuit_designer.delete");
-    private static final net.minecraft.network.chat.Component TOOLTIP_SELECT = Lang.translateDirect("gui.circuit_designer.select");
-    private static final net.minecraft.network.chat.Component TOOLTIP_LAYER = Lang.translateDirect("gui.circuit_designer.layer");
+    private static final net.minecraft.network.chat.Component TOOLTIP_CONNECT =
+            Lang.translateDirect("gui.circuit_designer.connect", ModdedKeys.PLACE_TRACE.getBoundKey());
+    private static final net.minecraft.network.chat.Component TOOLTIP_DELETE =
+            Lang.translateDirect("gui.circuit_designer.delete", ModdedKeys.DELETE_AREA.getBoundKey());
+    private static final net.minecraft.network.chat.Component TOOLTIP_SELECT =
+            Lang.translateDirect("gui.circuit_designer.select", ModdedKeys.PICK_COMPONENT.getBoundKey());
+    private static final net.minecraft.network.chat.Component TOOLTIP_LAYER =
+            Lang.translateDirect("gui.circuit_designer.layer", ModdedKeys.SWITCH_LAYER.getBoundKey());
     private static final net.minecraft.network.chat.Component TOOLTIP_PLACEABLE = Lang.translate("gui.circuit_designer.placeable")
             .style(ChatFormatting.DARK_GREEN)
             .style(ChatFormatting.ITALIC)
@@ -80,9 +99,6 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
     private static final net.minecraft.network.chat.Component TEXT_NOT_SAVED = Lang.translateDirect("gui.circuit_designer.not_saved");
 
     private final CircuitSchematic schematic;
-    private List<Line> fgLines;
-    private List<Line> bgLines;
-    private boolean tracesChanged = false;
 
     private Tool currentTool = Tool.SELECT;
     private PlacedComponent currentComponent = null;
@@ -114,9 +130,6 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
         // For the editor we take a copy since the underlying circuit can change
         // when packets are received, and we don't want to deal with that here.
         schematic = new CircuitSchematic(container.contentHolder.getSchematic());
-
-        fgLines = schematic.front().calculateLines();
-        bgLines = schematic.back().calculateLines();
     }
 
     private static SoundManager soundManager() {
@@ -146,14 +159,6 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
     }
 
     protected void flipLayer() {
-        if(tracesChanged) {
-            if(backLayer) {
-                bgLines = schematic.back().calculateLines();
-            } else {
-                fgLines = schematic.front().calculateLines();
-            }
-            tracesChanged = false;
-        }
         backLayer = !backLayer;
         layerBtn.setIcon(backLayer ? ModIcons.I_LAYER_BACK : ModIcons.I_LAYER_FRONT);
     }
@@ -287,22 +292,19 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
 
     private CircuitEditWidget.SelectionResult placeTrace(int x1, int y1, int x2, int y2, int clickX, int clickY) {
         var layer = backLayer ? schematic.back() : schematic.front();
-        boolean isTrace = layer.get(clickX, clickY);
-        layer.fill(x1, y1, x2, y2);
+        boolean isTrace = layer.hasTrace(clickX, clickY);
 
-        Line line;
-        if(x1 == x2) {
-            // Vertical
-            line = new Line(true, x1, y1, y2 + 1);
-        } else {
-            // Horizontal
-            line = new Line(false, y1, x1, x2 + 1);
+        if (x1 == x2 && y1 == y2) {
+            // Don't allow single-cell traces (ones that don't connect to anything)
+            playSound(ModdedSoundEvents.UI_PLACE_TRACE);
+            return CircuitEditWidget.SelectionResult.BEGIN_NEW;
         }
-        tracesChanged = true;
-        if(backLayer) {
-            bgLines.add(line);
-        } else {
-            fgLines.add(line);
+
+        if (x1 == x2) {
+            layer.addVerticalLine(x1, y1, y2);
+        }
+        else {
+            layer.addHorizontalLine(y1, x1, x2);
         }
 
         changed = true;
@@ -315,11 +317,6 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
     public CircuitEditWidget.SelectionResult deleteArea(int x1, int y1, int x2, int y2, int clickX, int clickY) {
         var layer = backLayer ? schematic.back() : schematic.front();
         layer.clear(x1, y1, x2, y2);
-        if(backLayer) {
-            bgLines = layer.calculateLines();
-        } else {
-            fgLines = layer.calculateLines();
-        }
         playSound(ModdedSoundEvents.UI_DELETE_AREA);
         changed = true;
         return CircuitEditWidget.SelectionResult.BEGIN_NEW;
@@ -370,14 +367,22 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
         ctx.blit(BACKGROUND, bgX, topPos, 0, 0, WIDTH, HEIGHT);
 
         int bpX = bgX + 13, bpY = topPos + 22;
-        if(!backLayer) {
-            CircuitSchematicRender.renderLayer(bgLines, ctx, bpX, bpY, CIRCUIT_SCALE, COLOR_TRACE_BACK);
-            CircuitSchematicRender.renderLayer(fgLines, ctx, bpX, bpY, CIRCUIT_SCALE, COLOR_TRACE_FRONT);
-        } else {
-            CircuitSchematicRender.renderLayer(fgLines, ctx, bpX, bpY, CIRCUIT_SCALE, COLOR_TRACE_BACK);
-            CircuitSchematicRender.renderLayer(bgLines, ctx, bpX, bpY, CIRCUIT_SCALE, COLOR_TRACE_FRONT);
-        }
 
+        if(ModdedConfigs.client().Circuit.HighContrastTraces.get()){ //added support for high contrast traces
+
+            //when back is selected
+            CircuitSchematicRender.renderLayer(schematic.back(), ctx, bpX, bpY, CIRCUIT_SCALE,
+                backLayer ? activeBackTraceColor  : BackTraceColor );
+            //when front is selected
+            CircuitSchematicRender.renderLayer(schematic.front(), ctx, bpX, bpY, CIRCUIT_SCALE,
+                    backLayer ? FrontTraceColor : activeFrontTraceColor);
+
+        }else {
+            CircuitSchematicRender.renderLayer(schematic.back(), ctx, bpX, bpY, CIRCUIT_SCALE,
+                    backLayer ? COLOR_TRACE_FRONT : COLOR_TRACE_BACK);
+            CircuitSchematicRender.renderLayer(schematic.front(), ctx, bpX, bpY, CIRCUIT_SCALE,
+                    backLayer ? COLOR_TRACE_BACK : COLOR_TRACE_FRONT);
+        }
         CircuitSchematicRender.renderComponents(schematic, ctx, bpX, bpY, CIRCUIT_SCALE, mouseX, mouseY);
 
         if(currentTool.y > 0) {

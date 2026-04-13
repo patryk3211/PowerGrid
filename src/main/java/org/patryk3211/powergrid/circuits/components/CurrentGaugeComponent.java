@@ -16,22 +16,22 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.google.common.collect.ImmutableCollection;
-import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
 import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
+import org.patryk3211.powergrid.circuits.components.properties.StringProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlockEntity;
 
-import java.util.List;
-
 public class CurrentGaugeComponent extends GaugeComponent {
-    public static final FloatProperty MAX_CURRENT = new FloatProperty(PowerGrid.MOD_ID, "current_gauge_max", 0.1f, 0.01f, 1.0f);
+    public static final FloatProperty MAX_CURRENT = new FloatProperty(PowerGrid.MOD_ID, "current_gauge_max", 0.1f, 0.01f, 10.0f);
+    public static final StringProperty UNIT = new StringProperty(PowerGrid.MOD_ID, "gauge_unit", "A");
 
     public CurrentGaugeComponent(ComponentFootprint footprint) {
         super(footprint);
@@ -40,7 +40,7 @@ public class CurrentGaugeComponent extends GaugeComponent {
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(MAX_CURRENT);
+        properties.add(UNIT, MAX_CURRENT);
     }
 
     @Override
@@ -57,6 +57,7 @@ public class CurrentGaugeComponent extends GaugeComponent {
         return Mth.clamp((float) (Math.abs(wire.current()) / placed.get(MAX_CURRENT)), 0, 1.125f);
     }
 
+    @Override
     public float getValue(PlacedComponent placed) {
         if(placed.wires.isEmpty())
             return 0;
@@ -65,10 +66,17 @@ public class CurrentGaugeComponent extends GaugeComponent {
     }
 
     @Override
-    public boolean addToGoggleTooltip(PlacedComponent component, List<Component> tooltip, boolean isPlayerSneaking) {
-        super.addToGoggleTooltip(component, tooltip, isPlayerSneaking);
-        var max = component.get(MAX_CURRENT);
-        CurrentGaugeBlockEntity.addTooltip(tooltip, getValue(component), max, max < 0.5f);
-        return true;
+    public float getMaxValue(PlacedComponent placed) {
+        return placed.get(MAX_CURRENT);
+    }
+
+    @Override
+    public String getUnit(PlacedComponent placed) {
+        return placed.getString(UNIT);
+    }
+
+    @Override
+    public ChatFormatting getColor(float value, float maxValue) {
+        return CurrentGaugeBlockEntity.measurementColor(value, maxValue);
     }
 }

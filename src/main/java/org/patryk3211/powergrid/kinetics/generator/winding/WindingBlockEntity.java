@@ -16,9 +16,12 @@
 package org.patryk3211.powergrid.kinetics.generator.winding;
 
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
@@ -45,7 +48,7 @@ import java.util.stream.Stream;
 import static org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock.AXIS;
 import static org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock.PART;
 
-public class WindingBlockEntity extends ElectricBlockEntity {
+public class WindingBlockEntity extends ElectricBlockEntity implements IMultipartSync {
     /**
      * This is the main block entity of multiple windings connected by housings.
      */
@@ -66,7 +69,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     private float resistance = 0.1f;
     private int totalCoilCount = 0;
     private LRSeriesWire coilWire;
-    private final Precalculated1<Float, StampedSupplier<LRSeriesWire>> fieldValue = new Precalculated1<>(WindingBlockEntity::fieldCalc, 0f);
+    private final Precalculated1<Float, StampedSupplier<LRSeriesWire>> fieldValue = new Precalculated1<>(WindingBlockEntity::fieldCalc, 0.001f);
 
     private boolean rebuildParallels = false;
 
@@ -84,29 +87,25 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         return getBlockState().getValue(PART) == 0;
     }
 
+    private static double fieldStrength(double current) {
+        final float I_sat = ModdedConfigs.server().kinetics.generatorControls.fieldSaturationCurrent.getF();
+        current = (I_sat * Math.tanh(1.5 * current / I_sat)) + current * 0.05;
+        return current * coilConstant() + 0.001;
+    }
+
     private static void fieldCalc(Supplier<LRSeriesWire> coilSupplier, Precalculated<Float>.ValueHandler handler) {
         var coil = coilSupplier.get();
         if(coil == null)
             return;
-        double Bprev = handler.get();
         if(!coil.isConverged())
-            handler.emit((float) Bprev);
-        float I_sat = ModdedConfigs.server().kinetics.generatorControls.fieldSaturationCurrent.getF();
-        double current = coil.current();
-        current = (I_sat * Math.tanh(1.5 * current / I_sat)) + current * 0.05;
-        double B = current * coilConstant() + 0.001;
+            return;
+        double Bprev = handler.get();
+        double B = fieldStrength(coil.current());
         if(Bprev * B < 0) {
             handler.emit((float) (0.001 * Math.signum(B)));
         } else {
             handler.emit((float) B);
         }
-    }
-
-    public float fieldStrength() {
-        var be = getSimElementHolder();
-        if(be == null)
-            return 0;
-        return be.fieldValue.get();
     }
 
     public Precalculated<Float> fieldStrengthCalc() {
@@ -297,7 +296,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                         be.coilWire = null;
                     }
                 }
-                if(parallelPositions == null && (!level.isClientSide || isVirtual())) {
+                if(!level.isClientSide || isVirtual()) {
                     // Check for parallel windings and housings
                     checkParallelPosition(pos1, Direction.get(Direction.AxisDirection.POSITIVE, parallelCheckAxis), false);
                     checkParallelPosition(pos1, Direction.get(Direction.AxisDirection.NEGATIVE, parallelCheckAxis), false);
@@ -366,7 +365,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                     });
                 });
                 otherMain.parallelPositions = null;
-            } else if(otherMain.ownerPosition != null) {
+            } else if(otherMain.ownerPosition != null && !otherMain.ownerPosition.equals(worldPosition)) {
                 var be = level.getBlockEntity(otherMain.ownerPosition, ModdedBlockEntities.WINDING.get());
                 // Merge owners
                 be.ifPresent(this::addParallel);
@@ -477,6 +476,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         if(coilWire != null) {
             coilWire.valueChange(current, coilWire.current(), 5);
             coilWire.setCurrent(current);
+            fieldValue.setValue((float) fieldStrength(current));
         }
     }
 
@@ -697,6 +697,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         setUnsaved();
     }
 
+    @Override
     public void forSync(Consumer<ISynchronizedElement> consumer) {
         consumer.accept(electricBehaviour);
         if(collectedBEs != null) {
@@ -717,6 +718,34 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                         }
                     }
                 });
+            }
+        }
+    }
+
+    public void debugDump(Player user) {
+        if(!isMain()) {
+            user.sendSystemMessage(Component.literal("Non-main, main dump:"));
+            mainBE.debugDump(user);
+            return;
+        } else {
+            user.sendSystemMessage(Component.literal("Main").withStyle(ChatFormatting.BOLD));
+        }
+        if(ownerPosition != null) {
+            user.sendSystemMessage(Component.literal("Owned winding").withStyle(ChatFormatting.GRAY));
+            user.sendSystemMessage(Component.literal(" Owner: " + ownerPosition).withStyle(ChatFormatting.RED));
+            var opt = level.getBlockEntity(ownerPosition, ModdedBlockEntities.WINDING.get());
+            opt.ifPresentOrElse(be -> {
+                user.sendSystemMessage(Component.literal("Owner dump:").withStyle(ChatFormatting.GRAY));
+                be.debugDump(user);
+            }, () -> {
+                user.sendSystemMessage(Component.literal("Invalid or unloaded owner").withStyle(ChatFormatting.RED).withStyle(ChatFormatting.BOLD));
+            });
+        }
+        if(parallelPositions != null) {
+            user.sendSystemMessage(Component.literal("Owner winding").withStyle(ChatFormatting.GRAY).withStyle(ChatFormatting.BOLD));
+            user.sendSystemMessage(Component.literal(" Owned windings (n = " + parallelPositions.size() + ")").withStyle(ChatFormatting.DARK_GRAY));
+            for(var pos : parallelPositions) {
+                user.sendSystemMessage(Component.literal(" - " + pos).withStyle(ChatFormatting.DARK_AQUA));
             }
         }
     }

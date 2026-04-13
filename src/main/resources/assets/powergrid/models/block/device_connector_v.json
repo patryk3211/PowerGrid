@@ -69,12 +69,17 @@
 			"rotation": [0, 45, 0],
 			"translation": [0, 2, 0],
 			"scale": [0.4, 0.4, 0.4]
+		},
+		"gui": {
+			"rotation": [30, 45, 0],
+			"translation": [0, 3.25, 0]
 		}
 	},
 	"groups": [
 		{
 			"name": "group",
 			"origin": [5, 3, 5],
+			"scope": 0,
 			"color": 0,
 			"children": [0, 1, 2, 3]
 		}

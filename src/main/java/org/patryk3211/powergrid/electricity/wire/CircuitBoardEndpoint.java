@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.electricity.wire;
 import net.createmod.catnip.math.VecHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -78,7 +79,7 @@ public class CircuitBoardEndpoint implements IWireEndpoint {
     @Override
     public boolean isValid(Level world) {
         var opt = world.getBlockEntity(pos, ModdedBlockEntities.CIRCUIT_BOARD.get());
-        return opt.map(be -> be.getSchematic().front().get(x, y))
+        return opt.map(be -> be.getSchematic().front().hasTrace(x, y))
                 .orElse(false);
     }
 
@@ -97,6 +98,8 @@ public class CircuitBoardEndpoint implements IWireEndpoint {
     }
 
     public ElectricBehaviour getElectricBehaviour(Level world) {
+        if(!world.hasChunk(SectionPos.blockToSectionCoord(pos.getX()), SectionPos.blockToSectionCoord(pos.getZ())))
+            return null;
         return world.getBlockEntity(pos, ModdedBlockEntities.CIRCUIT_BOARD.get())
                 .map(ElectricBlockEntity::getElectricBehaviour)
                 .orElse(null);

@@ -37,6 +37,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.PushReaction;
@@ -46,6 +47,8 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.DebugItem;
+import org.patryk3211.powergrid.electricity.wire.registry.WireItemEntry;
+import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItem;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 
@@ -62,7 +65,8 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
     private boolean overheated = false;
 
     @NotNull
-    private WireItem item;
+    private Item item;
+    private WireItemEntry wireEntry;
     protected int itemCount;
     private int color;
 
@@ -283,10 +287,10 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         if(nbt.contains("Item")) {
             var itemTag = nbt.getCompound("Item");
             var readItem = BuiltInRegistries.ITEM.get(new ResourceLocation(itemTag.getString("Id")));
-            if(!(readItem instanceof WireItem wireItem))
+            if(!IWire.isWire(level(), readItem))
                 throw new IllegalStateException("WireEntity item must be a WireItem");
-            setItem(wireItem, itemTag.getInt("Count"));
-            if(wireItem.canBeColored())
+            setItem(readItem, itemTag.getInt("Count"));
+            if(wireEntry.colorable())
                 color = nbt.getInt("Color");
         } else {
             throw new IllegalStateException("WireEntity must have an item");
@@ -330,19 +334,22 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         this.color = ((int) (rgb[0] * 255) << 16) | ((int) (rgb[1] * 255) << 8) | (int) (rgb[2] * 255);
     }
 
-    public void setItem(WireItem item, int count) {
+    public void setItem(Item item, int count) {
         this.item = item;
         this.itemCount = count;
+        this.wireEntry = WireRegistry.forItem(level(), item);
+        if(wireEntry == null)
+            throw new IllegalArgumentException("Item is not a wire");
 
         int thermalCount = Math.max(itemCount, 1);
-        thermalMass = item.getThermalMass() * thermalCount;
-        dissipationFactor = item.getDissipationFactor() * thermalCount;
+        thermalMass = wireEntry.thermalMass() * thermalCount;
+        dissipationFactor = wireEntry.dissipationFactor() * thermalCount;
         resistanceOverride = null;
     }
 
     public float getResistance() {
         if(resistanceOverride == null)
-            resistanceOverride = item.getResistance() * Math.max(itemCount, 1);
+            resistanceOverride = wireEntry.resistancePerItem() * Math.max(itemCount, 1);
         return resistanceOverride;
     }
 
@@ -371,7 +378,7 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         itemTag.putString("Id", BuiltInRegistries.ITEM.getKey(item).toString());
         itemTag.putInt("Count", itemCount);
         nbt.put("Item", itemTag);
-        if(item.canBeColored())
+        if(wireEntry.colorable())
             nbt.putInt("Color", color);
 
         nbt.put("LastKnownPos", NbtUtils.writeBlockPos(blockPosition()));
@@ -442,7 +449,7 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         } else if(stack.getItem() instanceof MultimeterItem multimeter) {
             return multimeter.useOnWire(player, stack, hand, this);
         } else if(stack.getItem() instanceof DyeItem dye) {
-            if(item.canBeColored()) {
+            if(wireEntry.colorable()) {
                 setColor(dye.getDyeColor());
                 return InteractionResult.SUCCESS;
             }
@@ -452,7 +459,11 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         return super.interact(player, hand);
     }
 
-    public WireItem getWireItem() {
+    public WireItemEntry getWireEntry() {
+        return wireEntry;
+    }
+
+    public Item getItem() {
         return item;
     }
 
@@ -466,8 +477,8 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
             itemCount = 0;
 
         int thermalCount = Math.max(itemCount, 1);
-        thermalMass = item.getThermalMass() * thermalCount;
-        dissipationFactor = item.getDissipationFactor() * thermalCount;
+        thermalMass = wireEntry.thermalMass() * thermalCount;
+        dissipationFactor = wireEntry.dissipationFactor() * thermalCount;
         resistanceOverride = null;
     }
 
@@ -486,7 +497,7 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
     }
 
     public int getColor() {
-        if(item.canBeColored())
+        if(wireEntry.colorable())
             return color;
         return -1;
     }

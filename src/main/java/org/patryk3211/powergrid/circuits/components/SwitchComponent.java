@@ -89,6 +89,7 @@ public class SwitchComponent extends OrientableComponent implements IInteractabl
         if(placed.wires.isEmpty())
             return;
         ((SwitchedWire) placed.wires.get(0)).setState(placed.get(STATE));
+        placed.onClientWorld(() -> world -> modelChanged(placed.getPos()));
     }
 
     @Override

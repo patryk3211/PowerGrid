@@ -32,6 +32,7 @@ import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.config.CSolver;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
+import org.patryk3211.powergrid.electricity.base.IMultipartSync;
 import org.patryk3211.powergrid.electricity.base.ISynchronizedElement;
 import org.patryk3211.powergrid.electricity.sim.*;
 import org.patryk3211.powergrid.electricity.sim.node.*;
@@ -39,7 +40,6 @@ import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePort;
 import org.patryk3211.powergrid.electricity.wire.*;
-import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
 import org.patryk3211.powergrid.network.packets.NegotiateSyncC2SPacket;
 import org.patryk3211.powergrid.network.packets.StateS2CPacket;
 
@@ -330,16 +330,24 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             // Synchronize state with clients
             if(syncTicks % 5 == 0) {
                 syncStates.clear();
-                for (var entry : trackers.entrySet()) {
-                    for (var player : entry.getValue()) {
+                var trackerEntryIter = trackers.entrySet().iterator();
+                while(trackerEntryIter.hasNext()) {
+                    var entry = trackerEntryIter.next();
+                    var playerIter = entry.getValue().iterator();
+                    while(playerIter.hasNext()) {
+                        var player = playerIter.next();
+                        if(player.isRemoved()) {
+                            playerIter.remove();
+                            continue;
+                        }
                         var endpoint = entry.getKey();
                         if(endpoint instanceof BlockWireEndpoint bwe) {
                             var eb = bwe.getElectricBehaviour(world);
                             if (eb == null)
                                 continue;
                             var syncState = new SyncState(eb.getPos().distManhattan(player.blockPosition()) / 16 + 1);
-                            if(eb.blockEntity instanceof WindingBlockEntity winding) {
-                                winding.forSync(sync -> {
+                            if(eb.blockEntity instanceof IMultipartSync multipart) {
+                                multipart.forSync(sync -> {
                                     if(sync == null)
                                         return;
                                     syncStates.computeIfAbsent(player, $ -> new HashMap<>())
@@ -362,6 +370,9 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                             syncStates.computeIfAbsent(player, $ -> new HashMap<>())
                                     .put(eb, new SyncState(eb.getPos().distManhattan(player.blockPosition()) / 16 + 1));
                         }
+                    }
+                    if(entry.getValue().isEmpty()) {
+                        trackerEntryIter.remove();
                     }
                 }
             }
@@ -556,6 +567,17 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
         if(node1 == node2)
             return null;
+
+        var nNode1 = endpoint1.getNode(world);
+        if(node1 != nNode1) {
+            addAndMigrateNode(node1, nNode1);
+            node1 = nNode1;
+        }
+        var nNode2 = endpoint2.getNode(world);
+        if(node2 != nNode2) {
+            addAndMigrateNode(node2, nNode2);
+            node2 = nNode2;
+        }
 
         add(endpoint1);
         add(endpoint2);
@@ -877,6 +899,9 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         Collection<TransmissionLinePart> parts = partNodeMap.get(globalExternalNodes.get(endpoint));
         if(parts == null)
             return false;
+        // Make sure endpoints are always up to date in line parts.
+        // TODO: Verify that this doesn't brake a bunch of things
+        addAndMigrateNode(endpoint);
         parts = List.copyOf(parts);
         boolean continueResolving = false;
         for(var part : parts) {
@@ -895,13 +920,14 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                         return true;
                     }
                 } else if(part.getEndpoint2().equals(endpoint)) {
-//                    assert part.getEndpoint2().equals(endpoint);
                     // Check endpoint1
                     if(part.getEndpoint1().isValid(world)) {
                         // Resolve segment
                         makeTransmissionLine(part);
                         return true;
                     }
+                } else {
+                    PowerGrid.LOGGER.warn("[1] Part was expected to have this endpoint");
                 }
                 break;
             }
@@ -913,11 +939,12 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     continueResolving = true;
                 }
             } else if(part.getEndpoint2().equals(endpoint)) {
-//                assert part.getEndpoint2().equals(endpoint);
                 if(traceTree(part.getEndpoint1(), visited)) {
                     makeTransmissionLine(part);
                     continueResolving = true;
                 }
+            } else {
+                PowerGrid.LOGGER.warn("[2] Part was expected to have this endpoint");
             }
         }
         return continueResolving;
@@ -1019,6 +1046,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                         line.setNode2(newNode);
                         if(ModdedConfigs.logsEnabled())
                             PowerGrid.LOGGER.debug("Line {} has had its node migrated", line);
+                    } else {
+                        PowerGrid.LOGGER.warn("Line connected to old node in graph, but doesn't have it as an endpoint?");
                     }
                 }
                 unified.removeNode(oldNode);

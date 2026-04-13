@@ -113,7 +113,7 @@ public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE
         if(player.isShiftKeyDown())
             return InteractionResult.PASS;
         var heldItem = player.getMainHandItem().getItem();
-        if(heldItem instanceof BlockItem || heldItem instanceof IWire)
+        if(heldItem instanceof BlockItem || IWire.isWire(world, heldItem))
             return InteractionResult.PASS;
         if(!player.getItemBySlot(EquipmentSlot.CHEST).isEmpty())
             return InteractionResult.PASS;
