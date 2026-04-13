@@ -40,7 +40,6 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.gauge.GaugeValueBehaviour;
 import org.patryk3211.powergrid.electricity.info.customdisplay.CustomDisplayBehaviour;
-import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 import org.patryk3211.powergrid.utility.ClientSideAccess;
 import org.patryk3211.powergrid.utility.Lang;
@@ -55,7 +54,7 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
     private CustomDisplayBehaviour displayBehaviour;
     private float maxValue = MAX_VALUES[0];
 
-    private ElectricWire wire;
+    private PlotterWire wire;
     protected float[] sampleBuffer = new float[40];
     protected int head;
 
@@ -67,6 +66,7 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
 
     public PlotterBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
+        electricBehaviour.setSyncAppender(wire);
     }
 
     @Override
@@ -87,7 +87,8 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
     public void buildCircuit(CircuitBuilder builder) {
         // 20 kilo-ohm "impedance".
         builder.setTerminalCount(2);
-        wire = builder.connect(20e3f, builder.terminalNode(0), builder.terminalNode(1));
+        wire = new PlotterWire(20e3f, builder.terminalNode(0), builder.terminalNode(1));
+        builder.add(wire);
     }
 
     public float getAnimationSpeed() {
@@ -101,8 +102,14 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
         super.onSpeedChanged(previousSpeed);
         if(!isSpeedRequirementFulfilled())
             return;
+        var ticks = wire.getNetwork() == null ? 1 : wire.getNetwork().getMultiTick();
+        int newSize = (int) (128 / Math.abs(getSpeed()) * 40 * ticks);
+        resample(newSize);
+    }
+
+    private void resample(int newSize) {
         var old = sampleBuffer;
-        sampleBuffer = new float[(int) (128 / Math.abs(getSpeed()) * 40)];
+        sampleBuffer = new float[newSize];
         if(old.length == 0) {
             head = 0;
             return;
@@ -157,12 +164,22 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
         super.tick();
         if(!isSpeedRequirementFulfilled())
             return;
-        headTarget = Mth.clamp((float) (wire.potentialDifference() / maxValue), -1, 1);
+        var ticks = wire.samples == null ? 1 : wire.samples.length;
+        int newSize = (int) (128 / Math.abs(getSpeed()) * 40 * ticks);
+        if(newSize != sampleBuffer.length)
+            resample(newSize);
         prevHeadPosition = headPosition;
+
+        headTarget = 0;
+        for(int i = 0; i < ticks; ++i) {
+            var voltage = wire.samples == null ? wire.potentialDifference() : wire.samples[i];
+            float sampleValue = Mth.clamp((float) (voltage / maxValue), -1, 1);
+            sampleBuffer[head] = sampleValue;
+            head = (head + 1) % sampleBuffer.length;
+            headTarget += sampleValue / ticks;
+        }
         headPosition += (headTarget - headPosition) * 0.9f;
 
-        sampleBuffer[head] = headPosition;
-        head = (head + 1) % sampleBuffer.length;
         setUnsaved();
     }
 

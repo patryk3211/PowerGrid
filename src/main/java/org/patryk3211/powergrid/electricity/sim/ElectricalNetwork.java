@@ -16,6 +16,8 @@
 package org.patryk3211.powergrid.electricity.sim;
 
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ReferenceArrayList;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.createmod.catnip.data.Pair;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
@@ -42,14 +44,15 @@ public class ElectricalNetwork implements IStamped {
     private static final PerformanceCounter PERF = new PerformanceCounter("NetSolve");
 
     private final boolean addGMin;
-    protected final Set<AbstractElectricWire> wires = new HashSet<>();
-    protected final Set<ICouplingNode> couplings = new HashSet<>();
-    protected final List<INode> nodes = new ArrayList<>();
+    protected final Set<AbstractElectricWire> wires = new ReferenceOpenHashSet<>();
+    protected final Set<ICouplingNode> couplings = new ReferenceOpenHashSet<>();
+    protected final List<INode> nodes = new ReferenceArrayList<>();
 
-    protected final Set<IOuterHook> outerHooks = new HashSet<>();
-    public final Set<ISolverHook> innerHooks = new HashSet<>();
-    protected final Set<ISolverHook> leafInnerHooks = new HashSet<>();
-    protected final Set<IStaticResidual> residuals = new HashSet<>();
+    protected final Set<IOuterHook> outerHooks = new ReferenceOpenHashSet<>();
+    protected final Set<IMultiHooks> multiHooks = new ReferenceOpenHashSet<>();
+    public final Set<ISolverHook> innerHooks = new ReferenceOpenHashSet<>();
+    protected final Set<ISolverHook> leafInnerHooks = new ReferenceOpenHashSet<>();
+    protected final Set<IStaticResidual> residuals = new ReferenceOpenHashSet<>();
     protected final Map<IElectricNode, IElectricNode> leafNodes = new Reference2ReferenceOpenHashMap<>();
 
     private int sourceCount;
@@ -120,6 +123,10 @@ public class ElectricalNetwork implements IStamped {
         return 0.05f / currentMultiTick;
     }
 
+    public int getMultiTick() {
+        return currentMultiTick;
+    }
+
     public void warmUp(int ticks) {
         if(mna != null)
             mna.warmUp(ticks > 0 ? 1 : ticks);
@@ -178,6 +185,8 @@ public class ElectricalNetwork implements IStamped {
 
         if(node instanceof IOuterHook hook)
             outerHooks.add(hook);
+        if(node instanceof IMultiHooks hook)
+            multiHooks.add(hook);
         if(node instanceof ISolverHook hook) {
             innerHooks.add(hook);
             if(mna != null)
@@ -237,6 +246,8 @@ public class ElectricalNetwork implements IStamped {
             --sourceCount;
         if(node instanceof IOuterHook hook)
             outerHooks.remove(hook);
+        if(node instanceof IMultiHooks hook)
+            multiHooks.remove(hook);
         if(node instanceof ISolverHook hook) {
             innerHooks.remove(hook);
             if(mna != null)
@@ -300,6 +311,7 @@ public class ElectricalNetwork implements IStamped {
         updateConductance(wire, wire.conductance());
         if(wire instanceof IOuterHook hook)
             outerHooks.add(hook);
+        multiHooks.add(wire);
         if(wire instanceof ISolverHook hook) {
             var isFull = true;
             for(var coupled : hook.coupledNodes()) {
@@ -364,6 +376,7 @@ public class ElectricalNetwork implements IStamped {
         updateConductance(wire, -wire.conductance());
         if(wire instanceof IOuterHook hook)
             outerHooks.remove(hook);
+        multiHooks.remove(wire);
         if(wire instanceof ISolverHook hook) {
             innerHooks.remove(hook);
             leafInnerHooks.remove(hook);
@@ -433,6 +446,7 @@ public class ElectricalNetwork implements IStamped {
         staleWires.forEach(wire -> {
             if(wire instanceof IOuterHook hook)
                 outerHooks.remove(hook);
+            multiHooks.remove(wire);
             if(wire instanceof ISolverHook hook) {
                 innerHooks.remove(hook);
                 leafInnerHooks.remove(hook);
@@ -517,6 +531,7 @@ public class ElectricalNetwork implements IStamped {
         wires.clear();
         couplings.clear();
         outerHooks.clear();
+        multiHooks.clear();
         innerHooks.clear();
         residuals.clear();
         leafNodes.clear();
@@ -709,6 +724,11 @@ public class ElectricalNetwork implements IStamped {
     public void prepare(int multiTicks) {
         if(mna == null)
             return;
+        // Prepare is called if multi-tick is or was enabled
+        if(multiTicks > 1 || currentMultiTick > 1) {
+            for (var hook : multiHooks)
+                hook.prepare(multiTicks);
+        }
         if(sourceCount == 0) {
             for(var hook : outerHooks)
                 hook.preSolve();
@@ -745,6 +765,10 @@ public class ElectricalNetwork implements IStamped {
 
         for (var hook : outerHooks)
             hook.postUpperSolve();
+        if(currentMultiTick > 1) {
+            for (var hook : multiHooks)
+                hook.postMicroTick();
+        }
         PERF.end();
     }
 

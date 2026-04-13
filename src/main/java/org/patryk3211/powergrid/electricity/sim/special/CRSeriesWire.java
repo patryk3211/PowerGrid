@@ -22,69 +22,83 @@ import org.patryk3211.powergrid.electricity.sim.solver.IOuterHook;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
 import org.patryk3211.powergrid.electricity.sim.solver.IStaticResidual;
 
-public class LRSeriesWire extends AbstractElectricWire implements IStaticResidual, IOuterHook, ITimeAwareWire {
-    private double inductance;
+public class CRSeriesWire extends AbstractElectricWire implements IStaticResidual, IOuterHook, ITimeAwareWire {
+    private double capacitance;
     private double resistance;
 
     private double Ieq;
-    private double I;
-    private double Vprev;
+    private double Iprev;
+    private double V;
 
-    public LRSeriesWire(double L, double R, IElectricNode node1, IElectricNode node2) {
+    public CRSeriesWire(double C, double R, IElectricNode node1, IElectricNode node2) {
         super(node1, node2);
-        this.inductance = L;
+        this.capacitance = C;
         this.resistance = R;
     }
 
     @Override
+    public boolean isSource() {
+        return true;
+    }
+
+    public void setVoltage(float voltage) {
+        valueChange(voltage, V);
+        if(Float.isFinite(voltage)) {
+            Iprev = 0;
+            V = voltage;
+        }
+    }
+
+    @Override
+    public double potentialDifference() {
+        if(network == null)
+            return V;
+        return super.potentialDifference();
+    }
+
+    public double capacitorVoltage() {
+        return potentialDifference() - current() * resistance;
+    }
+
+    @Override
     public double conductance() {
-        return 1 / (resistance + (2 * inductance) / getDeltaTime());
+        return 1 / (resistance + getDeltaTime() / (2 * capacitance));
     }
 
     @Override
     public double current() {
-        if(network == null)
-            return I;
-        if(network.isLeaf(node1) || network.isLeaf(node2))
-            return 0;
         return super.current() + Ieq;
-    }
-
-    public void setCurrent(float current) {
-        valueChange(current, I);
-        if(Float.isFinite(current)) {
-            Vprev = 0;
-            I = current;
-        }
     }
 
     @Override
     public void postUpperSolve() {
-       if(isConverged()) {
-           Vprev = 0.5 * inductance * (current() - I) / getDeltaTime();
-           I = current() * 0.99999;
-       }
+        if(isConverged()) {
+            var Vcap = capacitorVoltage();
+            Iprev = (Vcap - V) * 0.5 * capacitance / getDeltaTime();
+            // Save voltage with a bit of leakage
+            V = Vcap * 0.99999;
+        }
     }
 
     @Override
     public void addStaticResidual(IResidualAdder residual) {
-        if(inductance == 0) {
+        if(capacitance == 0) {
             Ieq = 0;
             return;
         }
-        var G_I = getDeltaTime() / (2 * inductance);
+        var G_C = (2 * capacitance) / getDeltaTime();
 
-        double residualScale = 1 - G_I / (1 / resistance + G_I);
-        Ieq = (Vprev * G_I + I) * residualScale;
+        double residualScale = 1 - G_C / (1 / resistance + G_C);
+        Ieq = (-G_C * V - Iprev) * residualScale;
         if(node1 != null)
             residual.add(node1.getIndex(), -Ieq);
         if(node2 != null)
             residual.add(node2.getIndex(),  Ieq);
     }
 
-    public void setLR(double L, double R) {
+    public void setCR(double C, double R) {
         var oldConductance = conductance();
-        this.inductance = L;
+        this.capacitance = C;
         this.resistance = R;
 
         if(network != null) {
@@ -92,16 +106,16 @@ public class LRSeriesWire extends AbstractElectricWire implements IStaticResidua
         }
     }
 
-    public void setInductance(double L) {
-        setLR(L, resistance);
+    public void setCapacitance(double C) {
+        setCR(C, resistance);
     }
 
     public void setResistance(double R) {
-        setLR(inductance, R);
+        setCR(capacitance, R);
     }
 
     @Override
     public String toString() {
-        return String.format("LRWire(L=%g R=%g)", inductance, resistance);
+        return String.format("CRWire(C=%g R=%g)", capacitance, resistance);
     }
 }
