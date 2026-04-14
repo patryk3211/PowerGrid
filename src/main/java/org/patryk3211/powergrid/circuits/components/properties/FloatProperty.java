@@ -69,4 +69,9 @@ public class FloatProperty extends ComponentProperty<Float> {
     public Float defaultValue() {
         return defaultValue;
     }
+
+    @Override
+    public Float[] allValues() {
+        return null;
+    }
 }

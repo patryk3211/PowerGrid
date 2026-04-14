@@ -15,6 +15,8 @@
  */
 package org.patryk3211.powergrid.circuits.components.properties;
 
+import java.util.HashMap;
+import java.util.Map;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.Nullable;
@@ -22,26 +24,34 @@ import org.jetbrains.annotations.Nullable;
 public class EnumProperty<T extends Enum<T>> extends ComponentProperty<T> {
     private final Class<T> clazz;
     private final T[] values;
+    private final T[] allValues;
+    private final int[] ordinalMap;
     private final T defaultValue;
 
     public EnumProperty(String namespace, String name, Class<T> clazz) {
-        super(namespace, name);
-        this.clazz = clazz;
-        values = clazz.getEnumConstants();
-        defaultValue = values[0];
+        this(namespace, name, clazz, clazz.getEnumConstants());
     }
 
     public EnumProperty(String namespace, String name, Class<T> clazz, T[] values) {
-        super(namespace, name);
-        this.clazz = clazz;
-        this.values = values;
-        defaultValue = values[0];
+        this(namespace, name, clazz, values, values[0]);
     }
 
     public EnumProperty(String namespace, String name, Class<T> clazz, T[] values, T defaultValue) {
         super(namespace, name);
         this.clazz = clazz;
         this.values = values;
+        this.allValues = clazz.getEnumConstants();
+        this.ordinalMap = new int[allValues.length];
+
+        for (int i = 0; i < allValues.length; i++) {
+            for (int j = 0; j < values.length; j++) {
+                if (values[j].ordinal() == allValues[i].ordinal()) {
+                    ordinalMap[i] = j;
+                    break;
+                }
+            }
+        }
+       
         this.defaultValue = defaultValue;
     }
 
@@ -66,7 +76,7 @@ public class EnumProperty<T extends Enum<T>> extends ComponentProperty<T> {
         if(element.getId() != Tag.TAG_INT)
             return defaultValue;
         var value = ((IntTag) element).getAsInt();
-        return values[value];
+        return values[ordinalMap[value]];
     }
 
     @Override
@@ -77,5 +87,10 @@ public class EnumProperty<T extends Enum<T>> extends ComponentProperty<T> {
     @Override
     public T defaultValue() {
         return defaultValue;
+    }
+
+    @Override
+    public T[] allValues() {
+        return values;
     }
 }

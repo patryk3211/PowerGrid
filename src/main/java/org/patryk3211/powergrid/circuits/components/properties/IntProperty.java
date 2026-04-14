@@ -69,4 +69,9 @@ public class IntProperty extends ComponentProperty<Integer> {
     public Integer defaultValue() {
         return defaultValue;
     }
+
+    @Override
+    public Integer[] allValues() {
+        return null;
+    }
 }

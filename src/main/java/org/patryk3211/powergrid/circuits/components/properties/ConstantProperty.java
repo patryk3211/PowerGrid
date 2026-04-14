@@ -54,4 +54,9 @@ public class ConstantProperty extends ComponentProperty<String> {
     public String defaultValue() {
         return this.value.getString();
     }
+
+    @Override
+    public String[] allValues() {
+        return null;
+    }
 }

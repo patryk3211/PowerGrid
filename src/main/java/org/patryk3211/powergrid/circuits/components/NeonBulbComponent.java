@@ -23,6 +23,7 @@ import net.createmod.catnip.render.CachedBuffers;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.world.item.DyeColor;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
@@ -30,6 +31,7 @@ import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
 import org.patryk3211.powergrid.circuits.components.properties.BooleanProperty;
 import org.patryk3211.powergrid.circuits.components.properties.CalculatedProperty;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
+import org.patryk3211.powergrid.circuits.components.properties.EnumProperty;
 import org.patryk3211.powergrid.circuits.components.properties.FloatProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
@@ -46,6 +48,7 @@ public class NeonBulbComponent extends OrientableComponent implements IRenderedC
     public static final CalculatedProperty<Float> HOLDING_CURRENT = new CalculatedProperty<>(PowerGrid.MOD_ID, "neon_tube_ih",
             placed -> 0.2f / placed.get(BREAKDOWN_VOLTAGE),
             v -> Unit.CURRENT.formatWithPrefixes(v).string());
+    public static final EnumProperty<DyeColor> COLOR = new EnumProperty<DyeColor>(PowerGrid.MOD_ID, "color", DyeColor.class, new DyeColor[]{DyeColor.RED, DyeColor.YELLOW, DyeColor.BLUE, DyeColor.GREEN, DyeColor.WHITE});
     public static final BooleanProperty LIT = (BooleanProperty) new BooleanProperty(PowerGrid.MOD_ID, "lit").hidden();
 
     public NeonBulbComponent(ComponentFootprint footprint) {
@@ -55,7 +58,7 @@ public class NeonBulbComponent extends OrientableComponent implements IRenderedC
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(BREAKDOWN_VOLTAGE, HOLDING_VOLTAGE, HOLDING_CURRENT, LABEL, LIT, power(1.5f));
+        properties.add(BREAKDOWN_VOLTAGE, HOLDING_VOLTAGE, HOLDING_CURRENT, COLOR, LABEL, LIT, power(1.5f));
     }
 
     @Override
@@ -63,6 +66,7 @@ public class NeonBulbComponent extends OrientableComponent implements IRenderedC
         var ih = placed.get(HOLDING_CURRENT);
         var vb = placed.get(BREAKDOWN_VOLTAGE);
         var vh = placed.get(HOLDING_VOLTAGE);
+
         var wire = new NeonBulbWire(
                 vb, vh, ih, 0.005f,
                 builder.terminalNode(0), builder.terminalNode(1)
@@ -144,18 +148,32 @@ public class NeonBulbComponent extends OrientableComponent implements IRenderedC
         var bulb = CachedBuffers.partial(ModdedPartialModels.NEON_TUBE_BULB, be.getBlockState());
         bulb.light(light).renderInto(ms, bufferSource.getBuffer(RenderType.translucent()));
 
-        int a1 = 0, a2 = 0;
-        if(placed.customData instanceof LerpPair pair) {
+        var color = placed.get(COLOR).getTextureDiffuseColors();
+        var red = color[0];
+        var green = color[1];
+        var blue = color[2];
+
+        int a1 = 0, r1 = 0, g1 = 0, b1 = 0, a2 = 0, r2 = 0, g2 = 0, b2 = 0;
+        if(placed.customData instanceof LerpPair pair) { 
             a1 = (int) (pair.first.getValue(partialTicks) * 128);
+            r1 = (int) (red * pair.first.getValue(partialTicks) * 128);
+            g1 = (int) (green * pair.first.getValue(partialTicks) * 128);
+            b1 = (int) (blue * pair.first.getValue(partialTicks) * 128);
+
             a2 = (int) (pair.second.getValue(partialTicks) * 128);
+            r2 = (int) (red * pair.second.getValue(partialTicks) * 128);
+            g2 = (int) (green * pair.second.getValue(partialTicks) * 128);
+            b2 = (int) (blue * pair.second.getValue(partialTicks) * 128);
         }
+
         var center = 1 / 16f;
         var orientation = placed.get(ORIENTATION);
+
         if(a1 != 0) {
             var buffer = CachedBuffers.partial(ModdedPartialModels.NEON_TUBE_GLOW, be.getBlockState());
             buffer
                     .disableDiffuse()
-                    .color(a1, a1, a1, 255)
+                    .color(r1, g1, b1, 255)
                     .light(LightTexture.FULL_BRIGHT)
                     .translate(center, center, center)
                     .rotateYDegrees(orientation.ordinal() * 90)
@@ -166,7 +184,7 @@ public class NeonBulbComponent extends OrientableComponent implements IRenderedC
             var buffer = CachedBuffers.partial(ModdedPartialModels.NEON_TUBE_GLOW, be.getBlockState());
             buffer
                     .disableDiffuse()
-                    .color(a2, a2, a2, 255)
+                    .color(r2, g2, b2, 255)
                     .light(LightTexture.FULL_BRIGHT)
                     .translate(center, center, center)
                     .rotateYDegrees(180 + orientation.ordinal() * 90)
