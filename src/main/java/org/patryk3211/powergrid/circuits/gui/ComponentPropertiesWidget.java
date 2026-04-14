@@ -102,7 +102,7 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
                     propertyWidgets.add(new BooleanPropertyWidget(textRenderer, x, y, component.getEntry(bProp), changeMadeCallback));
                 } else if(property instanceof EnumProperty) {
                     var clazz = property.defaultValue().getClass();
-                    propertyWidgets.add(new EnumPropertyWidget(textRenderer, x, y, component.getEntry(property), changeMadeCallback));
+                    propertyWidgets.add(new EnumPropertyWidget(textRenderer, x, y, component.getEntry(property), clazz));
                 } else {
                     propertyWidgets.add(new ConstantPropertyWidget<>(textRenderer, x, y, component.getEntry(property)));
                 }
@@ -198,6 +198,18 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
         boolean result = false;
         for(var widget : propertyWidgets) {
             result |= widget.mouseClicked(mouseX, mouseY, button);
+        }
+        return result;
+    }
+
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+        if(component == null)
+            return false;
+
+        boolean result = false;
+        for(var widget : propertyWidgets) {
+            result |= widget.mouseScrolled(mouseX, mouseY, delta);
         }
         return result;
     }

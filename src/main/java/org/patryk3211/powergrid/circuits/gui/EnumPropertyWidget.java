@@ -28,46 +28,62 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.components.properties.EnumProperty;
 import org.patryk3211.powergrid.circuits.components.properties.PropertyEntry;
 
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget.PROPERTIES;
 
-public class EnumPropertyWidget<T extends Enum, P extends PropertyEntry<T>> extends PropertyWidget<T, P> {
+public class EnumPropertyWidget<T extends Enum<?>, P extends PropertyEntry<T>> extends PropertyWidget<T, P> {
     private final Class<T> clazz;
     private final SelectionScrollInput widget;
     private final Label widgetLabel;
-    private ArrayList<Component> componentValues;
-    private ArrayList<T> values;
+    private List<T> values;
 
     public EnumPropertyWidget(Font textRenderer, int x, int y, P property, Class<T> clazz) {
         super(textRenderer, x, y, property);
-        widget = new SelectionScrollInput(x + 4, y + 1, 52, 18);
-        widgetLabel = new Label(x + 5, y + 2, CommonComponents.EMPTY);
-        widgetLabel.text = CommonComponents.EMPTY;
+        widget = new SelectionScrollInput(x + 4, y + 1, 52, 18) {
+            @Override
+            protected void writeToLabel() {
+                super.writeToLabel();
+                if(textRenderer.width(displayLabel.text) > displayLabel.getWidth()) {
+                    var string = displayLabel.text.getString();
+                    while (textRenderer.width(string) > displayLabel.getWidth()) {
+                        string = string.substring(0, string.length() - 1);
+                    }
+                    displayLabel.text = Component.literal(string);
+                }
+            }
+        };
+        widgetLabel = new Label(x + 8, y + 6, CommonComponents.EMPTY);
+        widgetLabel.setWidth(46);
 
-        componentValues = new ArrayList<Component>();
-        this.values = new ArrayList<T>(Arrays.asList(property.property.allValues()));
+        var enumProp = (EnumProperty<? extends T>) property.property;
+        this.values = Arrays.asList(enumProp.allValues());
         this.clazz = clazz;
 
         widget.writingTo(widgetLabel);
 
-        ArrayList<Component> options = new ArrayList<Component>(); 
+        ArrayList<Component> options = new ArrayList<>();
+        int current = 0;
         for (int i = 0; i < values.size(); i++) {
             options.add(Component.literal(property.property.toString(values.get(i))));
+            if(property.get() == values.get(i))
+                current = i;
         }
 
         widget.forOptions(options);
-        componentValues = options;
- 
+        widget.calling(i -> property.setValueRaw(values.get(i)));
+        widget.setState(current);
     }
 
     @Override
     protected void doRender(@NotNull GuiGraphics ctx, int mouseX, int mouseY, float partialTicks) {
         int x = getX();
         int y = getY();
+        ctx.blit(PROPERTIES, x, y, 0, 57, 60, 20);
         widget.render(ctx, mouseX, mouseY, partialTicks);
-        ctx.blit(PROPERTIES, x, y, 0, 99, 60, 20);
+        widgetLabel.render(ctx, mouseX, mouseY, partialTicks);
     }
 
     @Override
@@ -83,9 +99,13 @@ public class EnumPropertyWidget<T extends Enum, P extends PropertyEntry<T>> exte
     }
 
     @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+        return widget.mouseScrolled(mouseX, mouseY, delta);
+    }
+
+    @Override
     public void tick() {
         widget.tick();
-        property.setValueRaw(values.get(widget.getState()));
     }
 
     @Override

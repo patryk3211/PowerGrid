@@ -15,8 +15,6 @@
  */
 package org.patryk3211.powergrid.circuits.components.properties;
 
-import java.util.HashMap;
-import java.util.Map;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.Nullable;
@@ -89,7 +87,6 @@ public class EnumProperty<T extends Enum<T>> extends ComponentProperty<T> {
         return defaultValue;
     }
 
-    @Override
     public T[] allValues() {
         return values;
     }
