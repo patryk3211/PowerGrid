@@ -37,9 +37,8 @@ import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.WorldNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
-import org.patryk3211.powergrid.electricity.wire.WireItem;
+import org.patryk3211.powergrid.electricity.wire.IWire;
 import org.patryk3211.powergrid.electricity.wire.powercord.CordEntity;
-import org.patryk3211.powergrid.electricity.wire.powercord.CordItem;
 import org.patryk3211.powergrid.electricity.wire.powercord.ICordEndpoint;
 
 public class StringLightCordEntity extends CordEntity {
@@ -61,10 +60,10 @@ public class StringLightCordEntity extends CordEntity {
     private int[] colorPattern;
 
     public static StringLightCordEntity create(Level world, ICordEndpoint endpoint1, ICordEndpoint endpoint2, ItemStack item, @Nullable Float resistance) {
-        if(!(item.getItem() instanceof CordItem))
+        if(!IWire.isCord(world, item.getItem()))
             throw new IllegalArgumentException("ItemStack must be of a CordItem");
         var entity = new StringLightCordEntity(ModdedEntities.STRING_LIGHT_CORD.get(), world);
-        entity.setItem((WireItem) item.getItem(), item.getCount());
+        entity.setItem(item.getItem(), item.getCount());
         byte[] dyes;
         if(item.hasTag() && (dyes = item.getTag().getByteArray("Pattern")).length > 0){
             entity.colorPattern = new int[dyes.length];

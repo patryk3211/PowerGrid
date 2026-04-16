@@ -112,20 +112,6 @@ public class SocketBlock extends DirectionalElectricBlock implements IBE<SocketB
     }
 
     @Override
-    public boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
-        var facing = state.getValue(FACING);
-        return canSupportCenter(world, pos.relative(facing, 1), facing.getOpposite());
-    }
-
-    @Override
-    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
-        var facing = state.getValue(FACING);
-        return direction == facing && !canSurvive(state, world, pos)
-                ? Blocks.AIR.defaultBlockState()
-                : super.updateShape(state, direction, neighborState, world, pos, neighborPos);
-    }
-
-    @Override
     public BlockState getRotatedBlockState(BlockState originalState, Direction targetedFace) {
         if(targetedFace.getAxis() == originalState.getValue(FACING).getAxis()) {
             return originalState.cycle(ROTATION);

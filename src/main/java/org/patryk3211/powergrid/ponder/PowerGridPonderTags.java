@@ -131,6 +131,9 @@ public class PowerGridPonderTags {
                 .add(ModdedBlocks.VOLTAGE_METER)
                 .add(ModdedBlocks.CURRENT_METER)
                 .add(ModdedItems.VARISTOR)
+                .add(ModdedItems.VFET)
+                .add(ModdedItems.BJT_NPN)
+                .add(ModdedItems.BJT_PNP)
                 .add(ModdedItems.DISPLAY_MODULE);
 
         HELPER.addToTag(AllCreatePonderTags.KINETIC_APPLIANCES)

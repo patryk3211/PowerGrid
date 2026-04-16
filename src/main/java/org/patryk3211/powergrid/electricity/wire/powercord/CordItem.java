@@ -15,24 +15,28 @@
  */
 package org.patryk3211.powergrid.electricity.wire.powercord;
 
+import dev.architectury.event.EventResult;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
-import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ISocketElectric;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.IWire;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
+import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
 
@@ -116,17 +120,17 @@ public class CordItem extends WireItem {
         var terminal2Pos = endpoint2.getExactPosition(level);
 
         var stack = context.getItemInHand();
-        assert stack.getItem() instanceof CordItem;
-        var item = (CordItem) stack.getItem();
+        assert IWire.isCord(level, stack.getItem());
+        var entry = WireRegistry.forItem(level, stack.getItem());
 
         float distance = (float) terminal1Pos.distanceTo(terminal2Pos);
-        if(distance > item.getMaximumLength()) {
+        if(distance > entry.maximumLength()) {
             IElectric.sendMessage(context, Lang.translate("message.connection_too_long").style(ChatFormatting.RED).component());
             return InteractionResult.FAIL;
         }
 
         // We round the exact distance between terminals for a more favourable item usage.
-        int requiredItemCount = Math.max(Math.round(distance * item.getItemUseMultiplier()), 1);
+        int requiredItemCount = Math.max(Math.round(distance * entry.itemsPerMeter()), 1);
         if(!PlayerUtilities.hasEnoughItems(context.getPlayer(), stack, requiredItemCount)) {
             IElectric.sendMessage(context, Lang.translate("message.connection_missing_items").style(ChatFormatting.RED).component());
             return InteractionResult.FAIL;
@@ -136,12 +140,18 @@ public class CordItem extends WireItem {
             return InteractionResult.SUCCESS;
         ServerLevel serverWorld = (ServerLevel) level;
 
-        var entity = item.factory.create(serverWorld, endpoint1, endpoint2,
-                stack.copyWithCount(requiredItemCount), null);
+        CordEntity entity;
+        if(stack.getItem() instanceof CordItem cordItem) {
+            entity = cordItem.factory.create(serverWorld, endpoint1, endpoint2,
+                    stack.copyWithCount(requiredItemCount), null);
+        } else {
+            // Default factory
+            entity = CordEntity.create(serverWorld, endpoint1, endpoint2, stack.copyWithCount(requiredItemCount), null);
+        }
 
         if(context.getPlayer() != null) {
             var offItem = context.getPlayer().getOffhandItem();
-            if (item.canBeColored() && offItem.getItem() instanceof DyeItem dye) {
+            if (entry.colorable() && offItem.getItem() instanceof DyeItem dye) {
                 entity.setColor(dye.getDyeColor());
             }
         }
@@ -178,55 +188,45 @@ public class CordItem extends WireItem {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
-        var stack = user.getItemInHand(hand);
-        if(stack.hasTag() && user.isShiftKeyDown()) {
-            stack.removeTagKey("Connection");
-            stack.removeTagKey("Half");
-            if(!world.isClientSide)
-                user.displayClientMessage(Lang.translate("message.connection_reset").style(ChatFormatting.GRAY).component(), true);
-            return InteractionResultHolder.sidedSuccess(stack, true);
-        }
-        return InteractionResultHolder.pass(stack);
-    }
-
-    @Override
     public boolean isFoil(ItemStack stack) {
         return super.isFoil(stack) || (stack.hasTag() && stack.getTag().contains("Half"));
     }
 
     @NotNull
-    @Override
-    public InteractionResult useOn(UseOnContext context) {
-        var state = context.getLevel().getBlockState(context.getClickedPos());
-        var electric = IElectric.getAt(context.getLevel(), context.getClickedPos());
+    public static EventResult useOn(Player player, InteractionHand hand, BlockPos blockPos, Direction direction) {
+        var level = player.level();
+        var state = level.getBlockState(blockPos);
+        var electric = IElectric.getAt(level, blockPos);
+        var hit = player.pick(PlayerUtilities.getReachDistance(player) + 1.0f, 1.0f, false);
+        if(!(hit instanceof BlockHitResult blockHit))
+            return EventResult.pass();
+        var context = new UseOnContext(player, hand, blockHit);
         if(electric != null) {
-            var stack = context.getItemInHand();
-            var pos = context.getClickedPos();
-            var terminal = electric.terminalIndexAt(state, context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
+            var stack = player.getMainHandItem();
+            var terminal = electric.terminalIndexAt(state, hit.getLocation().subtract(blockPos.getX(), blockPos.getY(), blockPos.getZ()));
             if(terminal >= 0) {
                 if(stack.hasTag() && stack.getTag().contains("Half")) {
                     // Tag has the first half of a split cord endpoint
                     var endpointHalf = WireEndpointType.deserialize(stack.getTagElement("Half"));
                     if(!(endpointHalf instanceof BlockWireEndpoint bwe))
-                        return InteractionResult.FAIL;
-                    var endpoint2 = new BlockWireEndpoint(pos, terminal);
-                    var p1 = endpointHalf.getExactPosition(context.getLevel());
-                    var p2 = endpoint2.getExactPosition(context.getLevel());
+                        return EventResult.interruptFalse();
+                    var endpoint2 = new BlockWireEndpoint(blockPos, terminal);
+                    var p1 = endpointHalf.getExactPosition(level);
+                    var p2 = endpoint2.getExactPosition(level);
                     if(p1.distanceToSqr(p2) > 4) {
                         // 4 = 2², split cord allows 2 blocks of distance between endpoints on one end of a cord.
                         IElectric.sendMessage(context, Lang.translate("message.split_cord_too_far").style(ChatFormatting.RED).component());
-                        return InteractionResult.FAIL;
+                        return EventResult.interruptFalse();
                     }
                     var splitEndpoint = new SplitCordEndpoint(bwe, endpoint2);
                     stack.removeTagKey("Half");
-                    return addEndpoint(context, splitEndpoint);
+                    return EventResult.interrupt(addEndpoint(context, splitEndpoint).consumesAction());
                 } else {
-                    var endpoint = new BlockWireEndpoint(pos, terminal);
+                    var endpoint = new BlockWireEndpoint(blockPos, terminal);
                     var tag = endpoint.serialize();
                     stack.getOrCreateTag().put("Half", tag);
                     IElectric.sendMessage(context, Lang.translate("message.connection_next").style(ChatFormatting.GRAY).component());
-                    return InteractionResult.SUCCESS;
+                    return EventResult.interruptTrue();
                 }
             }
         }
@@ -235,9 +235,9 @@ public class CordItem extends WireItem {
             if(result.getResult() == InteractionResult.PASS)
                 continue;
             if(result.getResult().consumesAction())
-                return addEndpoint(context, result.getObject());
-            return result.getResult();
+                return EventResult.interrupt(addEndpoint(context, result.getObject()).consumesAction());
+            return EventResult.interrupt(result.getResult().consumesAction());
         }
-        return InteractionResult.PASS;
+        return EventResult.pass();
     }
 }

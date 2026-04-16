@@ -36,6 +36,7 @@ public class CElectricity extends ConfigBase {
     public final ConfigInt portableBatteryBaseCapacity = i(10000, 1, "portableBatteryBaseCapacity", Comments.portableBatteryBaseCapacity);
     public final ConfigInt portableBatteryEnchantCapacity = i(10000, 1, "portableBatteryEnchantCapacity", Comments.portableBatteryEnchantCapacity);
 
+    public final ConfigFloat acidBatteryCapacity = f(720f, 0, "acidBatteryCapacity", Comments.acidBatteryCapacity);
     public final ConfigFloat acidBatteryInitialCharge = f(0.9f, 0, 1.0f, "acidBatteryInitialCharge", Comments.acidBatteryInitialCharge);
 
     public final ConfigFloat transformerMutualInductanceMultiplier = f(10, 1, "transformerMutualInductanceMultiplier", Comments.transformerMutualInductanceMultiplier);
@@ -63,7 +64,6 @@ public class CElectricity extends ConfigBase {
     public final CSolver solver = nested(1, CSolver::new, Comments.solver);
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
     public final CThermal thermal = nested(1, CThermal::new, Comments.thermal);
-    public final CWire wires = nested(1, CWire::new, Comments.wires);
 
     @Override
     public String getName() {
@@ -74,7 +74,6 @@ public class CElectricity extends ConfigBase {
         public static final String solver = "Things related to how the simulation is handled (probably shouldn't be altered unless you know what you are doing)";
         public static final String resistance = "Resistance values for all devices";
         public static final String thermal = "Thermal properties for all devices";
-        public static final String wires = "Configuration of server-side wire properties";
 
         public static final String explosiveDeconstruction = "Controls the behaviour of overheated devices. If false, instead of exploding, they break without dropping items.";
         public static final String overheating = "Controls the overheat mechanic. Devices which are overheated, break.";
@@ -95,6 +94,7 @@ public class CElectricity extends ConfigBase {
         public static final String portableBatteryEnchantCapacity = "Portable Battery Forge Energy capacity increase per level of Capacity enchant";
 
         public static final String acidBatteryInitialCharge = "Initial charge of the acid battery";
+        public static final String acidBatteryCapacity = "Capacity of the acid battery, measured in joules";
 
         public static final String transformerMutualInductanceMultiplier = "Multiplies the mutual inductance of transformers to get a resistance. Bigger values make transformers use less electricity.";
 

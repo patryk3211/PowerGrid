@@ -33,9 +33,7 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -125,20 +123,6 @@ public class LightFixtureBlock extends DirectionalElectricBlock implements IBE<L
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(POWER, ALONG_FIRST_AXIS);
-    }
-
-    @Override
-    public boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
-        var facing = state.getValue(FACING);
-        return canSupportCenter(world, pos.relative(facing, -1), facing);
-    }
-
-    @Override
-    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
-        var facing = state.getValue(FACING);
-        return direction == facing.getOpposite() && !canSurvive(state, world, pos)
-                ? Blocks.AIR.defaultBlockState()
-                : super.updateShape(state, direction, neighborState, world, pos, neighborPos);
     }
 
     @Override

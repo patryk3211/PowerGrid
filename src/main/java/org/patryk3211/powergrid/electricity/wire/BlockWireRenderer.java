@@ -77,14 +77,14 @@ public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
                     calcLight = newLight;
             }
 
-            renderSegment(matrices, buffer, calcLight, color, currentPos, segment.direction, entity.getWireItem().getWireThickness(), length, entity.getId());
+            renderSegment(matrices, buffer, calcLight, color, currentPos, segment.direction, entity.getWireEntry().wireThickness(), length, entity.getId());
             currentPos = newPos;
         }
     }
 
     @Override
     public ResourceLocation getTextureLocation(BlockWireEntity entity) {
-        return entity.getWireItem().getWireTexture();
+        return entity.getWireEntry().texture();
     }
 
     public static void debugLine(PoseStack ms, VertexConsumer buffer, int light, int color,

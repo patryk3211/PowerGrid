@@ -53,10 +53,10 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
     }
 
     public static BlockWireEntity create(Level world, IWireEndpoint endpoint1, ItemStack item, List<Point> segments) {
-        if(!(item.getItem() instanceof WireItem))
+        if(!IWire.isWire(world, item.getItem()))
             throw new IllegalArgumentException("ItemStack must be of a WireItem");
         var entity = new BlockWireEntity(ModdedEntities.BLOCK_WIRE.get(), world);
-        entity.setItem((WireItem) item.getItem(), item.getCount());
+        entity.setItem(item.getItem(), item.getCount());
 
         var pos = BlockTrace.alignPosition(endpoint1.getExactPosition(world));
         entity.setPosRaw(pos.x, pos.y, pos.z);
@@ -70,17 +70,17 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         entity.setOldPosAndRot();
         entity.reapplyPosition();
 
-        if(entity.getWireItem().canBeColored())
+        if(entity.getWireEntry().colorable())
             entity.setColor(0x413c31);
 
         return entity;
     }
 
     public static BlockWireEntity create(Level world, Vec3 pos, ItemStack item, List<Point> segments) {
-        if(!(item.getItem() instanceof WireItem))
+        if(!IWire.isWire(world, item.getItem()))
             throw new IllegalArgumentException("ItemStack must be of a WireItem");
         var entity = new BlockWireEntity(ModdedEntities.BLOCK_WIRE.get(), world);
-        entity.setItem((WireItem) item.getItem(), item.getCount());
+        entity.setItem(item.getItem(), item.getCount());
 
         entity.setPosRaw(pos.x, pos.y, pos.z);
         entity.segments.addAll(segments);
@@ -91,7 +91,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         entity.setOldPosAndRot();
         entity.reapplyPosition();
 
-        if(entity.getWireItem().canBeColored())
+        if(entity.getWireEntry().colorable())
             entity.setColor(0x413c31);
 
         return entity;
@@ -230,7 +230,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
         if(hand != InteractionHand.MAIN_HAND)
             return InteractionResult.PASS;
         var stack = player.getItemInHand(hand);
-        if(stack.getItem() instanceof WireItem wire) {
+        if(IWire.isWire(player.level(), stack.getItem())) {
             // Connect wire to wire.
             if(player.level().isClientSide) {
                 return ClientWireInteractions.attachWire(this);
@@ -296,7 +296,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
                     start.x + vector.x,
                     start.y + vector.y,
                     start.z + vector.z,
-                    new ItemStack(getWireItem(), items));
+                    new ItemStack(getItem(), items));
             itemEntity.setDefaultPickUpDelay();
             this.level().addFreshEntity(itemEntity);
             incrementWireCount(-items);
@@ -307,7 +307,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
 
     public BlockWireEntity flip() {
         var entity = new BlockWireEntity(ModdedEntities.BLOCK_WIRE.get(), level());
-        entity.setItem(getWireItem(), getWireCount());
+        entity.setItem(getItem(), getWireCount());
         entity.setEndpoint1(getEndpoint2());
         entity.setEndpoint2(getEndpoint1());
         entity.getEntityData().set(TEMPERATURE, getTemperature());
@@ -364,7 +364,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
 
         var wire2 = new BlockWireEntity(ModdedEntities.BLOCK_WIRE.get(), world);
         wire2.setColor(getColor());
-        wire2.setItem(getWireItem(), 0);
+        wire2.setItem(getItem(), 0);
         var splitSegment = new Point(segment.direction, segment.gridLength - segmentPoint);
         wire2.segments.add(splitSegment);
         this.segments.set(segmentIndex, new Point(segment.direction, segmentPoint - 1));

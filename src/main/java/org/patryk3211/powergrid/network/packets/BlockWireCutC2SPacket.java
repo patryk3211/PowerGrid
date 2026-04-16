@@ -75,7 +75,7 @@ public class BlockWireCutC2SPacket implements SimplePacket {
     private static BlockWireEntity spawnWire2(BlockWireEntity wire1, Vec3 start, int wireCount, List<BlockWireEntity.Point> segments) {
         if(start == null || segments.isEmpty())
             return null;
-        var entity = BlockWireEntity.create(wire1.level(), start, new ItemStack(wire1.getWireItem(), wireCount), segments);
+        var entity = BlockWireEntity.create(wire1.level(), start, new ItemStack(wire1.getItem(), wireCount), segments);
         ((ServerLevel) wire1.level()).addFreshEntityWithPassengers(entity);
         entity.setEndpoint2(wire1.getEndpoint2());
         wire1.setEndpoint2(null);
@@ -127,7 +127,7 @@ public class BlockWireCutC2SPacket implements SimplePacket {
                     // Too short, discard, no wire2 since it's even shorter.
                     wire.discard();
                 } else {
-                    wire.setItem(wire.getWireItem(), Math.min(wireCount, wire1Count));
+                    wire.setItem(wire.getItem(), Math.min(wireCount, wire1Count));
                     wireCount -= wire1Count;
                     if (wireCount <= 0) {
                         // Wire2 is discarded - not enough items
@@ -151,7 +151,7 @@ public class BlockWireCutC2SPacket implements SimplePacket {
                         wire.discard();
                     } else {
                         // Keep wire1
-                        wire.setItem(wire.getWireItem(), Math.min(wire1Count, wireCount));
+                        wire.setItem(wire.getItem(), Math.min(wire1Count, wireCount));
                         wireCount -= wire1Count;
                     }
                 }
@@ -160,7 +160,7 @@ public class BlockWireCutC2SPacket implements SimplePacket {
                 // Drop excess wires
                 var cutter = ctx.getPlayer();
                 for(; wireCount > 0; wireCount -= 64) {
-                    cutter.getInventory().placeItemBackInInventory(new ItemStack(wire.getWireItem(), Math.min(wireCount, 64)));
+                    cutter.getInventory().placeItemBackInInventory(new ItemStack(wire.getItem(), Math.min(wireCount, 64)));
                 }
             }
 

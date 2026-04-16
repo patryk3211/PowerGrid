@@ -59,7 +59,7 @@ public class BlockWireAttachC2SPacket implements SimplePacket {
                 return;
             }
             var stack = player.getItemInHand(InteractionHand.MAIN_HAND);
-            if(!(stack.getItem() instanceof WireItem)) {
+            if(!IWire.isWire(player.level(), stack.getItem())) {
                 PowerGrid.LOGGER.error("Received wire attach packet for player whose not holding a wire");
                 return;
             }

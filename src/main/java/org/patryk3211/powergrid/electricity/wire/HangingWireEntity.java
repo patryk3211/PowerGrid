@@ -71,9 +71,9 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     public void updateRenderParams() {
         if(!level().isClientSide)
             return;
-        var item = getWireItem();
+        var item = getWireEntry();
         renderParams = new CurveParameters(terminalPos1, terminalPos2,
-                item.getHorizontalCoefficient(), item.getVerticalCoefficient(), item.getWireThickness());
+                item.horizontalCoefficient(), item.verticalCoefficient(), item.wireThickness());
         this.setBoundingBox(this.makeBoundingBox());
     }
 
@@ -95,10 +95,10 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     }
 
     public static HangingWireEntity create(Level world, BlockWireEndpoint endpoint1, BlockWireEndpoint endpoint2, ItemStack item, @Nullable Float resistance) {
-        if(!(item.getItem() instanceof WireItem))
+        if(!IWire.isWire(world, item.getItem()))
             throw new IllegalArgumentException("ItemStack must be of a WireItem");
         var entity = new HangingWireEntity(ModdedEntities.HANGING_WIRE.get(), world);
-        entity.setItem((WireItem) item.getItem(), item.getCount());
+        entity.setItem(item.getItem(), item.getCount());
 
         entity.resistanceOverride = resistance;
 
@@ -110,7 +110,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         entity.setOldPosAndRot();
         entity.reapplyPosition();
 
-        if(entity.getWireItem().canBeColored())
+        if(entity.getWireEntry().colorable())
             entity.setColor(0x413c31);
 
         return entity;
@@ -234,9 +234,9 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     @Environment(EnvType.CLIENT)
     public @Nullable Vec3 raycast(Vec3 min, Vec3 max) {
         // TODO: Sometimes this raycast is really finicky
-        if(getWireItem() == null)
+        if(getWireEntry() == null)
             return null;
-        var thickness = getWireItem().getWireThickness() * 2;
+        var thickness = getWireEntry().wireThickness() * 2;
         if(renderParams instanceof CurveParameters params) {
             Vec3 ray = max.subtract(min);
             var rayLength = ray.lengthSqr();
