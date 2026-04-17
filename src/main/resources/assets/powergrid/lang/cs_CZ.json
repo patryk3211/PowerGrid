@@ -9,7 +9,6 @@
   "block.powergrid.circuit_design_table.tooltip.behaviour1": "Přepíše současný návrh do schématu",
   "block.powergrid.circuit_design_table.tooltip.condition1": "Při obdržení Prázdného schématu",
   "block.powergrid.conductive_casing": "Vodivé pouzdro",
-  "block.powergrid.constant_speed_motor": "Motor S Pevnými Otáčkami",
   "block.powergrid.contactor": "Stykač",
   "block.powergrid.cord_junction": "Katodová Trubice",
   "block.powergrid.creative_current_source": "Tvořivý zdroj proudu",
