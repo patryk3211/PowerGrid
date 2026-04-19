@@ -35,17 +35,14 @@ import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
 public class ModularDisplayComponent extends OrientableComponent implements IRenderedComponent, IInteractableComponent{
-    public static final IntProperty INDEX = new IntProperty(PowerGrid.MOD_ID, "modular_display_index", 1, 0, 30).hidden().cast();
+    public static final IntProperty INDEX = new IntProperty(PowerGrid.MOD_ID, "modular_display_index", 0, 0, 30).hidden().cast();
     public static final BooleanProperty HALF_CLICK = new BooleanProperty(PowerGrid.MOD_ID, "modular_display_half_click").hidden().cast();
-    public static final IntProperty CURRENT_MODULE = new IntProperty(PowerGrid.MOD_ID, "modular_display_module", 0, 0, 10).hidden().cast();
-    public static final StringProperty DISPLAYED_TEXTURE = new StringProperty(PowerGrid.MOD_ID, "modular_display_texture", "zerotonine").hidden().cast();
-    public static final FloatProperty SPRITE_WIDTH = new FloatProperty(PowerGrid.MOD_ID, "modular_display_sprite_width", 80, 16, 300).hidden().cast();
-    public static final FloatProperty CHARACTER_COUNT = new FloatProperty(PowerGrid.MOD_ID, "modular_display_character_count", 9, 0, 50).hidden().cast();
     public static final BooleanProperty WIRE_RESET = new BooleanProperty(PowerGrid.MOD_ID, "modular_display_reset").hidden().cast();
     public static final StringProperty CURRENT_COLOR = new StringProperty(PowerGrid.MOD_ID, "modular_display_current_color","WHITE").hidden().cast();
     public static final ConstantProperty MIN_CURRENT = new ConstantProperty(PowerGrid.MOD_ID, "modular_display_current", Unit.CURRENT.formatWithPrefixes(.5f).component());
     public static final ConstantProperty RESISTANCE = new ConstantProperty(PowerGrid.MOD_ID, "modular_display_resistance", Unit.RESISTANCE.formatWithPrefixes(25).component());
-
+    public static final EnumProperty<DisplayModuleType> CURRENT_MODULE = new EnumProperty<DisplayModuleType>(PowerGrid.MOD_ID, "modular_display_module",
+            DisplayModuleType.class, new DisplayModuleType[]{DisplayModuleType.ZERO_TO_NINE, DisplayModuleType.NINE_TO_ZERO, DisplayModuleType.ONE_TO_ZERO, DisplayModuleType.HEXADECIMAL, DisplayModuleType.SYMBOLS, DisplayModuleType.ALPHABET});
 
     private ValueSettingsBoard board = null;
 
@@ -53,6 +50,7 @@ public class ModularDisplayComponent extends OrientableComponent implements IRen
         super(footprint);
     }
 
+    //some of these might be moved to enum
     private static final float SHEET_HEIGHT = 16f;
     private static final float FRAME_WIDTH = 5f;
     private static final float FRAME_HEIGHT = 7f;
@@ -64,73 +62,27 @@ public class ModularDisplayComponent extends OrientableComponent implements IRen
     private static final float INNER_RL_SIZE = 2f * PIXEL;
     private static final float Y_NUDGE = 0.0001f;
 
-    private void setCurrentModule(PlacedComponent component){
-        var Module = component.get(CURRENT_MODULE);
-        component.set(INDEX, 0);
-
-        switch (Module){
-            case 0:
-                component.set(DISPLAYED_TEXTURE, "zerotonine");
-                component.set(SPRITE_WIDTH, 80f);
-                component.set(CHARACTER_COUNT, 9f);
-                component.set(CURRENT_MODULE, 0);
-                break;
-
-            case 1:
-                component.set(DISPLAYED_TEXTURE, "ninetozero");
-                component.set(SPRITE_WIDTH, 80f);
-                component.set(CHARACTER_COUNT, 9f);
-                component.set(CURRENT_MODULE, 1);
-                break;
-
-            case 2:
-                component.set(DISPLAYED_TEXTURE, "onetozero");
-                component.set(SPRITE_WIDTH, 80f);
-                component.set(CHARACTER_COUNT, 9f);
-                component.set(CURRENT_MODULE, 2);
-                break;
-
-            case 3:
-                component.set(DISPLAYED_TEXTURE,"zerotof");
-                component.set(SPRITE_WIDTH, 112f);
-                component.set(CHARACTER_COUNT, 15f);
-                component.set(CURRENT_MODULE, 3);
-                break;
-
-            case 4:
-                component.set(DISPLAYED_TEXTURE, "symbols");
-                component.set(SPRITE_WIDTH, 80f);
-                component.set(CHARACTER_COUNT, 8f);
-                component.set(CURRENT_MODULE, 4);
-                break;
-
-            case 5:
-                component.set(DISPLAYED_TEXTURE, "alphabet");
-                component.set(SPRITE_WIDTH, 176f);
-                component.set(CHARACTER_COUNT, 25f);
-                component.set(CURRENT_MODULE, 5);
-                break;
-        }
-    }
-
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(RESISTANCE, MIN_CURRENT, INDEX, HALF_CLICK, CURRENT_MODULE, DISPLAYED_TEXTURE, SPRITE_WIDTH,
-                CHARACTER_COUNT, WIRE_RESET, CURRENT_COLOR, power(25));
+        properties.add(CURRENT_MODULE, RESISTANCE, MIN_CURRENT, INDEX, HALF_CLICK, WIRE_RESET, CURRENT_COLOR, power(25));
     }
 
     @Override
     public boolean tick(@NotNull PlacedComponent placed) {
+        var module = placed.get(CURRENT_MODULE);
+
         if (placed.isClient()) return true;
-        if(placed.wires.isEmpty())
+        if (placed.wires.isEmpty())
             return true;
+
         var coilNodeToReset = (SwitchedWire) placed.wires.get(0);
         var coilNodeToNegative =  (SwitchedWire) placed.wires.get(2);
 
         var coilNodeToNegativeCurrent = Math.abs(coilNodeToNegative.current());
         var coilNodeToResetCurrent = Math.abs(coilNodeToReset.current());
-        var charCount = placed.get(CHARACTER_COUNT);
+        var charCount = module.getCharacterCount();
+        var index = placed.get(INDEX);
         //every module display texture has the characters in the sprite plus a blank space and the first character again for smooth transition
         //but im only counting characters before the blank space and adding one for the blank space and two for the transition
 
@@ -142,33 +94,31 @@ public class ModularDisplayComponent extends OrientableComponent implements IRen
 
         if (coilNodeToNegative.isConverged()){
 
-            if (coilNodeToNegativeCurrent >= .5 && placed.get(INDEX) != charCount+1 && !placed.get(HALF_CLICK)) {
-                placed.set(INDEX, placed.get(INDEX) +1);
+            if (coilNodeToNegativeCurrent >= .5 && index != charCount+1 && !placed.get(HALF_CLICK)) {
+                placed.set(INDEX, index +1);
                 placed.set(HALF_CLICK, true);
                 placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), 0.75f, 2f));
                 placed.notifyClients(INDEX);
                 placed.notifyClients(HALF_CLICK);
             }
 
-            if (coilNodeToNegativeCurrent < .5 && placed.get(INDEX) == charCount+1 && coilNodeToNegative.getState()){
+            if (coilNodeToNegativeCurrent < .5 && index == charCount+1 && coilNodeToNegative.getState()){
                 placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), 0.75f, 1.9f));
                 coilNodeToNegative.setState(false);
                 coilNodeToReset.setState(true);
                 placed.set(HALF_CLICK, false);
-                //placed.notifyClients(INDEX);
                 placed.notifyClients(HALF_CLICK);
             }
 
             if (coilNodeToNegativeCurrent < .5 && coilNodeToNegative.getState() && placed.get(HALF_CLICK)) {
                 placed.set(HALF_CLICK, false);
                 placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), 0.75f, 1.9f));
-                //placed.notifyClients(INDEX);
                 placed.notifyClients(HALF_CLICK);
             }
 
-            if (coilNodeToReset.getState() && coilNodeToResetCurrent >= .5 && placed.get(INDEX) == charCount+1) {
+            if (coilNodeToReset.getState() && coilNodeToResetCurrent >= .5 && index == charCount+1) {
                 placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), 0.75f, 2f));
-                placed.set(INDEX, placed.get(INDEX) +1);
+                placed.set(INDEX, index +1);
                 placed.set(HALF_CLICK, true);
                 coilNodeToNegative.setState(true);
                 coilNodeToReset.setState(false);
@@ -176,7 +126,7 @@ public class ModularDisplayComponent extends OrientableComponent implements IRen
                 placed.notifyClients(HALF_CLICK);
             }
 
-            if (placed.get(INDEX) >= charCount+2 && !placed.get(HALF_CLICK)){
+            if (index >= charCount+2 && !placed.get(HALF_CLICK)){
                 placed.set(INDEX, 0);
                 placed.notifyClients(INDEX);
             }
@@ -204,9 +154,11 @@ public class ModularDisplayComponent extends OrientableComponent implements IRen
     @Override
     public void render(CircuitBoardBlockEntity be, PlacedComponent placed, float partialTicks, PoseStack pStack,
                        MultiBufferSource buffer, int light, int overlay) {
+        var module = placed.get(CURRENT_MODULE);
 
         pStack.pushPose();
         pStack.translate(0.5, 8f/16f, 0.5);
+
         Boolean halfClick = false;
 
         pStack.translate(-0.5, 0, -0.5);
@@ -221,13 +173,13 @@ public class ModularDisplayComponent extends OrientableComponent implements IRen
         if (halfClick){
             frameIndex -= .5f;
         }
-        var displayTexture = "block/modular_display/" + placed.get(DISPLAYED_TEXTURE);
+        var displayTexture = "block/modular_display/" + module.getDisplayTexture();
 
         float innerX = 0 + INNER_OFFSET;
         float innerY = 0 + INNER_UD_OFFSET;
 
-        float uMin = (frameIndex * (FRAME_WIDTH + FRAME_PADDING)) / placed.get(SPRITE_WIDTH);
-        float uMax = (frameIndex * (FRAME_WIDTH + FRAME_PADDING) + FRAME_WIDTH) / placed.get(SPRITE_WIDTH);
+        float uMin = (frameIndex * (FRAME_WIDTH + FRAME_PADDING)) / module.getSpriteWidth();
+        float uMax = (frameIndex * (FRAME_WIDTH + FRAME_PADDING) + FRAME_WIDTH) / module.getSpriteWidth();
         float vMin = 0f;
         float vMax = FRAME_HEIGHT / SHEET_HEIGHT;
 
@@ -285,7 +237,8 @@ public class ModularDisplayComponent extends OrientableComponent implements IRen
         if (player.getMainHandItem().getItem() instanceof DyeItem dye && !be.getLevel().isClientSide()){
             component.set(CURRENT_COLOR, dye.getDyeColor().getName());
             component.notifyClients(CURRENT_COLOR);
-            if (!player.isCreative()) player.getMainHandItem().shrink(1);
+            if (!player.isCreative())
+                player.getMainHandItem().shrink(1);
             return InteractionResult.SUCCESS;
         }
 
@@ -300,19 +253,16 @@ public class ModularDisplayComponent extends OrientableComponent implements IRen
                 );
             }
 
-            var value = component.get(CURRENT_MODULE);
+            var value = component.get(CURRENT_MODULE).getId();
 
             CustomValueSettingsScreen.beginInteraction(() -> new CustomValueSettingsScreen(
                     be.getBlockPos(), board,
                     new ValueSettingsBehaviour.ValueSettings(0, value),
                     setting -> {
-                        component.set(CURRENT_MODULE, setting.value());
-                        setCurrentModule(component);
+                        component.set(CURRENT_MODULE, DisplayModuleType.byId(setting.value()));
                         component.set(WIRE_RESET, true);
+                        component.set(INDEX, 0);
                         ModdedPackets.sendToServer(new UpdateComponentBiPacket(be, component, CURRENT_MODULE));
-                        ModdedPackets.sendToServer(new UpdateComponentBiPacket(be, component, DISPLAYED_TEXTURE));
-                        ModdedPackets.sendToServer(new UpdateComponentBiPacket(be, component, CHARACTER_COUNT));
-                        ModdedPackets.sendToServer(new UpdateComponentBiPacket(be, component, SPRITE_WIDTH));
                         ModdedPackets.sendToServer(new UpdateComponentBiPacket(be, component, INDEX));
                         ModdedPackets.sendToServer(new UpdateComponentBiPacket(be, component, WIRE_RESET));
                     }
