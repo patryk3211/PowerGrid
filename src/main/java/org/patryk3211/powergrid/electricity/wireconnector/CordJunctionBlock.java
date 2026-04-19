@@ -27,9 +27,6 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
@@ -71,19 +68,6 @@ public class CordJunctionBlock extends DirectionalElectricBlock implements IBE<C
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
         return SHAPER.get(state.getValue(FACING));
-    }
-
-    @Override
-    public boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
-        var facing = state.getValue(FACING);
-        return canSupportCenter(world, pos.relative(facing), facing.getOpposite());
-    }
-
-    @Override
-    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
-        return direction == state.getValue(FACING) && !canSurvive(state, world, pos)
-                ? Blocks.AIR.defaultBlockState()
-                : super.updateShape(state, direction, neighborState, world, pos, neighborPos);
     }
 
     private static double pickPoint(double location, double center) {

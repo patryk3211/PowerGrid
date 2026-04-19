@@ -36,6 +36,7 @@ import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.electricity.wire.CurveParameters;
+import org.patryk3211.powergrid.electricity.wire.registry.WireItemEntry;
 
 import static org.patryk3211.powergrid.electricity.wire.HangingWireRenderer.renderSegment;
 
@@ -48,7 +49,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
     @NotNull
     @Override
     public ResourceLocation getTextureLocation(T entity) {
-        return entity.getWireItem().getWireTexture();
+        return entity.getWireEntry().texture();
     }
 
     private static void renderPlug(PoseStack matrices, MultiBufferSource consumers, BlockState referenceState, Direction facing, double x, double y, double z, int light) {
@@ -209,10 +210,10 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
         }, segmentSize);
     }
 
-    public static void renderPreview(ICordEndpoint start, Vec3 end, PoseStack matrices, MultiBufferSource vertexConsumers, Level level, CordItem item, int color, Vec3 cameraPos) {
-        var buffer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(item.getWireTexture()));
+    public static void renderPreview(ICordEndpoint start, Vec3 end, PoseStack matrices, MultiBufferSource vertexConsumers, Level level, WireItemEntry item, int color, Vec3 cameraPos) {
+        var buffer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(item.texture()));
         var startPos = start.getExactPosition(level);
-        CurveParameters rp = new CurveParameters(startPos, end, item.getHorizontalCoefficient(), item.getVerticalCoefficient(), item.getWireThickness());
+        CurveParameters rp = new CurveParameters(startPos, end, item.horizontalCoefficient(), item.verticalCoefficient(), item.wireThickness());
 
         // To introduce some subtle variety into the wires.
         var thicknessOffset = 0;
@@ -270,7 +271,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                     }
                 }
             }
-            renderSegment(matrices, vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(item.getWireTexture())),
+            renderSegment(matrices, vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(item.texture())),
                     x1, y1, z1,
                     x2, y2, z2,
                     rp.cross1, rp.cross2, currentLight, color,

@@ -132,7 +132,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
                 // Since holders' size was 2 we must get 2 wires, otherwise the set was altered before the loop started.
                 throw new ConcurrentModificationException();
             }
-            assert wire1.getWireItem() == wire2.getWireItem();
+            assert wire1.getWireEntry() == wire2.getWireEntry();
             var wire1End = this.equals(wire1.getEndpoint2());
             var wire2End = this.equals(wire2.getEndpoint2());
 

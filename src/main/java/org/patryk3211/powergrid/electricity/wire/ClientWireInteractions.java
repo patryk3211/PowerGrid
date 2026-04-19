@@ -91,7 +91,7 @@ public class ClientWireInteractions {
 
     private static Tuple<Integer, Integer> getSegment(BlockWireEntity entity, Vec3 hitPos) {
         var localPos = hitPos.subtract(entity.position());
-        var thickness = entity.getWireItem().getWireThickness();
+        var thickness = entity.getWireEntry().wireThickness();
         // Bounding boxes haven't been baked.
         if(entity.segments.size() != entity.boundingBoxes.size())
             return null;
@@ -150,7 +150,7 @@ public class ClientWireInteractions {
         if(target.getType() != HitResult.Type.ENTITY)
             return InteractionResult.FAIL;
         var stack = mc.player.getItemInHand(InteractionHand.MAIN_HAND);
-        if(entity.getWireItem() != stack.getItem()) {
+        if(entity.getItem() != stack.getItem()) {
             mc.player.displayClientMessage(Lang.translate("message.connection_incorrect_wire_type").style(ChatFormatting.RED).component(), true);
             return InteractionResult.FAIL;
         }

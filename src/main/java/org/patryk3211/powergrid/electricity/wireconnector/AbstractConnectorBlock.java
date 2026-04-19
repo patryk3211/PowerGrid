@@ -49,17 +49,4 @@ public abstract class AbstractConnectorBlock extends DirectionalElectricBlock im
     public BlockEntityType<? extends ConnectorBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.WIRE_CONNECTOR.get();
     }
-
-    @Override
-    public boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
-        var facing = state.getValue(FACING);
-        return canSupportCenter(world, pos.relative(facing), facing.getOpposite());
-    }
-
-    @Override
-    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
-        return direction == state.getValue(FACING) && !canSurvive(state, world, pos)
-                ? Blocks.AIR.defaultBlockState()
-                : super.updateShape(state, direction, neighborState, world, pos, neighborPos);
-    }
 }

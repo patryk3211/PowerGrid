@@ -43,6 +43,8 @@ public class InductorWire extends AbstractElectricWire implements IStaticResidua
     public double current() {
         if(network == null)
             return I;
+        if(network.isLeaf(node1) || network.isLeaf(node2))
+            return 0;
         return super.current() + Ieq;
     }
 
@@ -62,13 +64,6 @@ public class InductorWire extends AbstractElectricWire implements IStaticResidua
             I = current() * 0.99999;
         }
     }
-
-//    @Override
-//    public void startIteration(int iteration) {
-//        var G = conductance();
-//        var V = inductance * (current() - I) / getDeltaTime();
-//        Ieq = (V * 0.05f + Vprev * 0.95f) * G + I;
-//    }
 
     @Override
     public void addStaticResidual(IResidualAdder residual) {

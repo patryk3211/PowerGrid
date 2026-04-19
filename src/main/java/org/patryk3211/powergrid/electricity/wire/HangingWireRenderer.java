@@ -46,7 +46,7 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
     @NotNull
     @Override
     public ResourceLocation getTextureLocation(HangingWireEntity entity) {
-        return entity.getWireItem().getWireTexture();
+        return entity.getWireEntry().texture();
     }
 
     @Override

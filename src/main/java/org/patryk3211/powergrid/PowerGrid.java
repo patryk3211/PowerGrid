@@ -18,10 +18,7 @@ package org.patryk3211.powergrid;
 import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
 import com.simibubi.create.api.registry.CreateRegistries;
 import com.simibubi.create.content.kinetics.fan.processing.FanProcessingType;
-import dev.architectury.event.events.common.CommandRegistrationEvent;
-import dev.architectury.event.events.common.LifecycleEvent;
-import dev.architectury.event.events.common.PlayerEvent;
-import dev.architectury.event.events.common.TickEvent;
+import dev.architectury.event.events.common.*;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import dev.architectury.registry.registries.DeferredRegister;
 import net.minecraft.ChatFormatting;
@@ -43,6 +40,7 @@ import org.patryk3211.powergrid.electricity.heater.HeaterFanProcessingTypes;
 import org.patryk3211.powergrid.electricity.light.string.StringLightCordRecipe;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.solver.NativeMNA;
+import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.equipment.thunder.LightningRodMovementBehaviour;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlockEntity;
 import org.patryk3211.powergrid.network.packets.NegotiateSyncC2SPacket;
@@ -89,6 +87,8 @@ public class PowerGrid {
 		CommandRegistrationEvent.EVENT.register(ModdedCommands::register);
 		PlayerEvent.PLAYER_JOIN.register(PowerGrid::playerJoin);
 		PlayerEvent.PLAYER_QUIT.register(PowerGrid::playerQuit);
+		InteractionEvent.RIGHT_CLICK_BLOCK.register(WireItem::useOn);
+		InteractionEvent.RIGHT_CLICK_ITEM.register(WireItem::use);
 	}
 
 	private static void playerQuit(ServerPlayer player) {

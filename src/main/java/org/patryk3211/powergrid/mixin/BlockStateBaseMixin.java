@@ -36,7 +36,7 @@ public class BlockStateBaseMixin {
             cancellable = true)
     private void powerGrid$beforeBlockUse(ItemStack stack, Level level, Player player, InteractionHand hand, BlockHitResult result, CallbackInfoReturnable<ItemInteractionResult> cir) {
         var item = player.getItemInHand(hand);
-        if(item.getItem() instanceof WireItem && item.has(ModdedDataComponents.CONNECTION_DATA.get())) {
+        if(IWire.isWire(level, item.getItem()) && item.has(ModdedDataComponents.CONNECTION_DATA.get())) {
             cir.setReturnValue(ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION);
         }
     }
