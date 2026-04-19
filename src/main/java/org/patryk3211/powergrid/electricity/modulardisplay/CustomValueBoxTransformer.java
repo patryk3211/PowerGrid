@@ -1,6 +1,5 @@
 package org.patryk3211.powergrid.electricity.modulardisplay;
 
-
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
 import dev.engine_room.flywheel.lib.transform.TransformStack;

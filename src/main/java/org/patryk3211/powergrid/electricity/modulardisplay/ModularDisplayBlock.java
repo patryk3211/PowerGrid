@@ -9,7 +9,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -52,12 +51,6 @@ public class ModularDisplayBlock extends HorizontalElectricBlock implements IBE<
         return ModdedBlockEntities.MODULAR_DISPLAY.get();
     }
 
-//    @Override
-//    protected RenderShape getRenderShape(BlockState state) {
-//        return RenderShape.MODEL;
-//    }
-
-    //
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {

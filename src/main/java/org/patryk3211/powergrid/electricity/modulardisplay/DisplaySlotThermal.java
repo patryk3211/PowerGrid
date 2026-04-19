@@ -2,7 +2,6 @@ package org.patryk3211.powergrid.electricity.modulardisplay;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;

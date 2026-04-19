@@ -49,8 +49,8 @@ public enum DisplayModuleType implements INamedIconOptions {
         return this.characterCount;
     }
 
-    public static DisplayModuleType byId(int colorId) {
-        return (DisplayModuleType)BY_ID.apply(colorId);
+    public static DisplayModuleType byId(int moduleId) {
+        return BY_ID.apply(moduleId);
     }
 
     @Override
