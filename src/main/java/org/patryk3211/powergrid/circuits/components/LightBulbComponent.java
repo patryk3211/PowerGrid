@@ -85,18 +85,18 @@ public class LightBulbComponent extends OrientableComponent implements IRendered
         var bulb = CachedBuffers.partial(ModdedPartialModels.LIGHT_BULB_BULB, be.getBlockState());
         bulb.light(light).renderInto(ms, bufferSource.getBuffer(RenderType.cutoutMipped()));
         
-        var color = placed.get(COLOR).getTextureDiffuseColors();
+        var color = placed.get(COLOR).getTextureDiffuseColor();
 
-        var red = color[0];
-        var green = color[1];
-        var blue = color[2];
+        var red = (color >> 16) & 0xFF;
+        var green = (color >> 8) & 0xFF;
+        var blue = color & 0xFF;
 
         int a = 0, r = 0, g = 0, b = 0;
         if(placed.customData instanceof FloatPair temps) {
             a = (int) (temps.lerped(partialTicks) * 128);
-            r = (int) (red * temps.lerped(partialTicks) * 128);
-            g = (int) (green * temps.lerped(partialTicks) * 128);
-            b = (int) (blue * temps.lerped(partialTicks) * 128);
+            r = (int) (red * temps.lerped(partialTicks) * 128 / 256);
+            g = (int) (green * temps.lerped(partialTicks) * 128 / 256);
+            b = (int) (blue * temps.lerped(partialTicks) * 128 / 256);
         }
         var center = 1.5f / 16f;
         var orientation = placed.get(ORIENTATION);

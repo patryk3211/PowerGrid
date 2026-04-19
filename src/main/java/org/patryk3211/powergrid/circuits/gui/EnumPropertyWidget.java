@@ -99,8 +99,8 @@ public class EnumPropertyWidget<T extends Enum<?>, P extends PropertyEntry<T>> e
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
-        return widget.mouseScrolled(mouseX, mouseY, delta);
+    public boolean mouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) {
+        return widget.mouseScrolled(mouseX, mouseY, deltaX, deltaY);
     }
 
     @Override

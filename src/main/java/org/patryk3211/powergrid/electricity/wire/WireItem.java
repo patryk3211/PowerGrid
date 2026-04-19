@@ -43,7 +43,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedDataComponents;
-import org.patryk3211.powergrid.config.WireValues;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.info.*;
@@ -275,7 +274,6 @@ public class WireItem extends Item implements IWire {
             return CompoundEventResult.pass();
         if(stack.has(ModdedDataComponents.CONNECTION_DATA.get()) && user.isShiftKeyDown()) {
             stack.remove(ModdedDataComponents.CONNECTION_DATA.get());
-            stack.removeTagKey("Half");
             if(!user.level().isClientSide)
                 user.displayClientMessage(Lang.translate("message.connection_reset").style(ChatFormatting.GRAY).component(), true);
             return CompoundEventResult.interruptTrue(stack);
@@ -341,7 +339,7 @@ public class WireItem extends Item implements IWire {
     };
 
     @Environment(EnvType.CLIENT)
-    public static void tooltip(ItemStack stack, List<Component> components, TooltipFlag tooltipFlag) {
+    public static void tooltip(ItemStack stack, List<Component> components, TooltipContext tooltipContext, TooltipFlag tooltipFlag) {
         var entry = WireRegistry.forItem(stack.getItem());
         if(entry == null)
             return;

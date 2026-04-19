@@ -236,13 +236,13 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double delta) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) {
         if(component == null)
             return false;
 
         boolean result = false;
         for(var widget : propertyWidgets) {
-            result |= widget.mouseScrolled(mouseX, mouseY, delta);
+            result |= widget.mouseScrolled(mouseX, mouseY, deltaX, deltaY);
         }
         return result;
     }

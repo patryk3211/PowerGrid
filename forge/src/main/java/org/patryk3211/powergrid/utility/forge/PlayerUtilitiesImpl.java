@@ -16,9 +16,9 @@
 package org.patryk3211.powergrid.utility.forge;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraftforge.common.ForgeMod;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.util.FakePlayer;
 import net.neoforged.neoforge.event.level.BlockEvent;
@@ -35,6 +35,6 @@ public class PlayerUtilitiesImpl {
     }
 
     public static float getReachDistance(Player player) {
-        return (float) player.getAttribute(ForgeMod.BLOCK_REACH.get()).getValue();
+        return (float) player.getAttribute(Attributes.BLOCK_INTERACTION_RANGE).getValue();
     }
 }

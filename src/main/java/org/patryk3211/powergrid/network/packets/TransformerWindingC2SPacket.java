@@ -50,7 +50,7 @@ public class TransformerWindingC2SPacket implements C2SPacket {
     public void handle(ServerPlayer player) {
         var stack = player.getItemInHand(hand);
         var connection = stack.get(ModdedDataComponents.CONNECTION_DATA.get());
-        if (!IWire.isWire(ctx.getPlayer().level(), stack.getItem()) || connection == null)
+        if (!IWire.isWire(player.level(), stack.getItem()) || connection == null)
             return;
         if (connection.isTransformer()) {
             // Alter existing tag

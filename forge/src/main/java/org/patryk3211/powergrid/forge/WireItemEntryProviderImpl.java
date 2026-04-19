@@ -16,8 +16,8 @@
 package org.patryk3211.powergrid.forge;
 
 import com.tterrag.registrate.AbstractRegistrate;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.fml.LogicalSide;
+import net.neoforged.fml.LogicalSide;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 
