@@ -36,17 +36,17 @@ public class SymbolLetterModule implements IDisplayModule {
         return new SymbolLetterModule(this.Index, this.halfClick, color);
     }
 
-    @Override
-    public IDisplayModule withDamaged(int damaged) {
-        return null;
-    }
-
     public float getDisplayTextureSize() {
         return 80f;
     }
 
     public int getDisplayTextureCharacterCount() {
         return 8;
+    }
+
+    @Override
+    public IDisplayModule isDamaged() {
+        return null;
     }
 
     @Override

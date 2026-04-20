@@ -28,17 +28,13 @@ public interface IDisplayModule {
 
     IDisplayModule withColor(DyeColor color);
 
-    IDisplayModule withDamaged(int damaged);
-
     default ResourceLocation getDisplayTexture() {return null;}
 
     default float getDisplayTextureSize() {return 0;}
 
     default int getDisplayTextureCharacterCount() {return 0;}
 
-    default ResourceLocation getModuleModel() {return null;}
-
-    default boolean isDamaged() {return false;}
+    IDisplayModule isDamaged(); //todo Implement damage system if required
 
     String serialize();
 

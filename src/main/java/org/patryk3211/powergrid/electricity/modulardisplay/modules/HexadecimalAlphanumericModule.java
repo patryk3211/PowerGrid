@@ -36,17 +36,17 @@ public class HexadecimalAlphanumericModule implements IDisplayModule {
         return new HexadecimalAlphanumericModule(this.Index, this.halfClick, color);
     }
 
-    @Override
-    public IDisplayModule withDamaged(int damaged) {
-        return null;
-    }
-
     public float getDisplayTextureSize() {
         return 112f;
     }
 
     public int getDisplayTextureCharacterCount() {
         return 15;
+    }
+
+    @Override
+    public IDisplayModule isDamaged() {
+        return null;
     }
 
     @Override

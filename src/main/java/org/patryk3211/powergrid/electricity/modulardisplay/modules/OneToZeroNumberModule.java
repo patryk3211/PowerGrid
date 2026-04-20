@@ -36,17 +36,17 @@ public class OneToZeroNumberModule implements IDisplayModule {
         return new OneToZeroNumberModule(this.Index, this.halfClick, color);
     }
 
-    @Override
-    public IDisplayModule withDamaged(int damaged) {
-        return null;
-    }
-
     public float getDisplayTextureSize() {
         return 80f;
     }
 
     public int getDisplayTextureCharacterCount() {
         return 9;
+    }
+
+    @Override
+    public IDisplayModule isDamaged() {
+        return null;
     }
 
     @Override

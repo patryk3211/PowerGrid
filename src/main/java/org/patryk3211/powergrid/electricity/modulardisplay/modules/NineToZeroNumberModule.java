@@ -37,11 +37,6 @@ public class NineToZeroNumberModule implements IDisplayModule {
     }
 
     @Override
-    public IDisplayModule withDamaged(int damaged) {
-        return null;
-    }
-
-    @Override
     public ResourceLocation getDisplayTexture() {
         return PowerGrid.texture("block/modular_display/ninetozero");
     }
@@ -52,6 +47,11 @@ public class NineToZeroNumberModule implements IDisplayModule {
 
     public int getDisplayTextureCharacterCount() {
         return 9;
+    }
+
+    @Override
+    public IDisplayModule isDamaged() {
+        return null;
     }
 
     public DisplayModuleType getDisplayModuleType() {

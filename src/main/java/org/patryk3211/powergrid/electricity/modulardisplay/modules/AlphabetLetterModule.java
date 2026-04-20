@@ -38,17 +38,17 @@ public class AlphabetLetterModule implements IDisplayModule {
         return new AlphabetLetterModule(this.Index, this.halfClick,  color);
     }
 
-    @Override
-    public IDisplayModule withDamaged(int damaged) {
-        return null;
-    }
-
     public float getDisplayTextureSize() {
         return 176f;
     }
 
     public int getDisplayTextureCharacterCount() {
         return 25;
+    }
+
+    @Override
+    public IDisplayModule isDamaged() {
+        return null;
     }
 
     @Override
