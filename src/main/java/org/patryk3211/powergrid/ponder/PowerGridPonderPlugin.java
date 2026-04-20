@@ -16,7 +16,6 @@
 package org.patryk3211.powergrid.ponder;
 
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
-import com.simibubi.create.foundation.ponder.PonderWorldBlockEntityFix;
 import net.createmod.ponder.api.level.PonderLevel;
 import net.createmod.ponder.api.registration.PonderPlugin;
 import net.createmod.ponder.api.registration.PonderSceneRegistrationHelper;
@@ -51,7 +50,6 @@ public class PowerGridPonderPlugin implements PonderPlugin {
 
     @Override
     public void onPonderLevelRestore(PonderLevel ponderLevel) {
-        PonderWorldBlockEntityFix.fixControllerBlockEntities(ponderLevel);
         for(var be : ponderLevel.getBlockEntities()) {
             if(be instanceof SmartBlockEntity smart) {
                 var electric = smart.getBehaviour(ElectricBehaviour.TYPE);
