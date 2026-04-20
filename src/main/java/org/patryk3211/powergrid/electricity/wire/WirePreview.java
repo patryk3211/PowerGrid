@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.electricity.wire;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.AllSpecialTextures;
+import dev.ryanhcode.sable.companion.SableCompanion;
 import net.createmod.catnip.animation.AnimationTickHolder;
 import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.outliner.Outliner;
@@ -157,7 +158,7 @@ public class WirePreview {
         if(isBlockWire || hitTerminal == null) {
             length = 0;
             currentPos = BlockTrace.alignPosition(currentPos);
-            renderedPos1 = currentPos;
+            renderedPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, currentPos);
             renderedTrace = BlockTrace.findPathWithState(world, currentPos, hitPoint, hitTerminal, continueDir);
             if(renderedTrace != null) {
                 renderPath = 2;
@@ -170,8 +171,8 @@ public class WirePreview {
             }
         } else {
             renderedColor = length < renderedItem.maximumLength() ? 0x80AAFFAA : 0x80FFAAAA;
-            renderedPos1 = currentPos;
-            renderedPos2 = hitPoint;
+            renderedPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, currentPos);
+            renderedPos2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, hitPoint);
             renderPath = 1;
         }
 

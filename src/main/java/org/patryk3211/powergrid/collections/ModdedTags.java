@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.collections;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
+import net.minecraft.world.entity.EntityType;
 import org.patryk3211.powergrid.PowerGrid;
 
 public class ModdedTags {
@@ -63,6 +64,20 @@ public class ModdedTags {
         }
     }
 
+    public enum Entity {
+        RETAIN_IN_SUB_LEVEL("sable", "retain_in_sub_level");
+
+        public final TagKey<EntityType<?>> tag;
+
+        Entity(String name) {
+            this(PowerGrid.MOD_ID, name);
+        }
+
+        Entity(String namespace, String name) {
+            tag = entityTag(ResourceLocation.fromNamespaceAndPath(namespace, name));
+        }
+    }
+
     @ExpectPlatform
     public static TagKey<net.minecraft.world.level.block.Block> blockTag(ResourceLocation id) {
         throw new AssertionError();
@@ -70,6 +85,11 @@ public class ModdedTags {
 
     @ExpectPlatform
     public static TagKey<net.minecraft.world.item.Item> itemTag(ResourceLocation id) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static TagKey<EntityType<?>> entityTag(ResourceLocation id) {
         throw new AssertionError();
     }
 

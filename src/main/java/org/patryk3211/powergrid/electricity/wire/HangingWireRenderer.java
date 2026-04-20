@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity.wire;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import dev.ryanhcode.sable.companion.SableCompanion;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
@@ -49,6 +50,25 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
         return entity.getWireEntry().texture();
     }
 
+    public static int lodLevel(Vec3 playerPos, Vec3 offset, Vec3... wirePositions) {
+        if(!ModdedConfigs.client().wireLOD.get())
+            return 0;
+        double minDist = Double.POSITIVE_INFINITY;
+        for(var pos : wirePositions) {
+            double dx = playerPos.x - (pos.x - offset.x);
+            double dy = playerPos.y - (pos.y - offset.y);
+            double dz = playerPos.z - (pos.z - offset.z);
+            double dist = dx * dx + dy * dy * dz * dz;
+            if(dist < minDist)
+                minDist = dist;
+        }
+        if(minDist > 64 * 64)
+            return 2;
+        if(minDist > 32 * 32)
+            return 1;
+        return 0;
+    }
+
     @Override
     public void render(HangingWireEntity entity, float yaw, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light) {
         if(entity.renderParams == null)
@@ -71,22 +91,21 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
             }
         }
 
-        var pos = entity.position();
+        var rawPos = entity.position();
+        var pos = SableCompanion.INSTANCE.projectOutOfSubLevel(entity.level(), rawPos);
+        final var playerPos = ModdedConfigs.client().wireLOD.get() ? Minecraft.getInstance().player.position() : null;
         float segmentSize = 0.5f;
-        boolean simpleModel;
-        if(ModdedConfigs.client().wireLOD.get()) {
-            var playerPos = Minecraft.getInstance().player.position();
-            if (playerPos.distanceToSqr(pos) > 64 * 64) {
-                segmentSize = 3.0f;
-                simpleModel = true;
-            } else if (playerPos.distanceToSqr(pos) > 32 * 32) {
+        final boolean simpleModel;
+        switch(lodLevel(playerPos, rawPos.subtract(pos), rawPos, entity.terminalPos1, entity.terminalPos2)) {
+            case 1 -> {
                 segmentSize = 1.5f;
                 simpleModel = !Minecraft.useFancyGraphics();
-            } else {
-                simpleModel = !Minecraft.useFancyGraphics();
             }
-        } else {
-            simpleModel = !Minecraft.useFancyGraphics();
+            case 2 -> {
+                segmentSize = 3.0f;
+                simpleModel = true;
+            }
+            default -> simpleModel = !Minecraft.useFancyGraphics();
         }
         VertexConsumer buffer;
         if(!simpleModel) {

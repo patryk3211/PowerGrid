@@ -42,7 +42,7 @@ public abstract class ComplexEntityRaycastMixin {
         assert entity instanceof IComplexRaycast;
         IComplexRaycast checker = (IComplexRaycast) entity;
 
-        AABB entityBB = entity.getBoundingBox().inflate(entity.getPickRadius());
+        AABB entityBB = checker.getDeSabledBB().inflate(entity.getPickRadius());
         Optional<Vec3> potentialHit = entityBB.clip(min, max);
         if(entityBB.contains(min)) {
             // Casting entity inside of potential hit entity
@@ -74,11 +74,11 @@ public abstract class ComplexEntityRaycastMixin {
             currentHitDistance = startVec.distanceToSqr(currentHitPoint);
         }
 
-        for(var potentialHitEntity : ((LevelEntitiesAccessor) world).getEntities().getAll()) {
-            if(potentialHitEntity.isSpectator() || !(potentialHitEntity instanceof IComplexRaycast))
+        for(var potentialHitEntity : world.getEntities().getAll()) {
+            if(potentialHitEntity.isSpectator() || !(potentialHitEntity instanceof IComplexRaycast complex))
                 continue;
             // Perform a cheap bounding box distance check first before going for the complex cast.
-            var bb = potentialHitEntity.getBoundingBox();
+            var bb = complex.getDeSabledBB();
             // Closest point to start in bounding box
             var cX = Mth.clamp(startVec.x, bb.minX, bb.maxX);
             var cY = Mth.clamp(startVec.y, bb.minY, bb.maxY);
