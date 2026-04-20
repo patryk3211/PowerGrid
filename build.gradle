@@ -337,6 +337,7 @@ dependencies {
 			prefer project.sable_companion_version
 		}
 	}
+//	modCompileOnly("dev.ryanhcode.sable:sable-neoforge-${minecraft_version}:[${project.sable_version},)")
 
 	annotationProcessor(implementation("io.github.llamalad7:mixinextras-common:${mixin_extras_version}"))
 }

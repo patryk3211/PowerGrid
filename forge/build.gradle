@@ -59,7 +59,7 @@ dependencies {
     modLocalRuntime("dev.engine-room.flywheel:flywheel-neoforge-${minecraft_version}:${flywheel_forge_version}")
     modLocalRuntime("mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}")
 
-    modLocalRuntime("dev.ryanhcode.sable:sable-neoforge-${minecraft_version}:[1.0.3,)")
+    modLocalRuntime("dev.ryanhcode.sable:sable-neoforge-${minecraft_version}:[${sable_version},)")
     modLocalRuntime("dev.eriksonn.aeronautics:aeronautics-neoforge-${minecraft_version}:1.0.3") {
         exclude group: "cc.tweaked", module: "cc-tweaked-1.21.1-forge"
     }
