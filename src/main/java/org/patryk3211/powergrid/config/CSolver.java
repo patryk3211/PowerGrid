@@ -33,7 +33,7 @@ public class CSolver extends ConfigBase {
     public final ConfigInt solverSimpleMaxIterations = i(250, "solverSimpleMaxIterations", Comments.solverSimpleMaxIterations);
     public final ConfigInt solverComplexMaxIterations = i(250, "solverComplexMaxIterations", Comments.solverComplexMaxIterations);
 
-    public final ConfigFloat solverAbsolutePrecision = f(1e-6f, 0, "solverAbsolutePrecision", Comments.solverAbsolutePrecision);
+    public final ConfigFloat solverAbsolutePrecision = f(1e-7f, 0, "solverAbsolutePrecision", Comments.solverAbsolutePrecision);
     public final ConfigFloat solverRelativePrecision = f(1e-12f, 0, "solverRelativePrecision", Comments.solverRelativePrecision);
     public final ConfigFloat solverAbsoluteMinimumPrecision = f(1e-6f, 0, "solverAbsoluteMinimumPrecision", Comments.solverAbsoluteMinimumPrecision);
 

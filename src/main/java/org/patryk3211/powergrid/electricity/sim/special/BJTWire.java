@@ -78,12 +78,13 @@ public class BJTWire extends CompoundWire implements ISolverHook {
     }
 
     public double pnLim(double V1, double V0, double Vcrit) {
-        if(V0 < Vcrit * 0.5f && V1 < Vcrit * 0.5f)
-            return V1;
+//        if(V0 < Vcrit * 0.5f && V1 < Vcrit * 0.5f)
+//            return V1;
         var dV = V1 - V0;
-        if(V1 > Vcrit && Math.abs(dV) > V_T * 2 && dV / V_T > 0)
-            return V0 + V_T * Math.log1p(dV / V_T);
-        return V0 + dV * network.bjtSmoothAlpha;
+        var adV = Math.abs(dV);
+//        if((V0 > Vcrit || V1 > Vcrit) && adV > V_T * 2 && adV / V_T > 0)
+            return V0 + V_T * Math.log1p(adV / V_T) * Math.signum(dV);
+//        return V0 + dV * network.bjtSmoothAlpha;
     }
 
     @Override
@@ -100,10 +101,10 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         double WbcTerm = WrightOmega(OmegaLogC + (saturationCurrent * collectorResistance + pnp * Vbc) / V_T);
         double Ebe = (V_T * WbeTerm / emitterResistance - saturationCurrent) * (1 + Vbc / -15);
         double Ebc = (V_T * WbcTerm / collectorResistance - saturationCurrent) * (1 + Vbe / -15);
-        double forwardGain = beta * (1 + Vbc / -15);
-        forwardGain = forwardGain / (1 + forwardGain);
-        double reverseGain = beta * 0.1 * (1 + Vbe / -15);
-        reverseGain = reverseGain / (1 + reverseGain);
+//        double forwardGain = beta * (1 + Vbc / -15);
+//        forwardGain = forwardGain / (1 + forwardGain);
+//        double reverseGain = beta * 0.1 * (1 + Vbe / -15);
+//        reverseGain = reverseGain / (1 + reverseGain);
 
         double Ie = pnp * (Ebc * reverseGain - Ebe);
         double Ic = pnp * (Ebe * forwardGain - Ebc);

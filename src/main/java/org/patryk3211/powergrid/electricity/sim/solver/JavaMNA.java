@@ -296,7 +296,9 @@ public class JavaMNA implements IMNA {
         int i;
         double norm = 0;
         boolean skipped = false;
-        boolean slowdown = false;
+        double beta = 0.0;
+        int normUp = 0;
+        int normDown = 0;
         for (i = 0; i < maxIterations; ++i) {
             if(!skipped)
                 iterHooks(i, maxIterations);
@@ -306,11 +308,24 @@ public class JavaMNA implements IMNA {
             workMatrix.mult(StateVector, ErrorVector);
             CommonOps_DDRM.subtract(ErrorVector, ResidualVector, ErrorVector);
             var nextNorm = CommonOps_DDRM.elementMaxAbs(ErrorVector);
-            if(i != 0 && nextNorm > norm && !skipped) {
-                CommonOps_DDRM.add(StateVector, -0.5, StateDelta, StateVector);
-                skipped = true; --i;
-                slowdown = true;
-                continue;
+            if(i != 0 && nextNorm > norm) {
+                if(!skipped) {
+                    ++normUp;
+                    normDown = 0;
+                    CommonOps_DDRM.add(StateVector, -0.5, StateDelta, StateVector);
+//                    beta = -0.5;
+                    skipped = true;
+                    --i;
+                    continue;
+                }
+            } else {
+                ++normDown;
+                normUp = 0;
+            }
+            if(normUp >= 4) {
+                beta = -0.5;
+            } else if(normDown >= 4) {
+                beta *= 0.5;
             }
             var dNorm = Math.abs(nextNorm - norm);
             norm = nextNorm;
@@ -372,8 +387,8 @@ public class JavaMNA implements IMNA {
                 if(SCALING)
                     CommonOps_DDRM.multRows(columnScales, StateVector);
                 CommonOps_DDRM.subtract(StateVector, StateDelta, StateDelta);
-                if(slowdown)
-                    CommonOps_DDRM.add(StateVector, -0.5, StateDelta, StateVector);
+                if(beta < 0)
+                    CommonOps_DDRM.add(StateVector, beta, StateDelta, StateVector);
             } else {
                 StateVector.zero();
                 StateDelta.zero();
