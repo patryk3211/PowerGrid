@@ -61,6 +61,12 @@ allprojects {
 		}
 
 		maven { url = "https://maven.terraformersmc.com/releases" } // Mod Menu, EMI
+
+		maven { url = "https://maven.squiddev.cc" } // CC: Tweaked
+		maven { // Sable Companion
+			name = "RyanHCode Maven"
+			url = "https://maven.ryanhcode.dev/releases"
+		}
 	}
 
 	loom {
@@ -302,7 +308,7 @@ dependencies {
 	compileOnly "com.google.code.findbugs:jsr305:3.0.2"
 
 	modImplementation("com.simibubi.create:create-${minecraft_version}:${create_forge_version}:slim") { transitive false }
-	modImplementation("net.createmod.ponder:Ponder-NeoForge-${minecraft_version}:${ponder_forge_version}")
+	modImplementation("net.createmod.ponder:ponder-neoforge:${ponder_forge_version}+mc${minecraft_version}")
 	modCompileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_forge_version}")
 	modImplementation("com.tterrag.registrate:Registrate:${registrate_forge_version}")
 	modCompileOnly("com.electronwill.night-config:core:3.8.3")
@@ -326,6 +332,11 @@ dependencies {
 	testImplementation("org.ejml:ejml-dsparse:0.44.0")
 
 	modApi "dev.architectury:architectury:${project.architectury_api_version}"
+	modApi("dev.ryanhcode.sable-companion:sable-companion-common-${project.minecraft_version}:[${project.sable_companion_version},)") {
+		version {
+			prefer project.sable_companion_version
+		}
+	}
 
 	annotationProcessor(implementation("io.github.llamalad7:mixinextras-common:${mixin_extras_version}"))
 }
