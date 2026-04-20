@@ -34,38 +34,33 @@ public class GrowthLamp extends LightBulb {
         @Override
         public void tick() {
             super.tick();
-
-            if (burned)
+            if(burned)
                 return;
 
             var world = fixture.getLevel();
-
-            if (world.isClientSide || getPowerLevel() == 0)
+            var power = getPowerLevel();
+            if(world.isClientSide || power == 0)
                 return;
 
-            var serverWorld = (ServerLevel) world;
-            var random = serverWorld.random;
-
             var origin = fixture.getBlockPos();
-            var facing = fixture.getBlockState().getValue(FACING).getOpposite();
-
-            final int radius = ModdedConfigs.server().electricity.growthLampRadius.get();
-            final int chanceValue = ModdedConfigs.server().electricity.growthLampChance.get();
-
-            // Calculate cube bounds, clipped to a hemisphere based on lamp facing
+            var facing = fixture.getBlockState().getValue(FACING);
+            final var radius = ModdedConfigs.server().electricity.growthLampRadius.get();
             int xMin = -radius, xMax = radius;
             int yMin = -radius, yMax = radius;
             int zMin = -radius, zMax = radius;
 
-            switch (facing) {
-                case EAST  -> xMin = 0;
-                case WEST  -> xMax = 0;
-                case UP    -> yMax = 0;
-                case DOWN  -> yMin = 0;
+            switch(facing) {
+                case EAST -> xMin = 0;
+                case WEST -> xMax = 0;
+                case UP -> yMin = 0;
+                case DOWN -> yMax = 0;
                 case SOUTH -> zMin = 0;
                 case NORTH -> zMax = 0;
             }
 
+            int chanceValue = ModdedConfigs.server().electricity.growthLampChance.get();
+            var serverWorld = (ServerLevel) world;
+            var random = serverWorld.random;
             // Iterate over every block in the cube and boost all valid crops
             for (int x = xMin; x <= xMax; x++) {
                 for (int y = yMin; y <= yMax; y++) {
