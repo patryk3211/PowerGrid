@@ -237,8 +237,6 @@ public class ModularDisplayComponent extends OrientableComponent implements IRen
         if (player.getMainHandItem().getItem() instanceof DyeItem dye && !be.getLevel().isClientSide()){
             component.set(CURRENT_COLOR, dye.getDyeColor().getName());
             component.notifyClients(CURRENT_COLOR);
-            if (!player.isCreative())
-                player.getMainHandItem().shrink(1);
             return InteractionResult.SUCCESS;
         }
 

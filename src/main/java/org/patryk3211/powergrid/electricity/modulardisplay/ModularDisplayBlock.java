@@ -86,7 +86,6 @@ public class ModularDisplayBlock extends HorizontalElectricBlock implements IBE<
         if (player.getMainHandItem().getItem() instanceof DyeItem dye) {
             if (be instanceof ModularDisplayBlockEntity display) {
                 display.setColor(slotIndex, dye.getDyeColor());
-                if (!player.isCreative()) player.getMainHandItem().shrink(1);
                 return InteractionResult.CONSUME;
             }
         }
