@@ -27,9 +27,6 @@ public class EntityTagProvider extends TagsProvider<EntityType<?>> {
     @Override
     protected void addTags(HolderLookup.Provider provider) {
         tag(ModdedTags.Entity.RETAIN_IN_SUB_LEVEL.tag)
-                .add(reverseLookup(ModdedEntities.HANGING_WIRE.get()))
-                .add(reverseLookup(ModdedEntities.BLOCK_WIRE.get()))
-                .add(reverseLookup(ModdedEntities.CORD_ENTITY.get()))
-                .add(reverseLookup(ModdedEntities.STRING_LIGHT_CORD.get()));
+                .add(reverseLookup(ModdedEntities.BLOCK_WIRE.get()));
     }
 }

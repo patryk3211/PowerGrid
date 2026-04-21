@@ -40,6 +40,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.*;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
 import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 import org.patryk3211.powergrid.electricity.base.IElectric;
@@ -165,6 +166,7 @@ public class WirePreview {
             length = 0;
             currentPos = BlockTrace.alignPosition(currentPos);
             renderedPos1 = projCurrentPos;
+            renderedPos2 = currentPos;
             renderedTrace = BlockTrace.findPathWithState(world, currentPos, hitPoint, hitTerminal, continueDir);
             if(renderedTrace != null) {
                 renderPath = 2;
@@ -213,7 +215,12 @@ public class WirePreview {
                             BlockWireRenderer.debugLine(matrixStack, lineBuffer, LightTexture.FULL_BRIGHT, color, state.transform(cell.position), state.transform(cell.backtrace.position));
                         }
                     }
+                    var sublevel = SableCompanion.INSTANCE.getContainingClient(renderedPos2);
                     matrixStack.translate(renderedPos1.x - cameraPos.x, renderedPos1.y - cameraPos.y, renderedPos1.z - cameraPos.z);
+                    if(sublevel != null) {
+                        var pose = sublevel.renderPose(AnimationTickHolder.getPartialTicks());
+                        matrixStack.rotateAround(new Quaternionf(pose.orientation()), 0, 0, 0);
+                    }
                     var currentPos = Vec3.ZERO;
                     var points = renderedTrace.getSecond();
                     float thickness = renderedItem.wireThickness();

@@ -124,8 +124,8 @@ public class MultimeterItemRenderer extends CustomRenderedItemModelRenderer {
             }
             case 1 -> {
                 if(data.contains("X")) {
-                    var pos = new Vec3(data.getFloat("X"), data.getFloat("Y"), data.getFloat("Z"));
-                    renderProbe(pos.subtract(origin), buffer, matrixStack, world, player, 0xFF202020);
+                    var pos = new Vec3(data.getDouble("X"), data.getDouble("Y"), data.getDouble("Z"));
+                    renderProbe(SableCompanion.INSTANCE.projectOutOfSubLevel(world, pos).subtract(origin), buffer, matrixStack, world, player, 0xFF202020);
                 }
             }
         }

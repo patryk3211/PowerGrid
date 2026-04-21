@@ -126,10 +126,10 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         var tp1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, endpoint1.getExactPosition(world));
         var tp2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, endpoint2.getExactPosition(world));
         var dX = tp2.x - tp1.x;
-        var dY = Math.abs(tp2.y - tp1.y);
+        var dY = tp2.y - tp1.y;
         var dZ = tp2.z - tp1.z;
-        var hL = Math.sqrt(dX * dX + dZ * dZ);
-        entity.placedLength = (float) (entity.getWireEntry().horizontalCoefficient() * hL + entity.getWireEntry().verticalCoefficient() * dY);
+        var hL = dX * dX + dZ * dZ;
+        entity.placedLength = (float) Math.sqrt(entity.getWireEntry().horizontalCoefficient() * hL + entity.getWireEntry().verticalCoefficient() * dY * dY);
 
         entity.refreshTerminalPositions();
         entity.setXRot(0);
@@ -277,10 +277,10 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             placedLength = nbt.getFloat("PlacedLength");
         } else {
             var dX = terminalPos2.x - terminalPos1.x;
-            var dY = Math.abs(terminalPos2.y - terminalPos1.y);
+            var dY = terminalPos2.y - terminalPos1.y;
             var dZ = terminalPos2.z - terminalPos1.z;
-            var hL = Math.sqrt(dX * dX + dZ * dZ);
-            placedLength = (float) (getWireEntry().horizontalCoefficient() * hL + getWireEntry().verticalCoefficient() * dY);
+            var hL = dX * dX + dZ * dZ;
+            placedLength = (float) Math.sqrt(getWireEntry().horizontalCoefficient() * hL + getWireEntry().verticalCoefficient() * dY * dY);
         }
         updateRenderParams();
     }
@@ -365,7 +365,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         var world = level();
         terminalPos1 = getEndpoint1().getExactPosition(world);
         terminalPos2 = getEndpoint2().getExactPosition(world);
-        if(getEndpoint1().getSubLevel(world) != getEndpoint2().getSubLevel(world)) {
+        if(getEndpoint1().getSubLevel(world) != null || getEndpoint2().getSubLevel(world) != null) {
             // Make outside of sublevels
             baseTerminalPos1 = terminalPos1;
             baseTerminalPos2 = terminalPos2;

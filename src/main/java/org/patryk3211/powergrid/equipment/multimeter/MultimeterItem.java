@@ -113,9 +113,9 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
         if(player.level().isClientSide) {
             var point = getAttachmentPoint();
             var data = getModeData(stack);
-            data.putFloat("X", (float) point.x);
-            data.putFloat("Y", (float) point.y);
-            data.putFloat("Z", (float) point.z);
+            data.putDouble("X", point.x);
+            data.putDouble("Y", point.y);
+            data.putDouble("Z", point.z);
             ModdedPackets.sendToServer(new MultimeterDataC2SPacket(point, wireEntity));
         }
         return InteractionResult.CONSUME;
@@ -132,7 +132,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                 var neg = WireEndpointType.deserialize(data.getCompound("Neg"));
                 if(pos != null) {
                     var posPos = pos.getExactPosition(level);
-                    if(posPos.distanceTo(entity.position()) > maxDistance || !pos.isValid(level)) {
+                    if(entity.distanceToSqr(posPos) > maxDistance * maxDistance || !pos.isValid(level)) {
                         if(entity instanceof Player player)
                             player.displayClientMessage(Lang.translate("message.multimeter_disconnected")
                                     .style(ChatFormatting.GRAY)
@@ -143,7 +143,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                 }
                 if(neg != null) {
                     var negPos = neg.getExactPosition(level);
-                    if(negPos.distanceTo(entity.position()) > maxDistance || !neg.isValid(level)) {
+                    if(entity.distanceToSqr(negPos) > maxDistance * maxDistance || !neg.isValid(level)) {
                         if(entity instanceof Player player)
                             player.displayClientMessage(Lang.translate("message.multimeter_disconnected")
                                     .style(ChatFormatting.GRAY)
@@ -171,8 +171,8 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                     }
                 }
                 if(data.contains("X")) {
-                    var point = new Vec3(data.getFloat("X"), data.getFloat("Y"), data.getFloat("Z"));
-                    if(point.distanceTo(entity.position()) > maxDistance) {
+                    var point = new Vec3(data.getDouble("X"), data.getDouble("Y"), data.getDouble("Z"));
+                    if(entity.distanceToSqr(point) > maxDistance * maxDistance) {
                         if(entity instanceof Player player)
                             player.displayClientMessage(Lang.translate("message.multimeter_disconnected")
                                     .style(ChatFormatting.GRAY)

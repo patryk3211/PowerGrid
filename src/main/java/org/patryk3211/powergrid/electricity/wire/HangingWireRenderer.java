@@ -143,10 +143,10 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
         double y = t1.y;
         double z = (t1.z + t2.z) * 0.5;
         var dX = t2.x - t1.x;
-        var dY = Math.abs(t2.y - t1.y);
+        var dY = t2.y - t1.y;
         var dZ = t2.z - t1.z;
-        var hL = Math.sqrt(dX * dX + dZ * dZ);
-        var curve = new CurveParameters(t1, t2, horizontalCoefficient * hL + verticalCoefficient * dY, thickness);
+        var hL = dX * dX + dZ * dZ;
+        var curve = new CurveParameters(t1, t2, Math.sqrt(horizontalCoefficient * hL + verticalCoefficient * dY * dY), thickness);
         curve.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) ->
                 renderSegment(matrices, buffer,
                         x1 + x, y1 + y, z1 + z,
@@ -160,10 +160,10 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
         double y = t1.y;
         double z = (t1.z + t2.z) * 0.5;
         var dX = t2.x - t1.x;
-        var dY = Math.abs(t2.y - t1.y);
+        var dY = t2.y - t1.y;
         var dZ = t2.z - t1.z;
-        var hL = Math.sqrt(dX * dX + dZ * dZ);
-        var curve = new CurveParameters(t1, t2, horizontalCoefficient * hL + verticalCoefficient * dY, thickness);
+        var hL = dX * dX + dZ * dZ;
+        var curve = new CurveParameters(t1, t2, Math.sqrt(horizontalCoefficient * hL + verticalCoefficient * dY * dY), thickness);
         curve.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
                 var blockPos = BlockPos.containing((x1 + x2) * 0.5 + x, (y1 + y2) * 0.5 + y, (z1 + z2) * 0.5 + z);
                 var sky = lightProvider.getBrightness(LightLayer.SKY, blockPos);

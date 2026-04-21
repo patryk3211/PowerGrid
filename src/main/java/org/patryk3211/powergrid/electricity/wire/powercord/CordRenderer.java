@@ -148,7 +148,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                             rp.thickness * 0.5f, thicknessOffset, (float) (length * 2), (float) offset, simpleModel);
                     return;
                 } else if(endpoint instanceof SocketEndpoint socket) {
-                    var sublevel = SableCompanion.INSTANCE.getContainingClient(socket.getPosition());
+                    var sublevel = entity.isDynamic ? SableCompanion.INSTANCE.getContainingClient(socket.getPosition()) : null;
                     if(sublevel != null) {
                         matrices.pushPose();
                         var pose = sublevel.renderPose(AnimationTickHolder.getPartialTicks());
@@ -163,7 +163,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                 } else if(endpoint instanceof AutoCordEndpoint auto) {
                     var facing = auto.getPlugFacing();
                     if(facing != null) {
-                        var sublevel = SableCompanion.INSTANCE.getContainingClient(auto.getPosition());
+                        var sublevel = entity.isDynamic ? SableCompanion.INSTANCE.getContainingClient(auto.getPosition()) : null;
                         if(sublevel != null) {
                             matrices.pushPose();
                             var pose = sublevel.renderPose(AnimationTickHolder.getPartialTicks());
@@ -209,7 +209,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                             rp.thickness * 0.5f, thicknessOffset, (float) (length * 2), (float) offset, simpleModel);
                     return;
                 } else if(endpoint instanceof SocketEndpoint socket) {
-                    var sublevel = SableCompanion.INSTANCE.getContainingClient(socket.getPosition());
+                    var sublevel = entity.isDynamic ? SableCompanion.INSTANCE.getContainingClient(socket.getPosition()) : null;
                     if(sublevel != null) {
                         matrices.pushPose();
                         var pose = sublevel.renderPose(AnimationTickHolder.getPartialTicks());
@@ -224,7 +224,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                 } else if(endpoint instanceof AutoCordEndpoint auto) {
                     var facing = auto.getPlugFacing();
                     if(facing != null) {
-                        var sublevel = SableCompanion.INSTANCE.getContainingClient(auto.getPosition());
+                        var sublevel = entity.isDynamic ? SableCompanion.INSTANCE.getContainingClient(auto.getPosition()) : null;
                         if(sublevel != null) {
                             matrices.pushPose();
                             var pose = sublevel.renderPose(AnimationTickHolder.getPartialTicks());
@@ -251,7 +251,11 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
     public static void renderPreview(ICordEndpoint start, Vec3 end, PoseStack matrices, MultiBufferSource vertexConsumers, Level level, WireItemEntry item, int color, Vec3 cameraPos) {
         var buffer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(item.texture()));
         var startPos = SableCompanion.INSTANCE.projectOutOfSubLevel(level, start.getExactPosition(level));
-        CurveParameters rp = new CurveParameters(startPos, end, end.distanceTo(startPos) * 1.01, item.wireThickness());
+        var dX = end.x - startPos.x;
+        var dY = end.y - startPos.y;
+        var dZ = end.z - startPos.z;
+        var hL = dX * dX + dZ * dZ;
+        CurveParameters rp = new CurveParameters(startPos, end, Math.sqrt(hL * item.horizontalCoefficient() + dY * dY * item.verticalCoefficient()), item.wireThickness());
 
         // To introduce some subtle variety into the wires.
         var thicknessOffset = 0;
