@@ -26,6 +26,7 @@ public class CurveParameters {
     private double L;
     public final Vec3 cross1, cross2;
     public final float thickness;
+    public boolean valid;
 
     // Catenary parameter calculation implemented according to:
     // https://math.stackexchange.com/questions/3557767/how-to-construct-a-catenary-of-a-specified-length-through-two-specified-points
@@ -47,12 +48,15 @@ public class CurveParameters {
     }
 
     private void calculateCurve() {
+        valid = true;
         if(dx > 0) {
             double r = Math.sqrt(L * L - dy * dy) / dx;
 
             double A;
             if (r < 3) A = Math.sqrt(6 * (r - 1));
             else A = Math.log(2 * r) + Math.log(Math.log(2 * r));
+            if(Double.isNaN(A))
+                valid = false;
 
             // Solve using Newton's iteration
             for (int i = 0; i < 5; ++i) {

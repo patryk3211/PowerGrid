@@ -15,8 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import dev.architectury.utils.Env;
-import dev.architectury.utils.EnvExecutor;
 import dev.ryanhcode.sable.companion.SableCompanion;
 import net.createmod.ponder.api.level.PonderLevel;
 import net.fabricmc.api.EnvType;
@@ -54,6 +52,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     private Vec3 baseTerminalPos2;
     Vec3 terminal1Velocity;
     Vec3 terminal2Velocity;
+    private float placedLength;
 
     private boolean particlesSpawned = false;
 
@@ -80,11 +79,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
 
     public void updateRenderParams() {
         var item = getWireEntry();
-        var dX = terminalPos2.x - terminalPos1.x;
-        var dY = Math.abs(terminalPos2.y - terminalPos1.y);
-        var dZ = terminalPos2.z - terminalPos1.z;
-        var hL = Math.sqrt(dX * dX + dZ * dZ);
-        curveParams = new CurveParameters(terminalPos1, terminalPos2, item.horizontalCoefficient() * hL + item.verticalCoefficient() * dY, item.wireThickness());
+        curveParams = new CurveParameters(terminalPos1, terminalPos2, placedLength, item.wireThickness());
         this.setBoundingBox(this.makeBoundingBox());
     }
 
@@ -133,6 +128,12 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         entity.setOldPosAndRot();
         entity.reapplyPosition();
 
+        var dX = entity.terminalPos2.x - entity.terminalPos1.x;
+        var dY = Math.abs(entity.terminalPos2.y - entity.terminalPos1.y);
+        var dZ = entity.terminalPos2.z - entity.terminalPos1.z;
+        var hL = Math.sqrt(dX * dX + dZ * dZ);
+        entity.placedLength = (float) (entity.getWireEntry().horizontalCoefficient() * hL + entity.getWireEntry().verticalCoefficient() * dY);
+
         if(entity.getWireEntry().colorable())
             entity.setColor(0x413c31);
 
@@ -179,6 +180,10 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             );
             setYRot(facingAngle);
             updateRenderParams();
+            if(!curveParams.valid) {
+                kill();
+                return;
+            }
         }
 
         var temperature = getTemperature();
@@ -245,6 +250,12 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     }
 
     @Override
+    protected void addAdditionalSaveData(CompoundTag nbt) {
+        super.addAdditionalSaveData(nbt);
+        nbt.putFloat("PlacedLength", placedLength);
+    }
+
+    @Override
     protected void readAdditionalSaveData(CompoundTag nbt) {
         super.readAdditionalSaveData(nbt);
 
@@ -259,6 +270,16 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         } else {
             grabEndpointPositions();
             updateRenderParams();
+        }
+
+        if(nbt.contains("PlacedLength")) {
+            placedLength = nbt.getFloat("PlacedLength");
+        } else {
+            var dX = terminalPos2.x - terminalPos1.x;
+            var dY = Math.abs(terminalPos2.y - terminalPos1.y);
+            var dZ = terminalPos2.z - terminalPos1.z;
+            var hL = Math.sqrt(dX * dX + dZ * dZ);
+            placedLength = (float) (getWireEntry().horizontalCoefficient() * hL + getWireEntry().verticalCoefficient() * dY);
         }
     }
 
@@ -368,6 +389,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             );
             setYRot(facingAngle);
 
+            updateRenderParams();
             if(!world.isClientSide) {
                 // I guess we have to do position update like that because otherwise,
                 // the update method would have to go into the tick function
