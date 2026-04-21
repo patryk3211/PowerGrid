@@ -150,7 +150,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
     public AABB getDeSabledBB() {
         if(SableCompanion.INSTANCE.getContaining(this) == null || mainBoundingBox == null)
             return getBoundingBox();
-        return mainBoundingBox.move(SableCompanion.INSTANCE.projectOutOfSubLevel(level(), position()));
+        return mainBoundingBox.move(position());
     }
 
     public float getTotalLength() {
@@ -264,7 +264,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
     @Override
     public @Nullable Vec3 raycast(Vec3 min, Vec3 max) {
         Vec3 closestHit = null;
-        var localPos = SableCompanion.INSTANCE.projectOutOfSubLevel(level(), position());
+        var localPos = position();
         min = min.subtract(localPos);
         max = max.subtract(localPos);
         double distance = max.distanceToSqr(min);
