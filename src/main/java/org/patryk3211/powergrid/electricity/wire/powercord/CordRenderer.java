@@ -214,7 +214,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
     public static void renderPreview(ICordEndpoint start, Vec3 end, PoseStack matrices, MultiBufferSource vertexConsumers, Level level, WireItemEntry item, int color, Vec3 cameraPos) {
         var buffer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(item.texture()));
         var startPos = start.getExactPosition(level);
-        CurveParameters rp = new CurveParameters(startPos, end, item.horizontalCoefficient(), item.verticalCoefficient(), item.wireThickness());
+        CurveParameters rp = new CurveParameters(startPos, end, end.distanceTo(startPos) * 1.01, item.wireThickness());
 
         // To introduce some subtle variety into the wires.
         var thicknessOffset = 0;

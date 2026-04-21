@@ -174,7 +174,8 @@ subprojects {
 				fabric_version       : project.fabric_version,
 				loader_version       : project.loader_version,
 				minecraft_version    : project.minecraft_version,
-				tfmg_forge_range	 : project.tfmg_forge_range
+				tfmg_forge_range	 : project.tfmg_forge_range,
+				sable_version		 : project.sable_version
 		]
 
 		inputs.properties(properties)
@@ -332,7 +333,7 @@ dependencies {
 	testImplementation("org.ejml:ejml-dsparse:0.44.0")
 
 	modApi "dev.architectury:architectury:${project.architectury_api_version}"
-	modApi("dev.ryanhcode.sable-companion:sable-companion-common-${project.minecraft_version}:[${project.sable_companion_version},)") {
+	modApi("dev.ryanhcode.sable-companion:sable-companion-common-${project.minecraft_version}:${project.sable_companion_version}") {
 		version {
 			prefer project.sable_companion_version
 		}

@@ -113,6 +113,19 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
         } else {
             buffer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(entity)));
         }
+
+        if(entity.terminal1Velocity != null && entity.terminal2Velocity != null) {
+            // Change curve based on velocity
+            tickDelta = 1 - tickDelta;
+            rp.nudge(
+                    entity.terminalPos1.x - entity.terminal1Velocity.x * tickDelta * 0.05,
+                    entity.terminalPos1.y - entity.terminal1Velocity.y * tickDelta * 0.05,
+                    entity.terminalPos1.z - entity.terminal1Velocity.z * tickDelta * 0.05,
+                    entity.terminalPos2.x - entity.terminal2Velocity.x * tickDelta * 0.05,
+                    entity.terminalPos2.y - entity.terminal2Velocity.y * tickDelta * 0.05,
+                    entity.terminalPos2.z - entity.terminal2Velocity.z * tickDelta * 0.05
+            );
+        }
         var world = entity.level();
         rp.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
             var blockPos = BlockPos.containing((x1 + x2) * 0.5 + pos.x, (y1 + y2) * 0.5 + pos.y, (z1 + z2) * 0.5 + pos.z);
@@ -130,7 +143,11 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
         double x = (t1.x + t2.x) * 0.5;
         double y = t1.y;
         double z = (t1.z + t2.z) * 0.5;
-        var curve = new CurveParameters(t1, t2, horizontalCoefficient, verticalCoefficient, thickness);
+        var dX = t2.x - t1.x;
+        var dY = Math.abs(t2.y - t1.y);
+        var dZ = t2.z - t1.z;
+        var hL = Math.sqrt(dX * dX + dZ * dZ);
+        var curve = new CurveParameters(t1, t2, horizontalCoefficient * hL + verticalCoefficient * dY, thickness);
         curve.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) ->
                 renderSegment(matrices, buffer,
                         x1 + x, y1 + y, z1 + z,
@@ -143,7 +160,11 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
         double x = (t1.x + t2.x) * 0.5;
         double y = t1.y;
         double z = (t1.z + t2.z) * 0.5;
-        var curve = new CurveParameters(t1, t2, horizontalCoefficient, verticalCoefficient, thickness);
+        var dX = t2.x - t1.x;
+        var dY = Math.abs(t2.y - t1.y);
+        var dZ = t2.z - t1.z;
+        var hL = Math.sqrt(dX * dX + dZ * dZ);
+        var curve = new CurveParameters(t1, t2, horizontalCoefficient * hL + verticalCoefficient * dY, thickness);
         curve.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
                 var blockPos = BlockPos.containing((x1 + x2) * 0.5 + x, (y1 + y2) * 0.5 + y, (z1 + z2) * 0.5 + z);
                 var sky = lightProvider.getBrightness(LightLayer.SKY, blockPos);

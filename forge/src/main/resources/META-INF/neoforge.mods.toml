@@ -48,6 +48,13 @@ versionRange = "${tfmg_forge_range}"
 ordering = "NONE"
 side = "BOTH"
 
+[[dependencies.powergrid]]
+modId = "sable"
+type = "optional"
+versionRange = "[${sable_version},)"
+ordering = "NONE"
+side = "BOTH"
+
 [[mixins]]
 config = "powergrid.mixins.json"
 [[mixins]]

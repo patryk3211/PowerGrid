@@ -19,26 +19,35 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
 
 public class CurveParameters {
-    private final double a, b, c;
-    private final Vec3 normal;
-    private final double dx;
+    private double a, b, c;
+    private Vec3 normal;
+    private double dx;
     private double dy;
-    private final double L;
+    private double L;
     public final Vec3 cross1, cross2;
     public final float thickness;
 
     // Catenary parameter calculation implemented according to:
     // https://math.stackexchange.com/questions/3557767/how-to-construct-a-catenary-of-a-specified-length-through-two-specified-points
-    public CurveParameters(Vec3 t1, Vec3 t2, double horizontalCoefficient, double verticalCoefficient, double thickness) {
+    public CurveParameters(Vec3 t1, Vec3 t2, double L, double thickness) {
         var direction = new Vec3(t2.x - t1.x, 0, t2.z - t1.z);
-        double dy = t2.y - t1.y;
+        dy = t2.y - t1.y;
         dx = (float) direction.length();
         normal = direction.normalize();
         this.thickness = (float) thickness;
+        this.L = L;
 
+        calculateCurve();
+
+        // Calculate cross parameters
+        direction = new Vec3(t2.x - t1.x, t2.y - t1.y, t2.z - t1.z);
+        Vec3 v1 = new Vec3(1 - direction.x, 1 - direction.y, 1 - direction.z);
+        cross1 = v1.cross(direction).normalize().scale(thickness * 0.5);
+        cross2 = cross1.cross(direction).normalize().scale(thickness * 0.5);
+    }
+
+    private void calculateCurve() {
         if(dx > 0) {
-            // Calculate total curve length using "material parameters"
-            L = Math.sqrt(dx * dx * horizontalCoefficient + dy * dy * verticalCoefficient);
             double r = Math.sqrt(L * L - dy * dy) / dx;
 
             double A;
@@ -60,15 +69,16 @@ public class CurveParameters {
             a = 0;
             b = 0;
             c = 0;
-            L = dy;
-            this.dy = dy;
         }
+    }
 
-        // Calculate cross parameters
-        direction = new Vec3(t2.x - t1.x, t2.y - t1.y, t2.z - t1.z);
-        Vec3 v1 = new Vec3(1 - direction.x, 1 - direction.y, 1 - direction.z);
-        cross1 = v1.cross(direction).normalize().scale(thickness * 0.5);
-        cross2 = cross1.cross(direction).normalize().scale(thickness * 0.5);
+    public void nudge(double x1, double y1, double z1, double x2, double y2, double z2) {
+        double dX = x2 - x1;
+        double dZ = z2 - z1;
+        dx = Math.sqrt(dX * dX + dZ * dZ);
+        dy = y2 - y1;
+        normal = new Vec3(dX / dx, 0, dZ / dx);
+        calculateCurve();
     }
 
     public double apply(double x) {
