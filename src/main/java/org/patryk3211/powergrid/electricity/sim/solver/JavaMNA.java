@@ -18,8 +18,6 @@ package org.patryk3211.powergrid.electricity.sim.solver;
 import org.ejml.data.DMatrixRMaj;
 import org.ejml.dense.row.CommonOps_DDRM;
 import org.ejml.dense.row.MatrixFeatures_DDRM;
-import org.ejml.dense.row.NormOps_DDRM;
-import org.ejml.dense.row.RandomMatrices_DDRM;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.config.CSolver;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
@@ -28,7 +26,6 @@ import org.patryk3211.powergrid.electricity.sim.node.ICouplingNode;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 
 import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.LOGGER;
 
@@ -241,33 +238,6 @@ public class JavaMNA implements IMNA {
         CommonOps_DDRM.changeSign(ResidualVector);
     }
 
-    private void validateJacobian(DynamicallyTypedMatrix jacobian, DMatrixRMaj residual) {
-        var n = jacobian.getNumRows();
-        var v = new DMatrixRMaj(n, 1);
-        RandomMatrices_DDRM.fillUniform(v, new Random());
-
-        var epsilon = Math.sqrt(Math.ulp(1)) * (1 + NormOps_DDRM.normP1(StateVector));
-        var left = new DMatrixRMaj(n, 1);
-        jacobian.mult(v, left);
-
-        computeResidual();
-        var residualBase = new DMatrixRMaj(residual);
-        var state2 = new DMatrixRMaj(n, 1);
-        CommonOps_DDRM.add(StateVector, epsilon, v, state2);
-        computeResidual();
-        var right = new DMatrixRMaj(n, 1);
-        CommonOps_DDRM.subtract(residual, residualBase, right);
-
-        CommonOps_DDRM.scale(1 / epsilon, right);
-
-        CommonOps_DDRM.subtract(left, right, left);
-        if(LOGGER != null) {
-            LOGGER.warn("Jacobian validation: {}", NormOps_DDRM.normP1(left));
-        } else {
-            System.out.printf("Jacobian validation: %g\n", NormOps_DDRM.normP1(left));
-        }
-    }
-
     private void verifyConvergence(double norm, int i, int maxIterations) {
         if (norm > minimumAllowedPrecision) {
             if(converged)
@@ -326,6 +296,9 @@ public class JavaMNA implements IMNA {
         int i;
         double norm = 0;
         boolean skipped = false;
+        double beta = 0.0;
+        int normUp = 0;
+        int normDown = 0;
         for (i = 0; i < maxIterations; ++i) {
             if(!skipped)
                 iterHooks(i, maxIterations);
@@ -335,11 +308,24 @@ public class JavaMNA implements IMNA {
             workMatrix.mult(StateVector, ErrorVector);
             CommonOps_DDRM.subtract(ErrorVector, ResidualVector, ErrorVector);
             var nextNorm = CommonOps_DDRM.elementMaxAbs(ErrorVector);
-            if(i != 0 && nextNorm > norm && !skipped) {
-//                CommonOps_DDRM.add(StateVector, -1.1, StateDelta, StateVector);
-                CommonOps_DDRM.add(StateVector, -0.9, StateDelta, StateVector);
-                skipped = true; --i;
-                continue;
+            if(i != 0 && nextNorm > norm) {
+                if(!skipped) {
+                    ++normUp;
+                    normDown = 0;
+                    CommonOps_DDRM.add(StateVector, -0.5, StateDelta, StateVector);
+//                    beta = -0.5;
+                    skipped = true;
+                    --i;
+                    continue;
+                }
+            } else {
+                ++normDown;
+                normUp = 0;
+            }
+            if(normUp >= 4) {
+                beta = -0.5;
+            } else if(normDown >= 4) {
+                beta *= 0.5;
             }
             var dNorm = Math.abs(nextNorm - norm);
             norm = nextNorm;
@@ -401,6 +387,8 @@ public class JavaMNA implements IMNA {
                 if(SCALING)
                     CommonOps_DDRM.multRows(columnScales, StateVector);
                 CommonOps_DDRM.subtract(StateVector, StateDelta, StateDelta);
+                if(beta < 0)
+                    CommonOps_DDRM.add(StateVector, beta, StateDelta, StateVector);
             } else {
                 StateVector.zero();
                 StateDelta.zero();

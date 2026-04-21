@@ -109,8 +109,9 @@ public class PlotterRenderer extends KineticBlockEntityRenderer<PlotterBlockEnti
                 yPrev = y;
                 continue;
             }
-            float x1 = (float) (i - 1) / be.sampleBuffer.length;
+            float height = Math.max(1.0f / be.sampleBuffer.length, 0.0025f);
             float x2 = (float) i / be.sampleBuffer.length;
+            float x1 = x2 - height;
 
             float thickness = 1 / 32f;
             var diff = Math.abs(y - yPrev) * 0.5f;

@@ -184,6 +184,8 @@ jobject solver_single_tick(solver_t *solver, int maxIters, jobject mnaObj, int c
     int i;
     double norm = 0;
     char skipped = FALSE;
+    double beta = 0;
+    int normDown = 0, normUp = 0;
     for(i = 0; i < maxIters; ++i) {
         if(!skipped) {
             // Run inner hooks
@@ -206,11 +208,25 @@ jobject solver_single_tick(solver_t *solver, int maxIters, jobject mnaObj, int c
         sp_dgemv(&trans, 1.0, A, solver->m_state, 1, -1.0, solver->m_residual, 1);
         int idxMax = idamax_(&solver->m_size, solver->m_residual, &inc);
         double nextNorm = fabs(solver->m_residual[idxMax - 1]);
-        if(i != 0 && nextNorm > norm && !skipped) {
-            double alpha = -0.9;
-            daxpy_(&solver->m_size, &alpha, solver->m_stateDelta, &inc, solver->m_state, &inc);
-            skipped = TRUE; --i;
-            continue;
+        if(i != 0 && nextNorm > norm) {
+            if(!skipped) {
+                normDown = 0;
+                ++normUp;
+                double alpha = -0.5;
+                daxpy_(&solver->m_size, &alpha, solver->m_stateDelta, &inc, solver->m_state, &inc);
+                skipped = TRUE;
+                --i;
+//                beta = -0.5;
+                continue;
+            }
+        } else {
+            normUp = 0;
+            ++normDown;
+        }
+        if(normUp >= 4) {
+            beta = -0.5;
+        } else if(normDown >= 4) {
+            beta *= 0.5;
         }
         skipped = FALSE;
         double dNorm = fabs(nextNorm - norm);
@@ -233,6 +249,8 @@ jobject solver_single_tick(solver_t *solver, int maxIters, jobject mnaObj, int c
             double alpha = -1.0;
             memcpy(solver->m_stateDelta, solver->m_state, solver->m_size * sizeof(double));
             daxpy_(&solver->m_size, &alpha, solver->m_b, &inc, solver->m_stateDelta, &inc);
+            if(beta < 0)
+                daxpy_(&solver->m_size, &beta, solver->m_stateDelta, &inc, solver->m_state, &inc);
         }
 
         sparsematrix_same_pattern(&solver->m_A, 1);

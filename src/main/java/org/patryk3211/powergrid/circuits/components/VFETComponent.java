@@ -68,8 +68,8 @@ public class VFETComponent extends MirrorableComponent {
         }
 
         @Override
-        public double power() {
-            var power = super.power();
+        public double internalPower() {
+            var power = super.internalPower();
             if(Math.abs(potentialDifference()) > 60)
                 power += 20;
             return power;

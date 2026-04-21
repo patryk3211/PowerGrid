@@ -19,15 +19,19 @@ import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.INetworkElement;
 import org.patryk3211.powergrid.electricity.sim.node.INode;
 import org.patryk3211.powergrid.electricity.sim.solver.IAdmittanceAdder;
+import org.patryk3211.powergrid.electricity.sim.solver.IMultiHooks;
 
 import java.util.Collection;
 import java.util.List;
 
-public abstract class AbstractElectricWire implements INetworkElement {
+public abstract class AbstractElectricWire implements INetworkElement, IMultiHooks {
     protected IElectricNode node1;
     protected IElectricNode node2;
 
     protected ElectricalNetwork network;
+
+    private double aggregatePower;
+    private int tickCount;
 
     public AbstractElectricWire(IElectricNode node1, IElectricNode node2) {
         this.node1 = node1;
@@ -117,7 +121,24 @@ public abstract class AbstractElectricWire implements INetworkElement {
     }
 
     public double power() {
+        if(tickCount <= 1)
+            return internalPower();
+        return aggregatePower;
+    }
+
+    public double internalPower() {
         return current() * potentialDifference();
+    }
+
+    @Override
+    public void prepare(int multiTicks) {
+        tickCount = multiTicks;
+        aggregatePower = 0;
+    }
+
+    @Override
+    public void postMicroTick() {
+        aggregatePower += internalPower() / tickCount;
     }
 
     public abstract double conductance();

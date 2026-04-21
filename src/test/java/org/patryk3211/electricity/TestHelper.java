@@ -26,7 +26,7 @@ import java.util.Random;
 
 public abstract class TestHelper {
     static {
-        System.loadLibrary("powergridNative");
+//        System.loadLibrary("powergridNative");
     }
 
     public static class VoltageSourceNodePair extends FloatingNode {
