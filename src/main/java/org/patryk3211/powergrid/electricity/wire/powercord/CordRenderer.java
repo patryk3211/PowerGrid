@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity.wire.powercord;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.ryanhcode.sable.companion.SableCompanion;
+import net.createmod.catnip.animation.AnimationTickHolder;
 import net.createmod.catnip.render.CachedBuffers;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -34,6 +35,7 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Quaternionf;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.electricity.wire.CurveParameters;
@@ -117,8 +119,8 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
             if(first) {
                 var endpoint = entity.getEndpoint1();
                 if(endpoint instanceof SplitCordEndpoint split) {
-                    var p1 = split.getEndpoint1().getExactPosition(world);
-                    var p2 = split.getEndpoint2().getExactPosition(world);
+                    var p1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, split.getEndpoint1().getExactPosition(world));
+                    var p2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, split.getEndpoint2().getExactPosition(world));
                     var normal = rp.getNormal();
 
                     var direction = new Vec3(x2 - p1.x + pos.x, y2 - p1.y + pos.y, z2 - p1.z + pos.z);
@@ -146,22 +148,40 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                             rp.thickness * 0.5f, thicknessOffset, (float) (length * 2), (float) offset, simpleModel);
                     return;
                 } else if(endpoint instanceof SocketEndpoint socket) {
+                    var sublevel = SableCompanion.INSTANCE.getContainingClient(socket.getPosition());
+                    if(sublevel != null) {
+                        matrices.pushPose();
+                        var pose = sublevel.renderPose(AnimationTickHolder.getPartialTicks());
+                        matrices.rotateAround(new Quaternionf(pose.orientation()), (float) x1, (float) y1, (float) z1);
+                    }
                     renderPlug(matrices, vertexConsumers,
                             world.getBlockState(socket.getPosition()),
                             socket.getFacing(world), x1, y1, z1, currentLight);
+                    if(sublevel != null) {
+                        matrices.popPose();
+                    }
                 } else if(endpoint instanceof AutoCordEndpoint auto) {
                     var facing = auto.getPlugFacing();
                     if(facing != null) {
+                        var sublevel = SableCompanion.INSTANCE.getContainingClient(auto.getPosition());
+                        if(sublevel != null) {
+                            matrices.pushPose();
+                            var pose = sublevel.renderPose(AnimationTickHolder.getPartialTicks());
+                            matrices.rotateAround(new Quaternionf(pose.orientation()), (float) x1, (float) y1, (float) z1);
+                        }
                         renderPlug(matrices, vertexConsumers,
                                 world.getBlockState(auto.getPosition()),
                                 facing.getOpposite(), x1, y1, z1, currentLight);
+                        if(sublevel != null) {
+                            matrices.popPose();
+                        }
                     }
                 }
             } else if(last) {
                 var endpoint = entity.getEndpoint2();
                 if(endpoint instanceof SplitCordEndpoint split) {
-                    var p1 = split.getEndpoint1().getExactPosition(world);
-                    var p2 = split.getEndpoint2().getExactPosition(world);
+                    var p1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, split.getEndpoint1().getExactPosition(world));
+                    var p2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, split.getEndpoint2().getExactPosition(world));
                     var normal = rp.getNormal();
 
                     var direction = new Vec3(x1 - p1.x + pos.x, y1 - p1.y + pos.y, z1 - p1.z + pos.z);
@@ -189,15 +209,33 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                             rp.thickness * 0.5f, thicknessOffset, (float) (length * 2), (float) offset, simpleModel);
                     return;
                 } else if(endpoint instanceof SocketEndpoint socket) {
+                    var sublevel = SableCompanion.INSTANCE.getContainingClient(socket.getPosition());
+                    if(sublevel != null) {
+                        matrices.pushPose();
+                        var pose = sublevel.renderPose(AnimationTickHolder.getPartialTicks());
+                        matrices.rotateAround(new Quaternionf(pose.orientation()), (float) x2, (float) y2, (float) z2);
+                    }
                     renderPlug(matrices, vertexConsumers,
                             world.getBlockState(socket.getPosition()),
                             socket.getFacing(world), x2, y2, z2, currentLight);
+                    if(sublevel != null) {
+                        matrices.popPose();
+                    }
                 } else if(endpoint instanceof AutoCordEndpoint auto) {
                     var facing = auto.getPlugFacing();
                     if(facing != null) {
+                        var sublevel = SableCompanion.INSTANCE.getContainingClient(auto.getPosition());
+                        if(sublevel != null) {
+                            matrices.pushPose();
+                            var pose = sublevel.renderPose(AnimationTickHolder.getPartialTicks());
+                            matrices.rotateAround(new Quaternionf(pose.orientation()), (float) x2, (float) y2, (float) z2);
+                        }
                         renderPlug(matrices, vertexConsumers,
                                 world.getBlockState(auto.getPosition()),
                                 facing.getOpposite(), x2, y2, z2, currentLight);
+                        if(sublevel != null) {
+                            matrices.popPose();
+                        }
                     }
                 }
             }
@@ -212,7 +250,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
 
     public static void renderPreview(ICordEndpoint start, Vec3 end, PoseStack matrices, MultiBufferSource vertexConsumers, Level level, WireItemEntry item, int color, Vec3 cameraPos) {
         var buffer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(item.texture()));
-        var startPos = start.getExactPosition(level);
+        var startPos = SableCompanion.INSTANCE.projectOutOfSubLevel(level, start.getExactPosition(level));
         CurveParameters rp = new CurveParameters(startPos, end, end.distanceTo(startPos) * 1.01, item.wireThickness());
 
         // To introduce some subtle variety into the wires.
@@ -230,8 +268,8 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
             var currentLight = LightTexture.FULL_BRIGHT;
             if(first) {
                 if(start instanceof SplitCordEndpoint split) {
-                    var p1 = split.getEndpoint1().getExactPosition(level).subtract(startPos);
-                    var p2 = split.getEndpoint2().getExactPosition(level).subtract(startPos);
+                    var p1 = SableCompanion.INSTANCE.projectOutOfSubLevel(level, split.getEndpoint1().getExactPosition(level)).subtract(startPos);
+                    var p2 = SableCompanion.INSTANCE.projectOutOfSubLevel(level, split.getEndpoint2().getExactPosition(level)).subtract(startPos);
                     var normal = rp.getNormal();
 
                     var direction = new Vec3(x2 - p1.x + pos.x, y2 - p1.y + pos.y, z2 - p1.z + pos.z);
@@ -259,15 +297,33 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                             rp.thickness * 0.5f, thicknessOffset, (float) (length * 2), (float) offset, !Minecraft.useFancyGraphics());
                     return;
                 } else if(start instanceof SocketEndpoint socket) {
+                    var sublevel = SableCompanion.INSTANCE.getContainingClient(socket.getPosition());
+                    if(sublevel != null) {
+                        matrices.pushPose();
+                        var pose = sublevel.renderPose(AnimationTickHolder.getPartialTicks());
+                        matrices.rotateAround(new Quaternionf(pose.orientation()), (float) x1, (float) y1, (float) z1);
+                    }
                     renderPlug(matrices, vertexConsumers,
                             level.getBlockState(socket.getPosition()),
                             socket.getFacing(level), x1, y1, z1, currentLight);
+                    if(sublevel != null) {
+                        matrices.popPose();
+                    }
                 } else if(start instanceof AutoCordEndpoint auto) {
                     var facing = auto.getPlugFacing();
                     if(facing != null) {
+                        var sublevel = SableCompanion.INSTANCE.getContainingClient(auto.getPosition());
+                        if(sublevel != null) {
+                            matrices.pushPose();
+                            var pose = sublevel.renderPose(AnimationTickHolder.getPartialTicks());
+                            matrices.rotateAround(new Quaternionf(pose.orientation()), (float) x1, (float) y1, (float) z1);
+                        }
                         renderPlug(matrices, vertexConsumers,
                                 level.getBlockState(auto.getPosition()),
                                 facing.getOpposite(), x1, y1, z1, currentLight);
+                        if(sublevel != null) {
+                            matrices.popPose();
+                        }
                     }
                 }
             }

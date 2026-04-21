@@ -77,7 +77,7 @@ public class AutoCordEndpoint implements ICordEndpoint {
         pos = NbtUtils.readBlockPos(nbt, "Position").orElseThrow();
         terminal1 = nbt.getInt("Terminal1");
         terminal2 = nbt.getInt("Terminal2");
-        placement = new Vec3(nbt.getFloat("X"), nbt.getFloat("Y"), nbt.getFloat("Z"));
+        placement = new Vec3(nbt.getDouble("X"), nbt.getDouble("Y"), nbt.getDouble("Z"));
         if(nbt.contains("Plug")) {
             plugFacing = Direction.values()[nbt.getByte("Plug")];
         } else {
@@ -90,9 +90,9 @@ public class AutoCordEndpoint implements ICordEndpoint {
         nbt.put("Position", NbtUtils.writeBlockPos(pos));
         nbt.putInt("Terminal1", terminal1);
         nbt.putInt("Terminal2", terminal2);
-        nbt.putFloat("X", (float) placement.x);
-        nbt.putFloat("Y", (float) placement.y);
-        nbt.putFloat("Z", (float) placement.z);
+        nbt.putDouble("X", placement.x);
+        nbt.putDouble("Y", placement.y);
+        nbt.putDouble("Z", placement.z);
         if(plugFacing != null) {
             nbt.putByte("Plug", (byte) plugFacing.ordinal());
         }

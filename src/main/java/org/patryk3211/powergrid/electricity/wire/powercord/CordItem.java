@@ -40,6 +40,7 @@ import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
+import org.patryk3211.powergrid.utility.SableUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -124,7 +125,7 @@ public class CordItem extends WireItem {
         assert IWire.isCord(level, stack.getItem());
         var entry = WireRegistry.forItem(level, stack.getItem());
 
-        float distance = (float) terminal1Pos.distanceTo(terminal2Pos);
+        float distance = (float) SableUtils.projectedDistance(level, terminal1Pos, terminal2Pos);
         if(distance > entry.maximumLength()) {
             IElectric.sendMessage(context, Lang.translate("message.connection_too_long").style(ChatFormatting.RED).component());
             return InteractionResult.FAIL;

@@ -77,16 +77,18 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
         entity.setEndpoint1(endpoint1);
         entity.setEndpoint2(endpoint2);
 
+        var tp1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, endpoint1.getExactPosition(world));
+        var tp2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, endpoint2.getExactPosition(world));
+        var dX = tp2.x - tp1.x;
+        var dY = Math.abs(tp2.y - tp1.y);
+        var dZ = tp2.z - tp1.z;
+        var hL = Math.sqrt(dX * dX + dZ * dZ);
+        entity.placedLength = (float) (entity.getWireEntry().horizontalCoefficient() * hL + entity.getWireEntry().verticalCoefficient() * dY);
+
         entity.refreshTerminalPositions();
         entity.setXRot(0);
         entity.setOldPosAndRot();
         entity.reapplyPosition();
-
-        var dX = entity.terminalPos2.x - entity.terminalPos1.x;
-        var dY = Math.abs(entity.terminalPos2.y - entity.terminalPos1.y);
-        var dZ = entity.terminalPos2.z - entity.terminalPos1.z;
-        var hL = Math.sqrt(dX * dX + dZ * dZ);
-        entity.placedLength = (float) (entity.getWireEntry().horizontalCoefficient() * hL + entity.getWireEntry().verticalCoefficient() * dY);
 
         if(entity.getWireEntry().colorable())
             entity.setColor(0x413c31);
@@ -359,7 +361,6 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             refreshTerminalPositions();
         } else {
             grabEndpointPositions();
-            updateRenderParams();
         }
 
         if(nbt.contains("PlacedLength")) {
@@ -371,6 +372,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             var hL = Math.sqrt(dX * dX + dZ * dZ);
             placedLength = (float) (getWireEntry().horizontalCoefficient() * hL + getWireEntry().verticalCoefficient() * dY);
         }
+        updateRenderParams();
     }
 
     public void grabEndpointPositions() {
