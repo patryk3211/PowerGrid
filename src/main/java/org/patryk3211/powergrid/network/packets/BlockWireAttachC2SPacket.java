@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.network.packets;
 
 import dev.architectury.networking.NetworkManager;
+import dev.ryanhcode.sable.companion.SableCompanion;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.InteractionHand;
 import org.patryk3211.powergrid.PowerGrid;
@@ -75,7 +76,9 @@ public class BlockWireAttachC2SPacket implements SimplePacket {
                 return;
             }
 
-            var existingEndpoint = WireEndpointType.deserialize(stack.getTagElement("Connection"));
+        var existingEndpoint = stack.getOrDefault(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.EMPTY).endpoint();
+        if(existingEndpoint != null && existingEndpoint.getSubLevel(player.level()) != SableCompanion.INSTANCE.getContaining(entity))
+            return;
 
             IWireEndpoint endpoint;
             if(gridPoint <= 1 && index == 0) {

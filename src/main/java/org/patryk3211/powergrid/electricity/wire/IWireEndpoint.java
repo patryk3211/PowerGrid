@@ -15,6 +15,8 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
+import dev.ryanhcode.sable.companion.SableCompanion;
+import dev.ryanhcode.sable.companion.SubLevelAccess;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.Level;
@@ -63,5 +65,9 @@ public interface IWireEndpoint {
 
     default IWireEndpoint makeOffset(BlockPos offset) {
         return null;
+    }
+
+    default SubLevelAccess getSubLevel(Level world) {
+        return SableCompanion.INSTANCE.getContaining(world, getExactPosition(world));
     }
 }
