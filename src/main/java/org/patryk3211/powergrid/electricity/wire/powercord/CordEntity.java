@@ -55,6 +55,11 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     public Vec3 terminalPos1;
     public Vec3 terminalPos2;
     public AABB deSabledBB;
+    private boolean isDynamic = false;
+    private Vec3 baseTerminalPos1;
+    private Vec3 baseTerminalPos2;
+    Vec3 terminal1Velocity;
+    Vec3 terminal2Velocity;
 
     protected ElectricWire wire1;
     protected ElectricWire wire2;
@@ -100,8 +105,11 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
         if(!level().isClientSide)
             return;
         var item = getWireEntry();
-        renderParams = new CurveParameters(terminalPos1, terminalPos2,
-                item.horizontalCoefficient(), item.verticalCoefficient(), item.wireThickness());
+        var dX = terminalPos2.x - terminalPos1.x;
+        var dY = Math.abs(terminalPos2.y - terminalPos1.y);
+        var dZ = terminalPos2.z - terminalPos1.z;
+        var hL = Math.sqrt(dX * dX + dZ * dZ);
+        renderParams = new CurveParameters(terminalPos1, terminalPos2, item.horizontalCoefficient() * hL + item.verticalCoefficient() * dY, item.wireThickness());
         this.setBoundingBox(this.makeBoundingBox());
     }
 
@@ -218,8 +226,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     public void refreshTerminalPositions() {
         var world = level();
         if(world != null && (!world.isClientSide || world instanceof PonderLevel)) {
-            terminalPos1 = getEndpoint1().getExactPosition(world);
-            terminalPos2 = getEndpoint2().getExactPosition(world);
+            grabEndpointPositions();
 
             var vect = terminalPos2.subtract(terminalPos1);
             var facing = vect.cross(UP);
@@ -245,6 +252,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
                 list.add(FloatTag.valueOf((float) terminalPos2.x));
                 list.add(FloatTag.valueOf((float) terminalPos2.y));
                 list.add(FloatTag.valueOf((float) terminalPos2.z));
+                tag.putBoolean("D", isDynamic);
                 tag.put("V", list);
                 var packet = new EntityDataS2CPacket(this, tag);
                 ModdedPackets.sendToClientsTracking(packet, this);
@@ -258,8 +266,25 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
         super.tick();
         var world = level();
         if(beginFlags != deferEndpointResolution) {
-            terminalPos1 = getEndpoint1().getExactPosition(world);
-            terminalPos2 = getEndpoint2().getExactPosition(world);
+            grabEndpointPositions();
+            updateRenderParams();
+        }
+        if(isDynamic) {
+            terminalPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, baseTerminalPos1);
+            terminalPos2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, baseTerminalPos2);
+            terminal1Velocity = SableCompanion.INSTANCE.getVelocity(world, baseTerminalPos1);
+            terminal2Velocity = SableCompanion.INSTANCE.getVelocity(world, baseTerminalPos2);
+            var vect = terminalPos2.subtract(terminalPos1);
+            var facing = vect.cross(UP);
+            float facingAngle = (float) (Math.atan2(facing.x, -facing.z) * 180 / Math.PI);
+
+            setOldPosAndRot();
+            setPosRaw(
+                    (terminalPos1.x + terminalPos2.x) * 0.5,
+                    terminalPos1.y,
+                    (terminalPos1.z + terminalPos2.z) * 0.5
+            );
+            setYRot(facingAngle);
             updateRenderParams();
         }
 
@@ -312,6 +337,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             var list = data.getList("V", Tag.TAG_FLOAT);
             terminalPos1 = new Vec3(list.getFloat(0), list.getFloat(1), list.getFloat(2));
             terminalPos2 = new Vec3(list.getFloat(3), list.getFloat(4), list.getFloat(5));
+            isDynamic = data.getBoolean("D");
             updateRenderParams();
         } else {
             super.onEntityDataPacket(data);
@@ -331,9 +357,22 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
         if(!world.isClientSide) {
             refreshTerminalPositions();
         } else {
-            terminalPos1 = getEndpoint1().getExactPosition(world);
-            terminalPos2 = getEndpoint2().getExactPosition(world);
+            grabEndpointPositions();
             updateRenderParams();
+        }
+    }
+
+    public void grabEndpointPositions() {
+        var world = level();
+        terminalPos1 = getEndpoint1().getExactPosition(world);
+        terminalPos2 = getEndpoint2().getExactPosition(world);
+        if(getEndpoint1().getSubLevel(world) != getEndpoint2().getSubLevel(world)) {
+            // Make outside of sublevels
+            baseTerminalPos1 = terminalPos1;
+            baseTerminalPos2 = terminalPos2;
+            isDynamic = true;
+            terminalPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, terminalPos1);
+            terminalPos2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, terminalPos2);
         }
     }
 

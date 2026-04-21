@@ -39,6 +39,7 @@ import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
+import org.patryk3211.powergrid.utility.SableUtils;
 
 public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     public static final int CLEARANCE_CHECK_INTERVAL = 20;
@@ -48,6 +49,11 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     public Vec3 terminalPos1;
     public Vec3 terminalPos2;
     public AABB deSabledBB;
+    private boolean isDynamic = false;
+    private Vec3 baseTerminalPos1;
+    private Vec3 baseTerminalPos2;
+    Vec3 terminal1Velocity;
+    Vec3 terminal2Velocity;
 
     private boolean particlesSpawned = false;
 
@@ -60,6 +66,8 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     }
 
     public static boolean checkClearance(Level world, Vec3 start, Vec3 end) {
+        if(!SableUtils.sameSubLevel(world, start, end))
+            return true;
         var result = BlockTrace.raycast(world, start, end);
         if(result.getType() == HitResult.Type.BLOCK) {
             if(world.isClientSide) {
@@ -74,8 +82,11 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         if(!level().isClientSide)
             return;
         var item = getWireEntry();
-        renderParams = new CurveParameters(terminalPos1, terminalPos2,
-                item.horizontalCoefficient(), item.verticalCoefficient(), item.wireThickness());
+        var dX = terminalPos2.x - terminalPos1.x;
+        var dY = Math.abs(terminalPos2.y - terminalPos1.y);
+        var dZ = terminalPos2.z - terminalPos1.z;
+        var hL = Math.sqrt(dX * dX + dZ * dZ);
+        renderParams = new CurveParameters(terminalPos1, terminalPos2, item.horizontalCoefficient() * hL + item.verticalCoefficient() * dY, item.wireThickness());
         this.setBoundingBox(this.makeBoundingBox());
     }
 
@@ -151,8 +162,25 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         super.tick();
         var world = level();
         if(beginFlags != deferEndpointResolution) {
-            terminalPos1 = getEndpoint1().getExactPosition(world);
-            terminalPos2 = getEndpoint2().getExactPosition(world);
+            grabEndpointPositions();
+            updateRenderParams();
+        }
+        if(isDynamic) {
+            terminalPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, baseTerminalPos1);
+            terminalPos2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, baseTerminalPos2);
+            terminal1Velocity = SableCompanion.INSTANCE.getVelocity(world, baseTerminalPos1);
+            terminal2Velocity = SableCompanion.INSTANCE.getVelocity(world, baseTerminalPos2);
+            var vect = terminalPos2.subtract(terminalPos1);
+            var facing = vect.cross(UP);
+            float facingAngle = (float) (Math.atan2(facing.x, -facing.z) * 180 / Math.PI);
+
+            setOldPosAndRot();
+            setPosRaw(
+                    (terminalPos1.x + terminalPos2.x) * 0.5,
+                    terminalPos1.y,
+                    (terminalPos1.z + terminalPos2.z) * 0.5
+            );
+            setYRot(facingAngle);
             updateRenderParams();
         }
 
@@ -179,7 +207,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f);
         }
 
-        if(!world.isClientSide && clearanceCheck++ >= CLEARANCE_CHECK_INTERVAL && terminalPos1 != null && terminalPos2 != null) {
+        if(!isDynamic && !world.isClientSide && clearanceCheck++ >= CLEARANCE_CHECK_INTERVAL && terminalPos1 != null && terminalPos2 != null) {
             clearanceCheck = 0;
             var result = BlockTrace.raycast(world, terminalPos1, terminalPos2);
             if(result.getType() == HitResult.Type.BLOCK) {
@@ -220,6 +248,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             var list = data.getList("V", Tag.TAG_FLOAT);
             terminalPos1 = new Vec3(list.getFloat(0), list.getFloat(1), list.getFloat(2));
             terminalPos2 = new Vec3(list.getFloat(3), list.getFloat(4), list.getFloat(5));
+            isDynamic = data.getBoolean("D");
             updateRenderParams();
         } else {
             super.onEntityDataPacket(data);
@@ -239,8 +268,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         if(!world.isClientSide) {
             refreshTerminalPositions();
         } else {
-            terminalPos1 = getEndpoint1().getExactPosition(world);
-            terminalPos2 = getEndpoint2().getExactPosition(world);
+            grabEndpointPositions();
             updateRenderParams();
         }
     }
@@ -321,11 +349,24 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         refreshTerminalPositions();
     }
 
+    public void grabEndpointPositions() {
+        var world = level();
+        terminalPos1 = getEndpoint1().getExactPosition(world);
+        terminalPos2 = getEndpoint2().getExactPosition(world);
+        if(getEndpoint1().getSubLevel(world) != getEndpoint2().getSubLevel(world)) {
+            // Make outside of sublevels
+            baseTerminalPos1 = terminalPos1;
+            baseTerminalPos2 = terminalPos2;
+            isDynamic = true;
+            terminalPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, terminalPos1);
+            terminalPos2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, terminalPos2);
+        }
+    }
+
     public void refreshTerminalPositions() {
         var world = level();
         if(world != null && (!world.isClientSide || world instanceof PonderLevel)) {
-            terminalPos1 = getEndpoint1().getExactPosition(world);
-            terminalPos2 = getEndpoint2().getExactPosition(world);
+            grabEndpointPositions();
 
             var vect = terminalPos2.subtract(terminalPos1);
             var facing = vect.cross(UP);
@@ -351,6 +392,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
                 list.add(FloatTag.valueOf((float) terminalPos2.x));
                 list.add(FloatTag.valueOf((float) terminalPos2.y));
                 list.add(FloatTag.valueOf((float) terminalPos2.z));
+                tag.putBoolean("D", isDynamic);
                 tag.put("V", list);
                 var packet = new EntityDataS2CPacket(this, tag);
                 ModdedPackets.sendToClientsTracking(packet, this);

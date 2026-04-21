@@ -50,6 +50,7 @@ import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
 import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlacementOverlay;
+import org.patryk3211.powergrid.utility.SableUtils;
 
 @Environment(EnvType.CLIENT)
 public class WirePreview {
@@ -150,15 +151,19 @@ public class WirePreview {
             }
         }
 
-        float length = (float) currentPos.distanceTo(hitPoint);
+        var projCurrentPos = SableCompanion.INSTANCE.projectOutOfSubLevel(world, currentPos);
+        var projHitPos = SableCompanion.INSTANCE.projectOutOfSubLevel(world, hitPoint);
+        float length = (float) projCurrentPos.distanceTo(projHitPos);
         // Stop rendering the preview above a thousand blocks to stop the game from freezing
         if(length > 1000)
             return;
         boolean isBlockWire = endpoint.type() != WireEndpointType.BLOCK;
         if(isBlockWire || hitTerminal == null) {
+            if(!SableUtils.sameSubLevel(world, currentPos, hitPoint))
+                return;
             length = 0;
             currentPos = BlockTrace.alignPosition(currentPos);
-            renderedPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, currentPos);
+            renderedPos1 = projCurrentPos;
             renderedTrace = BlockTrace.findPathWithState(world, currentPos, hitPoint, hitTerminal, continueDir);
             if(renderedTrace != null) {
                 renderPath = 2;
@@ -171,8 +176,8 @@ public class WirePreview {
             }
         } else {
             renderedColor = length < renderedItem.maximumLength() ? 0x80AAFFAA : 0x80FFAAAA;
-            renderedPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, currentPos);
-            renderedPos2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, hitPoint);
+            renderedPos1 = projCurrentPos;
+            renderedPos2 = projHitPos;
             renderPath = 1;
         }
 
@@ -228,116 +233,6 @@ public class WirePreview {
             }
         }
         matrixStack.popPose();
-//        ItemStack wireStack = getUsedWireStack(player);
-//        if(wireStack == null)
-//            return;
-//        if(!(wireStack.getItem() instanceof WireItem wireItem))
-//            return;
-//        if(wireStack.getItem() instanceof CordItem) {
-//            renderCord(buffer, matrixStack, world, player, target, wireStack);
-//            return;
-//        }
-//        if(target.getType() != HitResult.Type.BLOCK) {
-//            if(target.getType() == HitResult.Type.ENTITY) {
-//                var entityHit = (EntityHitResult) target;
-//                if(!(entityHit.getEntity() instanceof BlockWireEntity)) {
-//                    return;
-//                }
-//            } else {
-//                return;
-//            }
-//        }
-//
-//        var tag = wireStack.getTagElement("Connection");
-//        var consumer = buffer.getBuffer(RenderType.entityTranslucent(wireItem.getWireTexture()));
-//        float thickness = wireItem.getWireThickness();
-//
-//        var endpoint = WireEndpointType.deserialize(tag);
-//        if(endpoint == null)
-//            return;
-//
-//        var currentPos = endpoint.getExactPosition(world);
-//        Direction continueDir = null;
-//        if(endpoint instanceof BlockWireEntityEndpoint bwe) {
-//            var entity = bwe.getEntity(world);
-//            if(entity != null) {
-//                var segments = entity.segments;
-//                if(segments.isEmpty())
-//                    return;
-//                if (bwe.getEnd()) {
-//                    var last = segments.get(segments.size() - 1);
-//                    continueDir = last.direction;
-//                } else {
-//                    var first = segments.get(0);
-//                    continueDir = first.direction.getOpposite();
-//                }
-//            }
-//        }
-//
-//        var hitPoint = target.getLocation();
-//        ITerminalPlacement hitTerminal = null;
-//        if(target.getType() == HitResult.Type.BLOCK) {
-//            var blockTarget = (BlockHitResult) target;
-//            var state = world.getBlockState(blockTarget.getBlockPos());
-//            var electric = IElectric.getAt(world, blockTarget.getBlockPos());
-//            if(electric != null) {
-//                var pos = blockTarget.getBlockPos();
-//                var terminal = electric.terminalAt(state, hitPoint.subtract(pos.getX(), pos.getY(), pos.getZ()));
-//                if(terminal != null) {
-//                    hitPoint = terminal.getOrigin().add(pos.getX(), pos.getY(), pos.getZ());
-//                    hitTerminal = terminal;
-//                } else {
-//                    hitPoint = hitPoint.relative(blockTarget.getDirection(), 1/32f);
-//                }
-//            } else {
-//                hitPoint = hitPoint.relative(blockTarget.getDirection(), 1/32f);
-//            }
-//        }
-//
-//        float length = (float) currentPos.distanceTo(hitPoint);
-//        // Stop rendering the preview above a thousand blocks to stop the game from freezing
-//        if(length > 1000)
-//            return;
-//        boolean isBlockWire = endpoint.type() != WireEndpointType.BLOCK;
-//        if(isBlockWire || hitTerminal == null) {
-//            length = 0;
-//            currentPos = BlockTrace.alignPosition(currentPos);
-//            var output = BlockTrace.findPathWithState(world, currentPos, hitPoint, hitTerminal, continueDir);
-//            if(output != null) {
-//                if(DEBUG_BLOCK_TRACING) {
-//                    var lineBuffer = buffer.getBuffer(ModdedRenderLayers.getDebugLines());
-//                    var state = output.getFirst();
-//                    for (var cell : state.states.values()) {
-//                        if (cell.backtrace == null)
-//                            continue;
-//                        int color = 0xFFFF0000;
-//                        if(!cell.isSupported())
-//                            color |= 0xFF00;
-//                        if(!cell.backtrace.isSupported())
-//                            color |= 0xFF;
-//                        BlockWireRenderer.debugLine(matrixStack, lineBuffer, LightTexture.FULL_BRIGHT, color, state.transform(cell.position), state.transform(cell.backtrace.position));
-//                    }
-//                }
-//                var points = output.getSecond();
-//                if(points != null) {
-//                    for(var p : points.points()) {
-//                        var nextPos = currentPos.add(p.vector());
-//                        int color = points.reachedTarget() ? 0x80AAFFAA : 0x80FFAAAA;
-//                        BlockWireRenderer.renderSegment(matrixStack, consumer, LightTexture.FULL_BRIGHT, color, currentPos, p.direction, thickness, p.length(), 0);
-//                        currentPos = nextPos;
-//                        length += p.length();
-//                    }
-//                }
-//            }
-//        } else {
-//            var color = length < wireItem.getMaximumLength() ? 0x80AAFFAA : 0x80FFAAAA;
-//            HangingWireRenderer.renderFromPositions(matrixStack, consumer, currentPos, hitPoint, 1.01, 1.2, thickness, LightTexture.FULL_BRIGHT, color);
-//        }
-//
-//        if(!player.isCreative()) {
-//            int requiredItemCount = Math.max(Math.round(length * wireItem.getItemUseMultiplier()), 1);
-//            PlacementOverlay.setItemRequirement(wireStack.getItem(), requiredItemCount, wireStack.getCount() >= requiredItemCount);
-//        }
     }
 
     public static Component distanceOverlay(Player player) {
@@ -358,7 +253,7 @@ public class WirePreview {
         if(target == null || target.getType() != HitResult.Type.BLOCK)
             return null;
         var hitPoint = target.getLocation();
-        var distance = hitPoint.distanceTo(currentPos);
+        var distance = SableUtils.projectedDistance(player.level(), currentPos, hitPoint);
         var msg = Lang.translate("gui.endpoint_distance")
                 .add(Lang.numberConstant(distance).style(distance < wireEntry.maximumLength() ? ChatFormatting.GREEN : ChatFormatting.RED))
                 .style(ChatFormatting.WHITE);
@@ -370,7 +265,6 @@ public class WirePreview {
         }
 
         return msg.component();
-
     }
 
     public static void notifyOfBlock(BlockPos pos) {

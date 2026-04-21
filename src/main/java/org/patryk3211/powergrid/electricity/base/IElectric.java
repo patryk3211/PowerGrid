@@ -36,6 +36,7 @@ import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
+import org.patryk3211.powergrid.utility.SableUtils;
 
 public interface IElectric extends IWrenchable {
     /**
@@ -185,7 +186,7 @@ public interface IElectric extends IWrenchable {
         assert IWire.isWire(world, stack.getItem());
         var entry = WireRegistry.forItem(world, stack.getItem());
 
-        float distance = (float) terminal1Pos.distanceTo(terminal2Pos);
+        float distance = (float) SableUtils.projectedDistance(world, terminal1Pos, terminal2Pos);
         if(distance > entry.maximumLength()) {
             sendMessage(context, Lang.translate("message.connection_too_long").style(ChatFormatting.RED).component());
             return InteractionResult.FAIL;
