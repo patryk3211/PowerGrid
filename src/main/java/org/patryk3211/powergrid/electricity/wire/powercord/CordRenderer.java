@@ -37,9 +37,9 @@ import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.electricity.wire.CurveParameters;
-import org.patryk3211.powergrid.electricity.wire.HangingWireRenderer;
 import org.patryk3211.powergrid.electricity.wire.registry.WireItemEntry;
 
+import static org.patryk3211.powergrid.electricity.wire.HangingWireRenderer.lodLevel;
 import static org.patryk3211.powergrid.electricity.wire.HangingWireRenderer.renderSegment;
 
 @Environment(EnvType.CLIENT)
