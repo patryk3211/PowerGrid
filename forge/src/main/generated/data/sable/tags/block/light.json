@@ -1,0 +1,18 @@
+{
+  "values": [
+    "powergrid:wire_connector",
+    "powergrid:heavy_wire_connector",
+    "powergrid:light_fixture",
+    "powergrid:cord_junction",
+    "powergrid:socket",
+    "powergrid:device_connector",
+    "powergrid:lv_button",
+    "powergrid:lv_switch",
+    "powergrid:mv_switch",
+    "powergrid:grounding_rod",
+    "powergrid:thermometer",
+    "powergrid:fuse_holder",
+    "powergrid:circuit_board",
+    "powergrid:spark_gap"
+  ]
+}

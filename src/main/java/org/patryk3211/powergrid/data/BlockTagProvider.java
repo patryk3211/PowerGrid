@@ -27,8 +27,10 @@ import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.WeatheringCopper;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedTags;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class BlockTagProvider extends TagsProvider<Block> {
@@ -102,6 +104,74 @@ public class BlockTagProvider extends TagsProvider<Block> {
                 builder.add(reverseLookup(AllBlocks.COPPER_SHINGLES.get(variant, state, false).get()));
                 builder.add(reverseLookup(AllBlocks.COPPER_SHINGLES.get(variant, state, true).get()));
             }
+        }
+
+        var smallLightBlocks = List.of(
+                ModdedBlocks.WIRE_CONNECTOR,
+                ModdedBlocks.HEAVY_WIRE_CONNECTOR,
+                ModdedBlocks.LIGHT_FIXTURE,
+                ModdedBlocks.CORD_JUNCTION,
+                ModdedBlocks.SOCKET,
+                ModdedBlocks.DEVICE_CONNECTOR,
+                ModdedBlocks.LV_BUTTON,
+                ModdedBlocks.LV_SWITCH,
+                ModdedBlocks.MV_SWITCH,
+                ModdedBlocks.GROUNDING_ROD,
+                ModdedBlocks.THERMOMETER,
+                ModdedBlocks.FUSE_HOLDER,
+                ModdedBlocks.CIRCUIT_BOARD,
+                ModdedBlocks.SPARK_GAP
+        );
+
+        var smallBlocks = List.of(
+                ModdedBlocks.RESISTOR,
+                ModdedBlocks.CREATIVE_RESISTOR,
+                ModdedBlocks.ALARM_BELL,
+                ModdedBlocks.ELECTRIC_FAN,
+                ModdedBlocks.HEATING_COIL
+        );
+
+        var heavyBlocks = List.of(
+                ModdedBlocks.TRANSFORMER_CORE,
+                ModdedBlocks.TRANSFORMER_SMALL,
+                ModdedBlocks.TRANSFORMER_MEDIUM,
+                ModdedBlocks.VARIAC,
+                ModdedBlocks.BASIN_HEATER,
+                ModdedBlocks.BATTERY,
+                ModdedBlocks.GENERATOR_INDUCTION_ROTOR,
+                ModdedBlocks.WINDING,
+                ModdedBlocks.HV_BREAKER,
+                ModdedBlocks.CONTACTOR,
+                ModdedBlocks.HV_SWITCH,
+                ModdedBlocks.CONSTANT_SPEED_MOTOR,
+                ModdedBlocks.ELECTRIC_MOTOR,
+                ModdedBlocks.SERVO
+        );
+
+        var halfVolumeBlocks = List.of(
+                ModdedBlocks.CRT,
+                ModdedBlocks.GENERATOR_COMMUTATOR,
+                ModdedBlocks.VERTICAL_GENERATOR_HOUSING,
+                ModdedBlocks.GENERATOR_HOUSING,
+                ModdedBlocks.VERTICAL_GENERATOR_HOUSING
+        );
+
+        var quarterBuilder = tag(ModdedTags.Block.SABLE_QUARTER_VOLUME.tag);
+        var lightBuilder = tag(ModdedTags.Block.SABLE_LIGHT.tag);
+        var halfVolumeBuilder = tag(ModdedTags.Block.SABLE_HALF_VOLUME.tag);
+        var heavyBuilder = tag(ModdedTags.Block.SABLE_HEAVY.tag);
+        for(var block : smallLightBlocks) {
+            quarterBuilder.add(reverseLookup(block.get()));
+            lightBuilder.add(reverseLookup(block.get()));
+        }
+        for(var block : smallBlocks) {
+            quarterBuilder.add(reverseLookup(block.get()));
+        }
+        for(var block : heavyBlocks) {
+            heavyBuilder.add(reverseLookup(block.get()));
+        }
+        for(var block : halfVolumeBlocks) {
+            halfVolumeBuilder.add(reverseLookup(block.get()));
         }
     }
 }

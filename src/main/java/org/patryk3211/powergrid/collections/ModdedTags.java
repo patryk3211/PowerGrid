@@ -23,6 +23,7 @@ import org.patryk3211.powergrid.PowerGrid;
 
 public class ModdedTags {
     public static final String FORGE_NAMESPACE = "c";
+    public static final String SABLE_NAMESPACE = "sable";
 
     public enum Item {
         RAW_ORES(FORGE_NAMESPACE, "raw_ores"),
@@ -51,7 +52,17 @@ public class ModdedTags {
         AFFECTED_BY_LAMP("affected_by_lamp"),
         IGNORE_IN_ROTOR_ASSEMBLY_SIZE("ignore_in_rotor_assembly_size"),
         CONDUCTIVE_GROUND("conductive_ground"),
-        CARBON_PILE_BLOCK("carbon_pile_block");
+        CARBON_PILE_BLOCK("carbon_pile_block"),
+
+        SABLE_QUARTER_VOLUME(SABLE_NAMESPACE, "quarter_volume"),
+        SABLE_HALF_VOLUME(SABLE_NAMESPACE, "half_volume"),
+
+        SABLE_SUPER_LIGHT(SABLE_NAMESPACE, "super_light"),
+        SABLE_LIGHT(SABLE_NAMESPACE, "light"),
+        SABLE_HEAVY(SABLE_NAMESPACE, "heavy"),
+        SABLE_SUPER_HEAVY(SABLE_NAMESPACE, "super_heavy")
+
+        ;
 
         public final TagKey<net.minecraft.world.level.block.Block> tag;
 
@@ -65,7 +76,7 @@ public class ModdedTags {
     }
 
     public enum Entity {
-        RETAIN_IN_SUB_LEVEL("sable", "retain_in_sub_level");
+        RETAIN_IN_SUB_LEVEL(SABLE_NAMESPACE, "retain_in_sub_level");
 
         public final TagKey<EntityType<?>> tag;
 

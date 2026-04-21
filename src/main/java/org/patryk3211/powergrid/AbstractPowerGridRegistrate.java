@@ -195,7 +195,7 @@ public abstract class AbstractPowerGridRegistrate extends AbstractRegistrate<Abs
                 return id.get().location().toString();
             }).forEach(array::add);
             var tag = DataProvider.saveStable(output, tagJson, this.output.getOutputFolder()
-                    .resolve("data/" + namespace + "/tags/items/circuit_component.json"));
+                    .resolve("data/" + namespace + "/tags/item/circuit_component.json"));
 
             // Generate all item mappings
             var path = this.output.getOutputFolder().resolve("data/" + namespace + "/powergrid/component_items");
