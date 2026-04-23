@@ -23,6 +23,7 @@ public class SwitchedWire extends ElectricWire {
     private static final double OFF_CONDUCTANCE = G_MIN * 0.5;
 
     private boolean state;
+    private int stamp;
 
     public SwitchedWire(float resistance, IElectricNode node1, IElectricNode node2) {
         super(resistance, node1, node2);
@@ -45,8 +46,14 @@ public class SwitchedWire extends ElectricWire {
                     // Switch is now off, remove its conductance
                     network.updateConductance(this, -super.conductance() + OFF_CONDUCTANCE);
                 }
+                stamp = network.getStamp();
             }
         }
+    }
+
+    @Override
+    public boolean isConverged() {
+        return network != null && network.getStamp() != stamp;
     }
 
     public boolean getState() {

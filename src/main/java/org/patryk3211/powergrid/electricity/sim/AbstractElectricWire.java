@@ -30,8 +30,8 @@ public abstract class AbstractElectricWire implements INetworkElement, IMultiHoo
 
     protected ElectricalNetwork network;
 
-    private double aggregatePower;
-    private int tickCount;
+    protected double aggregatePower;
+    protected int tickCount;
 
     public AbstractElectricWire(IElectricNode node1, IElectricNode node2) {
         this.node1 = node1;
