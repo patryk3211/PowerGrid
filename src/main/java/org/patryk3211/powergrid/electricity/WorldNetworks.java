@@ -346,7 +346,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                             var eb = bwe.getElectricBehaviour(world);
                             if (eb == null)
                                 continue;
-                            var syncState = new SyncState(eb.getPos().distManhattan(player.blockPosition()) / 16 + 1);
+                            var ebPos = eb.getPos();
+                            var syncState = new SyncState((int) (Math.sqrt(player.distanceToSqr(ebPos.getX(), ebPos.getY(), ebPos.getZ())) / 24 + 1));
                             if(eb.blockEntity instanceof WindingBlockEntity winding) {
                                 winding.forSync(sync -> {
                                     if(sync == null)
