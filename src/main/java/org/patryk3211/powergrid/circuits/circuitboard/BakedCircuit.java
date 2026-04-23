@@ -103,10 +103,10 @@ public class BakedCircuit {
             var footprint = placed.footprint();
             var localPos =
                     new Vec3((placed.x + footprint.getWidth() * 0.5f) / 16f, 2 / 16f, (placed.y + footprint.getHeight() * 0.5f) / 16f)
-                            .subtract(0.5, 0, 0.5)
+                            .subtract(0.5, 0.5, 0.5)
                             .xRot((float) Math.PI * CircuitBoardBlock.getAngleX(be.getBlockState()) / 180f)
                             .yRot((float) Math.PI * CircuitBoardBlock.getAngleY(be.getBlockState()) / 180f)
-                            .add(0.5, 0, 0.5)
+                            .add(0.5, 0.5, 0.5)
                             .add(offset);
             thermalBuilders.stream()
                     .map(b -> b.build().withPosition(localPos))
@@ -176,9 +176,9 @@ public class BakedCircuit {
                         // Spawn a spark explosion
                         var random = world.random;
                         var pos = unit.getPosition();
-                        var x = (float) pos.x() + (random.nextFloat() - 0.5f) * 1 / 16f;
-                        var y = (float) pos.y() + (random.nextFloat() - 0.5f) * 1 / 16f;
-                        var z = (float) pos.z() + (random.nextFloat() - 0.5f) * 1 / 16f;
+                        var x = pos.x() + (random.nextFloat() - 0.5) / 16.0;
+                        var y = pos.y() + (random.nextFloat() - 0.5) / 16.0;
+                        var z = pos.z() + (random.nextFloat() - 0.5) / 16.0;
                         SparkParticleData.explodeParticles(world, x, y, z, Direction.UP, 10);
                         ModdedSoundEvents.COMPONENT_EXPLODE.playAt(world, pos, 1.0f, random.nextFloat() * 0.1f + 0.9f, true);
                         // Mark component as destroyed for rendering purposes
@@ -257,9 +257,9 @@ public class BakedCircuit {
                     var world = this.be.getLevel();
                     var random = world.random;
                     var pos = unit.getPosition();
-                    var x = (float) pos.x() + (random.nextFloat() - 0.5f) * 1 / 16f;
-                    var y = (float) pos.y() + (random.nextFloat() - 0.5f) * 1 / 16f;
-                    var z = (float) pos.z() + (random.nextFloat() - 0.5f) * 1 / 16f;
+                    var x = pos.x() + (random.nextFloat() - 0.5) / 16.0;
+                    var y = pos.y() + (random.nextFloat() - 0.5) / 16.0;
+                    var z = pos.z() + (random.nextFloat() - 0.5) / 16.0;
                     if (!unit.hasOverheated() && unit.getTemperature() >= unit.getOverheatTemperature() - 50f) {
                         // Spawn particles
                         float chance = (unit.getTemperature() - unit.getOverheatTemperature() + 100) / 100;

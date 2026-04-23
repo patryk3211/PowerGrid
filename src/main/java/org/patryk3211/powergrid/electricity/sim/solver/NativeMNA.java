@@ -150,8 +150,8 @@ public class NativeMNA implements IMNA {
     }
 
     @Override
-    public void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision) {
-        setPrecision(nativePtr, absoluteCriterion, relativeCriterion, minimumPrecision);
+    public void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision, double searchAlpha) {
+        setPrecision(nativePtr, absoluteCriterion, relativeCriterion, minimumPrecision, searchAlpha);
     }
 
     @Override
@@ -390,7 +390,7 @@ public class NativeMNA implements IMNA {
     private static native void finishJacobianWrite(long ptr, int cmdCount);
     private static native void processJacobianBuffer(long ptr, int cmdCount);
     private static native void processRHSBuffer(long ptr);
-    private static native void setPrecision(long ptr, double absoluteCriterion, double relativeCriterion, double minimumPrecision);
+    private static native void setPrecision(long ptr, double absoluteCriterion, double relativeCriterion, double minimumPrecision, double searchAlpha);
     private native ByteBuffer singleTick(long ptr, int maxIters, int jacobianCmdCount);
     private static native int verifySupport();
 }

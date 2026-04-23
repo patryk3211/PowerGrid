@@ -429,7 +429,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         var rA = cSolver.solverAbsolutePrecision.get();
         var rR = cSolver.solverRelativePrecision.get();
         var rM = cSolver.solverAbsoluteMinimumPrecision.get();
-        network.setPrecision(rA, rR, rM);
+        var sA = cSolver.solverMaxSearchAlpha.get();
+        network.setPrecision(rA, rR, rM, sA);
         network.bjtSmoothAlpha = cSolver.bjtLimAlpha.getF();
         network.diodeSmoothAlpha = cSolver.diodeLimAlpha.getF();
         network.triodeLimCathode = cSolver.triodeLimCathode.getF();

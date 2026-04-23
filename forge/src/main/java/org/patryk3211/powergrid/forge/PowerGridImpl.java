@@ -196,11 +196,24 @@ public class PowerGridImpl {
                 ModdedBlockEntities.WINDING,
                 ModdedBlockEntities.TRANSFORMER_MEDIUM,
                 ModdedBlockEntities.HV_SWITCH,
-                ModdedBlockEntities.DEVICE_CONNECTOR
+                ModdedBlockEntities.DEVICE_CONNECTOR,
+                ModdedBlockEntities.MULTIBLOCK_BATTERY,
+                ModdedBlockEntities.CARBON_PILE,
+                ModdedBlockEntities.CARBON_PILE_COIL
         );
         forbiddenBlockEntities.stream()
                 .map(entry -> entry.getId().toString())
                 .forEach(id -> InterModComms.sendTo("carryon", "blacklistBlock", () -> id));
+        var forbiddenEntities = List.of(
+                ModdedEntities.BLOCK_WIRE,
+                ModdedEntities.HANGING_WIRE,
+                ModdedEntities.CORD_ENTITY,
+                ModdedEntities.STRING_LIGHT_CORD,
+                ModdedEntities.ZAP_PROJECTILE
+        );
+        forbiddenEntities.stream()
+                .map(entry -> entry.getId().toString())
+                .forEach(id -> InterModComms.sendTo("carryon", "blacklistEntity", () -> id));
     }
 
     @SubscribeEvent

@@ -69,7 +69,7 @@ JNIEXPORT jobject JNICALL MANGLE(singleTick)(JNIEnv *env, jobject mnaObj, jlong 
     return solver_single_tick(SOLVER(ptr), maxIters, mnaObj, jCmdCount);
 }
 
-JNIEXPORT void JNICALL MANGLE(setPrecision)(JNIEnv *env, jobject obj, jlong ptr, jdouble absolute, jdouble relative, jdouble minimum) {
-    solver_set_precision(SOLVER(ptr), absolute, relative, minimum);
+JNIEXPORT void JNICALL MANGLE(setPrecision)(JNIEnv *env, jobject obj, jlong ptr, jdouble absolute, jdouble relative, jdouble minimum, jdouble searchAlpha) {
+    solver_set_precision(SOLVER(ptr), absolute, relative, minimum, searchAlpha);
 }
 
