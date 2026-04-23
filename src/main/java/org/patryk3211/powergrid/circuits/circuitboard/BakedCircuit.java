@@ -176,9 +176,9 @@ public class BakedCircuit {
                         // Spawn a spark explosion
                         var random = world.random;
                         var pos = unit.getPosition();
-                        var x = (float) pos.x() + (random.nextFloat() - 0.5f) * 1 / 16f;
-                        var y = (float) pos.y() + (random.nextFloat() - 0.5f) * 1 / 16f;
-                        var z = (float) pos.z() + (random.nextFloat() - 0.5f) * 1 / 16f;
+                        var x = pos.x() + (random.nextFloat() - 0.5) / 16.0;
+                        var y = pos.y() + (random.nextFloat() - 0.5) / 16.0;
+                        var z = pos.z() + (random.nextFloat() - 0.5) / 16.0;
                         SparkParticleData.explodeParticles(world, x, y, z, Direction.UP, 10);
                         ModdedSoundEvents.COMPONENT_EXPLODE.playAt(world, pos, 1.0f, random.nextFloat() * 0.1f + 0.9f, true);
                         // Mark component as destroyed for rendering purposes
@@ -257,9 +257,9 @@ public class BakedCircuit {
                     var world = this.be.getLevel();
                     var random = world.random;
                     var pos = unit.getPosition();
-                    var x = (float) pos.x() + (random.nextFloat() - 0.5f) * 1 / 16f;
-                    var y = (float) pos.y() + (random.nextFloat() - 0.5f) * 1 / 16f;
-                    var z = (float) pos.z() + (random.nextFloat() - 0.5f) * 1 / 16f;
+                    var x = pos.x() + (random.nextFloat() - 0.5) / 16.0;
+                    var y = pos.y() + (random.nextFloat() - 0.5) / 16.0;
+                    var z = pos.z() + (random.nextFloat() - 0.5) / 16.0;
                     if (!unit.hasOverheated() && unit.getTemperature() >= unit.getOverheatTemperature() - 50f) {
                         // Spawn particles
                         float chance = (unit.getTemperature() - unit.getOverheatTemperature() + 100) / 100;
