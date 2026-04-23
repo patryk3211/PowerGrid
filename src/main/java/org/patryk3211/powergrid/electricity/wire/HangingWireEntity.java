@@ -182,10 +182,10 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             );
             setYRot(facingAngle);
             updateRenderParams();
-            if(!curveParams.valid) {
-                kill();
-                return;
-            }
+        }
+        if(curveParams != null && !curveParams.valid) {
+            kill();
+            return;
         }
 
         var temperature = getTemperature();

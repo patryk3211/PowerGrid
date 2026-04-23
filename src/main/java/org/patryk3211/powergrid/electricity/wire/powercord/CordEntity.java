@@ -58,7 +58,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     private Vec3 baseTerminalPos2;
     Vec3 terminal1Velocity;
     Vec3 terminal2Velocity;
-    private float placedLength;
+    protected float placedLength;
 
     protected ElectricWire wire1;
     protected ElectricWire wire2;
@@ -287,10 +287,10 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             );
             setYRot(facingAngle);
             updateRenderParams();
-            if(!curveParams.valid) {
-                kill();
-                return;
-            }
+        }
+        if(curveParams != null && !curveParams.valid) {
+            kill();
+            return;
         }
 
         var temperature = getTemperature();

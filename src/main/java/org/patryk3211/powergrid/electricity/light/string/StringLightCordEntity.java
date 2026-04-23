@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.light.string;
 
+import dev.ryanhcode.sable.companion.SableCompanion;
 import net.createmod.ponder.api.level.PonderLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -76,6 +77,14 @@ public class StringLightCordEntity extends CordEntity {
 
         entity.setEndpoint1(endpoint1);
         entity.setEndpoint2(endpoint2);
+
+        var tp1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, endpoint1.getExactPosition(world));
+        var tp2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, endpoint2.getExactPosition(world));
+        var dX = tp2.x - tp1.x;
+        var dY = tp2.y - tp1.y;
+        var dZ = tp2.z - tp1.z;
+        var hL = dX * dX + dZ * dZ;
+        entity.placedLength = (float) Math.sqrt(entity.getWireEntry().horizontalCoefficient() * hL + entity.getWireEntry().verticalCoefficient() * dY * dY);
 
         entity.refreshTerminalPositions();
         entity.setXRot(0);
