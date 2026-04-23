@@ -53,7 +53,10 @@ public class RotorSoundInstance extends AbstractTickableSoundInstance {
             stop();
         } else {
             var closest = new MutableObject<BlockPos>();
-            var playerPos = Minecraft.getInstance().player.blockPosition();
+            var player = Minecraft.getInstance().player;
+            if(player == null)
+                return;
+            var playerPos = player.blockPosition();
             behaviour.forEachSegment(segment -> {
                 if(closest.getValue() == null) {
                     closest.setValue(segment.getPos());
