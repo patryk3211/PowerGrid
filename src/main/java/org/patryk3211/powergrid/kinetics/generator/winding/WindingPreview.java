@@ -96,6 +96,8 @@ public class WindingPreview {
             canConnect = false;
 
         var length = getPlacementDelta(selected, firstPos);
+        if(Math.abs(length) > 64)
+            return;
         if(canConnect) {
             // Verify the winding can be placed
             if(length > 0) {

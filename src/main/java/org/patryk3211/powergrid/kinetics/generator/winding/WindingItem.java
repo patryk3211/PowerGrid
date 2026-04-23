@@ -119,6 +119,8 @@ public class WindingItem extends Item {
                     .setValue(PART, 1);
 
             var length = getPlacementDelta(pos, firstPos);
+            if(Math.abs(length) > 64)
+                return InteractionResult.FAIL;
             if(!PlayerUtilities.hasEnoughItems(context.getPlayer(), stack, Math.abs(length) + 1))
                 return InteractionResult.FAIL;
 
