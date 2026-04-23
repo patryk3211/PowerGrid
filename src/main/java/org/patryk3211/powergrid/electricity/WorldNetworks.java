@@ -361,16 +361,18 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                             }
                         } else if(endpoint instanceof JunctionWireEndpoint je) {
                             var syncEntry = je.makeSyncEntry(world);
+                            var jePos = je.getExactPosition(world);
                             if(syncEntry != null)
                                 syncStates.computeIfAbsent(player, $ -> new HashMap<>())
-                                        .put(syncEntry, new SyncState((int) (je.getExactPosition(world).distanceTo(player.position()) / 16 + 1)));
+                                        .put(syncEntry, new SyncState((int) (Math.sqrt(player.distanceToSqr(jePos)) / 24 + 1)));
                         } else if(endpoint instanceof CircuitBoardEndpoint cbe) {
                             // Circuits might not have external terminals so they need a special tracking entry
                             var eb = cbe.getElectricBehaviour(world);
                             if (eb == null)
                                 continue;
+                            var ebPos = eb.getPos();
                             syncStates.computeIfAbsent(player, $ -> new HashMap<>())
-                                    .put(eb, new SyncState(eb.getPos().distManhattan(player.blockPosition()) / 16 + 1));
+                                    .put(eb, new SyncState((int) (Math.sqrt(player.distanceToSqr(ebPos.getX(), ebPos.getY(), ebPos.getZ())) / 24 + 1)));
                         }
                     }
                     if(entry.getValue().isEmpty()) {
