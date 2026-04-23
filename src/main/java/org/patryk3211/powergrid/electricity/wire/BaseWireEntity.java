@@ -149,8 +149,13 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
     }
 
     @Override
-    public void tick() {
+    public void baseTick() {
         // We don't need Entity#baseTick() in wires
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
         var world = level();
         temperatureUpdate();
 

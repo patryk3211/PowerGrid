@@ -37,7 +37,7 @@ import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
-import org.patryk3211.powergrid.utility.SableUtils;
+import org.patryk3211.powergrid.compat.sable.SableUtils;
 
 public interface IElectric extends IWrenchable {
     /**

@@ -52,7 +52,7 @@ import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
 import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlacementOverlay;
-import org.patryk3211.powergrid.utility.SableUtils;
+import org.patryk3211.powergrid.compat.sable.SableUtils;
 
 @Environment(EnvType.CLIENT)
 public class WirePreview {

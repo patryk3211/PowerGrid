@@ -37,7 +37,7 @@ import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
-import org.patryk3211.powergrid.utility.SableUtils;
+import org.patryk3211.powergrid.compat.sable.SableUtils;
 
 public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     public static final int CLEARANCE_CHECK_INTERVAL = 20;
@@ -48,8 +48,8 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     public Vec3 terminalPos2;
     public AABB deSabledBB;
     private boolean isDynamic = false;
-    private Vec3 baseTerminalPos1;
-    private Vec3 baseTerminalPos2;
+    Vec3 baseTerminalPos1;
+    Vec3 baseTerminalPos2;
     Vec3 terminal1Velocity;
     Vec3 terminal2Velocity;
     private float placedLength;
@@ -166,22 +166,31 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             updateRenderParams();
         }
         if(isDynamic && baseTerminalPos1 != null && baseTerminalPos2 != null) {
-            terminalPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, baseTerminalPos1);
-            terminalPos2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, baseTerminalPos2);
-            terminal1Velocity = SableCompanion.INSTANCE.getVelocity(world, baseTerminalPos1);
-            terminal2Velocity = SableCompanion.INSTANCE.getVelocity(world, baseTerminalPos2);
-            var vect = terminalPos2.subtract(terminalPos1);
-            var facing = vect.cross(UP);
-            float facingAngle = (float) (Math.atan2(facing.x, -facing.z) * 180 / Math.PI);
+            var sublevel1 = SableCompanion.INSTANCE.getContaining(world, baseTerminalPos1);
+            var sublevel2 = SableCompanion.INSTANCE.getContaining(world, baseTerminalPos2);
+            if (sublevel1 == sublevel2) {
+                // Sable handles this.
+                SableUtils.PROXY.setSubLevelTracking(this, sublevel1);
+                isDynamic = false;
+            } else {
+                terminalPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, baseTerminalPos1);
+                terminalPos2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, baseTerminalPos2);
+                terminal1Velocity = SableCompanion.INSTANCE.getVelocity(world, baseTerminalPos1);
+                terminal2Velocity = SableCompanion.INSTANCE.getVelocity(world, baseTerminalPos2);
+                var vect = terminalPos2.subtract(terminalPos1);
+                var facing = vect.cross(UP);
+                float facingAngle = (float) (Math.atan2(facing.x, -facing.z) * 180 / Math.PI);
 
-            setOldPosAndRot();
-            setPosRaw(
-                    (terminalPos1.x + terminalPos2.x) * 0.5,
-                    terminalPos1.y,
-                    (terminalPos1.z + terminalPos2.z) * 0.5
-            );
-            setYRot(facingAngle);
-            updateRenderParams();
+                setOldPosAndRot();
+                setPosRaw(
+                        (terminalPos1.x + terminalPos2.x) * 0.5,
+                        terminalPos1.y,
+                        (terminalPos1.z + terminalPos2.z) * 0.5
+                );
+                setYRot(facingAngle);
+                reapplyPosition();
+                updateRenderParams();
+            }
         }
         if(curveParams != null && !curveParams.valid) {
             kill();
@@ -365,13 +374,15 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         var world = level();
         terminalPos1 = getEndpoint1().getExactPosition(world);
         terminalPos2 = getEndpoint2().getExactPosition(world);
-        if(getEndpoint1().getSubLevel(world) != null || getEndpoint2().getSubLevel(world) != null) {
+        var sublevel1 = SableCompanion.INSTANCE.getContaining(world, terminalPos1);
+        var sublevel2 = SableCompanion.INSTANCE.getContaining(world, terminalPos2);
+        if(sublevel1 != null || sublevel2 != null) {
             // Make outside of sublevels
             baseTerminalPos1 = terminalPos1;
             baseTerminalPos2 = terminalPos2;
-            isDynamic = true;
             terminalPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, terminalPos1);
             terminalPos2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, terminalPos2);
+            isDynamic = true;
         } else {
             baseTerminalPos1 = null;
             baseTerminalPos2 = null;

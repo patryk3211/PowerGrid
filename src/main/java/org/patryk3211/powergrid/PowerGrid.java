@@ -33,6 +33,7 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Blocks;
 import org.patryk3211.powergrid.circuits.components.Components;
 import org.patryk3211.powergrid.collections.*;
+import org.patryk3211.powergrid.compat.sable.SableUtils;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlockEntity;
 import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
@@ -65,6 +66,11 @@ public class PowerGrid {
 		ElectricalNetwork.LOGGER = LOGGER;
 
 		NativeMNA.tryLoad();
+		if(dev.architectury.platform.Platform.isModLoaded("sable")) {
+			SableUtils.makeFullProxy();
+		} else {
+			SableUtils.makeDummyProxy();
+		}
 
 		ModdedSoundEvents.prepare();
 
