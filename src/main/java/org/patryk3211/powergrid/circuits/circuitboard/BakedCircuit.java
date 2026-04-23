@@ -104,7 +104,7 @@ public class BakedCircuit {
             var localPos =
                     new Vec3((placed.x + footprint.getWidth() * 0.5f) / 16f, 2 / 16f, (placed.y + footprint.getHeight() * 0.5f) / 16f)
                             .subtract(0.5, 0.5, 0.5)
-                            .xRot((float) Math.PI * CircuitBoardBlock.getAngleX(be.getBlockState()) / 180f)
+                            .xRot(-(float) Math.PI * CircuitBoardBlock.getAngleX(be.getBlockState()) / 180f)
                             .yRot((float) Math.PI * CircuitBoardBlock.getAngleY(be.getBlockState()) / 180f)
                             .add(0.5, 0.5, 0.5)
                             .add(offset);
