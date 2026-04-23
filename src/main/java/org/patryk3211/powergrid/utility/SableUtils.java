@@ -1,11 +1,16 @@
 package org.patryk3211.powergrid.utility;
 
 import dev.ryanhcode.sable.companion.SableCompanion;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 
 public class SableUtils {
     public static boolean sameSubLevel(Level level, Vec3 pos1, Vec3 pos2) {
+        return SableCompanion.INSTANCE.getContaining(level, pos1) == SableCompanion.INSTANCE.getContaining(level, pos2);
+    }
+
+    public static boolean sameSubLevel(Level level, BlockPos pos1, BlockPos pos2) {
         return SableCompanion.INSTANCE.getContaining(level, pos1) == SableCompanion.INSTANCE.getContaining(level, pos2);
     }
 

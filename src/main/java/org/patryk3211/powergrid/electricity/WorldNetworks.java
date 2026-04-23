@@ -783,6 +783,10 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         deferredRewireEntities.addAll(wires);
     }
 
+    public void deferredRewire(TransmissionLinePart part) {
+        deferredRewireEntities.add(part);
+    }
+
     @Override
     public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
         var partList = new ListTag();

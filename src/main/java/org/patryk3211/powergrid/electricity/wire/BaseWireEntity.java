@@ -82,6 +82,8 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
 
     protected Float resistanceOverride = null;
 
+    private boolean sublevelMove;
+
     public BaseWireEntity(EntityType<?> type, Level world) {
         super(type, world);
     }
@@ -167,6 +169,11 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
             }
         }
 
+        if(sublevelMove && deferEndpointResolution == 0) {
+            sendExtraData();
+            sublevelMove = false;
+        }
+
         if(isOverheated()) {
             // Remove to prevent power transfer in the 5 particle ticks.
             dropWire();
@@ -228,6 +235,20 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
             endpoint2 = endpoint;
             makeWire();
         }
+    }
+
+    public void sublevelMove(IWireEndpoint endpoint1, IWireEndpoint endpoint2) {
+        if(this.endpoint1 != endpoint1 && this.endpoint1.isValid(level())) {
+            this.endpoint1.removeWireEntity(this);
+        }
+        if(this.endpoint2 != endpoint2 && this.endpoint2.isValid(level())) {
+            this.endpoint2.removeWireEntity(this);
+        }
+        this.endpoint1 = endpoint1;
+        this.endpoint2 = endpoint2;
+        deferEndpointResolution |= 3;
+        deferTicks = 0;
+        sublevelMove = true;
     }
 
     // This method shouldn't be used too much. It's only needed in very special cases.

@@ -165,7 +165,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             grabEndpointPositions();
             updateRenderParams();
         }
-        if(isDynamic) {
+        if(isDynamic && baseTerminalPos1 != null && baseTerminalPos2 != null) {
             terminalPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, baseTerminalPos1);
             terminalPos2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, baseTerminalPos2);
             terminal1Velocity = SableCompanion.INSTANCE.getVelocity(world, baseTerminalPos1);
@@ -372,14 +372,17 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             isDynamic = true;
             terminalPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, terminalPos1);
             terminalPos2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, terminalPos2);
+        } else {
+            baseTerminalPos1 = null;
+            baseTerminalPos2 = null;
+            isDynamic = false;
         }
     }
 
     public void refreshTerminalPositions() {
         var world = level();
+        grabEndpointPositions();
         if(world != null && (!world.isClientSide || world instanceof PonderLevel)) {
-            grabEndpointPositions();
-
             var vect = terminalPos2.subtract(terminalPos1);
             var facing = vect.cross(UP);
             float facingAngle = (float) (Math.atan2(facing.x, -facing.z) * 180 / Math.PI);
