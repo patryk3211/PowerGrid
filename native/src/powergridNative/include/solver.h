@@ -47,6 +47,7 @@ typedef struct Solver {
     double m_minimumAllowedPrecision;
     double m_absoluteStoppingCriterion;
     double m_relativeStoppingCriterion;
+    double m_maxSearchAlpha;
 
     int m_maxCmdCount;
     rhsop_t *m_rhsOpBuffer;
@@ -69,7 +70,7 @@ void solver_zero_jacobian(solver_t *solver);
 void solver_process_jacobian_buffer(solver_t *solver, int cmdCount);
 void solver_process_rhs_buffer(solver_t *solver);
 
-void solver_set_precision(solver_t *solver, double absolute, double relative, double minimum);
+void solver_set_precision(solver_t *solver, double absolute, double relative, double minimum, double searchAlpha);
 
 jobject solver_single_tick(solver_t *solver, int maxIters, jobject mnaObj, int cmdCount);
 

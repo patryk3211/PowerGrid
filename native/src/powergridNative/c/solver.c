@@ -31,6 +31,7 @@ void solver_init(solver_t *solver, void *rhsOpBuf, void *jacobianOpBuf, int cmdC
     solver->m_minimumAllowedPrecision = 1e-6;
     solver->m_absoluteStoppingCriterion = 1e-7;
     solver->m_relativeStoppingCriterion = 1e-12;
+    solver->m_maxSearchAlpha = 0.99;
 
     jclass clazz = (*env)->GetObjectClass(env, mnaObj);
     solver->m_iterHookMethod = (*env)->GetMethodID(env, clazz, "runIterHooks", "(ILjava/nio/ByteBuffer;)I");
@@ -183,11 +184,8 @@ jobject solver_single_tick(solver_t *solver, int maxIters, jobject mnaObj, int c
 
     int i;
     double norm = 0;
-    char skipped = FALSE;
-    double beta = 0;
-    int normDown = 0, normUp = 0;
     for(i = 0; i < maxIters; ++i) {
-        if(!skipped) {
+        if(i == 0) {
             // Run inner hooks
             int cmdCount = 0;
             if(i < maxIters - 10)
@@ -208,27 +206,6 @@ jobject solver_single_tick(solver_t *solver, int maxIters, jobject mnaObj, int c
         sp_dgemv(&trans, 1.0, A, solver->m_state, 1, -1.0, solver->m_residual, 1);
         int idxMax = idamax_(&solver->m_size, solver->m_residual, &inc);
         double nextNorm = fabs(solver->m_residual[idxMax - 1]);
-        if(i != 0 && nextNorm > norm) {
-            if(!skipped) {
-                normDown = 0;
-                ++normUp;
-                double alpha = -0.5;
-                daxpy_(&solver->m_size, &alpha, solver->m_stateDelta, &inc, solver->m_state, &inc);
-                skipped = TRUE;
-                --i;
-//                beta = -0.5;
-                continue;
-            }
-        } else {
-            normUp = 0;
-            ++normDown;
-        }
-        if(normUp >= 4) {
-            beta = -0.5;
-        } else if(normDown >= 4) {
-            beta *= 0.5;
-        }
-        skipped = FALSE;
         double dNorm = fabs(nextNorm - norm);
         norm = nextNorm;
         if(norm < solver->m_absoluteStoppingCriterion || dNorm < solver->m_relativeStoppingCriterion)
@@ -249,8 +226,30 @@ jobject solver_single_tick(solver_t *solver, int maxIters, jobject mnaObj, int c
             double alpha = -1.0;
             memcpy(solver->m_stateDelta, solver->m_state, solver->m_size * sizeof(double));
             daxpy_(&solver->m_size, &alpha, solver->m_b, &inc, solver->m_stateDelta, &inc);
-            if(beta < 0)
-                daxpy_(&solver->m_size, &beta, solver->m_stateDelta, &inc, solver->m_state, &inc);
+            // Perform solution fitting
+            alpha = 0;
+            while(alpha < solver->m_maxSearchAlpha) {
+                // Run inner hooks
+                int cmdCount = 0;
+                if(i < maxIters - 10)
+                    cmdCount = (*solver->m_env)->CallIntMethod(solver->m_env, mnaObj, solver->m_iterHookMethod, i, solver->m_stateBuffer);
+                if(cmdCount != 0)
+                    solver_process_jacobian_buffer(solver, cmdCount);
+                // Compute residual vector
+                memcpy(solver->m_b, solver->m_rhs, solver->m_size * sizeof(double));
+                (*solver->m_env)->CallVoidMethod(solver->m_env, mnaObj, solver->m_residualAddMethod, solver->m_bBuffer);
+                memcpy(solver->m_residual, solver->m_b, solver->m_size * sizeof(double));
+                // R = A * x - R
+                SuperMatrix* A = sparsematrix_supermatrix(&solver->m_A);
+                sp_dgemv(&trans, 1.0, A, solver->m_state, 1, -1.0, solver->m_residual, 1);
+                int idxMax = idamax_(&solver->m_size, solver->m_residual, &inc);
+                double testNorm = fabs(solver->m_residual[idxMax - 1]);
+                if(testNorm < norm)
+                    break;
+                double deltaAlpha = -(1 - alpha) * 0.5;
+                alpha -= deltaAlpha;
+                daxpy_(&solver->m_size, &deltaAlpha, solver->m_stateDelta, &inc, solver->m_state, &inc);
+            }
         }
 
         sparsematrix_same_pattern(&solver->m_A, 1);
@@ -270,9 +269,10 @@ jobject solver_single_tick(solver_t *solver, int maxIters, jobject mnaObj, int c
     return solver->m_stateBuffer;
 }
 
-void solver_set_precision(solver_t *solver, double absolute, double relative, double minimum) {
+void solver_set_precision(solver_t *solver, double absolute, double relative, double minimum, double searchAlpha) {
     solver->m_absoluteStoppingCriterion = absolute;
     solver->m_relativeStoppingCriterion = relative;
     solver->m_minimumAllowedPrecision = minimum;
+    solver->m_maxSearchAlpha = searchAlpha;
 }
 

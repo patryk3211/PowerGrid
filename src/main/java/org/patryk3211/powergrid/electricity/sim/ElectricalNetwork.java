@@ -105,9 +105,9 @@ public class ElectricalNetwork implements IStamped {
         mna = null;
     }
 
-    public void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision) {
+    public void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision, double searchAlpha) {
         if(mna != null)
-            mna.setPrecision(absoluteCriterion, relativeCriterion, minimumPrecision);
+            mna.setPrecision(absoluteCriterion, relativeCriterion, minimumPrecision, searchAlpha);
     }
 
     // Make sure all variables are completely rebuilt and repopulated.
