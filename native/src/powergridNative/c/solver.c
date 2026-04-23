@@ -187,9 +187,7 @@ jobject solver_single_tick(solver_t *solver, int maxIters, jobject mnaObj, int c
     for(i = 0; i < maxIters; ++i) {
         if(i == 0) {
             // Run inner hooks
-            int cmdCount = 0;
-            if(i < maxIters - 10)
-                cmdCount = (*solver->m_env)->CallIntMethod(solver->m_env, mnaObj, solver->m_iterHookMethod, i, solver->m_stateBuffer);
+            int cmdCount = (*solver->m_env)->CallIntMethod(solver->m_env, mnaObj, solver->m_iterHookMethod, i, solver->m_stateBuffer);
             if(cmdCount != 0)
                 solver_process_jacobian_buffer(solver, cmdCount);
         }
@@ -210,12 +208,6 @@ jobject solver_single_tick(solver_t *solver, int maxIters, jobject mnaObj, int c
         norm = nextNorm;
         if(norm < solver->m_absoluteStoppingCriterion || dNorm < solver->m_relativeStoppingCriterion)
             break;
-        if(solver->m_converged && i >= maxIters - 11) {
-            // Right before non-linear devices are disabled.
-            // Only append new problem frames if the network has been converging before.
-            solver->m_converged = FALSE;
-            solver_convergence_problems(solver, mnaObj, norm, i);
-        }
 
         // Solve A * x = b
         sparsematrix_solve(&solver->m_A, &solver->m_B);
@@ -230,9 +222,7 @@ jobject solver_single_tick(solver_t *solver, int maxIters, jobject mnaObj, int c
             alpha = 0;
             while(alpha < solver->m_maxSearchAlpha) {
                 // Run inner hooks
-                int cmdCount = 0;
-                if(i < maxIters - 10)
-                    cmdCount = (*solver->m_env)->CallIntMethod(solver->m_env, mnaObj, solver->m_iterHookMethod, i, solver->m_stateBuffer);
+                int cmdCount = (*solver->m_env)->CallIntMethod(solver->m_env, mnaObj, solver->m_iterHookMethod, i, solver->m_stateBuffer);
                 if(cmdCount != 0)
                     solver_process_jacobian_buffer(solver, cmdCount);
                 // Compute residual vector
@@ -240,9 +230,8 @@ jobject solver_single_tick(solver_t *solver, int maxIters, jobject mnaObj, int c
                 (*solver->m_env)->CallVoidMethod(solver->m_env, mnaObj, solver->m_residualAddMethod, solver->m_bBuffer);
                 memcpy(solver->m_residual, solver->m_b, solver->m_size * sizeof(double));
                 // R = A * x - R
-                SuperMatrix* A = sparsematrix_supermatrix(&solver->m_A);
                 sp_dgemv(&trans, 1.0, A, solver->m_state, 1, -1.0, solver->m_residual, 1);
-                int idxMax = idamax_(&solver->m_size, solver->m_residual, &inc);
+                idxMax = idamax_(&solver->m_size, solver->m_residual, &inc);
                 double testNorm = fabs(solver->m_residual[idxMax - 1]);
                 if(testNorm < norm)
                     break;
@@ -261,7 +250,7 @@ jobject solver_single_tick(solver_t *solver, int maxIters, jobject mnaObj, int c
             solver_convergence_problems(solver, mnaObj, norm, i);
         solver->m_converged = FALSE;
     } else {
-        solver->m_converged = i < maxIters - 10;
+        solver->m_converged = TRUE;
     }
 
     solver->m_aux->status = solver->m_converged ? 1 : 0;
