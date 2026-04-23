@@ -168,29 +168,27 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         if(isDynamic && baseTerminalPos1 != null && baseTerminalPos2 != null) {
             var sublevel1 = SableCompanion.INSTANCE.getContaining(world, baseTerminalPos1);
             var sublevel2 = SableCompanion.INSTANCE.getContaining(world, baseTerminalPos2);
+            terminalPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, baseTerminalPos1);
+            terminalPos2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, baseTerminalPos2);
             if (sublevel1 == sublevel2) {
                 // Sable handles this.
                 SableUtils.PROXY.setSubLevelTracking(this, sublevel1);
-                isDynamic = false;
             } else {
-                terminalPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, baseTerminalPos1);
-                terminalPos2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, baseTerminalPos2);
                 terminal1Velocity = SableCompanion.INSTANCE.getVelocity(world, baseTerminalPos1);
                 terminal2Velocity = SableCompanion.INSTANCE.getVelocity(world, baseTerminalPos2);
-                var vect = terminalPos2.subtract(terminalPos1);
-                var facing = vect.cross(UP);
-                float facingAngle = (float) (Math.atan2(facing.x, -facing.z) * 180 / Math.PI);
-
                 setOldPosAndRot();
-                setPosRaw(
-                        (terminalPos1.x + terminalPos2.x) * 0.5,
-                        terminalPos1.y,
-                        (terminalPos1.z + terminalPos2.z) * 0.5
-                );
-                setYRot(facingAngle);
-                reapplyPosition();
-                updateRenderParams();
             }
+            var vect = terminalPos2.subtract(terminalPos1);
+            var facing = vect.cross(UP);
+            float facingAngle = (float) (Math.atan2(facing.x, -facing.z) * 180 / Math.PI);
+
+            setPos(
+                    (terminalPos1.x + terminalPos2.x) * 0.5,
+                    terminalPos1.y,
+                    (terminalPos1.z + terminalPos2.z) * 0.5
+            );
+            setYRot(facingAngle);
+            updateRenderParams();
         }
         if(curveParams != null && !curveParams.valid) {
             kill();
