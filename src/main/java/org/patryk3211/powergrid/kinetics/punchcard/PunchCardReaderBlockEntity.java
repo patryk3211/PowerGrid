@@ -138,4 +138,8 @@ public class PunchCardReaderBlockEntity extends ElectricKineticBlockEntity {
     public ItemStack extractCard() {
         throw new AssertionError("Implementation dependent");
     }
+
+    public void dropItems() {
+
+    }
 }

@@ -68,8 +68,7 @@ public class PunchCardReaderBlockEntityImpl extends PunchCardReaderBlockEntity i
     }
 
     @Override
-    public void destroy() {
-        super.destroy();
+    public void dropItems() {
         ItemHelper.dropContents(level, worldPosition, inventory);
     }
 

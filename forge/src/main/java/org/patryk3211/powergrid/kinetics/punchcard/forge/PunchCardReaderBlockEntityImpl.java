@@ -53,26 +53,12 @@ public class PunchCardReaderBlockEntityImpl extends PunchCardReaderBlockEntity {
     }
 
     @Override
-    public void tick() {
-        super.tick();
-//        if(progress.getValue() >= 1) {
-//            if(!inputInventory.getStackInSlot(0).isEmpty()) {
-//                var stack = inputInventory.extractItem(0, 1, true);
-//                if(!stack.isEmpty() && outputInventory.insertItem(0, stack, false).isEmpty()) {
-//                    inputInventory.extractItem(0, 1, false);
-//                }
-//            }
-//        }
-    }
-
-    @Override
     public void invalidate() {
         super.invalidate();
     }
 
     @Override
-    public void destroy() {
-        super.destroy();
+    public void dropItems() {
         ItemHelper.dropContents(level, worldPosition, inventory);
     }
 
