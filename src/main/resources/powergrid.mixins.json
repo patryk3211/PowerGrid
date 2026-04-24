@@ -15,8 +15,8 @@
     "KineticBlockEntityAccessor",
     "LightningAccessor",
     "RecipeApplierMixin",
-    "SableSubLevelAssemblerMixin",
-    "SoundEntryBuilderMixin"
+    "SoundEntryBuilderMixin",
+    "sable.SubLevelAssemblerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
