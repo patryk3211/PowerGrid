@@ -48,9 +48,9 @@ public class CarbonPileBlockEntity extends SmartBlockEntity {
         if(thermal != null) {
             thermal.particleGenerator((consumer, random) -> {
                 for (int i = 0; i < Math.ceil(size / 2.0f); ++i) {
-                    float x = worldPosition.getX() + random.nextFloat();
-                    float z = worldPosition.getZ() + random.nextFloat();
-                    float y = worldPosition.getY() - size + 1 + random.nextFloat() * size;
+                    double x = worldPosition.getX() + random.nextDouble();
+                    double z = worldPosition.getZ() + random.nextDouble();
+                    double y = worldPosition.getY() - size + 1 + random.nextDouble() * size;
                     consumer.accept(x, y, z);
                 }
             });
