@@ -33,16 +33,17 @@ public class CSolver extends ConfigBase {
     public final ConfigInt solverSimpleMaxIterations = i(250, "solverSimpleMaxIterations", Comments.solverSimpleMaxIterations);
     public final ConfigInt solverComplexMaxIterations = i(250, "solverComplexMaxIterations", Comments.solverComplexMaxIterations);
 
-    public final ConfigFloat solverAbsolutePrecision = f(1e-6f, 0, "solverAbsolutePrecision", Comments.solverAbsolutePrecision);
-    public final ConfigFloat solverRelativePrecision = f(1e-12f, 0, "solverRelativePrecision", Comments.solverRelativePrecision);
+    public final ConfigFloat solverAbsolutePrecision = f(1e-7f, 0, "solverAbsolutePrecision", Comments.solverAbsolutePrecision);
+    public final ConfigFloat solverRelativePrecision = f(1e-14f, 0, "solverRelativePrecision", Comments.solverRelativePrecision);
     public final ConfigFloat solverAbsoluteMinimumPrecision = f(1e-6f, 0, "solverAbsoluteMinimumPrecision", Comments.solverAbsoluteMinimumPrecision);
+    public final ConfigFloat solverMaxSearchAlpha = f(0.99f, 0, 1, "solverMaxSearchAlpha", Comments.solverMaxSearchAlpha);
 
     public final ConfigFloat bjtLimAlpha = f(0.5f, 0, 1, "bjtLimAlpha", Comments.bjtLimAlpha);
     public final ConfigFloat diodeLimAlpha = f(0.025f, 0, 1, "diodeLimAlpha", Comments.diodeLimAlpha);
 
-    public final ConfigFloat triodeLimAnode = f(0.8f, 0, 1, "triodeLimAnode", Comments.triodeLim);
-    public final ConfigFloat triodeLimCathode = f(0.8f, 0, 1, "triodeLimCathode", Comments.triodeLim);
-    public final ConfigFloat triodeLimGrid = f(0.8f, 0, 1, "triodeLimCathode", Comments.triodeLim);
+    public final ConfigFloat triodeLimAnode = f(0.5f, 0, 1, "triodeLimAnode", Comments.triodeLim);
+    public final ConfigFloat triodeLimCathode = f(0.5f, 0, 1, "triodeLimCathode", Comments.triodeLim);
+    public final ConfigFloat triodeLimGrid = f(0.5f, 0, 1, "triodeLimGrid", Comments.triodeLim);
 
     public final ConfigInt multiTicks = i(1, 1, "multiTicks", Comments.multiTicks);
 
@@ -82,6 +83,7 @@ public class CSolver extends ConfigBase {
         public static final String solverAbsolutePrecision = "Absolute stopping criterion";
         public static final String solverRelativePrecision = "Relative stopping criterion";
         public static final String solverAbsoluteMinimumPrecision = "Minimum accepted precision";
+        public static final String solverMaxSearchAlpha = "Maximum alpha value when performing iteration solution fitting (x1 = x0 * alpha + x1 * (1 - alpha))";
 
         public static final String solverSimpleMaxIterations = "Maximum solver iterations for networks without dynamic residuals";
         public static final String solverComplexMaxIterations = "Maximum solver iterations for networks with dynamic residuals";

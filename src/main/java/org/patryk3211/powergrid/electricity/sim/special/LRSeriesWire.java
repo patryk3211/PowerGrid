@@ -20,25 +20,20 @@ import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.ITimeAwareWire;
 import org.patryk3211.powergrid.electricity.sim.solver.IOuterHook;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
-import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
+import org.patryk3211.powergrid.electricity.sim.solver.IStaticResidual;
 
-public class LRSeriesWire extends AbstractElectricWire implements ISolverHook, IOuterHook, ITimeAwareWire {
+public class LRSeriesWire extends AbstractElectricWire implements IStaticResidual, IOuterHook, ITimeAwareWire {
     private double inductance;
     private double resistance;
 
     private double Ieq;
     private double I;
     private double Vprev;
-    private double residualScale;
 
     public LRSeriesWire(double L, double R, IElectricNode node1, IElectricNode node2) {
         super(node1, node2);
         this.inductance = L;
         this.resistance = R;
-
-        var R_Inductor = (2 * inductance) / getDeltaTime();
-        var G_I = 1 / R_Inductor;
-        residualScale = 1 - G_I / (1 / resistance + G_I);
     }
 
     @Override
@@ -47,47 +42,44 @@ public class LRSeriesWire extends AbstractElectricWire implements ISolverHook, I
     }
 
     @Override
-    public float current() {
-        return (float) (super.current() + Ieq);
+    public double current() {
+        if(network == null)
+            return I;
+        if(network.isLeaf(node1) || network.isLeaf(node2))
+            return 0;
+        return super.current() + Ieq;
     }
 
     public void setCurrent(float current) {
         valueChange(current, I);
-        if(Float.isFinite(current))
+        if(Float.isFinite(current)) {
+            Vprev = 0;
             I = current;
-    }
-
-    @Override
-    public void preSolve() {
-        Ieq = 0;
+        }
     }
 
     @Override
     public void postUpperSolve() {
        if(isConverged()) {
-            Vprev = inductance * (current() - I) / getDeltaTime();
-            I = current() * 0.99999;
-        }
+           Vprev = 0.5 * inductance * (current() - I) / getDeltaTime();
+           I = current() * 0.99999;
+       }
     }
 
     @Override
-    public void startIteration(int iteration) {
+    public void addStaticResidual(IResidualAdder residual) {
         if(inductance == 0) {
             Ieq = 0;
             return;
         }
         var G_I = getDeltaTime() / (2 * inductance);
-        var V_Inductor = (inductance * (current() - I) / getDeltaTime());
 
-        Ieq = ((V_Inductor * 0.05f + Vprev * 0.95f) * G_I + I) * residualScale;
-    }
-
-    @Override
-    public void addResidual(IResidualAdder residual) {
+        double residualScale = 1 - G_I / (1 / resistance + G_I);
+        Ieq = (Vprev * G_I + I) * residualScale;
         if(node1 != null)
-            residual.add(node1.getIndex(),  Ieq);
+            residual.add(node1.getIndex(), -Ieq);
         if(node2 != null)
-            residual.add(node2.getIndex(), -Ieq);
+            residual.add(node2.getIndex(),  Ieq);
     }
 
     public void setLR(double L, double R) {
@@ -95,9 +87,6 @@ public class LRSeriesWire extends AbstractElectricWire implements ISolverHook, I
         this.inductance = L;
         this.resistance = R;
 
-        var R_Inductor = (2 * inductance) / 0.05;
-        var G_I = 1 / R_Inductor;
-        residualScale = 1 - G_I / (1 / resistance + G_I);
         if(network != null) {
             network.updateConductance(this, conductance() - oldConductance);
         }

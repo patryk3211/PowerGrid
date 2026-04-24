@@ -20,6 +20,8 @@ import net.createmod.catnip.config.ConfigBase;
 public class CCommon extends ConfigBase {
     public final ConfigBool lotsOfLogs = b(false, "lotsOfLogs", Comments.lotsOfLogs);
     public final ConfigInt stateSynchronization = i(100, 0, "fullStateSynchronizationInterval", Comments.stateSynchronization);
+    public final ConfigBool syncWithDoubles = b(false, "syncWithDoubles", Comments.syncWithDoubles);
+    public final ConfigBool allocateUnpooledBuffers = b(false, "allocateUnpooledBuffers");
 
     @Override
     public String getName() {
@@ -29,5 +31,6 @@ public class CCommon extends ConfigBase {
     private static class Comments {
         public static final String lotsOfLogs = "Enables extensive logging in different segments of the mod (can cause larger log files and log spam)";
         public static final String stateSynchronization = "Periodic state synchronization sent by the server. This option makes sure that the clients are always close to the server simulation state, it will send the NBT data of all block entities in an electrical network to all clients (0 = disabled)";
+        public static final String syncWithDoubles = "Synchronize network with double precision numbers (this will double the amount of data that needs to be sent)";
     }
 }

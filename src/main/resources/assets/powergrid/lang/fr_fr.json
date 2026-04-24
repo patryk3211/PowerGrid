@@ -279,6 +279,10 @@
   "powergrid.generic.unit.amp": "A",
   "powergrid.generic.unit.amp.name": "Ampère",
   "powergrid.generic.unit.block": "blocs",
+<<<<<<< l10n_crowdin
+=======
+  "powergrid.generic.unit.energy": "Wh",
+>>>>>>> architectury-1.20.1/dev
   "powergrid.generic.unit.ohm": "Ω",
   "powergrid.generic.unit.ohm.name": "Ohm",
   "powergrid.generic.unit.temperature": "°C",

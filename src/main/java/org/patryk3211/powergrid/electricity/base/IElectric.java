@@ -33,6 +33,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.wire.*;
+import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
 
@@ -184,17 +185,17 @@ public interface IElectric extends IWrenchable {
         var terminal2Pos = endpoint2.getExactPosition(world);
 
         var stack = context.getItemInHand();
-        assert stack.getItem() instanceof IWire;
-        var item = (IWire) stack.getItem();
+        assert IWire.isWire(world, stack.getItem());
+        var entry = WireRegistry.forItem(world, stack.getItem());
 
         float distance = (float) terminal1Pos.distanceTo(terminal2Pos);
-        if(distance > item.getMaximumLength()) {
+        if(distance > entry.maximumLength()) {
             sendMessage(context, Lang.translate("message.connection_too_long").style(ChatFormatting.RED).component());
             return InteractionResult.FAIL;
         }
 
         // We round the exact distance between terminals for a more favourable item usage.
-        int requiredItemCount = Math.max(Math.round(distance), 1);
+        int requiredItemCount = Math.max(Math.round(distance * entry.itemsPerMeter()), 1);
         if(!PlayerUtilities.hasEnoughItems(context.getPlayer(), stack, requiredItemCount)) {
             sendMessage(context, Lang.translate("message.connection_missing_items").style(ChatFormatting.RED).component());
             return InteractionResult.FAIL;
@@ -214,7 +215,7 @@ public interface IElectric extends IWrenchable {
 
         if(context.getPlayer() != null) {
             var offItem = context.getPlayer().getOffhandItem();
-            if (item.canBeColored() && offItem.getItem() instanceof DyeItem dye) {
+            if (entry.colorable() && offItem.getItem() instanceof DyeItem dye) {
                 entity.setColor(dye.getDyeColor());
             }
         }

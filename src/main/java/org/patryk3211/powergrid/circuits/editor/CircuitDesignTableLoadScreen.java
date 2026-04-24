@@ -42,10 +42,7 @@ import org.patryk3211.powergrid.utility.Lang;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+import java.nio.file.*;
 import java.util.List;
 
 public class CircuitDesignTableLoadScreen extends AbstractSimiContainerScreen<CircuitDesignTableLoadMenu> {
@@ -109,19 +106,21 @@ public class CircuitDesignTableLoadScreen extends AbstractSimiContainerScreen<Ci
             back();
         } catch (IOException e) {
             PowerGrid.LOGGER.error("Failed to save circuit schematic", e);
+        } catch (RuntimeException e) {
+            popup(INVALID_FILE);
         }
         confirm = false;
     }
 
     private void load() {
-        var file = Path.of("circuits", fileNameInput.getValue());
-        if(!file.toString().endsWith(".nbt"))
-            file = Path.of(file + ".nbt");
-        if(!Files.exists(file)) {
-            popup(DOESNT_EXIST);
-            return;
-        }
         try {
+            var file = Path.of("circuits", fileNameInput.getValue());
+            if (!file.toString().endsWith(".nbt"))
+                file = Path.of(file + ".nbt");
+            if (!Files.exists(file)) {
+                popup(DOESNT_EXIST);
+                return;
+            }
             try (InputStream in = Files.newInputStream(file, StandardOpenOption.READ)) {
                 var nbt = NbtIo.readCompressed(in);
                 var schematic = CircuitSchematic.fromNbt(nbt);

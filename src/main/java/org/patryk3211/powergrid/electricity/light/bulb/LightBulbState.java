@@ -66,11 +66,11 @@ public abstract class LightBulbState implements ElectricBehaviour.SyncAppender {
         this.burned = false;
     }
 
-    protected void applyPower(float power) {
+    protected void applyPower(double power) {
         if(burned)
             return;
-        var energy = power / 20f;
-        temperature += energy / thermalMass;
+        double energy = power / 20.0;
+        temperature += (float) (energy / thermalMass);
         if(energy < 0 && temperature < BASE_TEMPERATURE)
             temperature = BASE_TEMPERATURE;
     }

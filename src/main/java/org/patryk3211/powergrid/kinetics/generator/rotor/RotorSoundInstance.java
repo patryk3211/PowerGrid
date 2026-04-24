@@ -23,6 +23,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import org.apache.commons.lang3.mutable.MutableObject;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 
 @Environment(EnvType.CLIENT)
@@ -52,7 +53,10 @@ public class RotorSoundInstance extends AbstractTickableSoundInstance {
             stop();
         } else {
             var closest = new MutableObject<BlockPos>();
-            var playerPos = Minecraft.getInstance().player.blockPosition();
+            var player = Minecraft.getInstance().player;
+            if(player == null)
+                return;
+            var playerPos = player.blockPosition();
             behaviour.forEachSegment(segment -> {
                 if(closest.getValue() == null) {
                     closest.setValue(segment.getPos());
@@ -77,7 +81,7 @@ public class RotorSoundInstance extends AbstractTickableSoundInstance {
                 this.volume = 0.0f;
                 stop();
             } else {
-                var volume = (velocity / 128);
+                var volume = (velocity / 128) * ModdedConfigs.client().generatorSoundMultiplier.getF();
                 this.volume = Mth.clamp(volume, 0, 1);
             }
             this.pitch = Mth.clamp(pitch, 0.5f, 2f);

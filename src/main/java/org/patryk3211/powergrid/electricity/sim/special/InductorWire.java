@@ -20,9 +20,9 @@ import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.ITimeAwareWire;
 import org.patryk3211.powergrid.electricity.sim.solver.IOuterHook;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
-import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
+import org.patryk3211.powergrid.electricity.sim.solver.IStaticResidual;
 
-public class InductorWire extends AbstractElectricWire implements ISolverHook, IOuterHook, ITimeAwareWire {
+public class InductorWire extends AbstractElectricWire implements IStaticResidual, IOuterHook, ITimeAwareWire {
     private double inductance;
 
     private double Ieq;
@@ -40,21 +40,20 @@ public class InductorWire extends AbstractElectricWire implements ISolverHook, I
     }
 
     @Override
-    public float current() {
-        return (float) (super.current() + Ieq);
+    public double current() {
+        if(network == null)
+            return I;
+        if(network.isLeaf(node1) || network.isLeaf(node2))
+            return 0;
+        return super.current() + Ieq;
     }
 
-    public void setCurrent(float current) {
+    public void setCurrent(double current) {
         valueChange(current, I);
-        if(Float.isFinite(current)) {
+        if(Double.isFinite(current)) {
             Vprev = 0;
             I = current;
         }
-    }
-
-    @Override
-    public void preSolve() {
-        Ieq = 0;
     }
 
     @Override
@@ -67,18 +66,13 @@ public class InductorWire extends AbstractElectricWire implements ISolverHook, I
     }
 
     @Override
-    public void startIteration(int iteration) {
+    public void addStaticResidual(IResidualAdder residual) {
         var G = conductance();
-        var V = inductance * (current() - I) / getDeltaTime();
-        Ieq = (V * 0.05f + Vprev * 0.95f) * G + I;
-    }
-
-    @Override
-    public void addResidual(IResidualAdder residual) {
+        Ieq = Vprev * G + I;
         if(node1 != null)
-            residual.add(node1.getIndex(),  Ieq);
+            residual.add(node1.getIndex(), -Ieq);
         if(node2 != null)
-            residual.add(node2.getIndex(), -Ieq);
+            residual.add(node2.getIndex(),  Ieq);
     }
 
     public void setInductance(float inductance) {

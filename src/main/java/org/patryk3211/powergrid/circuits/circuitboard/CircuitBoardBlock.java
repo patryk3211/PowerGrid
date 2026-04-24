@@ -38,6 +38,8 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Mirror;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -59,7 +61,6 @@ import org.patryk3211.powergrid.circuits.editor.CircuitBoardEditMenu;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
-import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.utility.Lang;
 
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -108,7 +109,7 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
         super.setPlacedBy(world, pos, state, placer, stack);
     }
 
-    private static VoxelShape rotate(VoxelShape shapeIn, float x, float y) {
+    public static VoxelShape rotate(VoxelShape shapeIn, float x, float y) {
         if(y == 0 && x == 0)
             return shapeIn;
 
@@ -163,20 +164,14 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
-        int x = getAngleX(state), y = getAngleY(state);
-        final var shape = new VoxelShape[] { rotate(SHAPE_PLATE, x, y) };
+        int x = getAngleX(state);
+        int y = getAngleY(state);
+        final VoxelShape[] shape = {rotate(SHAPE_PLATE, x, y)};
+
         withBlockEntityDo(world, pos, be -> {
-            var shapeCopy = shape[0];
-            for(int i = 0; i < be.terminalCount(); i++) {
-                var terminal = be.terminal(state, i);
-                shapeCopy = Shapes.or(((TerminalBoundingBox) terminal).getShape(), shapeCopy);
-            }
-            for(var placed : be.getComponents(IInteractableComponent.class)) {
-                var dynamic = (IInteractableComponent) placed.component;
-                shapeCopy = Shapes.or(rotate(dynamic.getShape(placed), x, y), shapeCopy);
-            }
-            shape[0] = shapeCopy;
+            shape[0] = be.getShape(state, shape[0]);
         });
+
         return shape[0];
     }
 
@@ -400,5 +395,15 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
     @Override
     public BlockEntityType<? extends CircuitBoardBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.CIRCUIT_BOARD.get();
+    }
+
+    @Override
+    public BlockState rotate(BlockState state, Rotation rot) {
+        return state.setValue(HORIZONTAL_FACING, rot.rotate(state.getValue(HORIZONTAL_FACING)));
+    }
+
+    @Override
+    public BlockState mirror(BlockState state, Mirror mirrorIn) {
+        return state.rotate(mirrorIn.getRotation(state.getValue(HORIZONTAL_FACING)));
     }
 }

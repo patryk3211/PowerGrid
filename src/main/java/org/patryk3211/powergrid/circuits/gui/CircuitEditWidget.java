@@ -26,6 +26,7 @@ import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import java.util.function.BiConsumer;
 
 import static org.patryk3211.powergrid.circuits.editor.CircuitDesignTableEditScreen.CIRCUIT_SCALE;
+import static org.patryk3211.powergrid.circuits.editor.CircuitDesignTableEditScreen.TRACE_PADDING;
 import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_SIZE;
 import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_GRID_SCALE;
 
@@ -85,35 +86,67 @@ public class CircuitEditWidget extends AbstractSimiWidget {
             return;
         }
 
-        if(selectMode == SelectMode.NONE || selectMode == SelectMode.POINT) {
+        ms.pushPose();
+        ms.scale(1f / scale, 1f / scale, 1f / scale);
+
+        if (selectMode == SelectMode.NONE || selectMode == SelectMode.POINT) {
             // Draw cursor
-            ms.pushPose();
-            ms.scale(1f / scale, 1f / scale, 1f / scale);
             ctx.renderOutline(gridX * scale, gridY * scale, scale, scale, 0xFFAAAAFF);
-            ms.popPose();
-        } else if(!selectStarted) {
-            ctx.fill(gridX, gridY, gridX + 1, gridY + 1, selectionColor);
-        } else if(selectMode == SelectMode.LINE) {
+        }
+        else if (!selectStarted) {
+            // Extend or reduce select cursor by the same rules for rendering selections below
+            if (selectMode == SelectMode.LINE) {
+                ctx.fill(gridX * scale + TRACE_PADDING, gridY * scale + TRACE_PADDING,
+                        gridX * scale + scale - TRACE_PADDING, gridY * scale + scale - TRACE_PADDING,
+                        selectionColor);
+            }
+            else {
+                ctx.fill(
+                    gridX * scale - (gridX > 0 ? TRACE_PADDING : 0),
+                    gridY * scale - (gridY > 0 ? TRACE_PADDING : 0),
+                    gridX * scale + scale + (gridX < GRID_SIZE - 1 ? TRACE_PADDING : 0),
+                    gridY * scale + scale + (gridY < GRID_SIZE - 1 ? TRACE_PADDING : 0),
+                    selectionColor
+                );
+            }
+        }
+        else if (selectMode == SelectMode.LINE) {
             int lenX = Math.abs(gridX - startX) + 1;
             int lenY = Math.abs(gridY - startY) + 1;
-            if(lenX >= lenY) {
+            if (lenX >= lenY) {
                 // Horizontal
                 var x1 = Math.min(gridX, startX);
                 var x2 = x1 + lenX;
-                ctx.fill(x1, startY, x2, startY + 1, selectionColor);
-            } else {
+                ctx.fill(x1 * scale + TRACE_PADDING, startY * scale + TRACE_PADDING,
+                        x2 * scale - TRACE_PADDING, startY * scale + scale - TRACE_PADDING,
+                        selectionColor);
+            }
+            else {
                 // Vertical
                 var y1 = Math.min(gridY, startY);
                 var y2 = y1 + lenY;
-                ctx.fill(startX, y1, startX + 1, y2, selectionColor);
+                ctx.fill(startX * scale + TRACE_PADDING, y1 * scale + TRACE_PADDING,
+                        startX * scale + scale - TRACE_PADDING, y2 * scale - TRACE_PADDING,
+                        selectionColor);
             }
-        } else if(selectMode == SelectMode.AREA) {
+        }
+        else if (selectMode == SelectMode.AREA) {
             var x1 = Math.min(startX, gridX);
             var y1 = Math.min(startY, gridY);
             var x2 = Math.max(startX, gridX) + 1;
             var y2 = Math.max(startY, gridY) + 1;
-            ctx.fill(x1, y1, x2, y2, selectionColor);
+
+            // Go over boundaries by a bit to show that neighbors will be disconnected
+            ctx.fill(
+                x1 * scale - (x1 > 0 ? TRACE_PADDING : 0),
+                y1 * scale - (y1 > 0 ? TRACE_PADDING : 0),
+                x2 * scale + (x2 < GRID_SIZE ? TRACE_PADDING : 0),
+                y2 * scale + (y2 < GRID_SIZE ? TRACE_PADDING : 0),
+                selectionColor
+            );
         }
+
+        ms.popPose();
     }
 
     private void handleCallback(int endX, int endY) {

@@ -31,7 +31,6 @@ import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
 import java.util.List;
 
 public class InductionRotorBlockEntity extends RotorBlockEntity {
-    public float field;
     public final PrecalculatedN<Float, StampedSupplier<Precalculated<Float>>> totalField = new PrecalculatedN<>(this::recalculateField, 0.0f);
 
     public InductionRotorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {

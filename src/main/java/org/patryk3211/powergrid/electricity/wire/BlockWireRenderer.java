@@ -77,14 +77,14 @@ public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
                     calcLight = newLight;
             }
 
-            renderSegment(matrices, buffer, calcLight, color, currentPos, segment.direction, entity.getWireItem().getWireThickness(), length, entity.getId());
+            renderSegment(matrices, buffer, calcLight, color, currentPos, segment.direction, entity.getWireEntry().wireThickness(), length, entity.getId());
             currentPos = newPos;
         }
     }
 
     @Override
     public ResourceLocation getTextureLocation(BlockWireEntity entity) {
-        return entity.getWireItem().getWireTexture();
+        return entity.getWireEntry().texture();
     }
 
     public static void debugLine(PoseStack ms, VertexConsumer buffer, int light, int color,
@@ -101,11 +101,11 @@ public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
     }
 
     private static void vertex(PoseStack.Pose matrix, VertexConsumer buffer,
-                               float x1, float y1, float z1,
+                               double x1, double y1, double z1,
                                float u, float v,
                                float xn, float yn, float zn,
                                int color, int light) {
-        buffer.vertex(matrix.pose(), x1, y1, z1)
+        buffer.vertex(matrix.pose(), (float) x1, (float) y1, (float) z1)
                 .color(color)
                 .uv(u, v)
                 .overlayCoords(OverlayTexture.NO_OVERLAY)
@@ -126,14 +126,17 @@ public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
         float u0 = uvOffset / 16f, v0 = uvOffset / 16f, t0 = uvOffset / 16f;
         float u1 = thickness + uvOffset / 16f, v1 = thickness + uvOffset / 16f, t1 = thickness + uvOffset / 16f;
 
-        float x1 = (float) start.x - thickness / 2;
-        float y1 = (float) start.y - thickness / 2;
-        float z1 = (float) start.z - thickness / 2;
+        ms.pushPose();
+        double x1 = start.x - thickness / 2;
+        double y1 = start.y - thickness / 2;
+        double z1 = start.z - thickness / 2;
+        ms.translate(x1, y1, z1);
+        x1 = y1 = z1 = 0;
 
-        float x2 = 0, y2 = 0, z2 = 0;
+        double x2 = 0, y2 = 0, z2 = 0;
         switch(dir.getAxis()) {
             case X -> {
-                thickness *= 0.995f;
+                thickness *= 0.995;
                 x1 += thickness;
                 x2 = length - thickness;
                 u0 = 0;
@@ -146,7 +149,7 @@ public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
                 v1 = Math.abs(length);
             }
             case Z -> {
-                thickness *= 1.005f;
+                thickness *= 1.005;
                 z1 += thickness;
                 z2 = length - thickness;
                 t0 = 0;
@@ -159,7 +162,7 @@ public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
         z2 += z1 + thickness;
 
         if(dir.getAxisDirection() == Direction.AxisDirection.NEGATIVE) {
-            float xb = x1, yb = y1, zb = z1;
+            double xb = x1, yb = y1, zb = z1;
             x1 = x2; y1 = y2; z1 = z2;
             x2 = xb; y2 = yb; z2 = zb;
         }
@@ -297,5 +300,6 @@ public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
                 u0, v1,
                 0, 0, 1,
                 color, light);
+        ms.popPose();
     }
 }

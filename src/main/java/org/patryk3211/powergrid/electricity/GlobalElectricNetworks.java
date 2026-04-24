@@ -70,7 +70,7 @@ public class GlobalElectricNetworks {
     }
 
     public static WorldNetworks getWorldNetworks(Level world) {
-        return worldNetworks.computeIfAbsent(world, key -> {
+        var global = worldNetworks.computeIfAbsent(world, key -> {
             if(key instanceof PonderLevel)
                 return new WorldNetworks(key);
             if(key.isClientSide) return makeClientWorldNetworks(key);
@@ -84,6 +84,8 @@ public class GlobalElectricNetworks {
                 return new WorldNetworks(world);
             }
         });
+        global.completeLoad();
+        return global;
     }
 
     @Nullable
@@ -197,6 +199,7 @@ public class GlobalElectricNetworks {
         var rA = cSolver.solverAbsolutePrecision.get();
         var rR = cSolver.solverRelativePrecision.get();
         var rM = cSolver.solverAbsoluteMinimumPrecision.get();
+        var sA = cSolver.solverMaxSearchAlpha.get();
         if(!backend.isSupported()) {
             PowerGrid.LOGGER.error("Selected backend '{}' is not supported! Using Java backend instead", backend);
             backend = CSolver.SolverBackend.JAVA;
@@ -206,7 +209,7 @@ public class GlobalElectricNetworks {
         for(var networks : worldNetworks.values()) {
             networks.subnetworks.forEach(network -> {
                 network.switchBackend(selectedBackend);
-                network.setPrecision(rA, rR, rM);
+                network.setPrecision(rA, rR, rM, sA);
                 network.bjtSmoothAlpha = cSolver.bjtLimAlpha.getF();
                 network.diodeSmoothAlpha = cSolver.diodeLimAlpha.getF();
                 network.triodeLimCathode = cSolver.triodeLimCathode.getF();

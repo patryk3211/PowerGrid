@@ -40,7 +40,7 @@ public abstract class WireEntity extends BaseWireEntity {
 
     @Override
     public float current() {
-        return wire == null || !wire.isConverged() ? 0 : wire.current();
+        return wire == null || !wire.isConverged() ? 0 : (float) wire.current();
     }
 
     @Override
@@ -50,10 +50,7 @@ public abstract class WireEntity extends BaseWireEntity {
 
     @Override
     public void makeWire() {
-        // Client doesn't make a wire, connections are handled differently.
         var world = level();
-//        if(world.isClientSide && !(world instanceof PonderLevel))
-//            return;
 
         dropWire();
 

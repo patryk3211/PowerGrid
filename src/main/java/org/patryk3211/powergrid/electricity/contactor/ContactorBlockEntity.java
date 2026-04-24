@@ -64,6 +64,8 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
 
     private void checkPos(BlockPos pos, boolean newState, List<BlockPos> checkQueue) {
         assert level != null;
+        if(pos.equals(worldPosition))
+            return;
         level.getBlockEntity(pos, ModdedBlockEntities.CONTACTOR.get())
                 .ifPresent(be -> {
                     if(newState) {
@@ -125,9 +127,9 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
                 electricBehaviour.rebuildCircuit(true);
             } else {
                 splitCooldown = 0;
-                switch1.setState(true);
-                switch2.setState(true);
             }
+            switch1.setState(true);
+            switch2.setState(true);
         }
     }
 

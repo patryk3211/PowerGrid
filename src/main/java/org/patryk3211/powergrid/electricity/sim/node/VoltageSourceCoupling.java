@@ -27,7 +27,7 @@ public class VoltageSourceCoupling extends CouplingNode implements IStaticResidu
     protected final IElectricNode positive;
     @Nullable
     protected final IElectricNode negative;
-    private float voltage;
+    private double voltage;
     private float resistance;
 
     public VoltageSourceCoupling(IElectricNode positive, @Nullable IElectricNode negative, float resistance) {
@@ -52,7 +52,7 @@ public class VoltageSourceCoupling extends CouplingNode implements IStaticResidu
         return true;
     }
 
-    public void setVoltage(float voltage) {
+    public void setVoltage(double voltage) {
         this.voltage = voltage;
     }
 
@@ -80,11 +80,11 @@ public class VoltageSourceCoupling extends CouplingNode implements IStaticResidu
         return List.of(positive, negative);
     }
 
-    public float getCurrent() {
-        return (float) getStateValue();
+    public double getCurrent() {
+        return getStateValue();
     }
 
-    public float getVoltage() {
+    public double getVoltage() {
         return voltage;
     }
 

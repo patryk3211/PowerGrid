@@ -28,7 +28,7 @@ public class SoundEntryBuilderMixin {
     @Inject(method = "build",
             at = @At(value = "INVOKE", target = "Ljava/util/Map;put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;"),
             cancellable = true)
-    private void earlyReturn(CallbackInfoReturnable<AllSoundEvents.SoundEntry> cir, @Local AllSoundEvents.SoundEntry entry) {
+    private void powerGrid$earlyReturn(CallbackInfoReturnable<AllSoundEvents.SoundEntry> cir, @Local AllSoundEvents.SoundEntry entry) {
         // Avoid adding outside entries into the Create's sound entry collection
         if(entry.getId().getNamespace().equals(PowerGrid.MOD_ID))
             cir.setReturnValue(entry);

@@ -17,13 +17,16 @@ package org.patryk3211.powergrid.network.packets;
 
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import dev.architectury.networking.NetworkManager;
+import io.netty.buffer.AbstractByteBufAllocator;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.buffer.UnpooledByteBufAllocator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ISynchronizedElement;
 import org.patryk3211.powergrid.electricity.wire.JunctionWireEndpoint;
@@ -36,14 +39,22 @@ import java.util.UUID;
 import java.util.function.Supplier;
 
 public class StateS2CPacket implements SimplePacket {
+    private static final PooledByteBufAllocator POOL = new PooledByteBufAllocator(true, 0, 4, PooledByteBufAllocator.defaultPageSize(), 7);
+
     private final List<Key> keys = new ArrayList<>();
+    private final boolean useDoubles;
     private final ByteBuf data;
     private FriendlyByteBuf wrapper;
     private int lengthPosition;
 
+    private static AbstractByteBufAllocator allocator() {
+        return ModdedConfigs.common().allocateUnpooledBuffers.get() ? UnpooledByteBufAllocator.DEFAULT : POOL;
+    }
+
     // Typically the server side constructor
-    public StateS2CPacket() {
-        this.data = PooledByteBufAllocator.DEFAULT.buffer();
+    public StateS2CPacket(boolean useDoubles) {
+        this.useDoubles = useDoubles;
+        this.data = allocator().directBuffer();
     }
 
     public FriendlyByteBuf wrapper() {
@@ -54,17 +65,19 @@ public class StateS2CPacket implements SimplePacket {
 
     // Typically the client side constructor
     public StateS2CPacket(FriendlyByteBuf buf) {
+        useDoubles = buf.readBoolean();
         int count = buf.readInt();
         for(int i = 0; i < count; ++i) {
             keys.add(Key.read(buf));
         }
         int size = buf.readInt();
-        data = PooledByteBufAllocator.DEFAULT.buffer(size, size);
+        data = allocator().directBuffer(size, size);
         buf.readBytes(data, size);
     }
 
     @Override
     public void encode(FriendlyByteBuf buf) {
+        buf.writeBoolean(useDoubles);
         buf.writeInt(keys.size());
         for(var key : keys) {
             key.serialize(buf);
@@ -72,6 +85,7 @@ public class StateS2CPacket implements SimplePacket {
         buf.writeInt(data.writerIndex());
         buf.writeBytes(data, data.writerIndex());
         // Data is not needed after it has been encoded so it's released.
+        wrapper = null;
         data.release();
     }
 
@@ -87,7 +101,7 @@ public class StateS2CPacket implements SimplePacket {
                     wrapper().skipBytes(entryLength);
                 } else {
                     var start = wrapper().readerIndex();
-                    element.readFromSync(wrapper());
+                    element.readFromSync(wrapper(), useDoubles);
                     var end = wrapper().readerIndex();
                     if(end - start > entryLength) {
                         PowerGrid.LOGGER.warn("Buffer read overrun (Entry of {} bytes, read {} bytes) for {}", entryLength, end - start, element);
@@ -99,6 +113,7 @@ public class StateS2CPacket implements SimplePacket {
                 }
             }
             // Data is not needed after it has been handled so it's released.
+            wrapper = null;
             data.release();
         });
     }

@@ -23,8 +23,8 @@ import org.patryk3211.powergrid.network.packets.StateS2CPacket;
 import java.util.function.Function;
 
 public interface ISynchronizedElement {
-    void writeToSync(FriendlyByteBuf buffer, Function<OwnedFloatingNode, TransmissionLine> lineLookup);
-    void readFromSync(FriendlyByteBuf buffer);
+    void writeToSync(FriendlyByteBuf buffer, boolean useDoubles, Function<OwnedFloatingNode, TransmissionLine> lineLookup);
+    void readFromSync(FriendlyByteBuf buffer, boolean useDoubles);
 
     StateS2CPacket.Key getKey();
 }

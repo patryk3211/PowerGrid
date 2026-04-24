@@ -232,6 +232,38 @@ public class ComponentFootprint {
         return footprint;
     }
 
+    public ComponentFootprint mirroredX() {
+        var pads = new TreeMap<Point, PadData>();
+        for(var pad : this.pads.entrySet()) {
+            var position = pad.getKey();
+            int x, y;
+            x = this.width - position.x() - 1;
+            y = position.y();
+            pads.put(new Point(x, y), pad.getValue());
+        }
+
+        var footprint = new ComponentFootprint(width, height, originalWidth, originalHeight, pads, this.outline, withItem, arrow == null ? null : arrow.isX() ? arrow.getOpposite() : arrow);
+        // Copy cached stack if one is available.
+        footprint.renderedStack = this.renderedStack;
+        return footprint;
+    }
+
+    public ComponentFootprint mirroredY() {
+        var pads = new TreeMap<Point, PadData>();
+        for(var pad : this.pads.entrySet()) {
+            var position = pad.getKey();
+            int x, y;
+            x = position.x();
+            y = this.height - position.y() - 1;
+            pads.put(new Point(x, y), pad.getValue());
+        }
+
+        var footprint = new ComponentFootprint(width, height, originalWidth, originalHeight, pads, this.outline, withItem, arrow == null ? null : arrow.isY() ? arrow.getOpposite() : arrow);
+        // Copy cached stack if one is available.
+        footprint.renderedStack = this.renderedStack;
+        return footprint;
+    }
+
     public static class Builder {
         private final int width, height;
         private final SortedMap<Point, PadData> pads = new TreeMap<>();

@@ -20,7 +20,7 @@ public class FloatingNode extends ElectricNode {
     }
 
     @Override
-    public float getVoltage() {
-        return (float) getStateValue();
+    public double getVoltage() {
+        return getStateValue();
     }
 }

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.14)
 
-project(PowerGridNative VERSION 1.0.0 LANGUAGES CXX)
+project(PowerGridNative VERSION 1.0.0 LANGUAGES C)
 
 option(PG_TRACE "Enable tracing in native backend code" false)
 option(PG_MULTITARGET "Enable multi-target OpenBLAS build" false)
@@ -14,16 +14,14 @@ endif()
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 set(SOURCES
-    src/powergridNative/cpp/dense.cpp
-    src/powergridNative/cpp/operations.cpp
-    src/powergridNative/cpp/sparse.cpp
-    src/powergridNative/cpp/solver.cpp
-    src/powergridNative/cpp/mna.cpp
+    src/powergridNative/c/sparse.c
+    src/powergridNative/c/solver.c
+    src/powergridNative/c/mna.c
 )
 
 set(SOURCES_SAFE_EXEC
-    src/powergridNative/cpp/exception_handler.cpp
-    src/powergridNative/cpp/verify.cpp
+    src/powergridNative/c/exception_handler.c
+    src/powergridNative/c/verify.c
 )
 
 add_library(powergridNative SHARED ${SOURCES} ${SOURCES_SAFE_EXEC})
@@ -40,8 +38,8 @@ if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
   target_compile_definitions(powergridNative PRIVATE DEBUG)
 elseif(${CMAKE_BUILD_TYPE} STREQUAL "Release")
   if(${PG_STATIC_LIBS})
-    target_compile_options(powergridNative PRIVATE "-mavx2" "-static-libstdc++" "-static-libgcc" "-static")
-    target_link_options(powergridNative PRIVATE "-static-libstdc++" "-static-libgcc" "-static")
+    target_compile_options(powergridNative PRIVATE "-mavx2" "-static-libgcc" "-static")
+    target_link_options(powergridNative PRIVATE "-static-libgcc" "-static")
   else()
     target_compile_options(powergridNative PRIVATE "-mavx2")
   endif()

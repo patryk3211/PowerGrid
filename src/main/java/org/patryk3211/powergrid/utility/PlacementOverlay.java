@@ -48,15 +48,15 @@ import java.util.List;
 @Environment(EnvType.CLIENT)
 public class PlacementOverlay {
     private static final List<IOverlayTextProvider> overlayProviders = new ArrayList<>();
-    private static Component prevText = null;
+    private static final List<Component> lines = new ArrayList<>();
     private static int overlayTicks = -1;
     public static boolean thisActivation = false;
 
     public static void init() {
         overlayProviders.add(PlacementOverlay::getTransformerText);
         overlayProviders.add(MultimeterItemRenderer::multimeterOverlayText);
-        overlayProviders.add(TerminalHandler::overlayText);
         overlayProviders.add(WirePreview::distanceOverlay);
+        overlayProviders.add(TerminalHandler::overlayText);
         overlayProviders.add(ThermometerItemRenderer::overlayText);
     }
 
@@ -80,38 +80,44 @@ public class PlacementOverlay {
     public static void renderOverlay(Gui gui, GuiGraphics graphics) {
         var mc = Minecraft.getInstance();
         if(!mc.options.hideGui && mc.gameMode.getPlayerMode() != GameType.SPECTATOR) {
-            Component text = null;
-
             var player = mc.player;
+            boolean added = false;
             for(var provider : overlayProviders) {
-                text = provider.get(player);
-                if(text != null)
-                    break;
+                var text = provider.get(player);
+                if(text == null)
+                    continue;
+                if(!added) {
+                    lines.clear();
+                    added = true;
+                }
+                lines.add(text);
             }
 
-            if(text != null) {
+            if(added) {
                 if(overlayTicks < 10) {
                     ++overlayTicks;
                 }
-                prevText = text;
-            } else if(prevText != null) {
-                text = prevText;
+            } else if(!lines.isEmpty()) {
                 if(--overlayTicks <= 0) {
                     overlayTicks = 0;
-                    prevText = null;
                 }
             }
 
-            if(text != null) {
+            if(!lines.isEmpty()) {
                 var window = mc.getWindow();
-                int x = (window.getGuiScaledWidth() - gui.getFont().width(text)) / 2;
                 int y = window.getGuiScaledHeight() - 61;
                 var color = new Color(0x4adb4a);
                 float alpha = Mth.clamp(overlayTicks, 0, 10) / 10.0f;
-
                 var state = Arrays.copyOf(RenderSystem.getShaderColor(), 4);
                 RenderSystem.setShaderColor(1.0f, 1.0f, 1.0f, alpha);
-                graphics.drawString(gui.getFont(), text, x, y, color.getRGB(), true);
+                int i = 0;
+                for(var text : lines) {
+                    int x = (window.getGuiScaledWidth() - gui.getFont().width(text)) / 2;
+                    graphics.drawString(gui.getFont(), text, x, y, color.getRGB(), true);
+                    y += 11;
+                    if(++i == 2)
+                        break;
+                }
                 RenderSystem.setShaderColor(state[0], state[1], state[2], state[3]);
             }
         }

@@ -127,9 +127,9 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
 
     public float getValue() {
         if(voltageSource) {
-            return voltageSourceNode.getVoltage();
+            return (float) voltageSourceNode.getVoltage();
         } else {
-            return currentSourceNode.getCurrent();
+            return (float) currentSourceNode.getCurrent();
         }
     }
 

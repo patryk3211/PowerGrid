@@ -140,7 +140,7 @@ public class ConstantSpeedMotorBlockEntity extends GeneratingKineticBlockEntity 
 
         if(!level.isClientSide || isVirtual()) {
             applyPower(coil);
-            avgSpeed += calculateSpeed(coil.power(), torque()) * Math.signum(coil.current());
+            avgSpeed += (float) (calculateSpeed(coil.power(), torque()) * Math.signum(coil.current()));
         }
         super.tick();
     }

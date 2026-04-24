@@ -17,9 +17,7 @@ package org.patryk3211.powergrid.electricity.bell;
 
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
-import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundSource;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 
@@ -45,11 +43,6 @@ public class AlarmBellSoundInstance extends AbstractTickableSoundInstance {
         return true;
     }
 
-    public void playEnd() {
-        var manager = Minecraft.getInstance().getSoundManager();
-        manager.play(new SimpleSoundInstance(ModdedSoundEvents.ALARM_BELL_END.getMainEvent(), SoundSource.BLOCKS, volume, pitch, random, x, y, z));
-    }
-
     @Override
     public void tick() {
         if(be.isRemoved()) {
@@ -58,7 +51,6 @@ public class AlarmBellSoundInstance extends AbstractTickableSoundInstance {
             var newVolume = be.getVolume();
             if(newVolume == 0) {
                 stop();
-                playEnd();
             }
             volume = be.getVolume();
             pitch = be.getPitch();

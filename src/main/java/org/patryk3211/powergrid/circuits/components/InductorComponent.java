@@ -54,7 +54,7 @@ public class InductorComponent extends OrientableComponent {
     public boolean tick(@NotNull PlacedComponent placed) {
         if(!placed.wires.isEmpty()) {
             // Make charge persistent
-            placed.set(CURRENT, placed.wires.get(0).current());
+            placed.set(CURRENT, (float) placed.wires.get(0).current());
         }
         return true;
     }

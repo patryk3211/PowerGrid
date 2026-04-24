@@ -68,7 +68,7 @@ public class CreativeResistorBlockEntity extends ResistorBlockEntity implements 
                 .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
 
-        float current = wire.current();
+        float current = (float) wire.current();
         var currentText = NumberFormats.formatPrecise(current);
         Lang.builder()
                 .text(currentText)

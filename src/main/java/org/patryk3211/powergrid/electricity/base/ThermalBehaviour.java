@@ -301,9 +301,9 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
                 float chance = (temperature - overheatTemperature + 100) / 100;
                 if (random.nextFloat() < chance) {
                     if (particleGenerator == null) {
-                        float x = pos.getX() + random.nextFloat();
-                        float y = pos.getY() + random.nextFloat();
-                        float z = pos.getZ() + random.nextFloat();
+                        double x = pos.getX() + random.nextDouble();
+                        double y = pos.getY() + random.nextDouble();
+                        double z = pos.getZ() + random.nextDouble();
                         world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f);
                     } else {
                         particleGenerator.generate((x, y, z) ->
@@ -332,10 +332,10 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
         return temperature >= overheatTemperature;
     }
 
-    public void applyTickPower(float power) {
-        if(Float.isFinite(power)) {
+    public void applyTickPower(double power) {
+        if(Double.isFinite(power)) {
             var energy = power / 20f;
-            temperature += energy / thermalMass;
+            temperature += (float) (energy / thermalMass);
         }
     }
 
@@ -372,12 +372,12 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
     }
 
     @Override
-    public void writeToSync(FriendlyByteBuf buffer, Function<OwnedFloatingNode, TransmissionLine> lineLookup) {
+    public void writeToSync(FriendlyByteBuf buffer, boolean useDoubles, Function<OwnedFloatingNode, TransmissionLine> lineLookup) {
         buffer.writeFloat(temperature);
     }
 
     @Override
-    public void readFromSync(FriendlyByteBuf buffer) {
+    public void readFromSync(FriendlyByteBuf buffer, boolean useDoubles) {
         temperature = buffer.readFloat();
     }
 
@@ -414,6 +414,6 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
 
     @FunctionalInterface
     public interface IParticleConsumer {
-        void accept(float x, float y, float z);
+        void accept(double x, double y, double z);
     }
 }

@@ -21,9 +21,9 @@ import net.minecraft.world.phys.Vec3;
 public class CurveParameters {
     private final double a, b, c;
     private final Vec3 normal;
-    private final float dx;
-    private float dy;
-    private final float L;
+    private final double dx;
+    private double dy;
+    private final double L;
     public final Vec3 cross1, cross2;
     public final float thickness;
 
@@ -38,7 +38,7 @@ public class CurveParameters {
 
         if(dx > 0) {
             // Calculate total curve length using "material parameters"
-            L = (float) Math.sqrt(dx * dx * horizontalCoefficient + dy * dy * verticalCoefficient);
+            L = Math.sqrt(dx * dx * horizontalCoefficient + dy * dy * verticalCoefficient);
             double r = Math.sqrt(L * L - dy * dy) / dx;
 
             double A;
@@ -60,8 +60,8 @@ public class CurveParameters {
             a = 0;
             b = 0;
             c = 0;
-            L = (float) dy;
-            this.dy = (float) dy;
+            L = dy;
+            this.dy = dy;
         }
 
         // Calculate cross parameters
@@ -71,32 +71,32 @@ public class CurveParameters {
         cross2 = cross1.cross(direction).normalize().scale(thickness * 0.5);
     }
 
-    public float apply(float x) {
-        return (float) (a * Math.cosh((x - b) / a) + c);
+    public double apply(double x) {
+        return a * Math.cosh((x - b) / a) + c;
     }
 
-    public void runForSegments(ISegmentConsumer consumer) {
+    public void runForSegments(ISegmentConsumer consumer, double segmentSize) {
         runForSegments(((x1, y1, z1, x2, y2, z2, offset, length, first, last) ->
-                consumer.apply(x1, y1, z1, x2, y2, z2, offset, length)));
+                consumer.apply(x1, y1, z1, x2, y2, z2, offset, length)), segmentSize);
     }
 
-    public void runForSegments(IMarkedSegmentConsumer consumer) {
-        int segmentCount = Math.max((int) Math.round(L / HangingWireRenderer.SEGMENT_SIZE), 5);
+    public void runForSegments(IMarkedSegmentConsumer consumer, double segmentSize) {
+        int segmentCount = Math.max((int) Math.round(L / segmentSize), 5);
 
         if(dx > 0) {
-            float prevX = -dx / 2;
-            float prevY = apply(prevX);
-            float offset = 0;
+            double prevX = -dx / 2;
+            double prevY = apply(prevX);
+            double offset = 0;
             for (int i = 1; i <= segmentCount; ++i) {
-                float x = (((float) i / segmentCount) - 0.5f) * dx;
-                float y = apply(x);
+                double x = (((double) i / segmentCount) - 0.5f) * dx;
+                double y = apply(x);
 
-                float dx = x - prevX;
-                float dy = y - prevY;
-                float length = (float) Math.sqrt(dx * dx + dy * dy);
+                double dx = x - prevX;
+                double dy = y - prevY;
+                double length = Math.sqrt(dx * dx + dy * dy);
                 consumer.apply(
-                        (float) normal.x * prevX, prevY, (float) normal.z * prevX,
-                        (float) normal.x * x, y, (float) normal.z * x,
+                        normal.x * prevX, prevY, normal.z * prevX,
+                        normal.x * x, y, normal.z * x,
                         offset, length, i == 1, i == segmentCount
                 );
 
@@ -105,12 +105,12 @@ public class CurveParameters {
                 prevY = y;
             }
         } else {
-            float prevY = 0;
-            float offset = 0;
+            double prevY = 0;
+            double offset = 0;
             for (int i = 1; i <= segmentCount; ++i) {
-                float y = ((float) i / segmentCount) * dy;
+                double y = ((double) i / segmentCount) * dy;
 
-                float dy = y - prevY;
+                double dy = y - prevY;
                 consumer.apply(
                         0, prevY, 0,
                         0, y, 0,
@@ -126,12 +126,12 @@ public class CurveParameters {
     public void runForPoints(int pointCount, IPointConsumer consumer) {
         if(dx > 0) {
             for (int i = 0; i < pointCount; ++i) {
-                float localX = ((float) i / pointCount - 0.5f) * dx;
-                consumer.apply((float) (localX * normal.x), apply(localX), (float) (localX * normal.z));
+                double localX = ((double) i / pointCount - 0.5f) * dx;
+                consumer.apply(localX * normal.x, apply(localX), localX * normal.z);
             }
         } else {
             for (int i = 0; i < pointCount; ++i) {
-                float y = ((float) i / pointCount) * dy;
+                double y = ((double) i / pointCount) * dy;
                 consumer.apply(0, y, 0);
             }
         }
@@ -139,11 +139,11 @@ public class CurveParameters {
 
     public Vec3 getRandomPoint(RandomSource random) {
         if(dx > 0) {
-            float x = random.nextFloat() * dx - dx / 2;
-            float y = apply(x);
+            double x = random.nextFloat() * dx - dx / 2;
+            double y = apply(x);
             return new Vec3(normal.x * x, y, normal.z * x);
         } else {
-            float y = random.nextFloat() * dy;
+            double y = random.nextFloat() * dy;
             return new Vec3(0, y, 0);
         }
     }
@@ -153,7 +153,7 @@ public class CurveParameters {
      *
      * @return Curve span
      */
-    public float getCurveSpan() {
+    public double getCurveSpan() {
         return dx > 0 ? dx : dy;
     }
 
@@ -204,14 +204,14 @@ public class CurveParameters {
     }
 
     public interface ISegmentConsumer {
-        void apply(float x1, float y1, float z1, float x2, float y2, float z2, float offset, float length);
+        void apply(double x1, double y1, double z1, double x2, double y2, double z2, double offset, double length);
     }
 
     public interface IMarkedSegmentConsumer {
-        void apply(float x1, float y1, float z1, float x2, float y2, float z2, float offset, float length, boolean first, boolean last);
+        void apply(double x1, double y1, double z1, double x2, double y2, double z2, double offset, double length, boolean first, boolean last);
     }
 
     public interface IPointConsumer {
-        void apply(float x, float y, float z);
+        void apply(double x, double y, double z);
     }
 }

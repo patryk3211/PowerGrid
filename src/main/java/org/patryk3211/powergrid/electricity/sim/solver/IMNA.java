@@ -22,7 +22,7 @@ public interface IMNA {
 
     void cleanup();
 
-    void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision);
+    void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision, double searchAlpha);
     void warmUp(int ticks);
 
     void jacobianAdd(int row, int column, double value);

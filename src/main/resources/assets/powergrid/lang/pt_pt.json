@@ -235,6 +235,7 @@
   "powergrid.generic.unit.amp": "A",
   "powergrid.generic.unit.amp.name": "Ampere",
   "powergrid.generic.unit.block": "blocos",
+  "powergrid.generic.unit.energy": "Wh",
   "powergrid.generic.unit.ohm": "Ω",
   "powergrid.generic.unit.ohm.name": "Ohm",
   "powergrid.generic.unit.temperature": "°C",

@@ -49,6 +49,8 @@ public class BJTWire extends CompoundWire implements ISolverHook {
 
     private double Ic, Ib, Ie;
 
+    private double power;
+
     public BJTWire(IElectricNode collector, IElectricNode base, IElectricNode emitter, double Is, double fBeta, double Rs, boolean pnp) {
         super(base, emitter);
         this.collector = collector;
@@ -76,10 +78,12 @@ public class BJTWire extends CompoundWire implements ISolverHook {
     }
 
     public double pnLim(double V1, double V0, double Vcrit) {
-        if(V0 < Vcrit && V1 < Vcrit)
+        if(V0 < Vcrit * 0.5f && V1 < Vcrit * 0.5f)
             return V1;
         var dV = V1 - V0;
-        return V0 + dV * network.bjtSmoothAlpha;
+        if((V0 > Vcrit || V1 > Vcrit) && dV > V_T * 2 && dV / V_T > 0)
+            return V0 + V_T * Math.log1p(dV / V_T);
+        return V1;//V0 + dV * network.bjtSmoothAlpha;
     }
 
     @Override
@@ -94,8 +98,12 @@ public class BJTWire extends CompoundWire implements ISolverHook {
 
         double WbeTerm = WrightOmega(OmegaLogE + (saturationCurrent * emitterResistance + pnp * Vbe) / V_T);
         double WbcTerm = WrightOmega(OmegaLogC + (saturationCurrent * collectorResistance + pnp * Vbc) / V_T);
-        double Ebe = V_T * WbeTerm / emitterResistance - saturationCurrent;
-        double Ebc = V_T * WbcTerm / collectorResistance - saturationCurrent;
+        double Ebe = (V_T * WbeTerm / emitterResistance - saturationCurrent);// * (1 + Vbc / -15);
+        double Ebc = (V_T * WbcTerm / collectorResistance - saturationCurrent);// * (1 + Vbe / -15);
+//        double forwardGain = beta * (1 + Vbc / -15);
+//        forwardGain = forwardGain / (1 + forwardGain);
+//        double reverseGain = beta * 0.1 * (1 + Vbe / -15);
+//        reverseGain = reverseGain / (1 + reverseGain);
 
         double Ie = pnp * (Ebc * reverseGain - Ebe);
         double Ic = pnp * (Ebe * forwardGain - Ebc);
@@ -108,7 +116,10 @@ public class BJTWire extends CompoundWire implements ISolverHook {
 
         double G_add = 1e-6;
         if(iteration > 100) {
-            G_add = Math.min((iteration - 100) * 1e-3, 0.01);
+            G_add = 1e-4;
+//            G_add = Math.min((iteration - 100) * 1e-3, 0.01);
+//            Gce -= G_add;
+//            Gec -= G_add;
         }
 
         // Base - Emitter, simple wire
@@ -123,6 +134,25 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         this.Ib = Ib - (G_add + Gcc + Gec) * Vbc - (G_add + Gee + Gce) * Vbe;
         this.Ic = Ic + (Gcc + G_add) * Vbc + Gce * Vbe;
         this.Ie = Ie + (Gee + G_add) * Vbe + Gec * Vbc;
+
+        power = 0;
+        if(Vbe > 0) {
+            power += Vbe * Ib;
+        }
+        if(Vbc > 0) {
+            power += Vbc * Ib;
+        }
+        if(Ic > 0) {
+            power += (Vc - Ve) * Ic;
+        }
+        if(Ie > 0) {
+            power += (Ve - Vc) * Ie;
+        }
+    }
+
+    @Override
+    public double internalPower() {
+        return power;
     }
 
     @Override

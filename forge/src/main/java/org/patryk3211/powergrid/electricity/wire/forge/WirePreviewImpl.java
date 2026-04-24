@@ -27,10 +27,8 @@ public class WirePreviewImpl {
     public static void render(RenderLevelStageEvent event) {
         if(event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRIPWIRE_BLOCKS) {
             var matrixStack = event.getPoseStack();
-            matrixStack.pushPose();
 
             var cameraPos = event.getCamera().getPosition();
-            matrixStack.translate(-cameraPos.x, -cameraPos.y, -cameraPos.z);
 
             var buffer = DefaultSuperRenderTypeBuffer.getInstance();
             var player = Minecraft.getInstance().player;
@@ -38,12 +36,11 @@ public class WirePreviewImpl {
             var world = Minecraft.getInstance().level;
             var target = Minecraft.getInstance().hitResult;
             if (player != null && target != null) {
-                WirePreview.render(buffer, matrixStack, world, player, target);
-                MultimeterItemRenderer.render(buffer, matrixStack, world, player);
+                WirePreview.render(buffer, matrixStack, world, player, cameraPos);
+                MultimeterItemRenderer.render(buffer, matrixStack, world, player, cameraPos);
             }
 
             buffer.draw();
-            matrixStack.popPose();
         }
     }
 }

@@ -83,7 +83,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                     if(hitLocalPos.y >= 2 / 16f && hitLocalPos.y <= 3 / 16f) {
                         int x = (int) (hitLocalPos.x * 16);
                         int y = (int) (hitLocalPos.z * 16);
-                        if(!be.getSchematic().getLayer(CircuitSchematic.Layer.FRONT, x, y))
+                        if(!be.getSchematic().hasTrace(CircuitSchematic.Layer.FRONT, x, y))
                             return InteractionResult.FAIL;
                         return onTerminal(context.getLevel(), new CircuitBoardEndpoint(pos, x, y), context.getItemInHand());
                     }
@@ -254,7 +254,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                     yield 0;
                 if(!pos.isValid(level) || !neg.isValid(level))
                     yield 0;
-                float posV = 0, negV = 0;
+                double posV = 0, negV = 0;
                 if(data.contains("PosV")) {
                     posV = data.getFloat("PosV");
                 } else {
@@ -271,7 +271,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                         yield 0;
                     negV = negNode.getVoltage();
                 }
-                yield posV - negV;
+                yield (float) (posV - negV);
             }
             case 1 -> {
                 var lineId = data.getInt("EID");

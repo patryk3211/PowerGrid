@@ -61,7 +61,7 @@ public abstract class ComplexEntityRaycastMixin {
             at = @At(value = "RETURN"),
             cancellable = true
     )
-    private static void complexRaycast(Entity shooter, Vec3 startVec, Vec3 endVec, AABB boundingBox, Predicate<Entity> filter, double distance, CallbackInfoReturnable<EntityHitResult> cir) {
+    private static void powerGrid$complexRaycast(Entity shooter, Vec3 startVec, Vec3 endVec, AABB boundingBox, Predicate<Entity> filter, double distance, CallbackInfoReturnable<EntityHitResult> cir) {
         EntityHitResult baseResult = cir.getReturnValue();
 
         Level world = shooter.level();

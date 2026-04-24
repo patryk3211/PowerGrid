@@ -216,6 +216,9 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
         if(nextWire instanceof ElectricWire simple) {
             if(collection.contains(simple))
                 return;
+            var series = seriesWires.get(simple);
+            if(series != null)
+                dissolveSeriesWire(series, null);
             if(atEnd) {
                 collection.add(simple);
             } else {
@@ -227,21 +230,37 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
             if(atEnd) {
                 if(nextWire.getNode1() == node) {
                     // Append to end and series wires start here
-                    collection.addAll(series.wires);
+                    for(int i = 0; i < series.wires.size(); ++i) {
+                        var simple = series.wires.get(i);
+                        if(collection.contains(simple))
+                            return;
+                        collection.add(simple);
+                    }
                 } else {
                     // Append to end but flip series wire order
                     for(int i = series.wires.size() - 1; i >= 0; --i) {
-                        collection.add(series.wires.get(i));
+                        var simple = series.wires.get(i);
+                        if(collection.contains(simple))
+                            return;
+                        collection.add(simple);
                     }
                 }
             } else {
                 if(nextWire.getNode2() == node) {
                     // Append to start and series wire ends here
-                    collection.addAll(0, series.wires);
+                    for(int i = 0; i < series.wires.size(); ++i) {
+                        var simple = series.wires.get(i);
+                        if(collection.contains(simple))
+                            return;
+                        collection.add(i, simple);
+                    }
                 } else {
                     // Append to start but flip series wire order
                     for(int i = series.wires.size() - 1; i >= 0; --i) {
-                        collection.add(series.wires.get(i));
+                        var simple = series.wires.get(i);
+                        if(collection.contains(simple))
+                            return;
+                        collection.add(simple);
                     }
                 }
             }
@@ -279,6 +298,7 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
             return null;
         var wire1 = wires.get(0);
         var wire2 = wires.get(1);
+        // TODO: Wire cannot be a series wire since those are not stored in the graph, those check might be redundant.
         if(wire1 instanceof ElectricWire simple) {
             collectSeries(seriesWires, false, node, simple);
         } else if(wire1 instanceof SeriesWire series) {
@@ -342,7 +362,10 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
     private void dissolveSeriesWire(SeriesWire series, @Nullable AbstractElectricWire except) {
         super.removeWire(series);
         seriesWires.entrySet().removeIf(entry -> entry.getValue() == series);
-        series.nodes.forEach(super::addNode);
+        series.nodes.forEach(node -> {
+            super.addNode(node);
+            addToCheck(node);
+        });
         series.wires.forEach(part -> {
             if(part != except) {
                 super.addWire(part);
@@ -467,6 +490,12 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
 
     @Override
     public void merge(ElectricalNetwork other) {
+        if(other instanceof GraphedElectricalNetwork graphed) {
+            while(!graphed.seriesWires.isEmpty()) {
+                var wire = graphed.seriesWires.values().iterator().next();
+                graphed.dissolveSeriesWire(wire, null);
+            }
+        }
         while(!seriesWires.isEmpty()) {
             var wire = seriesWires.values().iterator().next();
             dissolveSeriesWire(wire, null);

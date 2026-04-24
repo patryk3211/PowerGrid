@@ -33,6 +33,9 @@ import org.patryk3211.powergrid.network.packets.StateS2CPacket;
 import java.util.*;
 import java.util.function.Function;
 
+import static org.patryk3211.powergrid.electricity.base.ElectricBehaviour.readFromBuffer;
+import static org.patryk3211.powergrid.electricity.base.ElectricBehaviour.writeToBuffer;
+
 public class JunctionWireEndpoint implements IWireEndpoint {
     private static final Map<Level, WorldEntry> JUNCTION_NODES = new HashMap<>();
 
@@ -129,7 +132,7 @@ public class JunctionWireEndpoint implements IWireEndpoint {
                 // Since holders' size was 2 we must get 2 wires, otherwise the set was altered before the loop started.
                 throw new ConcurrentModificationException();
             }
-            assert wire1.getWireItem() == wire2.getWireItem();
+            assert wire1.getWireEntry() == wire2.getWireEntry();
             var wire1End = this.equals(wire1.getEndpoint2());
             var wire2End = this.equals(wire2.getEndpoint2());
 
@@ -153,25 +156,40 @@ public class JunctionWireEndpoint implements IWireEndpoint {
                 target = wire2;
             }
 
-            var lastIndex = target.segments.size() - 1;
-            var last = target.segments.get(lastIndex);
-            if(!targetFlipped)
-                target.segments.set(lastIndex, new BlockWireEntity.Point(last.direction, last.gridLength + 1));
-
-            if(flipped) {
-                var segments = new ArrayList<BlockWireEntity.Point>();
-                for(var segment : source.segments) {
-                    segments.add(0, new BlockWireEntity.Point(segment.direction.getOpposite(), segment.gridLength));
+            if(target.segments.isEmpty()) {
+                target.dropWire();
+                if(source.segments.isEmpty()) {
+                    source.dropWire();
+                    source.discard();
+                } else {
+                    if(flipped) {
+                        source.setEndpoint2(target.getEndpoint1());
+                    } else {
+                        source.setEndpoint1(target.getEndpoint1());
+                    }
                 }
-                source.dropWire();
-                target.setEndpoint2(source.getEndpoint1());
-                target.extend(segments, source.getWireCount());
+                target.discard();
             } else {
-                source.dropWire();
-                target.setEndpoint2(source.getEndpoint2());
-                target.extend(source.segments, source.getWireCount());
+                int lastIndex = target.segments.size() - 1;
+                var last = target.segments.get(lastIndex);
+                if(!targetFlipped)
+                    target.segments.set(lastIndex, new BlockWireEntity.Point(last.direction, last.gridLength + 1));
+
+                if(flipped) {
+                    var segments = new ArrayList<BlockWireEntity.Point>();
+                    for(var segment : source.segments) {
+                        segments.add(0, new BlockWireEntity.Point(segment.direction.getOpposite(), segment.gridLength));
+                    }
+                    source.dropWire();
+                    target.setEndpoint2(source.getEndpoint1());
+                    target.extend(segments, source.getWireCount());
+                } else {
+                    source.dropWire();
+                    target.setEndpoint2(source.getEndpoint2());
+                    target.extend(source.segments, source.getWireCount());
+                }
+                source.discard();
             }
-            source.discard();
             entry.holders.clear();
             removeEntry(entity.level(), this.id);
         } else if(entry.holders.size() == 1) {
@@ -284,8 +302,8 @@ public class JunctionWireEndpoint implements IWireEndpoint {
         }
 
         @Override
-        public void writeToSync(FriendlyByteBuf buffer, Function<OwnedFloatingNode, TransmissionLine> lineLookup) {
-            float V = 0;
+        public void writeToSync(FriendlyByteBuf buffer, boolean useDoubles, Function<OwnedFloatingNode, TransmissionLine> lineLookup) {
+            double V = 0;
             if (node.getNetwork() == null) {
                 var line = lineLookup.apply(node);
                 if (line != null)
@@ -293,13 +311,12 @@ public class JunctionWireEndpoint implements IWireEndpoint {
             } else {
                 V = node.getVoltage();
             }
-            buffer.writeFloat(V);
+            writeToBuffer(buffer, V, useDoubles);
         }
 
         @Override
-        public void readFromSync(FriendlyByteBuf buffer) {
-            var V = buffer.readFloat();
-            node.setStateValue(V);
+        public void readFromSync(FriendlyByteBuf buffer, boolean useDoubles) {
+            node.setStateValue(readFromBuffer(buffer, useDoubles));
         }
 
         @Override
