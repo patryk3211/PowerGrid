@@ -62,10 +62,16 @@ public class PortableBatteryItem extends BaseArmorItem implements IHaveElectricP
     }
 
     @Override
-    public boolean isEnchantable(ItemStack p_77616_1_) {
+    public boolean isEnchantable(ItemStack stack) {
         return true;
     }
 
+    /* Override (NeoForge) */
+    public boolean isDamageable(ItemStack stack) {
+        return false;
+    }
+
+    /* Override (NeoForge) */
     public boolean supportsEnchantment(ItemStack stack, Holder<Enchantment> enchantment) {
         return enchantment.is(AllEnchantments.CAPACITY);
     }
