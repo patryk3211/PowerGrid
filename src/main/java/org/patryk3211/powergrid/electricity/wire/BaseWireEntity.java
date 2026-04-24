@@ -82,7 +82,7 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
 
     protected Float resistanceOverride = null;
 
-    private boolean sublevelMove;
+    protected boolean sublevelMove;
 
     public BaseWireEntity(EntityType<?> type, Level world) {
         super(type, world);

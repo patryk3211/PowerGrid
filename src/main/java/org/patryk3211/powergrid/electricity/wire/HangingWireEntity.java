@@ -159,6 +159,9 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     @Override
     public void tick() {
         var beginFlags = deferEndpointResolution;
+        if(sublevelMove) {
+            refreshTerminalPositions();
+        }
         super.tick();
         var world = level();
         if(beginFlags != deferEndpointResolution) {

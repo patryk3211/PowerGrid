@@ -264,6 +264,9 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     @Override
     public void tick() {
         var beginFlags = deferEndpointResolution;
+        if(sublevelMove) {
+            refreshTerminalPositions();
+        }
         super.tick();
         var world = level();
         if(beginFlags != deferEndpointResolution) {
