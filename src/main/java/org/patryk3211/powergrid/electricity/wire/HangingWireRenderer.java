@@ -113,19 +113,25 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
             buffer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(entity)));
         }
 
-        if(entity.terminal1Velocity != null && entity.terminal2Velocity != null) {
-            // Change curve based on velocity
-            tickDelta = 1 - tickDelta;
-            rp.nudge(
-                    entity.terminalPos1.x - entity.terminal1Velocity.x * tickDelta * 0.05,
-                    entity.terminalPos1.y - entity.terminal1Velocity.y * tickDelta * 0.05,
-                    entity.terminalPos1.z - entity.terminal1Velocity.z * tickDelta * 0.05,
-                    entity.terminalPos2.x - entity.terminal2Velocity.x * tickDelta * 0.05,
-                    entity.terminalPos2.y - entity.terminal2Velocity.y * tickDelta * 0.05,
-                    entity.terminalPos2.z - entity.terminal2Velocity.z * tickDelta * 0.05
-            );
-        }
         var world = entity.level();
+        if(entity.baseTerminalPos1 != null && entity.baseTerminalPos2 != null) {
+            // Change curve based on sublevels
+            boolean moved = false;
+            Vec3 pos1 = entity.terminalPos1, pos2 = entity.terminalPos2;
+            var s1 = SableCompanion.INSTANCE.getContainingClient(entity.baseTerminalPos1);
+            var s2 = SableCompanion.INSTANCE.getContainingClient(entity.baseTerminalPos2);
+            if (s1 != null) {
+                pos1 = s1.renderPose(tickDelta).transformPosition(entity.baseTerminalPos1);
+                moved = true;
+            }
+            if (s2 != null) {
+                pos2 = s2.renderPose(tickDelta).transformPosition(entity.baseTerminalPos2);
+                moved = true;
+            }
+            if (moved) {
+                rp.nudge(pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z);
+            }
+        }
         rp.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
             var blockPos = BlockPos.containing((x1 + x2) * 0.5 + pos.x, (y1 + y2) * 0.5 + pos.y, (z1 + z2) * 0.5 + pos.z);
             var sky = world.getBrightness(LightLayer.SKY, blockPos);

@@ -55,10 +55,8 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     public Vec3 terminalPos2;
     public AABB deSabledBB;
     boolean isDynamic = false;
-    private Vec3 baseTerminalPos1;
-    private Vec3 baseTerminalPos2;
-    Vec3 terminal1Velocity;
-    Vec3 terminal2Velocity;
+    Vec3 baseTerminalPos1;
+    Vec3 baseTerminalPos2;
     protected float placedLength;
 
     protected ElectricWire wire1;
@@ -282,8 +280,6 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
                 // Sable handles this.
                 SableUtils.PROXY.setSubLevelTracking(this, sublevel1);
             } else {
-                terminal1Velocity = SableCompanion.INSTANCE.getVelocity(world, baseTerminalPos1);
-                terminal2Velocity = SableCompanion.INSTANCE.getVelocity(world, baseTerminalPos2);
                 setOldPosAndRot();
             }
             var vect = terminalPos2.subtract(terminalPos1);

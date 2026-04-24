@@ -50,8 +50,6 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     private boolean isDynamic = false;
     Vec3 baseTerminalPos1;
     Vec3 baseTerminalPos2;
-    Vec3 terminal1Velocity;
-    Vec3 terminal2Velocity;
     private float placedLength;
 
     private boolean particlesSpawned = false;
@@ -173,8 +171,6 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             var sublevel2 = SableCompanion.INSTANCE.getContaining(world, baseTerminalPos2);
             terminalPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, baseTerminalPos1);
             terminalPos2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, baseTerminalPos2);
-            terminal1Velocity = SableCompanion.INSTANCE.getVelocity(world, baseTerminalPos1);
-            terminal2Velocity = SableCompanion.INSTANCE.getVelocity(world, baseTerminalPos2);
             if (sublevel1 == sublevel2) {
                 // Sable handles this.
                 SableUtils.PROXY.setSubLevelTracking(this, sublevel1);

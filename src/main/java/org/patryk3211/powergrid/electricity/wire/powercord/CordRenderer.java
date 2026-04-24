@@ -110,6 +110,24 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
             }
             default -> simpleModel = !Minecraft.useFancyGraphics();
         }
+        if(entity.baseTerminalPos1 != null && entity.baseTerminalPos2 != null) {
+            // Change curve based on sublevels
+            boolean moved = false;
+            Vec3 pos1 = entity.terminalPos1, pos2 = entity.terminalPos2;
+            var s1 = SableCompanion.INSTANCE.getContainingClient(entity.baseTerminalPos1);
+            var s2 = SableCompanion.INSTANCE.getContainingClient(entity.baseTerminalPos2);
+            if (s1 != null) {
+                pos1 = s1.renderPose(tickDelta).transformPosition(entity.baseTerminalPos1);
+                moved = true;
+            }
+            if (s2 != null) {
+                pos2 = s2.renderPose(tickDelta).transformPosition(entity.baseTerminalPos2);
+                moved = true;
+            }
+            if (moved) {
+                rp.nudge(pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z);
+            }
+        }
         rp.runForSegments((x1, y1, z1, x2, y2, z2, offset, length, first, last) -> {
             var buffer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(entity)));
             var blockPos = BlockPos.containing((x1 + x2) * 0.5 + pos.x, (y1 + y2) * 0.5 + pos.y, (z1 + z2) * 0.5 + pos.z);
