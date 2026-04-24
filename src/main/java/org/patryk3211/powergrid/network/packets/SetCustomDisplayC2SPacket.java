@@ -27,6 +27,8 @@ import org.patryk3211.powergrid.utility.Unit;
 import java.util.function.Supplier;
 
 public class SetCustomDisplayC2SPacket implements SimplePacket {
+    public static final int MAX_UNIT_STR_LENGTH = 16;
+
     private final BlockPos pos;
     private final String equation;
     private final boolean usePrefixes;
@@ -50,7 +52,7 @@ public class SetCustomDisplayC2SPacket implements SimplePacket {
             unitStr = null;
         } else {
             unit = null;
-            unitStr = buf.readUtf(8);
+            unitStr = buf.readUtf(MAX_UNIT_STR_LENGTH);
         }
     }
 
@@ -64,7 +66,10 @@ public class SetCustomDisplayC2SPacket implements SimplePacket {
             buf.writeEnum(unit);
         } else {
             buf.writeBoolean(false);
-            buf.writeUtf(unitStr, 8);
+            var unitStr = this.unitStr;
+            if(unitStr.length() > MAX_UNIT_STR_LENGTH)
+                unitStr = unitStr.substring(0, MAX_UNIT_STR_LENGTH);
+            buf.writeUtf(unitStr, MAX_UNIT_STR_LENGTH);
         }
     }
 
