@@ -79,6 +79,7 @@ public class CustomDisplayScreen extends AbstractSimiContainerScreen<CustomDispl
 
         unitSelector = new EditableScrollBox(font, leftPos + 42, topPos + 53, 90, 9, CommonComponents.EMPTY, TOOLTIP_UNIT);
         unitSelector.setOptions(Arrays.stream(Unit.values()).map(Unit::string).toList());
+        unitSelector.setMaxLength(SetCustomDisplayC2SPacket.MAX_UNIT_STR_LENGTH);
         if(menu.unit != null) {
             unitSelector.setState(menu.unit.ordinal());
         } else {

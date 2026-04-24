@@ -176,7 +176,6 @@
   "item.powergrid.unetched_circuit": "Circuit non gravé",
   "item.powergrid.varistor": "Varistance",
   "item.powergrid.vfet": "Transistor à induction statique",
-  "item.powergrid.wire": "Fil",
   "item.powergrid.wire_cutter": "Pince coupante",
   "item.powergrid.wire_cutter.tooltip.behaviour1": "Supprime un fil suspendu, ou le segment sélectionné d'un fil de bloc",
   "item.powergrid.wire_cutter.tooltip.behaviour2": "Supprime tout le fil de bloc",
@@ -280,7 +279,10 @@
   "powergrid.generic.unit.amp": "A",
   "powergrid.generic.unit.amp.name": "Ampère",
   "powergrid.generic.unit.block": "blocs",
+<<<<<<< l10n_crowdin
+=======
   "powergrid.generic.unit.energy": "Wh",
+>>>>>>> architectury-1.20.1/dev
   "powergrid.generic.unit.ohm": "Ω",
   "powergrid.generic.unit.ohm.name": "Ohm",
   "powergrid.generic.unit.temperature": "°C",
