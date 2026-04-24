@@ -5,5 +5,7 @@ import net.minecraft.world.entity.Entity;
 
 public class DummySableProxy implements SableProxy {
     @Override
+    public void init() { }
+    @Override
     public void setSubLevelTracking(Entity entity, SubLevelAccess subLevel) { }
 }

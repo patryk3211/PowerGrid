@@ -24,6 +24,7 @@ public class SableUtils {
 
     public static void makeFullProxy() {
         PROXY = new SableProxyImpl();
+        PROXY.init();
     }
 
     public static void makeDummyProxy() {
