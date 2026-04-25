@@ -781,6 +781,13 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         return wires;
     }
 
+    public List<TransmissionLinePart> findConnectedWires(IWireEndpoint endpoint) {
+        var parts = partNodeMap.get(endpoint.getNode(world));
+        if(parts == null)
+            return null;
+        return List.copyOf(parts);
+    }
+
     public void deferredRewire(Collection<TransmissionLinePart> wires) {
         deferredRewireEntities.addAll(wires);
     }
