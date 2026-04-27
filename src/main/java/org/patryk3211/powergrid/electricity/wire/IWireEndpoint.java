@@ -59,6 +59,10 @@ public interface IWireEndpoint {
         throw new IllegalStateException("Cannot remove a wire entity");
     }
 
+    default void moveWireEntity(BaseWireEntity entity) {
+        removeWireEntity(entity);
+    }
+
     default CompoundTag serialize() {
         return type().serialize(this);
     }

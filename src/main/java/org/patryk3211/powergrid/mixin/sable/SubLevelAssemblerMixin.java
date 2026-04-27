@@ -32,9 +32,9 @@ public class SubLevelAssemblerMixin {
         if(connected == null)
             return;
         for(TransmissionLinePart linePart : connected) {
-            if(!checked.add(linePart))
-                continue;
             if(linePart.getEndpoint1() instanceof JunctionWireEndpoint e1 && linePart.getEndpoint2() instanceof JunctionWireEndpoint e2) {
+                if(!checked.add(linePart))
+                    continue;
                 BaseWireEntity owner = linePart.owner;
                 if(owner == null) {
                     // Owner might have been moved already (block wires which were kicked out).
@@ -43,6 +43,9 @@ public class SubLevelAssemblerMixin {
                         return;
                     abandonedLines.add(linePart);
                 }
+                // Needs to be dropped here or else the wires will be killed once junction is empty.
+                owner.dropWire();
+                linePart.remove();
 
                 var movedE1 = e1.makeOffset(offset);
                 var movedE2 = e2.makeOffset(offset);
@@ -86,25 +89,37 @@ public class SubLevelAssemblerMixin {
                 }
                 IWireEndpoint endpoint1 = owner.getEndpoint1();
                 IWireEndpoint endpoint2 = owner.getEndpoint2();
-                if(endpoint1 != null) {
-                    var pos = endpoint1.getExactPosition(level);
-                    if(blockPos.getX() == Mth.floor(pos.x) && blockPos.getY() == Mth.floor(pos.y) && blockPos.getZ() == Mth.floor(pos.z)) {
+                if(endpoint1 instanceof JunctionWireEndpoint junction) {
+                    if(checked.add(linePart)) {
+                        if(endpoint2 != null)
+                            endpoint2 = endpoint2.makeOffset(offset);
                         endpoint1 = endpoint1.makeOffset(offset);
+                        // Needs to be dropped here or else the wires will be killed once junction is empty.
+                        owner.dropWire();
+                        linePart.remove();
+                        powerGrid$handleJunction(level, global, offset, junction, checked, altered, abandonedLines);
                     }
-                    if(endpoint1 instanceof JunctionWireEndpoint junction) {
-                        if(checked.add(linePart)) {
-                            powerGrid$handleJunction(level, global, offset, junction, checked, altered, abandonedLines);
+                } else if(endpoint2 instanceof JunctionWireEndpoint junction) {
+                    if(checked.add(linePart)) {
+                        if(endpoint1 != null)
+                            endpoint1 = endpoint1.makeOffset(offset);
+                        endpoint2 = endpoint2.makeOffset(offset);
+                        // Needs to be dropped here or else the wires will be killed once junction is empty.
+                        owner.dropWire();
+                        linePart.remove();
+                        powerGrid$handleJunction(level, global, offset, junction, checked, altered, abandonedLines);
+                    }
+                } else {
+                    if(endpoint1 != null) {
+                        var pos = endpoint1.getExactPosition(level);
+                        if(blockPos.getX() == Mth.floor(pos.x) && blockPos.getY() == Mth.floor(pos.y) && blockPos.getZ() == Mth.floor(pos.z)) {
+                            endpoint1 = endpoint1.makeOffset(offset);
                         }
                     }
-                }
-                if(endpoint2 != null) {
-                    var pos = endpoint2.getExactPosition(level);
-                    if(blockPos.getX() == Mth.floor(pos.x) && blockPos.getY() == Mth.floor(pos.y) && blockPos.getZ() == Mth.floor(pos.z)) {
-                        endpoint2 = endpoint2.makeOffset(offset);
-                    }
-                    if(endpoint2 instanceof JunctionWireEndpoint junction) {
-                        if(checked.add(linePart)) {
-                            powerGrid$handleJunction(level, global, offset, junction, checked, altered, abandonedLines);
+                    if (endpoint2 != null) {
+                        var pos = endpoint2.getExactPosition(level);
+                        if(blockPos.getX() == Mth.floor(pos.x) && blockPos.getY() == Mth.floor(pos.y) && blockPos.getZ() == Mth.floor(pos.z)) {
+                            endpoint2 = endpoint2.makeOffset(offset);
                         }
                     }
                 }
@@ -117,7 +132,9 @@ public class SubLevelAssemblerMixin {
         for(var entity : altered) {
             entity.dropWire();
             if(entity instanceof BlockWireEntity blockWire) {
-                if(!SableUtils.sameSubLevel(level, blockWire.getEndpoint1().getExactPosition(level), blockWire.getEndpoint2().getExactPosition(level))) {
+                if(blockWire.getEndpoint1() != null &&
+                        blockWire.getEndpoint2() != null &&
+                        !SableUtils.sameSubLevel(level, blockWire.getEndpoint1().getExactPosition(level), blockWire.getEndpoint2().getExactPosition(level))) {
                     entity.kill();
                 } else {
                     blockWire.setPos(transform.apply(blockWire.position()));

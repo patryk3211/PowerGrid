@@ -244,10 +244,10 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
 
     public void sublevelMove(IWireEndpoint endpoint1, IWireEndpoint endpoint2) {
         if(this.endpoint1 != endpoint1 && this.endpoint1.isValid(level())) {
-            this.endpoint1.removeWireEntity(this);
+            this.endpoint1.moveWireEntity(this);
         }
         if(this.endpoint2 != endpoint2 && this.endpoint2.isValid(level())) {
-            this.endpoint2.removeWireEntity(this);
+            this.endpoint2.moveWireEntity(this);
         }
         this.endpoint1 = endpoint1;
         this.endpoint2 = endpoint2;

@@ -17,8 +17,12 @@ public class SableProxyImpl implements SableProxy {
     @Override
     public void setSubLevelTracking(Entity entity, SubLevelAccess subLevel) {
         if(entity instanceof EntityStickExtension sticky) {
-            Vec3 plotPos = subLevel.logicalPose().transformPositionInverse(entity.position());
-            sticky.sable$setPlotPosition(plotPos);
+            if(subLevel == null) {
+                sticky.sable$setPlotPosition(null);
+            } else {
+                Vec3 plotPos = subLevel.logicalPose().transformPositionInverse(entity.position());
+                sticky.sable$setPlotPosition(plotPos);
+            }
         }
     }
 }
