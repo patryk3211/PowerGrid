@@ -63,7 +63,10 @@ public class DoubleRelayComponent extends MirrorableComponent {
         builder.add(nc2);
         builder.add(no2);
 
+        placed.add(nc1);
         placed.add(no1);
+        placed.add(nc2);
+        placed.add(no2);
 
         thermals.builder()
                 .setMaxCurrent(onCurrent * 2, resistance, 125f)
@@ -86,9 +89,12 @@ public class DoubleRelayComponent extends MirrorableComponent {
         if(placed.wires.isEmpty())
             return true;
 
-        var NO = (RelaySwitchWire) placed.wires.get(0);
-        if(NO.wasSwitched()) {
-            boolean state = NO.getState();
+        var NC1 = (RelaySwitchWire) placed.wires.get(0);
+        var NO1 = (RelaySwitchWire) placed.wires.get(1);
+        var NC2 = (RelaySwitchWire) placed.wires.get(2);
+        var NO2 = (RelaySwitchWire) placed.wires.get(3);
+        if(NO1.wasSwitched() | NC1.wasSwitched() | NO2.wasSwitched() | NC2.wasSwitched()) {
+            boolean state = NO1.getState();
             placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(
                     world,
                     placed.getPos(),

@@ -45,6 +45,10 @@ public class SeriesWire extends AbstractElectricWire implements IOuterHook {
 
     @Override
     public void preSolve() {
+        for(var wire : wires) {
+            if(wire instanceof IOuterHook hook)
+                hook.preSolve();
+        }
         double G = calculateConductance();
         network.updateConductance(this, G - conductance);
         conductance = G;
@@ -83,6 +87,8 @@ public class SeriesWire extends AbstractElectricWire implements IOuterHook {
             nextNode.setSavedValue(voltage);
             previousNode = nextNode;
             prevVoltage = voltage;
+            if(wire instanceof IOuterHook hook)
+                hook.postUpperSolve();
         }
 //        assert previousNode == node2;
     }
