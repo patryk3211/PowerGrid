@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "powergrid:block/plotter/base",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "powergrid:block/plotter/base"
+    },
+    "facing=south": {
+      "model": "powergrid:block/plotter/base",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "powergrid:block/plotter/base",
+      "y": 270
+    }
+  }
+}

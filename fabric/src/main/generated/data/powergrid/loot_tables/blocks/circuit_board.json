@@ -1,0 +1,39 @@
+{
+  "type": "minecraft:block",
+  "functions": [
+    {
+      "function": "minecraft:copy_nbt",
+      "ops": [
+        {
+          "op": "replace",
+          "source": "Schematic",
+          "target": "Schematic"
+        },
+        {
+          "op": "replace",
+          "source": "Thermal",
+          "target": "Thermal"
+        }
+      ],
+      "source": "block_entity"
+    }
+  ],
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "powergrid:circuit_board"
+        }
+      ],
+      "rolls": 1.0
+    }
+  ],
+  "random_sequence": "powergrid:blocks/circuit_board"
+}

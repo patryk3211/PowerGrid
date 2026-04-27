@@ -1,0 +1,5 @@
+base_path: .
+preserve_hierarchy: 1
+files:
+  - source: /forge/src/main/generated/assets/powergrid/lang/en_us.json
+    translation: /src/main/resources/assets/powergrid/lang/%locale_with_underscore%.json

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "tag": "forge:wires/iron"
+    },
+    {
+      "tag": "forge:wires/iron"
+    },
+    {
+      "tag": "forge:wires/iron"
+    },
+    {
+      "tag": "forge:wires/iron"
+    },
+    {
+      "item": "minecraft:stick"
+    }
+  ],
+  "result": {
+    "item": "powergrid:resistive_coil"
+  }
+}

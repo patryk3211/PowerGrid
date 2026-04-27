@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="SysOut" target="SYSTEM_OUT">
+            <PatternLayout>
+                <LoggerNamePatternSelector
+                        defaultPattern="%style{[%d{HH:mm:ss}]}{blue} %highlight{[%t/%level]}{FATAL=red, ERROR=red, WARN=yellow, INFO=green, DEBUG=green, TRACE=blue} %style{(%logger{1})}{cyan} %highlight{%msg%n}{FATAL=red, ERROR=red, WARN=normal, INFO=normal, DEBUG=normal, TRACE=normal}"
+                        disableAnsi="${sys:fabric.log.disableAnsi:-true}">
+                    <PatternMatch key="net.minecraft.,com.mojang."
+                                  pattern="%style{[%d{HH:mm:ss}]}{blue} %highlight{[%t/%level]}{FATAL=red, ERROR=red, WARN=yellow, INFO=green, DEBUG=green, TRACE=blue} %style{(Minecraft)}{cyan} %highlight{%msg{nolookups}%n}{FATAL=red, ERROR=red, WARN=normal, INFO=normal, DEBUG=normal, TRACE=normal}"/>
+                </LoggerNamePatternSelector>
+            </PatternLayout>
+        </Console>
+
+        <Queue name="ServerGuiConsole" ignoreExceptions="true">
+            <PatternLayout>
+                <LoggerNamePatternSelector defaultPattern="[%d{HH:mm:ss} %level] (%logger{1}) %msg{nolookups}%n">
+                    <PatternMatch key="net.minecraft.,com.mojang." pattern="[%d{HH:mm:ss} %level] %msg{nolookups}%n"/>
+                </LoggerNamePatternSelector>
+            </PatternLayout>
+        </Queue>
+
+        <RollingRandomAccessFile name="LatestFile" fileName="logs/latest.log" filePattern="logs/%d{yyyy-MM-dd}-%i.log.gz">
+            <PatternLayout>
+                <LoggerNamePatternSelector defaultPattern="[%d{HH:mm:ss}] [%t/%level] (%logger{1}) %msg{nolookups}%n">
+                    <PatternMatch key="net.minecraft.,com.mojang." pattern="[%d{HH:mm:ss}] [%t/%level] (Minecraft) %msg{nolookups}%n"/>
+                </LoggerNamePatternSelector>
+            </PatternLayout>
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <OnStartupTriggeringPolicy/>
+            </Policies>
+        </RollingRandomAccessFile>
+
+        <RollingRandomAccessFile name="DebugFile" fileName="logs/debug.log" filePattern="logs/debug-%i.log.gz">
+            <PatternLayout pattern="[%d{HH:mm:ss}] [%t/%level] (%logger) %msg{nolookups}%n"/>
+            <DefaultRolloverStrategy max="5" fileIndex="min"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="200MB"/>
+                <OnStartupTriggeringPolicy/>
+            </Policies>
+        </RollingRandomAccessFile>
+    </Appenders>
+
+    <Loggers>
+        <Logger level="info" name="net.minecraft"/>
+        <Logger level="warn" name="cpw.mods.modlauncher.ClassTransformer"/>
+
+        <!-- Log of this mod -->
+        <Logger level="all" name="org.patryk3211.powergrid.PowerGrid">
+            <AppenderRef ref="DebugFile" level="debug"/>
+            <AppenderRef ref="SysOut" level="debug"/>
+            <AppenderRef ref="LatestFile" level="info"/>
+            <AppenderRef ref="ServerGuiConsole" level="info"/>
+        </Logger>
+
+        <!-- Global logger with the special "Root" tag-->
+        <Root level="all">
+            <AppenderRef ref="DebugFile" level="${sys:fabric.log.debug.level:-info}"/>
+            <AppenderRef ref="SysOut" level="${sys:fabric.log.level:-info}"/>
+            <AppenderRef ref="LatestFile" level="${sys:fabric.log.level:-info}"/>
+            <AppenderRef ref="ServerGuiConsole" level="${sys:fabric.log.level:-info}"/>
+        </Root>
+    </Loggers>
+</Configuration>

@@ -1,0 +1,42 @@
+modLoader = "javafml"
+loaderVersion = "${forge_version_range}"
+issueTrackerURL = "https://github.com/patryk3211/PowerGrid/issues"
+license = "Apache-2.0"
+
+[[mods]]
+modId = "powergrid"
+version = "${version}"
+displayName = "Create: Power Grid"
+authors = "patryk3211, Da-Negy, rvndm, casvara"
+description = '''
+Providing electricity to a world near you.
+'''
+logoFile = "assets/powergrid/icon.png"
+
+[[dependencies.powergrid]]
+modId = "forge"
+mandatory = true
+versionRange = "${forge_version_range}"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.powergrid]]
+modId = "minecraft"
+mandatory = true
+versionRange = "[${minecraft_version},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.powergrid]]
+modId = "architectury"
+mandatory = true
+versionRange = "[${architectury_version},)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.powergrid]]
+modId = "create"
+mandatory = true
+versionRange = "${create_forge_version}"
+ordering = "NONE"
+side = "BOTH"

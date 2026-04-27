@@ -1,0 +1,80 @@
+{
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "powergrid:conductive_casing"
+  },
+  "loops": 3,
+  "results": [
+    {
+      "chance": 100.0,
+      "item": "powergrid:battery"
+    },
+    {
+      "chance": 5.0,
+      "item": "powergrid:conductive_casing"
+    },
+    {
+      "chance": 2.0,
+      "item": "create:copper_sheet"
+    },
+    {
+      "chance": 2.0,
+      "item": "powergrid:zinc_sheet"
+    }
+  ],
+  "sequence": [
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "powergrid:incomplete_battery"
+        },
+        {
+          "tag": "forge:plates/copper"
+        }
+      ],
+      "results": [
+        {
+          "item": "powergrid:incomplete_battery"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "powergrid:incomplete_battery"
+        },
+        {
+          "tag": "forge:plates/zinc"
+        }
+      ],
+      "results": [
+        {
+          "item": "powergrid:incomplete_battery"
+        }
+      ]
+    },
+    {
+      "type": "create:filling",
+      "ingredients": [
+        {
+          "item": "powergrid:incomplete_battery"
+        },
+        {
+          "amount": 250,
+          "fluid": "powergrid:acid",
+          "nbt": {}
+        }
+      ],
+      "results": [
+        {
+          "item": "powergrid:incomplete_battery"
+        }
+      ]
+    }
+  ],
+  "transitionalItem": {
+    "item": "powergrid:incomplete_battery"
+  }
+}

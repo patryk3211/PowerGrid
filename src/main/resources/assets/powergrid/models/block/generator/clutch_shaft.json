@@ -1,0 +1,21 @@
+{
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "powergrid:block/generator/clutch_shaft",
+		"particle": "powergrid:block/generator/clutch_shaft"
+	},
+	"elements": [
+		{
+			"from": [5, 5, 10],
+			"to": [11, 11, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 13]},
+			"faces": {
+				"east": {"uv": [0, 0, 6, 6], "rotation": 90, "texture": "#0"},
+				"south": {"uv": [6, 0, 12, 6], "rotation": 90, "texture": "#0"},
+				"west": {"uv": [0, 0, 6, 6], "rotation": 270, "texture": "#0"},
+				"up": {"uv": [0, 0, 6, 6], "texture": "#0"},
+				"down": {"uv": [0, 0, 6, 6], "rotation": 180, "texture": "#0"}
+			}
+		}
+	]
+}

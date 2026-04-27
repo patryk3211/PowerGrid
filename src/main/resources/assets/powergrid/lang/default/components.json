@@ -1,0 +1,71 @@
+{
+  "powergrid.component.property.power": "Power",
+  "powergrid.component.property.power.summary": "Maximum power that this component can handle for prolonged periods of time",
+  "powergrid.component.property.current": "Current",
+  "powergrid.component.property.current.summary": "Maximum current that this component can handle for prolonged periods of time",
+  "powergrid.component.property.voltage": "Voltage",
+  "powergrid.component.property.voltage.summary": "Maximum voltage that this component can handle",
+  "powergrid.component.property.label": "Label",
+  "powergrid.component.property.color": "Color",
+
+  "powergrid.component.property.tube_gain": "Gain",
+  "powergrid.component.property.tube_gain.summary": "Controls the effect of grid voltage on anode current",
+  "powergrid.component.property.tube_kg": "Kg",
+  "powergrid.component.property.tube_kg.summary": "Inverse perveance parameter, controls plate current for a given voltage",
+  "powergrid.component.property.tube_saturation_current": "Saturation Current",
+  "powergrid.component.property.tube_saturation_current.summary": "Maximum current that can pass through the tube without distortion",
+  "powergrid.component.property.tube_heater_voltage": "Heater Voltage",
+  "powergrid.component.property.tube_heater_voltage.summary": "Voltage required to reach the rated heater power",
+  "powergrid.component.property.tube_heater_power": "Heater Power",
+  "powergrid.component.property.tube_heater_power.summary": "Power requirement for the given saturation current",
+
+  "powergrid.component.property.vfet_gain": "Gain",
+  "powergrid.component.property.vfet_gain.summary": "Controls the effect of gate voltage on channel current",
+  "powergrid.component.property.vfet_kg": "Kg",
+  "powergrid.component.property.vfet_kg.summary": "Inverse perveance parameter, controls channel current for a given voltage",
+  "powergrid.component.property.vfet_isat": "Saturation current",
+  "powergrid.component.property.vfet_isat.summary": "Maximum current that can pass through the transistor without distortion",
+
+  "powergrid.component.property.bjt_gain": "Gain",
+
+  "powergrid.component.property.switch_state": "State",
+
+  "powergrid.component.property.relay_threshold": "Threshold Voltage",
+  "powergrid.component.property.relay_threshold.summary": "Voltage above which the relay triggers",
+  "powergrid.component.property.relay_current": "Threshold Current",
+  "powergrid.component.property.relay_current.summary": "Current needed to trigger the relay (calculated from the threshold voltage)",
+
+  "powergrid.component.property.resistor_value": "Resistance [Ω]",
+  "powergrid.component.property.capacitor_value": "Capacitance [mF]",
+  "powergrid.component.property.inductor_value": "Inductance [mH]",
+
+  "powergrid.component.property.redstone_emitter_digital": "Digital",
+
+  "powergrid.component.property.orientation": "Orientation",
+  "powergrid.component.property.vertical": "Vertical",
+
+  "powergrid.component.property.potentiometer_resistance": "Resistance",
+  "powergrid.component.property.potentiometer_value": "Setting",
+
+  "powergrid.component.property.current_gauge_max": "Max Current",
+  "powergrid.component.property.voltage_gauge_max": "Max Voltage",
+  "powergrid.component.property.gauge_equation": "Display equation",
+  "powergrid.component.property.gauge_equation.summary": "Equation to be applied to the measured voltage before displaying it",
+  "powergrid.component.property.gauge_unit": "Unit",
+
+  "powergrid.component.property.regulator_tube_vh": "Holding Voltage",
+  "powergrid.component.property.regulator_tube_vh.summary": "Regulated voltage held by the regulator tube when it is lit and current is steady",
+  "powergrid.component.property.neon_tube_vb": "Breakdown Voltage",
+  "powergrid.component.property.neon_tube_vb.summary": "Voltage needed to light up the tube",
+  "powergrid.component.property.neon_tube_ih": "Holding Current",
+  "powergrid.component.property.neon_tube_ih.summary": "Minimum current needed to keep the tube lit",
+  "powergrid.component.property.neon_tube_vh": "Holding Voltage",
+  "powergrid.component.property.neon_tube_vh.summary": "Approximate voltage held by the tube once lit",
+
+  "powergrid.component.property.barretter_current": "Holding Current",
+  "powergrid.component.property.barretter_current.summary": "Constant current held by the tube",
+  "powergrid.component.property.barretter_resistance": "Minimum Resistance",
+
+  "powergrid.component.property.varistor_voltage": "Threshold Voltage",
+  "powergrid.component.property.varistor_voltage.summary": "Voltage around which the varistor starts to conduct major current"
+}

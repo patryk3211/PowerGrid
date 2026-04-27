@@ -1,0 +1,27 @@
+{
+  "values": [
+    "powergrid:potentiometer",
+    "powergrid:neon_bulb",
+    "powergrid:current_gauge",
+    "powergrid:barretter_tube",
+    "powergrid:copper_coil",
+    "create:electron_tube",
+    "powergrid:relay",
+    "powergrid:vfet",
+    "powergrid:bjt_npn",
+    "powergrid:varistor",
+    "powergrid:bjt_pnp",
+    "create:copper_nugget",
+    "powergrid:lv_switch",
+    "powergrid:capacitor",
+    "powergrid:lv_button",
+    "powergrid:wire_connector",
+    "powergrid:redstone_relay",
+    "powergrid:regulator_tube",
+    "powergrid:voltage_gauge",
+    "powergrid:relay_dpdt",
+    "powergrid:diode",
+    "powergrid:lv_light_bulb",
+    "powergrid:resistor"
+  ]
+}

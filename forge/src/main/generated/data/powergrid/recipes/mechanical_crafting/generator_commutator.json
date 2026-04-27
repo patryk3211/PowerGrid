@@ -1,0 +1,33 @@
+{
+  "type": "create:mechanical_crafting",
+  "acceptMirrored": true,
+  "key": {
+    "A": {
+      "item": "create:andesite_alloy"
+    },
+    "C": {
+      "item": "create:andesite_casing"
+    },
+    "G": {
+      "tag": "minecraft:coals"
+    },
+    "M": {
+      "tag": "forge:plates/copper"
+    },
+    "N": {
+      "tag": "forge:nuggets/copper"
+    },
+    "S": {
+      "item": "create:shaft"
+    }
+  },
+  "pattern": [
+    "N N",
+    "GMG",
+    "ASA",
+    " C "
+  ],
+  "result": {
+    "item": "powergrid:generator_commutator"
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "powergrid:circuit_schematic"
+  },
+  "loops": 2,
+  "results": [
+    {
+      "chance": 100.0,
+      "item": "powergrid:unetched_circuit"
+    }
+  ],
+  "sequence": [
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "powergrid:incomplete_unetched_circuit"
+        },
+        {
+          "item": "powergrid:empty_circuit"
+        }
+      ],
+      "results": [
+        {
+          "item": "powergrid:incomplete_unetched_circuit"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "powergrid:incomplete_unetched_circuit"
+        },
+        {
+          "item": "create:dough"
+        }
+      ],
+      "results": [
+        {
+          "item": "powergrid:incomplete_unetched_circuit"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "powergrid:incomplete_unetched_circuit"
+        },
+        {
+          "tag": "forge:plates/copper"
+        }
+      ],
+      "results": [
+        {
+          "item": "powergrid:incomplete_unetched_circuit"
+        }
+      ]
+    },
+    {
+      "type": "create:pressing",
+      "ingredients": [
+        {
+          "item": "powergrid:incomplete_unetched_circuit"
+        }
+      ],
+      "results": [
+        {
+          "item": "powergrid:incomplete_unetched_circuit"
+        }
+      ]
+    }
+  ],
+  "transitionalItem": {
+    "item": "powergrid:incomplete_unetched_circuit"
+  }
+}

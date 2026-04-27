@@ -1,0 +1,31 @@
+{
+  "type": "create:mechanical_crafting",
+  "acceptMirrored": true,
+  "key": {
+    "A": {
+      "item": "create:andesite_alloy"
+    },
+    "C": {
+      "tag": "forge:copper_coils"
+    },
+    "G": {
+      "item": "powergrid:electrical_gizmo"
+    },
+    "N": {
+      "tag": "forge:nuggets/copper"
+    },
+    "S": {
+      "tag": "forge:plates/copper"
+    },
+    "Z": {
+      "tag": "forge:ingots/zinc"
+    }
+  },
+  "pattern": [
+    "GCZZSN",
+    " A    "
+  ],
+  "result": {
+    "item": "powergrid:electrozapper"
+  }
+}

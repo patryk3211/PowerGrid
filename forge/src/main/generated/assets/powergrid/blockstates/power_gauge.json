@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "powergrid:block/gauge/conductive/base_power",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "powergrid:block/gauge/conductive/base_power"
+    },
+    "facing=south": {
+      "model": "powergrid:block/gauge/conductive/base_power",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "powergrid:block/gauge/conductive/base_power",
+      "y": 270
+    }
+  }
+}

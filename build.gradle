@@ -1,0 +1,336 @@
+import org.gradle.nativeplatform.platform.internal.DefaultNativePlatform
+
+plugins {
+	id 'maven-publish'
+	id 'architectury-plugin' version '3.4-SNAPSHOT'
+	id 'dev.architectury.loom' version '1.13+' apply false
+	id "com.github.johnrengelman.shadow" version "7.1.2"
+	id 'me.modmuss50.mod-publish-plugin' version '1.0.0' apply false
+}
+
+architectury {
+	minecraft = minecraft_version
+}
+
+var logConfig = files('log4j2.xml')
+allprojects {
+	apply plugin: "java"
+	apply plugin: "architectury-plugin"
+	apply plugin: "dev.architectury.loom"
+
+	base.archivesName.set(project.archives_base_name)
+	group = project.maven_group
+	version = "mc${project.minecraft_version}-${project.mod_version}"
+
+	tasks.withType(JavaCompile).configureEach {
+		it.options.release = 17
+	}
+
+	repositories {
+		maven { url = "https://maven.parchmentmc.org" } // Parchment mappings
+
+		maven { url = "https://mvn.devos.one/releases" } // Porting Lib releases
+		maven { url = "https://mvn.devos.one/snapshots" } // Create and several dependencies
+		maven { url = "https://modmaven.dev/" } // Flywheel
+		maven { url = "https://maven.jamieswhiteshirt.com/libs-release" } // Reach Entity Attributes
+		maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven" } // Forge Config API Port
+//		maven { url = "https://maven.ithundxr.dev/snapshots" } // Registrate
+		maven { url = "https://maven.tterrag.com/" } // Registrate
+
+		maven {
+			url = "https://maven.createmod.net"
+			content {
+				includeGroupAndSubgroups("net.createmod")
+				includeGroupAndSubgroups("dev.engine-room")
+				includeGroupAndSubgroups("com.simibubi")
+			}
+		} // Flywheel, Registrate, Create
+
+		maven { // Fabric ASM for Porting Lib
+			url = "https://jitpack.io/"
+			content { includeGroupAndSubgroups("com.github") }
+		}
+
+		maven { url = "https://maven.shedaniel.me" } // Cloth Config, REI
+		maven { url = "https://maven.blamejared.com" } // JEI
+
+		maven { // TFMG
+			url = "https://api.modrinth.com/maven"
+			content { includeGroup("maven.modrinth") }
+		}
+
+		maven { url = "https://maven.terraformersmc.com/releases" } // Mod Menu, EMI
+	}
+
+	loom {
+		setLog4jConfigs(logConfig)
+		mixin.useLegacyMixinAp = true
+	}
+
+	configurations {
+		common
+		shadowCommon
+	}
+
+	dependencies {
+		minecraft "com.mojang:minecraft:${project.minecraft_version}"
+
+		mappings(loom.layered {
+			it.officialMojangMappings { nameSyntheticMembers = false }
+			it.parchment("org.parchmentmc.data:parchment-${project.minecraft_version}:$parchment_version@zip")
+		})
+
+		compileOnly("org.ejml:ejml-core:0.44.0")
+		compileOnly("org.ejml:ejml-simple:0.44.0")
+		compileOnly("org.ejml:ejml-ddense:0.44.0")
+		compileOnly("org.ejml:ejml-dsparse:0.44.0")
+	}
+
+	java {
+		withSourcesJar()
+
+		sourceCompatibility = JavaVersion.VERSION_17
+		targetCompatibility = JavaVersion.VERSION_17
+	}
+
+	var subname = "Common"
+	if(project != rootProject) {
+		subname = project.name
+		subname = subname.substring(0, 1).toUpperCase() + subname.substring(1)
+	}
+	// configure the maven publication
+	publishing {
+		publications {
+			create("maven${subname}", MavenPublication) {
+				artifactId = project.archives_base_name + "-" + subname.toLowerCase()
+
+				artifact remapJar
+				artifact(sourcesJar) {
+					classifier = "sources"
+				}
+			}
+		}
+
+		repositories { }
+	}
+}
+
+def getGitHash = { ->
+	var headFile = new File("$projectDir/.git/HEAD");
+	if(!headFile.exists())
+		return null
+	var head = headFile.text.split(":")
+	def isCommit = head.length == 1
+	if(isCommit) return head[0].trim().take(8)
+
+	var ref = new File("$projectDir/.git/" + head[1].trim())
+	if(!ref.exists())
+		return null
+	return ref.text.trim().take(8)
+}
+
+var changelogFile = file('build/changelog.md')
+changelogFile.parentFile.mkdir()
+changelogFile.createNewFile()
+subprojects {
+	if(project.name == 'native')
+		return;
+	apply plugin: "com.github.johnrengelman.shadow"
+	apply plugin: "me.modmuss50.mod-publish-plugin"
+
+	configurations.configureEach {
+		resolutionStrategy {
+			// Make sure the desired version of loader is used. Sometimes old versions are pulled in transitively.
+			force("net.fabricmc:fabric-loader:${project.loader_version}")
+		}
+	}
+
+	architectury {
+		platformSetupLoomIde()
+	}
+
+	dependencies {
+		implementation(include("org.ejml:ejml-core:0.44.0"))
+		implementation(include("org.ejml:ejml-simple:0.44.0"))
+		implementation(include("org.ejml:ejml-ddense:0.44.0"))
+		implementation(include("org.ejml:ejml-dsparse:0.44.0"))
+	}
+
+	tasks.processResources {
+		var properties = [
+				version              : project.mod_version,
+				architectury_version : project.architectury_api_version,
+				create_forge_version : project.create_forge_range,
+				create_fabric_version: project.create_fabric_version,
+				forge_version        : project.forge_version,
+				forge_version_range	 : project.forge_version_range,
+				fabric_version       : project.fabric_version,
+				loader_version       : project.loader_version,
+				minecraft_version    : project.minecraft_version
+		]
+
+		inputs.properties(properties)
+
+		filesMatching(["fabric.mod.json", "META-INF/mods.toml"]) {
+			expand(properties)
+		}
+	}
+
+	configurations {
+		compileClasspath.extendsFrom common
+		runtimeClasspath.extendsFrom common
+	}
+
+	dependencies {
+		common(project(path: rootProject.path, configuration: "namedElements")) { transitive false }
+	}
+
+	tasks.named("build", {
+		var hash = getGitHash()
+		if(hash != null)
+			version = "mc${project.minecraft_version}-${project.mod_version}-${hash}"
+	})
+
+	def projNative = project(':native')
+	tasks.jar {
+		inputs.property "archivesName", project.base.archivesName
+
+		from("LICENSE") {
+			rename { "${it}_${inputs.properties.archivesName}" }
+		}
+
+		from("NOTICE") {
+			rename { "${it}_${inputs.properties.archivesName}" }
+		}
+
+		archiveClassifier = "dev"
+	}
+
+	tasks.named("remapJar") {
+		inputFile.set shadowJar.archiveFile
+		dependsOn shadowJar
+		archiveClassifier = null
+
+		from({ -> projNative.tasks.buildLinux.outputs }) {
+			into('native/linux')
+		}
+		from({ -> projNative.tasks.buildWindows.outputs }) {
+			into('native/windows')
+		}
+	}
+
+	tasks.named("shadowJar") {
+		configurations = [ project.configurations.shadowCommon ]
+		archiveClassifier = "dev-shadow"
+	}
+
+	tasks.named("sourcesJar") {
+		def commonSources = rootProject.sourcesJar
+		dependsOn commonSources
+		from commonSources.archiveFile.map { zipTree(it) }
+	}
+
+	var isFabric = project.name == 'fabric';
+	publishMods {
+		file = tasks.remapJar.archiveFile
+		version.set(mod_version.toString())
+		changelog = changelogFile.text
+		var releaseType = STABLE
+		if(mod_version.toString().contains('beta')) {
+			releaseType = BETA
+		} else if(mod_version.toString().contains('alpha')) {
+			releaseType = ALPHA
+		}
+		type = releaseType;
+		if(isFabric) {
+			modLoaders.add('fabric')
+		} else {
+			modLoaders.add('forge')
+		}
+
+		var createVersion = isFabric ? 'create-fabric' : 'create';
+		curseforge {
+			projectId = curseforgeId
+			accessToken = System.getenv('CURSEFORGE_TOKEN')
+			minecraftVersions.add(minecraft_version)
+
+			clientRequired = true
+			serverRequired = true
+
+			requires(createVersion, 'architectury-api')
+		}
+		modrinth {
+			projectId = modrinthId
+			accessToken = System.getenv('MODRINTH_TOKEN')
+			minecraftVersions.add(minecraft_version)
+
+			requires(createVersion)
+			requires('architectury-api')
+		}
+	}
+
+	components.named("java") {
+		withVariantsFromConfiguration(project.configurations.shadowRuntimeElements) {
+			skip()
+		}
+	}
+}
+
+/*    -------========= COMMON PROJECT CONFIGURATION =========-------    */
+
+architectury {
+	common(project.enabled_platforms.split(','))
+}
+
+dependencies {
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+	modCompileOnly("com.simibubi.create:create-fabric:${project.create_fabric_version}-mc${project.minecraft_version}")
+	modCompileOnly("dev.engine-room.flywheel:flywheel-fabric-api-${minecraft_version}:${flywheel_fabric_version}")
+	modCompileOnly("net.createmod.ponder:Ponder-Fabric-${minecraft_version}:${ponder_forge_version}")
+	modCompileOnly("net.fabricmc.fabric-api:fabric-api:${fabric_version}")
+
+	// Just Enough Items
+	modCompileOnly "mezz.jei:jei-${minecraft_version}-fabric-api:${jei_version}"
+
+	// Roughly Enough Items - Common
+	modCompileOnly "me.shedaniel:RoughlyEnoughItems-api:${rei_version}"
+//	modCompileOnly "me.shedaniel:RoughlyEnoughItems-default-plugin:${rei_version}"
+
+	// Support for unit tests
+	testImplementation "net.fabricmc:fabric-loader-junit:${project.loader_version}"
+	testImplementation("org.ejml:ejml-core:0.44.0")
+	testImplementation("org.ejml:ejml-simple:0.44.0")
+	testImplementation("org.ejml:ejml-ddense:0.44.0")
+	testImplementation("org.ejml:ejml-dsparse:0.44.0")
+
+	modApi "dev.architectury:architectury:${project.architectury_api_version}"
+
+	annotationProcessor(implementation("io.github.llamalad7:mixinextras-common:${mixin_extras_version}"))
+}
+
+
+def os = DefaultNativePlatform.currentOperatingSystem
+String libDir = null
+if(os.isWindows()) {
+	libDir = project(':native').layout.buildDirectory.dir("cmake/windows").get()
+	classes.dependsOn 'native:buildWindows'
+} else if(os.isLinux()) {
+	libDir = project(':native').layout.buildDirectory.dir("cmake/linux").get()
+	classes.dependsOn 'native:buildLinux'
+}
+
+ext.nativeLibDir = libDir
+
+test {
+	useJUnitPlatform()
+	jvmArgs "-Djava.library.path=" + libDir
+}
+
+sourceSets.main {
+	resources {
+//		srcDir('src/main/generated')
+		exclude(".cache/**")
+		exclude("assets/create/**")
+	}
+}

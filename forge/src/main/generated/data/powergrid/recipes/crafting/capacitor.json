@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "forge:plates/copper"
+    },
+    "I": {
+      "tag": "forge:plates/iron"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    },
+    "Z": {
+      "tag": "forge:plates/zinc"
+    }
+  },
+  "pattern": [
+    " I ",
+    "ZPC",
+    " I "
+  ],
+  "result": {
+    "item": "powergrid:capacitor"
+  },
+  "show_notification": true
+}

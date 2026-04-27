@@ -1,0 +1,20 @@
+{
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "powergrid:block/component/potentiometer",
+		"particle": "powergrid:block/component/potentiometer"
+	},
+	"elements": [
+		{
+			"from": [0, 0, 0],
+			"to": [5, 3, 5],
+			"faces": {
+				"north": {"uv": [5, 13, 0, 16], "texture": "#0"},
+				"east": {"uv": [0, 13, 5, 16], "texture": "#0"},
+				"south": {"uv": [5, 13, 0, 16], "texture": "#0"},
+				"west": {"uv": [0, 13, 5, 16], "texture": "#0"},
+				"up": {"uv": [0, 8, 5, 13], "texture": "#0"}
+			}
+		}
+	]
+}

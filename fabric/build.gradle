@@ -1,0 +1,74 @@
+/*
+ * Copyright 2025 patryk3211
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+architectury.fabric()
+
+configurations {
+    developmentFabric.extendsFrom common
+}
+
+dependencies {
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    modImplementation("com.simibubi.create:create-fabric:${project.create_fabric_version}-mc${project.minecraft_version}")
+    modCompileOnly("dev.engine-room.flywheel:flywheel-fabric-api-${minecraft_version}:${flywheel_fabric_version}")
+    modImplementation("net.createmod.ponder:Ponder-Fabric-${minecraft_version}:${ponder_forge_version}")
+
+    modApi "dev.architectury:architectury-fabric:${project.architectury_api_version}"
+
+    // Just Enough Items
+    modCompileOnly "mezz.jei:jei-${minecraft_version}-fabric-api:${jei_version}"
+
+    // Roughly Enough Items - Fabric
+    modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-fabric:${project.rei_version}"
+
+    // TechReborn Forge Energy API
+    include modApi("teamreborn:energy:${project.energy_api_version}")
+
+    // Development QOL
+//    modLocalRuntime("com.terraformersmc:modmenu:${project.modmenu_version}")
+    modLocalRuntime("dev.engine-room.flywheel:flywheel-fabric-${minecraft_version}:${flywheel_fabric_version}")
+    modLocalRuntime "mezz.jei:jei-${minecraft_version}-fabric:${jei_version}"
+//    modLocalRuntime("me.shedaniel:RoughlyEnoughItems-fabric:${project.rei_version}")
+
+    shadowCommon(project(path: rootProject.path, configuration: "transformProductionFabric")) { transitive false }
+}
+
+loom {
+    runs {
+        create("datagen") {
+            client()
+            name = "Minecraft Data"
+            vmArg("-Dfabric-api.datagen")
+            vmArg("-Dfabric-api.datagen.output-dir=${file("src/main/generated")}")
+            vmArg("-Dfabric-api.datagen.modid=powergrid")
+            vmArg("-Dporting_lib.datagen.existing_resources=${file("../src/main/resources")}")
+            vmArg("-Dpowergrid.platform=fabric")
+        }
+
+        named("client") {
+            vmArg("-enableassertions")
+            vmArg("-Dfabric.development=true")
+        }
+    }
+}
+
+sourceSets.main {
+    resources {
+        srcDir("src/main/generated")
+        exclude("**/.cache/**")
+    }
+}

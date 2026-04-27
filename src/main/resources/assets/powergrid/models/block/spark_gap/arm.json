@@ -1,0 +1,23 @@
+{
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"parent": "block/block",
+	"textures": {
+		"0": "powergrid:block/spark_gap",
+		"particle": "powergrid:block/spark_gap"
+	},
+	"elements": [
+		{
+			"from": [7, 5, 3],
+			"to": [9, 7, 7],
+			"rotation": {"angle": 0, "axis": "y", "origin": [7, 5, 3]},
+			"faces": {
+				"east": {"uv": [9.5, 3, 11.5, 4], "texture": "#0"},
+				"south": {"uv": [11.5, 3, 12.5, 4], "texture": "#0"},
+				"west": {"uv": [9.5, 3.5, 11.5, 4.5], "texture": "#0"},
+				"up": {"uv": [9.5, 3.5, 11.5, 4.5], "rotation": 90, "texture": "#0"},
+				"down": {"uv": [9.5, 4, 11.5, 5], "rotation": 90, "texture": "#0"}
+			}
+		}
+	]
+}

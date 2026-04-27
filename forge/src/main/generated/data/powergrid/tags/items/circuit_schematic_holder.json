@@ -1,0 +1,9 @@
+{
+  "values": [
+    "powergrid:circuit_board",
+    "powergrid:incomplete_unetched_circuit",
+    "powergrid:incomplete_circuit",
+    "powergrid:circuit_schematic",
+    "powergrid:unetched_circuit"
+  ]
+}

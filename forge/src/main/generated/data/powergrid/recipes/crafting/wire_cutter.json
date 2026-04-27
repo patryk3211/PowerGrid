@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "forge:plates/iron"
+    }
+  },
+  "pattern": [
+    "I ",
+    " I"
+  ],
+  "result": {
+    "item": "powergrid:wire_cutter"
+  },
+  "show_notification": true
+}

@@ -1,0 +1,12 @@
+{
+  "sources": [
+    {
+      "type": "single",
+      "source": "block/circuit_board_trace"
+    },
+    {
+      "type": "single",
+      "source": "block/circuit_board_pad"
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "powergrid.tooltip.holdForDescription": "Hold [%1$s] for Properties",
+
+  "item.powergrid.electrozapper.tooltip.summary": "Fires a lightning bolt that bounces off of nearby enemies, splitting the damage between them. Can be powered with _Forge Energy_ from a _Portable Battery_",
+  "item.powergrid.electrozapper.tooltip.condition1": "When R-Clicked",
+  "item.powergrid.electrozapper.tooltip.behaviour1": "_Shoots_ a lightning bolt",
+  "item.powergrid.electrozapper.tooltip.condition2": "While wearing a Portable Battery",
+  "item.powergrid.electrozapper.tooltip.behaviour2": "_No durability_ will be used. Instead, _Forge Energy_ is drained from the Battery",
+
+  "powergrid.electrozapper.bolt": "Lightning Bolt",
+  "powergrid.electrozapper.bolt.damage": "%1$s Attack Damage",
+  "powergrid.electrozapper.bolt.reload": "%1$s Reload Ticks",
+
+  "item.powergrid.portable_battery.tooltip.summary": "A _Wearable Battery_ for carrying energy",
+  "item.powergrid.portable_battery.tooltip.condition1": "When Worn",
+  "item.powergrid.portable_battery.tooltip.behaviour1": "Provides _Forge Energy_ to Equipment that requires it",
+  "item.powergrid.portable_battery.tooltip.condition2": "When placed, Powered by Electricity",
+  "item.powergrid.portable_battery.tooltip.behaviour2": "Stores energy at a rate depending on the _Supplied Voltage_",
+
+  "item.powergrid.electrobaton.tooltip.summary": "Pushes back and stuns enemies (if they aren't too strong) when powered with _Forge Energy_ from a _Portable Battery_",
+  "item.powergrid.electrobaton.tooltip.condition1": "While wearing a Portable Battery",
+  "item.powergrid.electrobaton.tooltip.behaviour1": "Attacked enemies will be _stunned_ and _no durability_ will be used. Instead, _Forge Energy_ is drained from the Battery",
+
+  "block.powergrid.thermometer.tooltip.summary": "A simple device which measures the temperature of things",
+  "block.powergrid.thermometer.tooltip.condition1": "When Held",
+  "block.powergrid.thermometer.tooltip.behaviour1": "Measures the temperature of the device it is pointed at",
+  "block.powergrid.thermometer.tooltip.condition2": "When Placed",
+  "block.powergrid.thermometer.tooltip.behaviour2": "Measures current and maximum temperature of the device it is placed on over time",
+
+  "item.powergrid.multimeter.tooltip.summary": "A multi-purpose tool, handful to anyone who wants to play with electricity",
+  "item.powergrid.multimeter.tooltip.condition1": "When Held",
+  "item.powergrid.multimeter.tooltip.behaviour1": "Can be used to probe voltage between terminals and current flowing through wires",
+
+  "item.powergrid.incomplete_circuit.tooltip.summary": "Use _Mechanical Arms_ to insert used components and complete the circuit",
+  "item.powergrid.circuit_schematic.empty": "Empty Schematic",
+  "item.powergrid.circuit_schematic.tooltip.creative": "Sneak right-click to convert into an assembled circuit",
+
+  "powergrid.circuit_board.tooltip.schematic": "Schematic: ",
+
+  "block.powergrid.circuit_design_table.tooltip.summary": "Design and write _Circuit Schematics_. If you want to place components, you must have them in your inventory.",
+  "block.powergrid.circuit_design_table.tooltip.condition1": "When given an Empty Schematic",
+  "block.powergrid.circuit_design_table.tooltip.behaviour1": "Writes the current design into a schematic item",
+
+  "block.powergrid.potato_battery.tooltip.summary": "An all natural source of green energy",
+
+  "item.powergrid.wire_cutter.tooltip.summary": "A tool used to _remove wires_",
+  "item.powergrid.wire_cutter.tooltip.condition1": "When R-Clicked on a wire",
+  "item.powergrid.wire_cutter.tooltip.behaviour1": "Removes a hanging wire, or selected segment of a block wire",
+  "item.powergrid.wire_cutter.tooltip.condition2": "When Shift R-Clicked on a block wire",
+  "item.powergrid.wire_cutter.tooltip.behaviour2": "Removes the whole block wire"
+}

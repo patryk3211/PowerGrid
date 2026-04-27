@@ -1,0 +1,277 @@
+{
+  "alarm_bell": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:alarm_bell"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.alarm_bell"
+  },
+  "alarm_bell_end": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:alarm_bell_end"
+      }
+    ]
+  },
+  "breaker_off": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "powergrid:contactor_off"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.breaker_off"
+  },
+  "breaker_on": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "powergrid:contactor_on"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.breaker_on"
+  },
+  "component_explode": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.firework_rocket.blast"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.component_explode"
+  },
+  "contactor_off": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:contactor_off"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.contactor_off"
+  },
+  "contactor_on": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:contactor_on"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.contactor_on"
+  },
+  "electrozapper_shoot": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:electrozapper_shoot"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.electrozapper_shoot"
+  },
+  "fuse_install": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.item_frame.add_item"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.fuse_install"
+  },
+  "fuse_pops": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.firework_rocket.blast"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.fuse_pops"
+  },
+  "generator": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:generator"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.generator"
+  },
+  "hv_switch_connect": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "create:contraption_disassemble"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.hv_switch_connect"
+  },
+  "hv_switch_disconnect": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "create:contraption_assemble"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.hv_switch_disconnect"
+  },
+  "lv_switch_click": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.lever.click"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.lv_switch_click"
+  },
+  "magnetizing": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:magnetizing"
+      },
+      {
+        "type": "file",
+        "name": "powergrid:magnetizing"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.magnetizing"
+  },
+  "mv_switch_click": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.iron_trapdoor.close"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.mv_switch_click"
+  },
+  "relay_click": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.lever.click"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.relay_click"
+  },
+  "transformer": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:transformer"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.transformer"
+  },
+  "ubutton_off": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.wooden_button.click_off"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.ubutton_off"
+  },
+  "ubutton_on": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.wooden_button.click_on"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.ubutton_on"
+  },
+  "ui.action.fail": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.note_block.bass"
+      }
+    ]
+  },
+  "ui.click": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:ui.button.click"
+      }
+    ]
+  },
+  "ui.component_rotate": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.item_frame.rotate_item"
+      }
+    ]
+  },
+  "ui.delete_area": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.item_frame.remove_item"
+      }
+    ]
+  },
+  "ui.place_component": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.item_frame.add_item"
+      }
+    ]
+  },
+  "ui.place_trace": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.metal.place"
+      }
+    ]
+  },
+  "ui.select_component": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:ui.button.click"
+      }
+    ]
+  },
+  "uswitch_off": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.wooden_button.click_off"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.uswitch_off"
+  },
+  "uswitch_on": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.wooden_button.click_on"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.uswitch_on"
+  },
+  "wire_burned": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:block.fire.extinguish"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.wire_burned"
+  },
+  "wire_cut": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.sheep.shear"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.wire_cut"
+  }
+}

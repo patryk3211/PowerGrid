@@ -1,0 +1,27 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "powergrid:block/heavy_wire_connector",
+      "x": 90
+    },
+    "facing=east": {
+      "model": "powergrid:block/heavy_wire_connector",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "powergrid:block/heavy_wire_connector"
+    },
+    "facing=south": {
+      "model": "powergrid:block/heavy_wire_connector",
+      "y": 180
+    },
+    "facing=up": {
+      "model": "powergrid:block/heavy_wire_connector",
+      "x": -90
+    },
+    "facing=west": {
+      "model": "powergrid:block/heavy_wire_connector",
+      "y": -90
+    }
+  }
+}

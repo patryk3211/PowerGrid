@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "forge:copper_coils"
+    },
+    "E": {
+      "item": "powergrid:conductive_casing"
+    },
+    "I": {
+      "tag": "forge:plates/iron"
+    }
+  },
+  "pattern": [
+    " E ",
+    "CIC",
+    "CCC"
+  ],
+  "result": {
+    "item": "powergrid:electromagnet"
+  },
+  "show_notification": true
+}

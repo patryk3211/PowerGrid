@@ -1,0 +1,27 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "powergrid:block/thermometer/base",
+      "x": 90
+    },
+    "facing=east": {
+      "model": "powergrid:block/thermometer/base",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "powergrid:block/thermometer/base"
+    },
+    "facing=south": {
+      "model": "powergrid:block/thermometer/base",
+      "y": 180
+    },
+    "facing=up": {
+      "model": "powergrid:block/thermometer/base",
+      "x": -90
+    },
+    "facing=west": {
+      "model": "powergrid:block/thermometer/base",
+      "y": -90
+    }
+  }
+}

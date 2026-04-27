@@ -1,0 +1,56 @@
+{
+	"schemaVersion": 1,
+	"id": "powergrid",
+	"version": "${version}",
+	"name": "Create: Power Grid",
+	"description": "Providing electricity to a world near you.",
+	"authors": [
+		"patryk3211",
+		"Da-Negy",
+		"rvndm",
+		"casvara"
+	],
+	"contact": {
+		"sources": "https://github.com/patryk3211/PowerGrid"
+	},
+	"license": "Apache-2.0",
+	"icon": "assets/powergrid/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+          "org.patryk3211.powergrid.fabric.PowerGridImpl"
+		],
+		"client": [
+			"org.patryk3211.powergrid.fabric.PowerGridClientImpl"
+		],
+		"fabric-datagen": [
+			"org.patryk3211.powergrid.fabric.PowerGridDataGenerator"
+		],
+		"rei_client": [
+			"org.patryk3211.powergrid.compat.rei.PowerGridREI"
+		]
+	},
+	"mixins": [
+		"powergrid.mixins.json",
+		"powergrid.client.mixins.json",
+		"powergrid-fabric.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.16.10",
+		"minecraft": "~1.20.1",
+		"java": ">=17",
+		"fabric-api": "*",
+		"create": "${create_fabric_version}"
+	},
+	"custom": {
+		"loom:injected_interfaces": {
+			"org/patryk3211/powergrid/electricity/zapper/ElectroZapperItem": [
+				"io/github/fabricators_of_create/porting_lib/item/EntitySwingListenerItem",
+				"io/github/fabricators_of_create/porting_lib/item/ReequipAnimationItem"
+			],
+			"org/patryk3211/powergrid/electricity/light/fixture/LightFixtureBlockEntity": [
+				"io/github/fabricators_of_create/porting_lib/block/CustomRenderBoundingBoxBlockEntity"
+			]
+		}
+	}
+}

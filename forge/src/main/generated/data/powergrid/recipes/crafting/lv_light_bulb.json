@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "F": {
+      "tag": "minecraft:coals"
+    },
+    "G": {
+      "item": "minecraft:glass_pane"
+    },
+    "I": {
+      "tag": "forge:plates/iron"
+    }
+  },
+  "pattern": [
+    " G ",
+    "GFG",
+    " I "
+  ],
+  "result": {
+    "item": "powergrid:lv_light_bulb"
+  },
+  "show_notification": true
+}

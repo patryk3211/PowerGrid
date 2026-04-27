@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "powergrid:block/circuit_design_table"
+    }
+  }
+}

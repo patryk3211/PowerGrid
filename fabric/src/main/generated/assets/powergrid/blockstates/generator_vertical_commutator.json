@@ -1,0 +1,38 @@
+{
+  "variants": {
+    "facing=east,up=false": {
+      "model": "powergrid:block/generator/commutator_base_vertical",
+      "x": 180,
+      "y": 90
+    },
+    "facing=east,up=true": {
+      "model": "powergrid:block/generator/commutator_base_vertical",
+      "y": 90
+    },
+    "facing=north,up=false": {
+      "model": "powergrid:block/generator/commutator_base_vertical",
+      "x": 180
+    },
+    "facing=north,up=true": {
+      "model": "powergrid:block/generator/commutator_base_vertical"
+    },
+    "facing=south,up=false": {
+      "model": "powergrid:block/generator/commutator_base_vertical",
+      "x": 180,
+      "y": -180
+    },
+    "facing=south,up=true": {
+      "model": "powergrid:block/generator/commutator_base_vertical",
+      "y": -180
+    },
+    "facing=west,up=false": {
+      "model": "powergrid:block/generator/commutator_base_vertical",
+      "x": 180,
+      "y": -90
+    },
+    "facing=west,up=true": {
+      "model": "powergrid:block/generator/commutator_base_vertical",
+      "y": -90
+    }
+  }
+}

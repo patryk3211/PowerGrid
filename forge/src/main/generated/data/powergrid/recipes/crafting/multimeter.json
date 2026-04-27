@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "powergrid:current_gauge"
+    },
+    "E": {
+      "item": "powergrid:conductive_casing"
+    },
+    "G": {
+      "item": "powergrid:electrical_gizmo"
+    },
+    "V": {
+      "item": "powergrid:voltage_gauge"
+    },
+    "W": {
+      "tag": "forge:wires/copper"
+    }
+  },
+  "pattern": [
+    "WGW",
+    "CEV"
+  ],
+  "result": {
+    "item": "powergrid:multimeter"
+  },
+  "show_notification": true
+}

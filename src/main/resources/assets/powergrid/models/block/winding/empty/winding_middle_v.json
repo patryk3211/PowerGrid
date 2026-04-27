@@ -1,0 +1,37 @@
+{
+	"format_version": "1.21.6",
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "powergrid:block/winding",
+		"particle": "powergrid:block/winding"
+	},
+	"elements": [
+		{
+			"from": [3, 2, 0],
+			"to": [13, 14, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [13, 2, 0]},
+			"faces": {
+				"east": {"uv": [8, 5, 16, 11], "rotation": 180, "texture": "#0"},
+				"west": {"uv": [8, 5, 16, 11], "rotation": 180, "texture": "#0"},
+				"up": {"uv": [8, 11, 16, 16], "rotation": 270, "texture": "#0"},
+				"down": {"uv": [8, 11, 16, 16], "rotation": 270, "texture": "#0"}
+			}
+		},
+		{
+			"from": [10, 2, 0],
+			"to": [10, 14, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [10, 2, 0]},
+			"faces": {
+				"west": {"uv": [8, 5, 16, 11], "rotation": 180, "texture": "#0"}
+			}
+		},
+		{
+			"from": [6, 2, 0],
+			"to": [6, 14, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [6, 2, 0]},
+			"faces": {
+				"east": {"uv": [8, 5, 16, 11], "rotation": 180, "texture": "#0"}
+			}
+		}
+	]
+}

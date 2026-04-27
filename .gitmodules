@@ -1,0 +1,8 @@
+[submodule "native/superlu"]
+	path = native/superlu
+	url = https://github.com/xiaoyeli/superlu.git
+    shallow = true
+[submodule "native/OpenBLAS"]
+	path = native/OpenBLAS
+	url = https://github.com/OpenMathLib/OpenBLAS.git
+    shallow = true

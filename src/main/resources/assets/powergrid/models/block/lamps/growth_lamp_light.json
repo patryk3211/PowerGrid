@@ -1,0 +1,36 @@
+{
+	"format_version": "1.21.6",
+	"credit": "Made with Blockbench",
+	"texture_size": [32, 32],
+	"textures": {
+		"0": "powergrid:block/growth_lamp",
+		"particle": "powergrid:block/growth_lamp"
+	},
+	"elements": [
+		{
+			"from": [4, 0.51, 4],
+			"to": [12, 10.51, 12],
+			"rotation": {"angle": 0, "axis": "y", "origin": [10, 0, 3]},
+			"faces": {
+				"north": {"uv": [3, 3, 3.5, 3.5], "texture": "#0"},
+				"east": {"uv": [3, 3, 3.5, 3.5], "texture": "#0"},
+				"south": {"uv": [3, 3, 3.5, 3.5], "texture": "#0"},
+				"west": {"uv": [3, 3, 3.5, 3.5], "texture": "#0"},
+				"up": {"uv": [3, 3, 3.5, 3.5], "texture": "#0"},
+				"down": {"uv": [3, 3, 3.5, 3.5], "texture": "#0"}
+			}
+		},
+		{
+			"from": [5, 1.5, 5],
+			"to": [11, 9.5, 11],
+			"faces": {
+				"north": {"uv": [3, 3.5, 3.5, 4], "texture": "#0"},
+				"east": {"uv": [3, 3.5, 3.5, 4], "texture": "#0"},
+				"south": {"uv": [3, 3.5, 3.5, 4], "texture": "#0"},
+				"west": {"uv": [3, 3.5, 3.5, 4], "texture": "#0"},
+				"up": {"uv": [3, 3.5, 3.5, 4], "texture": "#0"},
+				"down": {"uv": [3, 3.5, 3.5, 4], "texture": "#0"}
+			}
+		}
+	]
+}

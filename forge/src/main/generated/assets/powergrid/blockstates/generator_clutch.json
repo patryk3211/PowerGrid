@@ -1,0 +1,50 @@
+{
+  "variants": {
+    "facing=down,powered=false": {
+      "model": "powergrid:block/generator/clutch",
+      "x": 90
+    },
+    "facing=down,powered=true": {
+      "model": "powergrid:block/generator/clutch_on",
+      "x": 90
+    },
+    "facing=east,powered=false": {
+      "model": "powergrid:block/generator/clutch",
+      "y": 90
+    },
+    "facing=east,powered=true": {
+      "model": "powergrid:block/generator/clutch_on",
+      "y": 90
+    },
+    "facing=north,powered=false": {
+      "model": "powergrid:block/generator/clutch"
+    },
+    "facing=north,powered=true": {
+      "model": "powergrid:block/generator/clutch_on"
+    },
+    "facing=south,powered=false": {
+      "model": "powergrid:block/generator/clutch",
+      "y": 180
+    },
+    "facing=south,powered=true": {
+      "model": "powergrid:block/generator/clutch_on",
+      "y": 180
+    },
+    "facing=up,powered=false": {
+      "model": "powergrid:block/generator/clutch",
+      "x": -90
+    },
+    "facing=up,powered=true": {
+      "model": "powergrid:block/generator/clutch_on",
+      "x": -90
+    },
+    "facing=west,powered=false": {
+      "model": "powergrid:block/generator/clutch",
+      "y": -90
+    },
+    "facing=west,powered=true": {
+      "model": "powergrid:block/generator/clutch_on",
+      "y": -90
+    }
+  }
+}

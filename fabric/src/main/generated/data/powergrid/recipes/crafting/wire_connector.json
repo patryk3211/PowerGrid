@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "create:andesite_alloy"
+    },
+    "C": {
+      "tag": "c:copper_nuggets"
+    }
+  },
+  "pattern": [
+    " C ",
+    "CAC"
+  ],
+  "result": {
+    "item": "powergrid:wire_connector"
+  },
+  "show_notification": true
+}
