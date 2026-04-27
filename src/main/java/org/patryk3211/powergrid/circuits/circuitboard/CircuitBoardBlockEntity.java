@@ -339,7 +339,6 @@ private void processNeighbor2(@NotNull CircuitBoardBlockEntity be, Orientation e
     }
 
     private void edgeConnect() {
-        disconnectViad();
         var state = getBlockState();
         for(var orientation : Orientation.values()) {
             var dir = CircuitBoardBlock.getDirection(state, orientation);
@@ -361,7 +360,6 @@ private boolean isOppositeRotation(int a, int b) {
     return (a == 0 && b == 2) || (a == 2 && b == 0);
 }
 private void edgeConnect2() {
-    disconnectViad();
     var state = getBlockState();
     for (var orientation : Orientation.values()) {
         var dir = CircuitBoardBlock.getBehind(state, orientation);
@@ -386,6 +384,7 @@ private void edgeConnect2() {
     @Override
     public void initialize() {
         super.initialize();
+        disconnectViad();
         edgeConnect();
         edgeConnect2();
         if(level.isClientSide) {
