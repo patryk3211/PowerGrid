@@ -114,6 +114,7 @@ public class PowerGridPonderTags {
                 .add(AllItems.COPPER_NUGGET)
                 .add(ModdedItems.RESISTOR)
                 .add(ModdedItems.DIODE)
+                .add(ModdedItems.ANDESITE_ALLOY_NUGGET)
                 .add(ModdedItems.CAPACITOR)
                 .add(ModdedItems.COPPER_COIL)
                 .add(ModdedItems.RELAY)

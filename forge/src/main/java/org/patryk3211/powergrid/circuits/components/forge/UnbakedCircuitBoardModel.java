@@ -33,6 +33,7 @@ public class UnbakedCircuitBoardModel implements IUnbakedGeometry<UnbakedCircuit
         return new CircuitBoardModel(
                 bakery.bake(CircuitBoardModel.BASE_MODEL, state),
                 textureProvider.apply(CircuitBoardModel.PAD_SPRITE_ID),
+                textureProvider.apply(CircuitBoardModel.PAD2_SPRITE_ID),
                 textureProvider.apply(CircuitBoardModel.COPPER_SPRITE_ID)
         );
     }

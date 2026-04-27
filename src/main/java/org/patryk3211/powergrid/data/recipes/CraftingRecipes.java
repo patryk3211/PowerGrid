@@ -528,8 +528,12 @@ public class CraftingRecipes extends StandardRecipeProvider {
             .viaShapeless(b -> b
                     .requires(copperSheet())
                     .requires(conductiveCasing())
-                    .requires(brassSheet()))
+                    .requires(brassSheet())),
 
+    ANDESITE_ALLOY_NUGGET = create(ModdedItems.ANDESITE_ALLOY_NUGGET)
+            .unlockedBy(() -> AllItems.ANDESITE_ALLOY)
+            .viaShapeless(b -> b
+            .requires(AllItems.ANDESITE_ALLOY))
             ;
 
     public CraftingRecipes(PackOutput output) {

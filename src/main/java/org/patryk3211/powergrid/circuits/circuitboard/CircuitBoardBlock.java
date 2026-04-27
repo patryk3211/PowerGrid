@@ -264,6 +264,52 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
         return orientation;
     }
 
+    public static Direction getBehind(BlockState state, Orientation orientation) {
+        var facing = state.getValue(HORIZONTAL_FACING);
+        Direction dir;
+        if(state.getValue(ROTATION) == 1) {
+            dir = switch (state.getValue(HORIZONTAL_FACING)) {
+                case NORTH -> Direction.NORTH;
+                case SOUTH -> Direction.SOUTH;
+                case EAST -> Direction.EAST;
+                case WEST -> Direction.WEST;
+                default -> throw new IllegalStateException();
+            };
+            return dir;
+        }
+        if(state.getValue(ROTATION) == 0) {
+            dir = switch (orientation) {
+                case UP -> Direction.NORTH;
+                case RIGHT -> Direction.EAST;
+                case DOWN -> Direction.SOUTH;
+                case LEFT -> Direction.WEST;
+            };
+            dir = switch (state.getValue(HORIZONTAL_FACING)) {
+                case NORTH -> Direction.DOWN;
+                case SOUTH -> Direction.DOWN;
+                case EAST -> Direction.DOWN;
+                case WEST -> Direction.DOWN;
+                default -> throw new IllegalStateException();
+            };
+        } else {
+            dir = switch (orientation) {
+                case UP -> Direction.SOUTH;
+                case RIGHT -> Direction.EAST;
+                case DOWN -> Direction.NORTH;
+                case LEFT -> Direction.WEST;
+            };
+            dir = switch (state.getValue(HORIZONTAL_FACING)) {
+                case NORTH -> Direction.UP;
+                case SOUTH -> Direction.UP;
+                case EAST -> Direction.UP;
+                case WEST -> Direction.UP;
+                default -> throw new IllegalStateException();
+            };
+        }
+        return dir;
+    }
+
+
     public static Direction getDirection(BlockState state, Orientation orientation) {
         var facing = state.getValue(HORIZONTAL_FACING);
         if(state.getValue(ROTATION) == 1) {

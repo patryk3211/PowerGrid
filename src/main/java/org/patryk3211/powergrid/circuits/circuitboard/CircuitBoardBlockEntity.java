@@ -40,6 +40,7 @@ import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.IComponentGoggleInformation;
 import org.patryk3211.powergrid.circuits.components.IInteractableComponent;
 import org.patryk3211.powergrid.circuits.components.ViaComponent;
+import org.patryk3211.powergrid.circuits.components.Via2Component;
 import org.patryk3211.powergrid.circuits.components.properties.Orientation;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.ISchematicHolder;
@@ -88,7 +89,8 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     /**
      * Get the shape of this circuit board. Shapes will be fetched from cache if the board orientation and components
      * have not changed since the last getShape call.
-     * @param state a BlockState containing the orientation of this circuit board
+     *
+     * @param state     a BlockState containing the orientation of this circuit board
      * @param baseShape the base VoxelShape to build upon
      * @return the VoxelShape of the board in the provided orientation
      */
@@ -116,8 +118,7 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
             angleYCache = y;
             terminalCountCache = terminalCount;
             interactableCountCache = interactableCount;
-        }
-        else {
+        } else {
             newShape = shapeCache;
         }
 
@@ -132,9 +133,9 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
 
     @Override
     public void setSchematic(CircuitSchematic schematic) {
-        if(level.isClientSide)
+        if (level.isClientSide)
             return;
-        if(schematic == null) {
+        if (schematic == null) {
             level.destroyBlock(worldPosition, false);
             return;
         }
@@ -144,31 +145,59 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     }
 
     public void setAdditionalData(CompoundTag tag) {
-        if(baked == null)
+        if (baked == null)
             return;
         baked.read(tag, false);
-        if(!level.isClientSide)
+        if (!level.isClientSide)
             notifyUpdate();
     }
 
     @Nullable
     private FloatingNode getViaAt(Direction sideIn, int edgePosition, Orientation edgeOut) {
-        if(baked == null)
+        if (baked == null)
             return null;
         var orientation = CircuitBoardBlock.getOrientation(getBlockState(), sideIn);
-        if(orientation == null)
+        if (orientation == null)
             return null;
-        if(((edgeOut.isX() && orientation.isX()) || (edgeOut.isY() && orientation.isY())) == (edgeOut.positive() == orientation.positive())) {
+        if (((edgeOut.isX() && orientation.isX()) || (edgeOut.isY() && orientation.isY())) == (edgeOut.positive() == orientation.positive())) {
             edgePosition = 15 - edgePosition;
         }
-        for(var placed : getComponents(ViaComponent.class)) {
-            var match = switch(orientation) {
+        for (var placed : getComponents(ViaComponent.class)) {
+            var match = switch (orientation) {
                 case UP -> placed.x == edgePosition && placed.y == 0;
                 case DOWN -> placed.x == edgePosition && placed.y == 15;
                 case LEFT -> placed.x == 0 && placed.y == edgePosition;
                 case RIGHT -> placed.x == 15 && placed.y == edgePosition;
             };
-            if(match)
+            if (match)
+                return baked.getNode(new CircuitSchematic.Node(placed, 0));
+        }
+        return null;
+    }
+
+    @Nullable
+    private FloatingNode getVia2At(Direction sideIn, int x, int y, Orientation edgeOut) {
+        if (baked == null)
+            return null;
+        var orientation = CircuitBoardBlock.getOrientation(getBlockState(), sideIn);
+        if (orientation == null)
+            return null;
+
+        if (((edgeOut.isX() && orientation.isX())) == (edgeOut.positive() == orientation.positive())) {
+            y = 15 - y;
+        }
+        if (((edgeOut.isY() && orientation.isY())) == (edgeOut.positive() == orientation.positive())) {
+            x = 15 - x;
+        }
+        for (var placed : getComponents(Via2Component.class)) {
+            var match = switch (orientation) {
+                case UP -> placed.x == x && y < 8;
+                case DOWN -> placed.x == x && y > 7;
+                case LEFT -> placed.x < 8 && placed.y == y;
+                case RIGHT -> placed.x > 7 && placed.y == y;
+            };
+
+            if (match)
                 return baked.getNode(new CircuitSchematic.Node(placed, 0));
         }
         return null;
@@ -245,8 +274,42 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         }
     }
 
+private void processVia2Orientation(@NotNull CircuitBoardBlockEntity be, Orientation expectedOrientation, PlacedComponent placed, Orientation edge, int x, int y) {
+    if(edge != expectedOrientation)
+        return;
+    var dir = CircuitBoardBlock.getDirection(getBlockState(), edge);
+    var via2Node = be.getVia2At(dir, x, y, edge);
+    var thisVia2Node = baked.getNode(new CircuitSchematic.Node(placed, 0));
+    if(via2Node == null)
+        return;
+    if(thisVia2Node == null)
+        return;
+
+    var wire = makeWire(be.electricBehaviour, via2Node, thisVia2Node);
+    edgeViadWires.computeIfAbsent(be, $ -> new ArrayList<>()).add(wire);
+    be.edgeViadWires.computeIfAbsent(this, $ -> new ArrayList<>()).add(wire);
+}
+
+private void processNeighbor2(@NotNull CircuitBoardBlockEntity be, Orientation expectedOrientation) {
+    for (var placed : getComponents(Via2Component.class)) {
+        // This must also take corners into account (a via on two edges)
+        if (placed.x < 8) {
+            processVia2Orientation(be, expectedOrientation, placed, Orientation.LEFT, placed.x, placed.y);
+        }
+        if (placed.y < 8) {
+            processVia2Orientation(be, expectedOrientation, placed, Orientation.UP, placed.x, placed.y);
+        }
+        if (placed.x > 7) {
+            processVia2Orientation(be, expectedOrientation, placed, Orientation.RIGHT, placed.x, placed.y);
+        }
+        if (placed.y > 7) {
+            processVia2Orientation(be, expectedOrientation, placed, Orientation.DOWN, placed.x, placed.y);
+        }
+    }
+}
+
     private void disconnectViad() {
-        for(var entry : edgeViadWires.entrySet()) {
+        for (var entry : edgeViadWires.entrySet()) {
             entry.getKey().edgeViadWires.remove(this);
             entry.getValue().forEach(ElectricWire::remove);
         }
@@ -271,6 +334,7 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
             if(level.isClientSide)
                 Component.modelChanged(worldPosition);
             edgeConnect();
+            edgeConnect2();
         }
     }
 
@@ -293,11 +357,37 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
             }
         }
     }
+private boolean isOppositeRotation(int a, int b) {
+    return (a == 0 && b == 2) || (a == 2 && b == 0);
+}
+private void edgeConnect2() {
+    disconnectViad();
+    var state = getBlockState();
+    for (var orientation : Orientation.values()) {
+        var dir = CircuitBoardBlock.getBehind(state, orientation);
+        var opt = level.getBlockEntity(worldPosition.relative(dir), ModdedBlockEntities.CIRCUIT_BOARD.get());
+        if (opt.isEmpty())
+            continue;
+        var be = opt.get();
+        var neighborState = be.getBlockState();
+        if (state.getValue(ROTATION) == 1) {
+            if (neighborState.getValue(ROTATION) == 1)
+                processNeighbor2(be, orientation);
+        } else if (isOppositeRotation(
+                state.getValue(ROTATION),
+                neighborState.getValue(ROTATION))) {
+
+            processNeighbor2(be, orientation);
+        }
+    }
+}
+
 
     @Override
     public void initialize() {
         super.initialize();
         edgeConnect();
+        edgeConnect2();
         if(level.isClientSide) {
             // Layer position doesn't matter here.
             ModdedPackets.sendToServer(new EndpointTrackingC2SPacket(new CircuitBoardEndpoint(worldPosition, 0, 0), false));

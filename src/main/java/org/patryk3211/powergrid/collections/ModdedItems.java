@@ -156,6 +156,7 @@ public class ModdedItems {
     public static final ItemEntry<Item> INTEGRATED_CIRCUIT = ingredient("integrated_circuit");
     public static final ItemEntry<Item> ELECTRICAL_GIZMO = ingredient("electrical_gizmo");
     public static final ItemEntry<Item> ZINC_SHEET = ingredient("zinc_sheet", ModdedTags.Item.PLATES.tag);
+    public static final ItemEntry<Item> ANDESITE_ALLOY_NUGGET = ingredient("andesite_alloy_nugget");
 
     public static final ItemEntry<Item> RELAY = ingredient("relay");
     public static final ItemEntry<Item> RELAY_DPDT = REGISTRATE.item("relay_dpdt", Item::new)

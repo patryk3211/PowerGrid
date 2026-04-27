@@ -22,6 +22,7 @@
     "powergrid:relay_dpdt",
     "powergrid:diode",
     "powergrid:lv_light_bulb",
-    "powergrid:resistor"
+    "powergrid:resistor",
+    "powergrid:andesite_alloy_nugget"
   ]
 }

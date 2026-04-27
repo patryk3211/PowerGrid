@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "tag": "forge:nuggets/iron"
+    },
+    "B": {
+      "item": "minecraft:andesite"
+    }
+  },
+  "pattern": [
+    "B  ",
+    " A ",
+    "   "
+  ],
+  "result": {
+    "item": "powergrid:andesite_alloy_nugget",
+    "count": 5
+  }
+}

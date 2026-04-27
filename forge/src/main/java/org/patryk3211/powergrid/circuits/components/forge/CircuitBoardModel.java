@@ -51,6 +51,7 @@ import org.patryk3211.powergrid.circuits.schematic.Area;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.schematic.Point;
+import org.patryk3211.powergrid.circuits.components.Via2Component;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.ArrayList;
@@ -67,6 +68,7 @@ public class CircuitBoardModel implements BakedModel {
 
     public static final Material COPPER_SPRITE_ID = new Material(InventoryMenu.BLOCK_ATLAS, PowerGrid.asResource("block/circuit_board_trace"));
     public static final Material PAD_SPRITE_ID = new Material(InventoryMenu.BLOCK_ATLAS, PowerGrid.asResource("block/circuit_board_pad"));
+    public static final Material PAD2_SPRITE_ID = new Material(InventoryMenu.BLOCK_ATLAS, PowerGrid.asResource("block/circuit_board_pad2"));
 
     public static final ModelProperty<CircuitBoardBlockEntity> ENTITY = new ModelProperty<>();
     public static final ModelProperty<List<Area>> FRONT_LAYER = new ModelProperty<>();
@@ -77,12 +79,14 @@ public class CircuitBoardModel implements BakedModel {
 
     private final TextureAtlasSprite particleSprite;
     private final TextureAtlasSprite padSprite;
+    private final TextureAtlasSprite pad2Sprite;
     private final TextureAtlasSprite copperSprite;
     private final BakedModel baseModel;
 
-    public CircuitBoardModel(BakedModel plateModel, TextureAtlasSprite padSprite, TextureAtlasSprite copperSprite) {
+    public CircuitBoardModel(BakedModel plateModel, TextureAtlasSprite padSprite, TextureAtlasSprite pad2Sprite ,TextureAtlasSprite copperSprite) {
         this.baseModel = plateModel;
         this.padSprite = padSprite;
+        this.pad2Sprite = pad2Sprite;
         this.copperSprite = copperSprite;
         this.particleSprite = baseModel.getParticleIcon();
     }
@@ -206,7 +210,11 @@ public class CircuitBoardModel implements BakedModel {
             if (data.has(PADS)) {
                 var pads = data.get(PADS);
                 for (var pad : pads) {
-                    quads.add(emitPad(pad));
+                    if (isVia2Pad(pad, data)) {
+                        quads.add(emitPad2(pad));
+                    } else {
+                        quads.add(emitPad(pad));
+                    }
                 }
             }
         }
@@ -250,6 +258,27 @@ public class CircuitBoardModel implements BakedModel {
                 null // Dangerous but it should be fine if the rotation is not uv locked
         );
     }
+    public BakedQuad emitPad2(Point point) {
+        float x1 = point.x(), y1 = point.y(), x2 = x1 + 1, y2 = y1 + 1;
+        x1 /= GRID_TO_GRID_SCALE;
+        x2 /= GRID_TO_GRID_SCALE;
+        y1 /= GRID_TO_GRID_SCALE;
+        y2 /= GRID_TO_GRID_SCALE;
+        return bakery.bakeQuad(
+                new Vector3f(x1 - 8, 2.05f - 8, y1 - 8),
+                new Vector3f(x2 - 8, 2.05f - 8, y2 - 8),
+                new BlockElementFace(
+                        null, BlockElementFace.NO_TINT, "circuit_board_trace",
+                        new BlockFaceUV(new float[] { x1, y1, x2, y2 }, 0)
+                ),
+                pad2Sprite,
+                Direction.UP,
+                BlockModelRotation.X0_Y0,
+                null,
+                true,
+                null // Dangerous but it should be fine if the rotation is not uv locked
+        );
+    }
 
     public BakedQuad emitPad(Point point) {
         float x1 = point.x(), y1 = point.y(), x2 = x1 + 1, y2 = y1 + 1;
@@ -272,4 +301,19 @@ public class CircuitBoardModel implements BakedModel {
                 null // Dangerous but it should be fine if the rotation is not uv locked
         );
     }
+    private boolean isVia2Pad(Point pad, ModelData data) {
+        var components = data.get(COMPONENTS);
+
+        for (var placed : components) {
+            if (placed.component instanceof Via2Component) {
+                // since your via is 1x1, this works perfectly
+                if (placed.x == pad.x() && placed.y == pad.y()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
+
+

@@ -29,6 +29,11 @@ public class Components {
             .item(AllItems.COPPER_NUGGET)
             .register();
 
+    public static final RegistryEntry<Via2Component> VIA2 = REGISTRATE.component("via2", Via2Component::new)
+            .footprint(1, 1, b -> b.addPad(0, 0))
+            .item(ModdedItems.ANDESITE_ALLOY_NUGGET)
+            .register();
+
     public static final RegistryEntry<ElectronTubeComponent> ELECTRON_TUBE = REGISTRATE.component("electron_tube", ElectronTubeComponent::new)
             .footprint(3, 3, b -> b
                     .addPad(0, 0, 2, "Anode", "A")
