@@ -92,7 +92,7 @@ public class RelayComponent extends MirrorableComponent {
             placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(
                     world,
                     placed.getPos(),
-                    (0.75f * ModdedConfigs.client().relaySoundMultiplier.getF()),
+                    0.75f,
                     state ? 2.0f : 1.9f
             ));
             placed.set(STATE, state);
