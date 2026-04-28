@@ -21,31 +21,38 @@ import com.simibubi.create.foundation.item.TooltipModifier;
 import com.simibubi.create.foundation.utility.FilesHelper;
 import com.tterrag.registrate.providers.ProviderType;
 import dev.architectury.platform.Platform;
-import dev.architectury.platform.forge.EventBuses;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
+import net.createmod.catnip.config.ConfigBase;
 import net.createmod.catnip.lang.FontHelper;
 import net.createmod.ponder.foundation.PonderIndex;
 import net.minecraft.commands.synchronization.ArgumentTypeInfo;
 import net.minecraft.commands.synchronization.ArgumentTypeInfos;
 import net.minecraft.commands.synchronization.SingletonArgumentInfo;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.DataProvider;
+import net.minecraft.data.PackOutput;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.data.event.GatherDataEvent;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.InterModComms;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
-import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.registries.*;
+import net.minecraft.world.level.ItemLike;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.InterModComms;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.ModLoadingContext;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.config.ModConfigEvent;
+import net.neoforged.fml.event.lifecycle.InterModEnqueueEvent;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.data.event.GatherDataEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import net.neoforged.neoforge.registries.*;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.forge.ComponentRegistryImpl;
 import org.patryk3211.powergrid.collections.*;
@@ -54,6 +61,7 @@ import org.patryk3211.powergrid.commands.PerformanceCommand;
 import org.patryk3211.powergrid.compat.tfmg.TFMGBridge;
 import org.patryk3211.powergrid.compat.tfmg.TFMGProxyImpl;
 import org.patryk3211.powergrid.data.BlockTagProvider;
+import org.patryk3211.powergrid.data.EntityTagProvider;
 import org.patryk3211.powergrid.data.ItemTagProvider;
 import org.patryk3211.powergrid.data.recipe.forge.MixingRecipes;
 import org.patryk3211.powergrid.data.recipes.*;
@@ -63,6 +71,7 @@ import org.patryk3211.powergrid.kinetics.punchcard.PunchCardMenu;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlockEntity;
 import org.patryk3211.powergrid.kinetics.punchcard.forge.PunchCardMenuImpl;
 import org.patryk3211.powergrid.kinetics.punchcard.forge.PunchCardReaderBlockEntityImpl;
+import org.patryk3211.powergrid.network.CustomPayloadWrapper;
 import org.patryk3211.powergrid.ponder.PowerGridPonderPlugin;
 import org.patryk3211.powergrid.utility.proxy.ProxyProvider;
 import org.patryk3211.powergrid.utility.proxy.SubstituteBlockEntityProvider;
@@ -74,16 +83,17 @@ import java.util.function.BiConsumer;
 @Mod(PowerGrid.MOD_ID)
 public class PowerGridImpl {
     public static ModLoadingContext context;
+    public static ModContainer container;
     public static IEventBus bus;
 
     public static final DeferredRegister<CreativeModeTab> TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, PowerGrid.MOD_ID);
     public static final DeferredRegister<ArgumentTypeInfo<?, ?>> COMMAND_ARGUMENT_TYPES = DeferredRegister.create(Registries.COMMAND_ARGUMENT_TYPE, PowerGrid.MOD_ID);
 
-    public PowerGridImpl() {
+    public PowerGridImpl(IEventBus modEventBus, ModContainer modContainer) {
         context = ModLoadingContext.get();
-        bus = FMLJavaModLoadingContext.get().getModEventBus();
+        bus = modEventBus;
+        container = modContainer;
         bus.register(PowerGridImpl.class);
-        EventBuses.registerModEventBus(PowerGrid.MOD_ID, bus);
 
         if(Platform.isModLoaded("tfmg")) {
             TFMGBridge.init();
@@ -95,7 +105,7 @@ public class PowerGridImpl {
         PowerGrid.init();
 
         TABS.register("main", () -> CreativeModeTab.builder()
-                .icon(() -> new ItemStack(ModdedItems.WIRE))
+                .icon(() -> new ItemStack((ItemLike) ModdedItems.WIRE))
                 .displayItems(new ItemDisplay.BaseItemDisplay(true))
                 .title(net.minecraft.network.chat.Component.translatable("itemGroup.powergrid.main"))
                 .build());
@@ -107,7 +117,7 @@ public class PowerGridImpl {
         TABS.register(bus);
         COMMAND_ARGUMENT_TYPES.register(bus);
 
-        MinecraftForge.EVENT_BUS.register(ForgeEvents.class);
+        NeoForge.EVENT_BUS.register(ForgeEvents.class);
 
         // Client init
         EnvExecutor.runInEnv(Env.CLIENT, () -> PowerGridClientImpl::init);
@@ -115,10 +125,7 @@ public class PowerGridImpl {
 
     @SubscribeEvent
     public static void newRegistryEvent(NewRegistryEvent event) {
-        event.<Component>create(
-                RegistryBuilder.of(ComponentRegistry.REGISTRY_KEY.location()),
-                registry -> ComponentRegistryImpl.REGISTRY = registry
-        );
+        ComponentRegistryImpl.REGISTRY = event.create(new RegistryBuilder<>(ComponentRegistry.REGISTRY_KEY));
     }
 
     @SubscribeEvent
@@ -129,17 +136,54 @@ public class PowerGridImpl {
 
     @SubscribeEvent
     public static void configLoad(ModConfigEvent.Loading event) {
-        ModdedConfigs.onLoad(event.getConfig());
+        for(ConfigBase config : ModdedConfigs.CONFIGS.values())
+            if(config.specification == event.getConfig().getSpec())
+                config.onLoad();
     }
 
     @SubscribeEvent
     public static void configReload(ModConfigEvent.Reloading event) {
-        ModdedConfigs.onReload(event.getConfig());
+        for(ConfigBase config : ModdedConfigs.CONFIGS.values())
+            if(config.specification == event.getConfig().getSpec())
+                config.onReload();
     }
 
     @SubscribeEvent
     public static void soundEventRegister(RegisterEvent event) {
         event.register(Registries.SOUND_EVENT, ModdedSoundEventsImpl::register);
+    }
+
+    @SubscribeEvent
+    public static void registerPayloadHandlers(RegisterPayloadHandlersEvent event) {
+        PayloadRegistrar registrar = event.registrar(PowerGrid.MOD_ID)
+                .optional();
+
+        var packets = ModPackets.PACKETS;
+        registrar.playToServer(
+                CustomPayloadWrapper.type(packets.c2sPacket),
+                CustomPayloadWrapper.codec(packets.c2sPacket),
+                (payload, context) -> {
+                    try {
+                        if (context.player() instanceof ServerPlayer serverPlayer) {
+                            packets.handleC2SPacket(serverPlayer, payload.data());
+                        }
+                    } finally {
+                        payload.release();
+                    }
+                }
+        );
+        registrar.playToClient(
+                CustomPayloadWrapper.type(packets.s2cPacket),
+                CustomPayloadWrapper.codec(packets.s2cPacket),
+                (payload, context) -> {
+                    try {
+                        var mc = net.minecraft.client.Minecraft.getInstance();
+                        packets.handleS2CPacket(mc, payload.data());
+                    } finally {
+                        payload.release();
+                    }
+                }
+        );
     }
 
     @SubscribeEvent
@@ -173,9 +217,16 @@ public class PowerGridImpl {
     }
 
     @SubscribeEvent
+    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModdedBlockEntities.PUNCH_CARD_READER.get(),
+                (be, side) -> ((PunchCardReaderBlockEntityImpl) be).getItemHandler(side));
+    }
+
+    @SubscribeEvent
     public static void gatherData(GatherDataEvent event) {
         var generator = event.getGenerator();
         var output = generator.getPackOutput();
+        var registries = event.getLookupProvider();
 
         PowerGrid.REGISTRATE.addDataGenerator(ProviderType.LANG, provider -> {
             BiConsumer<String, String> langConsumer = provider::add;
@@ -190,21 +241,22 @@ public class PowerGridImpl {
             ModdedAdvancements.provideLang(langConsumer);
         });
 
-        generator.addProvider(true, new CookingRecipes(output));
-        generator.addProvider(true, new CraftingRecipes(output));
-        generator.addProvider(true, new CuttingRecipes(output));
-        generator.addProvider(true, new ItemApplicationRecipes(output));
-        generator.addProvider(true, new MagnetizingRecipes(output));
-        generator.addProvider(true, new MechanicalCraftingRecipes(output));
-        generator.addProvider(true, new MixingRecipes(output));
-        generator.addProvider(true, new PressingRecipes(output));
-        generator.addProvider(true, new SequencedAssemblyRecipes(output));
-        generator.addProvider(true, new org.patryk3211.powergrid.data.recipe.forge.SequencedAssemblyRecipes(output));
-        generator.addProvider(true, new DeployerApplicationRecipes(output));
+        generator.addProvider(true, (DataProvider.Factory<CookingRecipes>) (PackOutput o) -> new CookingRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<CraftingRecipes>) (PackOutput o) -> new CraftingRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<CuttingRecipes>) (PackOutput o) -> new CuttingRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<ItemApplicationRecipes>) (PackOutput o) -> new ItemApplicationRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<MagnetizingRecipes>) (PackOutput o) -> new MagnetizingRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<MechanicalCraftingRecipes>) (PackOutput o) -> new MechanicalCraftingRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<MixingRecipes>) (PackOutput o) -> new MixingRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<PressingRecipes>) (PackOutput o) -> new PressingRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<SequencedAssemblyRecipes>) (PackOutput o) -> new SequencedAssemblyRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<org.patryk3211.powergrid.data.recipe.forge.SequencedAssemblyRecipes>) (PackOutput o) -> new org.patryk3211.powergrid.data.recipe.forge.SequencedAssemblyRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<DeployerApplicationRecipes>) (PackOutput o) -> new DeployerApplicationRecipes(o, registries));
         generator.addProvider(true, new ModdedAdvancements(output));
 
-        generator.addProvider(true, new BlockTagProvider(output, event.getLookupProvider()));
-        generator.addProvider(true, new ItemTagProvider(output, event.getLookupProvider()));
+        generator.addProvider(true, (DataProvider.Factory<BlockTagProvider>) (PackOutput o) -> new BlockTagProvider(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<ItemTagProvider>) (PackOutput o) -> new ItemTagProvider(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<EntityTagProvider>) (PackOutput o) -> new EntityTagProvider(o, registries));
         generator.addProvider(true, ModdedSoundEvents.provider(output));
     }
 
@@ -231,6 +283,7 @@ public class PowerGridImpl {
         AbstractPowerGridRegistrate.COMPONENT_ITEMS = ProviderType.register("component_items", ComponentItemEntryProviderImpl::new);
         AbstractPowerGridRegistrate.WIRE_ITEMS = ProviderType.register("wire_types", WireItemEntryProviderImpl::new);
         return ForgePowerGridRegistrate.create(PowerGrid.MOD_ID)
+                .defaultCreativeTab((net.minecraft.resources.ResourceKey<CreativeModeTab>) null)
                 .setTooltipModifierFactory(item ->
                         new ItemDescription.Modifier(item, FontHelper.Palette.STANDARD_CREATE)
                                 .andThen(TooltipModifier.mapNull(KineticStats.create(item)))

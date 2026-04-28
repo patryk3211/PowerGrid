@@ -49,10 +49,8 @@ import org.patryk3211.powergrid.electricity.info.Voltage;
 import org.patryk3211.powergrid.electricity.info.customdisplay.CustomDisplayBehaviour;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
-@ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class PlotterBlock extends ElectricKineticBlock implements IBE<PlotterBlockEntity>, IHaveElectricProperties {
     public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
@@ -92,7 +90,7 @@ public class PlotterBlock extends ElectricKineticBlock implements IBE<PlotterBlo
                 return InteractionResult.SUCCESS;
             }
         }
-        return super.use(state, level, pos, player, hand, hit);
+        return InteractionResult.PASS;
     }
 
     @Override

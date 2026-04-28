@@ -20,7 +20,7 @@ import com.electronwill.nightconfig.core.UnmodifiableConfig;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.builder.ArgumentBuilder;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.config.CServer;
 import org.patryk3211.powergrid.utility.Lang;
@@ -52,12 +52,12 @@ public class ConfigCommand {
         values.valueMap().forEach((key, obj) -> {
             if (obj instanceof AbstractConfig) {
                 resetConfig((UnmodifiableConfig) obj);
-            } else if (obj instanceof ForgeConfigSpec.ConfigValue) {
+            } else if (obj instanceof ModConfigSpec.ConfigValue) {
                 if(key.equals("solverBackend"))
                     return;
-                ForgeConfigSpec.ConfigValue<Object> configValue = (ForgeConfigSpec.ConfigValue<Object>) obj;
-                ForgeConfigSpec.ValueSpec valueSpec = ModdedConfigs.server().specification.getRaw(configValue.getPath());
-                configValue.set(valueSpec.getDefault());
+                ModConfigSpec.ConfigValue configValue = (ModConfigSpec.ConfigValue) obj;
+                configValue.set(configValue.getDefault());
+                configValue.save();
             }
         });
     }

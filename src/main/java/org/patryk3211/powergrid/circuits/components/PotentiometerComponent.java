@@ -103,7 +103,7 @@ public class PotentiometerComponent extends OrientableComponent implements IInte
                     be.getBlockPos(), BOARD, new ValueSettingsBehaviour.ValueSettings(0, value),
                     setting -> {
                         component.set(VALUE, setting.value());
-                        ModdedPackets.getChannel().sendToServer(new UpdateComponentBiPacket(be, component, VALUE));
+                        ModdedPackets.sendToServer(new UpdateComponentBiPacket(be, component, VALUE));
                     }
             ));
         });

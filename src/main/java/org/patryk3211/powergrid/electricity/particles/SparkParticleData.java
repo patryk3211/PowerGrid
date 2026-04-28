@@ -15,38 +15,31 @@
  */
 package org.patryk3211.powergrid.electricity.particles;
 
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.simibubi.create.foundation.particle.ICustomParticleDataWithSprite;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.collections.ModdedParticles;
 
 public class SparkParticleData implements ParticleOptions, ICustomParticleDataWithSprite<SparkParticleData> {
-    public static final Deserializer<SparkParticleData> FACTORY = new Deserializer<>() {
-        @Override
-        public SparkParticleData fromCommand(ParticleType<SparkParticleData> type, StringReader reader) throws CommandSyntaxException {
-            return new SparkParticleData();
-        }
-
-        @Override
-        public SparkParticleData fromNetwork(ParticleType<SparkParticleData> type, FriendlyByteBuf buf) {
-            return new SparkParticleData(buf.readInt(), buf.readBoolean(), buf.readBoolean());
-        }
-    };
     public static final SparkParticleData INSTANCE = new SparkParticleData();
     public static final Codec<SparkParticleData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.INT.fieldOf("life").forGetter(SparkParticleData::getLife),
             Codec.BOOL.fieldOf("collision").forGetter(SparkParticleData::getCollision),
             Codec.BOOL.fieldOf("gravity").forGetter(SparkParticleData::getGravity)
     ).apply(instance, SparkParticleData::new));
+
+    public static final StreamCodec<ByteBuf, SparkParticleData> STREAM_CODEC = ByteBufCodecs.fromCodec(CODEC);
+    public static final MapCodec<SparkParticleData> MAP_CODEC = CODEC.fieldOf("spark");
 
     private final int life;
     private final boolean collision;
@@ -93,25 +86,13 @@ public class SparkParticleData implements ParticleOptions, ICustomParticleDataWi
     }
 
     @Override
-    public void writeToNetwork(FriendlyByteBuf buf) {
-        buf.writeInt(life);
-        buf.writeBoolean(collision);
-        buf.writeBoolean(gravity);
+    public StreamCodec<? super RegistryFriendlyByteBuf, SparkParticleData> getStreamCodec() {
+        return STREAM_CODEC;
     }
 
     @Override
-    public String writeToString() {
-        return BuiltInRegistries.PARTICLE_TYPE.getKey(getType()).toString();
-    }
-
-    @Override
-    public Deserializer<SparkParticleData> getDeserializer() {
-        return FACTORY;
-    }
-
-    @Override
-    public Codec<SparkParticleData> getCodec(ParticleType<SparkParticleData> type) {
-        return CODEC;
+    public MapCodec<SparkParticleData> getCodec(ParticleType<SparkParticleData> type) {
+        return MAP_CODEC;
     }
 
     @Override

@@ -197,7 +197,7 @@ public abstract class LightBulbState implements ElectricBehaviour.SyncAppender {
     }
 
     public void read(CompoundTag nbt) {
-        var bulbItem = BuiltInRegistries.ITEM.get(new ResourceLocation(nbt.getString("Bulb")));
+        var bulbItem = BuiltInRegistries.ITEM.get(ResourceLocation.parse(nbt.getString("Bulb")));
         if(bulbItem != item) {
             PowerGrid.LOGGER.error("Bulb item validation failed");
             return;
@@ -219,7 +219,7 @@ public abstract class LightBulbState implements ElectricBehaviour.SyncAppender {
     public static Item getBulbItem(CompoundTag nbt) {
         if(!nbt.contains("Bulb"))
             return null;
-        var bulbItem = BuiltInRegistries.ITEM.get(new ResourceLocation(nbt.getString("Bulb")));
+        var bulbItem = BuiltInRegistries.ITEM.get(ResourceLocation.parse(nbt.getString("Bulb")));
         if(!(bulbItem instanceof ILightBulb)) {
             PowerGrid.LOGGER.error("Tried to use a non light bulb item for light bulb state");
             return null;

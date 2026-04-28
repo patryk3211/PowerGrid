@@ -15,9 +15,10 @@
  */
 package org.patryk3211.powergrid.equipment.portablebattery;
 
+import com.simibubi.create.AllEnchantments;
 import com.simibubi.create.content.equipment.armor.BacktankItem;
 import com.simibubi.create.content.equipment.armor.BaseArmorItem;
-import com.simibubi.create.content.equipment.armor.CapacityEnchantment;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -29,6 +30,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.level.block.Block;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
@@ -38,11 +40,11 @@ import org.patryk3211.powergrid.electricity.info.Resistance;
 import java.util.List;
 import java.util.function.Supplier;
 
-public class PortableBatteryItem extends BaseArmorItem implements CapacityEnchantment.ICapacityEnchantable, IHaveElectricProperties {
+public class PortableBatteryItem extends BaseArmorItem implements IHaveElectricProperties {
     public static final int BAR_COLOR = 0xEFEFDE;
     private Supplier<BacktankItem.BacktankBlockItem> blockItem;
 
-    public PortableBatteryItem(ArmorMaterial material, Properties settings, ResourceLocation textureLoc, Supplier<BacktankItem.BacktankBlockItem> placeable) {
+    public PortableBatteryItem(Holder<ArmorMaterial> material, Properties settings, ResourceLocation textureLoc, Supplier<BacktankItem.BacktankBlockItem> placeable) {
         super(material, Type.CHESTPLATE, settings, textureLoc);
         this.blockItem = placeable;
     }
@@ -60,8 +62,18 @@ public class PortableBatteryItem extends BaseArmorItem implements CapacityEnchan
     }
 
     @Override
-    public boolean canBeDepleted() {
+    public boolean isEnchantable(ItemStack stack) {
+        return true;
+    }
+
+    /* Override (NeoForge) */
+    public boolean isDamageable(ItemStack stack) {
         return false;
+    }
+
+    /* Override (NeoForge) */
+    public boolean supportsEnchantment(ItemStack stack, Holder<Enchantment> enchantment) {
+        return enchantment.is(AllEnchantments.CAPACITY);
     }
 
     @Override

@@ -41,9 +41,6 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.advancements.PGAdvancementBehaviour;
 import org.patryk3211.powergrid.kinetics.generator.IRotorAssemblyPart;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public abstract class AbstractRotorBlock extends Block implements IRotorAssemblyPart, IWrenchable, IRotate {
     public static final EnumProperty<Direction.Axis> AXIS = BlockStateProperties.AXIS;

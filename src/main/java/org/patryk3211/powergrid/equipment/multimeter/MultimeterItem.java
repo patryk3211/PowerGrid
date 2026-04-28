@@ -21,7 +21,9 @@ import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
@@ -31,6 +33,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
@@ -110,9 +113,9 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
         if(player.level().isClientSide) {
             var point = getAttachmentPoint();
             var data = getModeData(stack);
-            data.putFloat("X", (float) point.x);
-            data.putFloat("Y", (float) point.y);
-            data.putFloat("Z", (float) point.z);
+            data.putDouble("X", point.x);
+            data.putDouble("Y", point.y);
+            data.putDouble("Z", point.z);
             ModdedPackets.sendToServer(new MultimeterDataC2SPacket(point, wireEntity));
         }
         return InteractionResult.CONSUME;
@@ -129,22 +132,24 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                 var neg = WireEndpointType.deserialize(data.getCompound("Neg"));
                 if(pos != null) {
                     var posPos = pos.getExactPosition(level);
-                    if(posPos.distanceTo(entity.position()) > maxDistance || !pos.isValid(level)) {
+                    if(entity.distanceToSqr(posPos) > maxDistance * maxDistance || !pos.isValid(level)) {
                         if(entity instanceof Player player)
                             player.displayClientMessage(Lang.translate("message.multimeter_disconnected")
                                     .style(ChatFormatting.GRAY)
                                     .component(), true);
                         data.remove("Pos");
+                        saveModeData(stack, data);
                     }
                 }
                 if(neg != null) {
                     var negPos = neg.getExactPosition(level);
-                    if(negPos.distanceTo(entity.position()) > maxDistance || !neg.isValid(level)) {
+                    if(entity.distanceToSqr(negPos) > maxDistance * maxDistance || !neg.isValid(level)) {
                         if(entity instanceof Player player)
                             player.displayClientMessage(Lang.translate("message.multimeter_disconnected")
                                     .style(ChatFormatting.GRAY)
                                     .component(), true);
                         data.remove("Neg");
+                        saveModeData(stack, data);
                     }
                 }
             }
@@ -154,25 +159,26 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                         var genericEntity = ((ServerLevel) level).getEntity(data.getUUID("UUID"));
                         if(genericEntity != null) {
                             data.putInt("EID", genericEntity.getId());
+                            saveModeData(stack, data);
                         } else {
                             if(entity instanceof Player player)
                                 player.displayClientMessage(Lang.translate("message.multimeter_disconnected")
                                         .style(ChatFormatting.GRAY)
                                         .component(), true);
                             // Wipe all data
-                            stack.getOrCreateTag().remove("ModeData");
+                            deleteModeData(stack);
                         }
                     }
                 }
                 if(data.contains("X")) {
-                    var point = new Vec3(data.getFloat("X"), data.getFloat("Y"), data.getFloat("Z"));
-                    if(point.distanceTo(entity.position()) > maxDistance) {
+                    var point = new Vec3(data.getDouble("X"), data.getDouble("Y"), data.getDouble("Z"));
+                    if(entity.distanceToSqr(point) > maxDistance * maxDistance) {
                         if(entity instanceof Player player)
                             player.displayClientMessage(Lang.translate("message.multimeter_disconnected")
                                     .style(ChatFormatting.GRAY)
                                     .component(), true);
                         // Wipe all data
-                        stack.getOrCreateTag().remove("ModeData");
+                        deleteModeData(stack);
                     }
                 }
             }
@@ -181,32 +187,67 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
 
     // 0 = Voltage, 1 = Current
     public int getMode(ItemStack stack) {
-        if(stack.getTag() == null || !stack.getTag().contains("Mode"))
+        CustomData customData = stack.get(DataComponents.CUSTOM_DATA);
+        if (customData == null)
             return -1;
-        return stack.getOrCreateTag().getInt("Mode");
+
+        CompoundTag tag = customData.copyTag();
+        return tag.contains("Mode") ? tag.getInt("Mode") : -1;
     }
+
 
     public void setMode(ItemStack stack, int mode) {
-        var tag = stack.getOrCreateTag();
+        CompoundTag tag = stack
+                .getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
+                .copyTag();
+
         tag.putInt("Mode", mode);
         tag.remove("ModeData");
+
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
     }
 
-    public CompoundTag getModeData(ItemStack stack) {
-        var tag = stack.getOrCreateTag();
-        if(tag.contains("ModeData")) {
-            return tag.getCompound("ModeData");
+
+    public static CompoundTag getModeData(ItemStack stack) {
+        // Get existing custom data or empty
+        CompoundTag root = stack
+                .getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
+                .copyTag();
+
+        CompoundTag modeData;
+        if (root.contains("ModeData", Tag.TAG_COMPOUND)) {
+            modeData = root.getCompound("ModeData");
         } else {
-            var data = new CompoundTag();
-            tag.put("ModeData", data);
-            return data;
+            modeData = new CompoundTag();
+            root.put("ModeData", modeData);
+
+            // IMPORTANT: write back because we created data
+            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(root));
         }
+
+        return modeData;
+    }
+
+    public static void deleteModeData(ItemStack stack) {
+        CompoundTag root = stack
+                .getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
+                .copyTag();
+        root.remove("ModeData");
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(root));
+    }
+
+    public static void saveModeData(ItemStack stack, CompoundTag modeData) {
+        CompoundTag root = stack
+                .getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY)
+                .copyTag();
+        root.put("ModeData", modeData);
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(root));
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand usedHand) {
         if(player.isShiftKeyDown() && usedHand == InteractionHand.MAIN_HAND) {
-            player.getItemInHand(usedHand).setTag(null);
+            player.getItemInHand(usedHand).remove(DataComponents.CUSTOM_DATA);
             player.displayClientMessage(Lang.translate("message.multimeter_disconnected")
                     .style(ChatFormatting.GRAY)
                     .component(), true);
@@ -224,6 +265,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
             var current = WireEndpointType.deserialize(data.getCompound("Pos"));
             if(endpoint.equals(current)) {
                 data.remove("Pos");
+                saveModeData(stack, data);
                 return InteractionResult.SUCCESS;
             }
         }
@@ -231,6 +273,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
             var current = WireEndpointType.deserialize(data.getCompound("Neg"));
             if(endpoint.equals(current)) {
                 data.remove("Neg");
+                saveModeData(stack, data);
                 return InteractionResult.SUCCESS;
             }
         }
@@ -241,6 +284,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
         } else {
             data.put("Pos", endpoint.serialize());
         }
+        saveModeData(stack, data);
         return InteractionResult.CONSUME;
     }
 

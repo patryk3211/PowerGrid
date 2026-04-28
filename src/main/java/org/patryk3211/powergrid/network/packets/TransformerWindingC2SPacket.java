@@ -15,18 +15,17 @@
  */
 package org.patryk3211.powergrid.network.packets;
 
-import dev.architectury.networking.NetworkManager;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWire;
+import org.patryk3211.powergrid.electricity.wire.WireConnection;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
-import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.network.C2SPacket;
 
-import java.util.function.Supplier;
-
-public class TransformerWindingC2SPacket implements SimplePacket {
+public class TransformerWindingC2SPacket implements C2SPacket {
     private final int nTurns;
     private final InteractionHand hand;
 
@@ -40,35 +39,30 @@ public class TransformerWindingC2SPacket implements SimplePacket {
         hand = buf.readEnum(InteractionHand.class);
     }
 
+
     @Override
-    public void encode(FriendlyByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeInt(nTurns);
         buf.writeEnum(hand);
     }
 
     @Override
-    public void handle(Supplier<NetworkManager.PacketContext> context) {
-        var ctx = context.get();
-        ctx.queue(() -> {
-            var stack = ctx.getPlayer().getItemInHand(hand);
-            if(!IWire.isWire(ctx.getPlayer().level(), stack.getItem()) || !stack.hasTag())
+    public void handle(ServerPlayer player) {
+        var stack = player.getItemInHand(hand);
+        var connection = stack.get(ModdedDataComponents.CONNECTION_DATA.get());
+        if (!IWire.isWire(player.level(), stack.getItem()) || connection == null)
+            return;
+        if (connection.isTransformer()) {
+            // Alter existing tag
+            stack.set(ModdedDataComponents.CONNECTION_DATA.get(), connection.withTurns(nTurns));
+        } else {
+            // Create a new tag
+            var endpoint = connection.endpoint();
+            if (endpoint == null || endpoint.type() != WireEndpointType.BLOCK)
                 return;
-            if(stack.getTag().contains("Turns")) {
-                // Alter existing tag
-                stack.getTag().putInt("Turns", nTurns);
-            } else {
-                // Create a new tag
-                var endpoint = WireEndpointType.deserialize(stack.getTagElement("Connection"));
-                if (endpoint == null || endpoint.type() != WireEndpointType.BLOCK)
-                    return;
-                var blockEndpoint = (BlockWireEndpoint) endpoint;
-                var nbt = new CompoundTag();
-                nbt.putInt("Turns", nTurns);
-                var pos = blockEndpoint.getPos();
-                nbt.putIntArray("Initiator", new int[]{pos.getX(), pos.getY(), pos.getZ()});
-                nbt.putInt("Terminal", blockEndpoint.getTerminal());
-                stack.setTag(nbt);
-            }
-        });
+            var blockEndpoint = (BlockWireEndpoint) endpoint;
+            var pos = blockEndpoint.getPos();
+            stack.set(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.of(pos, nTurns, blockEndpoint));
+        }
     }
 }

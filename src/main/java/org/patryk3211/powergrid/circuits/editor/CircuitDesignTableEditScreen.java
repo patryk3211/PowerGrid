@@ -141,7 +141,7 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
     }
 
     public void save() {
-        ModdedPackets.getChannel().sendToServer(new SaveSchematicC2SPacket(menu.contentHolder, nameField.getValue(), schematic));
+        ModdedPackets.sendToServer(new SaveSchematicC2SPacket(menu.contentHolder, nameField.getValue(), schematic));
         if(menu.contentHolder instanceof CircuitDesignTableBlockEntity table) {
             menu.contentHolder.setSchematic(schematic);
             saving = true;
@@ -152,7 +152,7 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
 
     public void discard() {
         if(menu.contentHolder instanceof CircuitDesignTableBlockEntity table) {
-            ModdedPackets.getChannel().sendToServer(new ChangeScreenC2SPacket(table, 0));
+            ModdedPackets.sendToServer(new ChangeScreenC2SPacket(table, 0));
         } else {
             onClose();
         }

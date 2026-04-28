@@ -90,14 +90,12 @@ public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
     public static void debugLine(PoseStack ms, VertexConsumer buffer, int light, int color,
                                  Vec3 v1, Vec3 v2) {
         var matrix = ms.last().pose();
-        buffer.vertex(matrix, (float) v1.x, (float) v1.y, (float) v1.z)
-                .color(color)
-                .uv2(light)
-                .endVertex();
-        buffer.vertex(matrix, (float) v2.x, (float) v2.y, (float) v2.z)
-                .color(color)
-                .uv2(light)
-                .endVertex();
+        buffer.addVertex(matrix, (float) v1.x, (float) v1.y, (float) v1.z)
+                .setColor(color)
+                .setUv2(light & 65535, light >> 16 & 65535);
+        buffer.addVertex(matrix, (float) v2.x, (float) v2.y, (float) v2.z)
+                .setColor(color)
+                .setUv2(light & 65535, light >> 16 & 65535);
     }
 
     private static void vertex(PoseStack.Pose matrix, VertexConsumer buffer,
@@ -105,13 +103,12 @@ public class BlockWireRenderer extends EntityRenderer<BlockWireEntity> {
                                float u, float v,
                                float xn, float yn, float zn,
                                int color, int light) {
-        buffer.vertex(matrix.pose(), (float) x1, (float) y1, (float) z1)
-                .color(color)
-                .uv(u, v)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(light)
-                .normal(matrix.normal(), xn, yn, zn)
-                .endVertex();
+        buffer.addVertex(matrix.pose(), (float) x1, (float) y1, (float) z1)
+                .setColor(color)
+                .setUv(u, v)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setUv2(light & 65535, light >> 16 & 65535)
+                .setNormal(matrix, xn, yn, zn);
     }
 
     public static void renderSegment(PoseStack ms, VertexConsumer buffer, int light, int color,

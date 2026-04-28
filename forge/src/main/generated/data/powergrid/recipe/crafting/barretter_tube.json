@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": {
+      "tag": "c:wires/iron"
+    },
+    "P": {
+      "tag": "c:plates/iron"
+    },
+    "Q": {
+      "item": "minecraft:quartz"
+    }
+  },
+  "pattern": [
+    "Q",
+    "I",
+    "P"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid:barretter_tube"
+  }
+}

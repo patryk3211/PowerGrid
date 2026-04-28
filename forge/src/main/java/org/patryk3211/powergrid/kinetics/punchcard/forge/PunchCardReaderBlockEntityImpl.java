@@ -22,12 +22,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.util.LazyOptional;
-import net.minecraftforge.items.IItemHandler;
-import net.minecraftforge.items.ItemStackHandler;
-import net.minecraftforge.items.wrapper.CombinedInvWrapper;
+import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.items.wrapper.CombinedInvWrapper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardItem;
@@ -37,11 +34,17 @@ import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlockEntity;
 public class PunchCardReaderBlockEntityImpl extends PunchCardReaderBlockEntity {
     private final ItemStackHandler inventory = new ItemStackHandler(1);
 
-    private final LazyOptional<IItemHandler> sideCapability = LazyOptional.of(() -> new InventoryWrapper(false));
-    private final LazyOptional<IItemHandler> topCapability = LazyOptional.of(() -> new InventoryWrapper(true));
-
     public PunchCardReaderBlockEntityImpl(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
+    }
+
+    public @Nullable IItemHandler getItemHandler(@Nullable Direction side) {
+        if(side == null || side == Direction.UP) {
+            return new InventoryWrapper(true);
+        } else if(side == getBlockState().getValue(PunchCardReaderBlock.HORIZONTAL_FACING)) {
+            return new InventoryWrapper(false);
+        }
+        return null;
     }
 
     @Override
@@ -52,8 +55,6 @@ public class PunchCardReaderBlockEntityImpl extends PunchCardReaderBlockEntity {
     @Override
     public void invalidate() {
         super.invalidate();
-        sideCapability.invalidate();
-        topCapability.invalidate();
     }
 
     @Override
@@ -62,27 +63,15 @@ public class PunchCardReaderBlockEntityImpl extends PunchCardReaderBlockEntity {
     }
 
     @Override
-    protected void read(CompoundTag compound, boolean clientPacket) {
-        super.read(compound, clientPacket);
-        inventory.deserializeNBT(compound.getCompound("Inv"));
+    protected void read(CompoundTag compound, net.minecraft.core.HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(compound, registries, clientPacket);
+        inventory.deserializeNBT(registries, compound.getCompound("Inv"));
     }
 
     @Override
-    protected void write(CompoundTag compound, boolean clientPacket) {
-        super.write(compound, clientPacket);
-        compound.put("Inv", inventory.serializeNBT());
-    }
-
-    @Override
-    public @NotNull <T> LazyOptional<T> getCapability(@NotNull Capability<T> cap, @Nullable Direction side) {
-        if(cap == ForgeCapabilities.ITEM_HANDLER) {
-            if(side == null || side == Direction.UP) {
-                return topCapability.cast();
-            } else if(side == getBlockState().getValue(PunchCardReaderBlock.HORIZONTAL_FACING)) {
-                return sideCapability.cast();
-            }
-        }
-        return super.getCapability(cap, side);
+    protected void write(CompoundTag compound, net.minecraft.core.HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(compound, registries, clientPacket);
+        compound.put("Inv", inventory.serializeNBT(registries));
     }
 
     @Override

@@ -15,7 +15,7 @@
  */
 package org.patryk3211.powergrid.circuits.editor;
 
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.MenuType;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
@@ -26,7 +26,7 @@ public class CircuitBoardEditMenu extends CircuitEditMenu<CircuitBoardBlockEntit
         super(type, id, inv, contentHolder);
     }
 
-    public CircuitBoardEditMenu(MenuType<?> type, int id, Inventory inv, FriendlyByteBuf extraData) {
+    public CircuitBoardEditMenu(MenuType<?> type, int id, Inventory inv, RegistryFriendlyByteBuf extraData) {
         super(type, id, inv, extraData);
     }
 

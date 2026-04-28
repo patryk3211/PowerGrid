@@ -18,18 +18,30 @@ package org.patryk3211.powergrid.equipment.portablebattery;
 import com.simibubi.create.AllEnchantments;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.enchantment.ItemEnchantments;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.equipment.ItemBoostUtils;
 import org.patryk3211.powergrid.utility.ClientSideAccess;
 
 public class BatteryUtils {
+
     public static int getMaxCharge(ItemStack stack) {
-        return getMaxCharge(EnchantmentHelper.getItemEnchantmentLevel(AllEnchantments.CAPACITY.get(), stack));
+        ItemEnchantments enchantments = stack.getOrDefault(DataComponents.ENCHANTMENTS, ItemEnchantments.EMPTY);
+        int level = 0;
+        for (var entry : enchantments.entrySet()) {
+            if (entry.getKey().is(AllEnchantments.CAPACITY)) {
+                level = entry.getIntValue();
+                break;
+            }
+        }
+        return getMaxCharge(level);
     }
 
     public static int getMaxCharge(int level) {
@@ -38,10 +50,12 @@ public class BatteryUtils {
     }
 
     public static int getCurrentCharge(ItemStack stack) {
-        if(!stack.hasTag())
+        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+        if(data == null)
             return 0;
-        var nbt = stack.getTag();
-        return nbt.getInt("Charge");
+
+        CompoundTag tag = data.copyTag();
+        return tag.getInt("Charge");
     }
 
     public static float drawEnergy(Player player, int energy) {
@@ -58,10 +72,13 @@ public class BatteryUtils {
             outputPercent = chargePercent / 0.5f;
         }
         energy = (int) (energy * outputPercent);
-        var tag = stack.getTag();
         if(energy == 0 || tag == null)
             return 0.0f;
-        tag.putInt("Charge", charge - energy);
+        CustomData data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+        CompoundTag newTag = data.copyTag();
+
+        newTag.putInt("Charge", charge - energy);
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(newTag));
         if(charge < energy * outputPercent)
             return 0.0f;
         return outputPercent;
@@ -83,8 +100,7 @@ public class BatteryUtils {
             outputPercent = chargePercent / 0.5f;
         }
         energy = (int) (energy * outputPercent);
-        var tag = battery.getTag();
-        if(energy == 0 || tag == null)
+        if(energy == 0 || !stack.has(DataComponents.CUSTOM_DATA))
             return 0.0f;
         if(charge < energy * outputPercent)
             return 0.0f;

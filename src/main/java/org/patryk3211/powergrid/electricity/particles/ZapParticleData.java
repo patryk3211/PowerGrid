@@ -15,39 +15,31 @@
  */
 package org.patryk3211.powergrid.electricity.particles;
 
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.simibubi.create.foundation.particle.ICustomParticleData;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.core.particles.DustParticleOptionsBase;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
 import org.joml.Vector3f;
 import org.patryk3211.powergrid.collections.ModdedParticles;
 
 public class ZapParticleData implements ParticleOptions, ICustomParticleData<ZapParticleData> {
-    public static final Deserializer<ZapParticleData> FACTORY = new Deserializer<>() {
-        @Override
-        public ZapParticleData fromCommand(ParticleType<ZapParticleData> type, StringReader reader) throws CommandSyntaxException {
-            return new ZapParticleData(DustParticleOptionsBase.readVector3f(reader), true, 1, -1);
-        }
-
-        @Override
-        public ZapParticleData fromNetwork(ParticleType<ZapParticleData> type, FriendlyByteBuf buf) {
-            return new ZapParticleData(buf.readVector3f(), buf.readBoolean(), buf.readInt(), buf.readInt());
-        }
-    };
     private static final Codec<ZapParticleData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             ExtraCodecs.VECTOR3F.fieldOf("end").forGetter(ZapParticleData::getEnd),
             Codec.BOOL.fieldOf("anchor").forGetter(ZapParticleData::isAnchored),
             Codec.INT.fieldOf("life").forGetter(ZapParticleData::getLife),
             Codec.INT.fieldOf("segments").forGetter(ZapParticleData::getSegmentCount)
     ).apply(instance, ZapParticleData::new));
+
+    public static final MapCodec<ZapParticleData> MAP_CODEC = CODEC.fieldOf("zap");
+    public static final StreamCodec<ByteBuf, ZapParticleData> STREAM_CODEC = ByteBufCodecs.fromCodec(CODEC);
 
     private final Vector3f end;
     private final boolean anchor;
@@ -104,16 +96,6 @@ public class ZapParticleData implements ParticleOptions, ICustomParticleData<Zap
     }
 
     @Override
-    public Deserializer<ZapParticleData> getDeserializer() {
-        return FACTORY;
-    }
-
-    @Override
-    public Codec<ZapParticleData> getCodec(ParticleType<ZapParticleData> type) {
-        return CODEC;
-    }
-
-    @Override
     public ParticleProvider<ZapParticleData> getFactory() {
         return ZapParticle::new;
     }
@@ -124,19 +106,12 @@ public class ZapParticleData implements ParticleOptions, ICustomParticleData<Zap
     }
 
     @Override
-    public void writeToNetwork(FriendlyByteBuf buf) {
-        buf.writeVector3f(end);
-        buf.writeBoolean(anchor);
-        buf.writeInt(life);
-        buf.writeInt(segmentCount);
+    public MapCodec<ZapParticleData> getCodec(ParticleType<ZapParticleData> type) {
+        return MAP_CODEC;
     }
 
     @Override
-    public String writeToString() {
-        if(end == null) {
-            return BuiltInRegistries.PARTICLE_TYPE.getKey(getType()).toString();
-        } else {
-            return String.format("%s (%f, %f, %f)", BuiltInRegistries.PARTICLE_TYPE.getKey(getType()), end.x, end.y, end.z);
-        }
+    public StreamCodec<? super RegistryFriendlyByteBuf, ZapParticleData> getStreamCodec() {
+        return STREAM_CODEC;
     }
 }

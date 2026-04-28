@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.light.string;
 
+import dev.ryanhcode.sable.companion.SableCompanion;
 import net.createmod.ponder.api.level.PonderLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -23,7 +24,6 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -33,6 +33,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.WorldNetworks;
@@ -64,15 +65,11 @@ public class StringLightCordEntity extends CordEntity {
             throw new IllegalArgumentException("ItemStack must be of a CordItem");
         var entity = new StringLightCordEntity(ModdedEntities.STRING_LIGHT_CORD.get(), world);
         entity.setItem(item.getItem(), item.getCount());
-        byte[] dyes;
-        if(item.hasTag() && (dyes = item.getTag().getByteArray("Pattern")).length > 0){
-            entity.colorPattern = new int[dyes.length];
-            for(int i = 0; i < dyes.length; ++i) {
-                var c = DyeColor.byId(dyes[i]).getTextureDiffuseColors();
-                int r = (int) (c[0] * 255);
-                int g = (int) (c[1] * 255);
-                int b = (int) (c[2] * 255);
-                entity.colorPattern[i] = (r << 16) | (g << 8) | b;
+        var pattern = item.get(ModdedDataComponents.LIGHT_PATTERN.get());
+        if(pattern != null){
+            entity.colorPattern = new int[pattern.colors().length];
+            for(int i = 0; i < pattern.colors().length; ++i) {
+                entity.colorPattern[i] = pattern.colors()[i].getTextureDiffuseColor();
             }
         }
 
@@ -80,6 +77,14 @@ public class StringLightCordEntity extends CordEntity {
 
         entity.setEndpoint1(endpoint1);
         entity.setEndpoint2(endpoint2);
+
+        var tp1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, endpoint1.getExactPosition(world));
+        var tp2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, endpoint2.getExactPosition(world));
+        var dX = tp2.x - tp1.x;
+        var dY = tp2.y - tp1.y;
+        var dZ = tp2.z - tp1.z;
+        var hL = dX * dX + dZ * dZ;
+        entity.placedLength = (float) Math.sqrt(entity.getWireEntry().horizontalCoefficient() * hL + entity.getWireEntry().verticalCoefficient() * dY * dY);
 
         entity.refreshTerminalPositions();
         entity.setXRot(0);
@@ -93,9 +98,9 @@ public class StringLightCordEntity extends CordEntity {
     }
 
     @Override
-    protected void defineSynchedData() {
-        super.defineSynchedData();
-        entityData.define(POWER, 0f);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(POWER, 0f);
     }
 
     @Override

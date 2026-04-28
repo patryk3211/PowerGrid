@@ -28,9 +28,6 @@ import org.patryk3211.powergrid.electricity.base.HorizontalAxisElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class CreativeSourceBlock extends HorizontalAxisElectricBlock implements IBE<CreativeSourceBlockEntity> {
     public static final Property<Direction.Axis> HORIZONTAL_AXIS = BlockStateProperties.HORIZONTAL_AXIS;

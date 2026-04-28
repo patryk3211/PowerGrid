@@ -16,16 +16,13 @@
 package org.patryk3211.powergrid.network.packets;
 
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
-import dev.architectury.networking.NetworkManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import org.patryk3211.powergrid.base.IMultiScreenHandlerFactory;
-import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.network.C2SPacket;
 
-import java.util.function.Supplier;
-
-public class ChangeScreenC2SPacket implements SimplePacket {
+public class ChangeScreenC2SPacket implements C2SPacket {
     private final BlockPos blockPos;
     private final int screenIndex;
 
@@ -40,23 +37,17 @@ public class ChangeScreenC2SPacket implements SimplePacket {
     }
 
     @Override
-    public void encode(FriendlyByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeBlockPos(blockPos);
         buf.writeInt(screenIndex);
     }
 
     @Override
-    public void handle(Supplier<NetworkManager.PacketContext> context) {
-        var ctx = context.get();
-        ctx.queue(() -> {
-            var player = ctx.getPlayer();
-            if(player == null)
-                return;
-            var genericBe = player.level().getBlockEntity(blockPos);
-            if(!(genericBe instanceof SmartBlockEntity) || !(genericBe instanceof IMultiScreenHandlerFactory))
-                return;
-            var be = (SmartBlockEntity & IMultiScreenHandlerFactory) genericBe;
-            IMultiScreenHandlerFactory.openScreen((ServerPlayer) player, be, be::sendToMenu, screenIndex);
-        });
+    public void handle(ServerPlayer player) {
+        var genericBe = player.level().getBlockEntity(blockPos);
+        if(!(genericBe instanceof SmartBlockEntity) || !(genericBe instanceof IMultiScreenHandlerFactory))
+            return;
+        var be = (SmartBlockEntity & IMultiScreenHandlerFactory) genericBe;
+        IMultiScreenHandlerFactory.openScreen(player, be, be::sendToMenu, screenIndex);
     }
 }

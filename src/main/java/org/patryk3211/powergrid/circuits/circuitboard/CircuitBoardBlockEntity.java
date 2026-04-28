@@ -26,6 +26,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -356,21 +357,21 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     }
 
     @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
+    protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         tag.put("Schematic", schematic.serializeNbt());
         if(baked != null)
             baked.write(tag);
-        super.write(tag, clientPacket);
+        super.write(tag, registries, clientPacket);
     }
 
     @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
+    protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         if(!tag.contains("Schematic")) {
             if(level != null)
                 level.destroyBlock(worldPosition, false);
             return;
         }
-        super.read(tag, clientPacket);
+        super.read(tag, registries, clientPacket);
         if(!clientPacket || tag.getBoolean("Rebuild") || baked == null) {
             schematic.deserializeNbt(tag.getCompound("Schematic"));
             bakeCircuit();

@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": {
+      "item": "powergrid:conductive_casing"
+    },
+    "I": {
+      "tag": "c:ingots/iron"
+    },
+    "M": {
+      "item": "create:precision_mechanism"
+    },
+    "P": {
+      "tag": "c:plates/copper"
+    }
+  },
+  "pattern": [
+    "PMP",
+    "PIP",
+    " E "
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid:hv_breaker"
+  }
+}

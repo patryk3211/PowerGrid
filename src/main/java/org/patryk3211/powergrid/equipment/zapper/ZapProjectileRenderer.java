@@ -29,6 +29,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix3f;
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
 import org.patryk3211.powergrid.PowerGrid;
 
 @Environment(EnvType.CLIENT)
@@ -75,13 +76,13 @@ public class ZapProjectileRenderer extends EntityRenderer<ZapProjectileEntity> {
     }
 
     public void vertex(Matrix4f positionMatrix, Matrix3f normalMatrix, VertexConsumer vertexConsumer, float x, float y, float z, float u, float v, float normalX, float normalZ, float normalY, int light) {
+        Vector3f normalVector = normalMatrix.transform(new Vector3f(normalX, normalY, normalZ));
         vertexConsumer
-                .vertex(positionMatrix, x, y, z)
-                .color(255, 255, 255, 255)
-                .uv(u, v)
-                .overlayCoords(OverlayTexture.NO_OVERLAY)
-                .uv2(light)
-                .normal(normalMatrix, normalX, normalY, normalZ)
-                .endVertex();
+                .addVertex(positionMatrix, x, y, z)
+                .setColor(255, 255, 255, 255)
+                .setUv(u, v)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setUv2(light & 65535, light >> 16 & 65535)
+                .setNormal(normalVector.x, normalVector.y, normalVector.z);
     }
 }

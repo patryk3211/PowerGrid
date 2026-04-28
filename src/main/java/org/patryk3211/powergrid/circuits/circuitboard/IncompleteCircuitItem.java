@@ -17,12 +17,15 @@ package org.patryk3211.powergrid.circuits.circuitboard;
 
 import net.createmod.catnip.theme.Color;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
@@ -39,7 +42,7 @@ public class IncompleteCircuitItem extends Item {
         super(settings.stacksTo(1));
     }
 
-    private static CompoundTag makeAssemblyTag(Level level, CompoundTag schematicTag) {
+    private static CompoundTag makeAssemblyTag(CompoundTag schematicTag) {
         var schematic = CircuitSchematic.fromNbt(schematicTag);
         var componentAmounts = new HashMap<org.patryk3211.powergrid.circuits.components.Component, Integer>();
         int componentCount = 0;
@@ -80,11 +83,11 @@ public class IncompleteCircuitItem extends Item {
 
     @Nullable
     public static ItemStack insert(Level level, ItemStack circuit, ItemStack component) {
-        if(!circuit.is(ModdedItems.INCOMPLETE_CIRCUIT.get()) || !circuit.hasTag())
+        if(!circuit.is(ModdedItems.INCOMPLETE_CIRCUIT.get()) || !circuit.has(DataComponents.CUSTOM_DATA))
             return null;
-        var tag = circuit.getTag().copy();
+        var tag = circuit.get(DataComponents.CUSTOM_DATA).copyTag();
         if(!tag.contains("Assembly")) {
-            tag.put("Assembly", makeAssemblyTag(level, tag.getCompound("Schematic")));
+            tag.put("Assembly", makeAssemblyTag(tag.getCompound("Schematic")));
         }
         if(!insertComponent(level, tag.getCompound("Assembly"), component))
             return null;
@@ -94,16 +97,16 @@ public class IncompleteCircuitItem extends Item {
             tag.remove("Assembly");
             newStack = new ItemStack(ModdedBlocks.CIRCUIT_BOARD);
         } else {
-            newStack = new ItemStack(ModdedItems.INCOMPLETE_CIRCUIT);
+            newStack = new ItemStack((ItemLike) ModdedItems.INCOMPLETE_CIRCUIT);
         }
-        newStack.setTag(tag);
+        newStack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
         return newStack;
     }
 
     public static float getProgress(ItemStack stack) {
-        if(!stack.hasTag() || !stack.getTag().contains("Assembly"))
+        if(!stack.has(DataComponents.CUSTOM_DATA) || !stack.get(DataComponents.CUSTOM_DATA).contains("Assembly"))
             return 0;
-        var assemblyTag = stack.getTagElement("Assembly");
+        var assemblyTag = stack.get(DataComponents.CUSTOM_DATA).getUnsafe().getCompound("Assembly");
         return (float) assemblyTag.getInt("Inserted") / assemblyTag.getInt("Total");
     }
 
@@ -123,16 +126,16 @@ public class IncompleteCircuitItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level world, List<Component> tooltip, TooltipFlag context) {
-        if(!stack.hasTag())
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag tooltipFlag) {
+        if(!stack.has(DataComponents.CUSTOM_DATA))
             return;
         CompoundTag assemblyTag;
-        if(!stack.getTag().contains("Assembly")) {
-            if(!stack.getTag().contains("Schematic"))
+        if(!stack.get(DataComponents.CUSTOM_DATA).contains("Assembly")) {
+            if(!stack.get(DataComponents.CUSTOM_DATA).contains("Schematic"))
                 return;
-            assemblyTag = makeAssemblyTag(world, stack.getTagElement("Schematic"));
+            assemblyTag = makeAssemblyTag(stack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Schematic"));
         } else {
-            assemblyTag = stack.getTagElement("Assembly");
+            assemblyTag = stack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Assembly");
         }
         tooltip.add(Component.empty());
         tooltip.add(Lang.translate("tooltip.circuit_assembly")
@@ -148,7 +151,7 @@ public class IncompleteCircuitItem extends Item {
         var missing = assemblyTag.getCompound("Missing");
         int index = 0;
         for(var componentId : missing.getAllKeys()) {
-            var component = ComponentRegistry.get(new ResourceLocation(componentId));
+            var component = ComponentRegistry.get(ResourceLocation.parse(componentId));
             var item = ComponentRegistry.getItem(component);
             var key = item.getDescriptionId();
             var line = switch(index) {

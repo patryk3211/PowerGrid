@@ -32,6 +32,9 @@ bin/
 
 run/
 
+# architectury
+.architectury-transformer/debug.log
+
 # java
 
 hs_err_*.log

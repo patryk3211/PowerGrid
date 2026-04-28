@@ -21,10 +21,10 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import com.simibubi.create.foundation.recipe.RecipeApplier;
 import net.createmod.catnip.math.VecHelper;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.Container;
-import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.SingleRecipeInput;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
@@ -87,7 +87,7 @@ public class ElectromagnetBlockEntity extends ElectricBlockEntity implements Mag
         if(simulate)
             return true;
 
-        var outputs = RecipeApplier.applyRecipeOn(level, input.stack.copyWithCount(1), recipe.get(), true);
+        var outputs = RecipeApplier.applyRecipeOn(level, input.stack.copyWithCount(1), recipe.get().value(), true);
 //        for(ItemStack created : outputs) {
 //            if(!created.isEmpty()) {
 //                onItemPressed(created);
@@ -108,7 +108,7 @@ public class ElectromagnetBlockEntity extends ElectricBlockEntity implements Mag
         if(simulate)
             return true;
 
-        for(var result : RecipeApplier.applyRecipeOn(level, item.copyWithCount(1), recipe.get(), true)) {
+        for(var result : RecipeApplier.applyRecipeOn(level, item.copyWithCount(1), recipe.get().value(), true)) {
             var created = new ItemEntity(level, itemEntity.getX(), itemEntity.getY(), itemEntity.getZ(), result);
             created.setDefaultPickUpDelay();
             created.setDeltaMovement(VecHelper.offsetRandomly(Vec3.ZERO, level.random, .05f));
@@ -134,14 +134,12 @@ public class ElectromagnetBlockEntity extends ElectricBlockEntity implements Mag
         return (float) field;
     }
 
-    private static final Container magnetizingInv = new SimpleContainer(1);
-    public Optional<MagnetizingRecipe> getRecipe(ItemStack item) {
-        Optional<MagnetizingRecipe> assemblyRecipe = SequencedAssemblyRecipe.getRecipe(level, item, MagnetizingRecipe.TYPE_INFO.getType(), MagnetizingRecipe.class);
+    public Optional<RecipeHolder<MagnetizingRecipe>> getRecipe(ItemStack item) {
+        Optional<RecipeHolder<MagnetizingRecipe>> assemblyRecipe = SequencedAssemblyRecipe.getRecipe(level, item, MagnetizingRecipe.TYPE_INFO.getType(), MagnetizingRecipe.class);
         if(assemblyRecipe.isPresent())
             return assemblyRecipe;
 
-        magnetizingInv.setItem(0, item);
-        return level.getRecipeManager().getRecipeFor(MagnetizingRecipe.TYPE_INFO.getType(), magnetizingInv, level);
+        return level.getRecipeManager().getRecipeFor(MagnetizingRecipe.TYPE_INFO.getType(), new SingleRecipeInput(item), level);
     }
 
     public MagnetizingBehaviour getMagnetizingBehaviour() {

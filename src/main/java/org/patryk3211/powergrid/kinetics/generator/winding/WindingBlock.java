@@ -447,7 +447,7 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockGetter world, BlockPos pos, BlockState state) {
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
         return ModdedItems.COPPER_COIL.asStack();
     }
 

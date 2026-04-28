@@ -41,6 +41,7 @@ import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.base.*;
@@ -161,8 +162,9 @@ public class HvSwitchBlock extends HorizontalKineticBlock implements IElectric, 
         world.setBlockAndUpdate(pos.relative(facing), state.setValue(PART, 1));
     }
 
+    @NotNull
     @Override
-    public void playerWillDestroy(Level world, BlockPos pos, BlockState state, Player player) {
+    public BlockState playerWillDestroy(Level world, BlockPos pos, BlockState state, Player player) {
         super.playerWillDestroy(world, pos, state, player);
         var facing = state.getValue(HORIZONTAL_FACING);
         var drop = player == null || !player.isCreative();
@@ -171,6 +173,7 @@ public class HvSwitchBlock extends HorizontalKineticBlock implements IElectric, 
         } else {
             world.destroyBlock(pos.relative(facing.getOpposite()), drop);
         }
+        return state;
     }
 
     @Override

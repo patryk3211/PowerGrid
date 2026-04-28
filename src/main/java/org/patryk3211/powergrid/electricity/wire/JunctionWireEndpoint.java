@@ -15,8 +15,10 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Contract;
@@ -38,16 +40,43 @@ import static org.patryk3211.powergrid.electricity.base.ElectricBehaviour.writeT
 
 public class JunctionWireEndpoint implements IWireEndpoint {
     private static final Map<Level, WorldEntry> JUNCTION_NODES = new HashMap<>();
+    private static final Random random = new Random();
 
     private UUID id;
     private Vec3 pos;
+
+    public static UUID makeUuid(Vec3 pos, long id) {
+        int x = Mth.floor(pos.x);
+        short y = (short) Mth.floor(pos.y);
+        int z = Mth.floor(pos.z);
+        // Version 8 Custom UUID
+        // xxxxxxxx-yyyy-8iii-8iii-iiiizzzzzzzz
+        long msb = (((long) x << 32) & 0xFFFFFFFF00000000L)
+                 | (((long) y << 16) & 0x00000000FFFF0000L)
+                 |                                 0x8000L
+                 | ((id >> 28)       & 0x0000000000000FFFL);
+        long lsb = ((long) z   & 0x00000000FFFFFFFFL)
+                 |               0x8000000000000000L
+                 | ((id << 32) & 0x0FFFFFFF00000000L);
+        return new UUID(msb, lsb);
+    }
+
+    public static UUID makeUuid(Vec3 pos) {
+        return makeUuid(pos, random.nextLong());
+    }
+
+    public static long getId(UUID uuid) {
+        long id = (uuid.getLeastSignificantBits() >> 32) & 0xFFF_FFFF;
+        id |= (uuid.getMostSignificantBits() & 0xFFF) << 28;
+        return id;
+    }
 
     public JunctionWireEndpoint() {
         this(null, null);
     }
 
     public JunctionWireEndpoint(Vec3 pos) {
-        this(pos, UUID.randomUUID());
+        this(pos, makeUuid(pos));
     }
 
     private JunctionWireEndpoint(Vec3 pos, UUID id) {
@@ -208,6 +237,18 @@ public class JunctionWireEndpoint implements IWireEndpoint {
         }
     }
 
+    @Override
+    public void moveWireEntity(BaseWireEntity entity) {
+        var entry = getNode(entity.level(), this.id, true, this);
+        if(entry == null)
+            return;
+        entry.holders.remove(entity);
+        if(entry.holders.isEmpty()) {
+            // Last entity dropped this junction.
+            removeEntry(entity.level(), this.id);
+        }
+    }
+
     @Contract("_, _, false, _ -> !null")
     private static NodeEntry getNode(Level world, UUID id, boolean nullable, JunctionWireEndpoint endpoint) {
         if(!nullable) {
@@ -263,6 +304,12 @@ public class JunctionWireEndpoint implements IWireEndpoint {
                 global.nodeHolderAdded(node, false);
             }
         }
+    }
+
+    @Override
+    public IWireEndpoint makeOffset(BlockPos offset) {
+        var newPos = pos.add(offset.getX(), offset.getY(), offset.getZ());
+        return new JunctionWireEndpoint(newPos, makeUuid(newPos, getId(id)));
     }
 
     @Override

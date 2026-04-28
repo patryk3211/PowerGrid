@@ -264,7 +264,7 @@ public class ModdedBlockEntities {
                     .register();
 
     public static final BlockEntityEntry<ElectricFanBlockEntity> ELECTRIC_FAN =
-            REGISTRATE.blockEntity("electric_fan", ElectricFanBlockEntity::new)
+            REGISTRATE.blockEntity("electric_fan", SubstituteBlockEntityProvider.INSTANCE.get(ElectricFanBlockEntity.class))
                     .validBlock(ModdedBlocks.ELECTRIC_FAN)
                     .renderer(() -> ElectricFanRenderer::new)
                     .register();

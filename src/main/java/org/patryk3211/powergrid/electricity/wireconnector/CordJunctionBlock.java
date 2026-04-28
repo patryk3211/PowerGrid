@@ -20,6 +20,9 @@ import net.createmod.catnip.math.VoxelShaper;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
@@ -39,9 +42,6 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.wire.powercord.AutoCordEndpoint;
 import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-
-@ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class CordJunctionBlock extends DirectionalElectricBlock implements IBE<CordJunctionBlockEntity>, IAcceptCord {
     private static final VoxelShaper SHAPER = VoxelShaper.forDirectional(box(4, 0, 4, 12, 3, 12), Direction.DOWN);
@@ -77,6 +77,11 @@ public class CordJunctionBlock extends DirectionalElectricBlock implements IBE<C
         if(diff <= -0.125)
             return -0.1875;
         return 0;
+    }
+
+    @Override
+    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        return InteractionResult.PASS;
     }
 
     @Override

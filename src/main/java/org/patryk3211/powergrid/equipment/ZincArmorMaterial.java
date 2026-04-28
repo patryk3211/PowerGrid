@@ -16,61 +16,36 @@
 package org.patryk3211.powergrid.equipment;
 
 import com.simibubi.create.AllItems;
-import net.minecraft.sounds.SoundEvent;
+import net.minecraft.core.Holder;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.item.ArmorMaterial;
 import net.minecraft.world.item.crafting.Ingredient;
 import org.patryk3211.powergrid.PowerGrid;
 
-public class ZincArmorMaterial implements ArmorMaterial {
-    public static final ZincArmorMaterial INSTANCE = new ZincArmorMaterial();
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 
-    private final int[] durabilities = new int[] {
-            110, 160, 150, 130
-    };
+public class ZincArmorMaterial {
+    private static final Map<ArmorItem.Type, Integer> defenses = new EnumMap<>(ArmorItem.Type.class);
 
-    private final int[] protections = new int[] {
-            1, 3, 2, 1
-    };
-
-    @Override
-    public int getDurabilityForType(ArmorItem.Type type) {
-        return durabilities[type.ordinal()];
+    static {
+        defenses.put(ArmorItem.Type.HELMET, 1);
+        defenses.put(ArmorItem.Type.CHESTPLATE, 3);
+        defenses.put(ArmorItem.Type.LEGGINGS, 2);
+        defenses.put(ArmorItem.Type.BOOTS, 1);
+        defenses.put(ArmorItem.Type.BODY, 3);
     }
 
-    @Override
-    public int getDefenseForType(ArmorItem.Type type) {
-        return protections[type.ordinal()];
-    }
-
-    @Override
-    public int getEnchantmentValue() {
-        return 12;
-    }
-
-    @Override
-    public SoundEvent getEquipSound() {
-        return SoundEvents.ARMOR_EQUIP_GENERIC;
-    }
-
-    @Override
-    public Ingredient getRepairIngredient() {
-        return Ingredient.of(AllItems.ZINC_INGOT);
-    }
-
-    @Override
-    public String getName() {
-        return PowerGrid.asResource("zinc").toString();
-    }
-
-    @Override
-    public float getToughness() {
-        return 0;
-    }
-
-    @Override
-    public float getKnockbackResistance() {
-        return 0;
-    }
+    public static final Holder<ArmorMaterial> INSTANCE = BuiltInRegistries.ARMOR_MATERIAL.wrapAsHolder(
+            new ArmorMaterial(
+                defenses,
+                12,
+                SoundEvents.ARMOR_EQUIP_GENERIC,
+                () -> Ingredient.of(AllItems.ZINC_INGOT),
+                List.of(new ArmorMaterial.Layer(PowerGrid.asResource("zinc"))),
+                0, 0)
+    );
 }

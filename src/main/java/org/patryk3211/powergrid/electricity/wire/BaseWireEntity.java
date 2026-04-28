@@ -28,6 +28,7 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -79,6 +80,8 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
 
     protected Float resistanceOverride = null;
 
+    protected boolean sublevelMove;
+
     public BaseWireEntity(EntityType<?> type, Level world) {
         super(type, world);
     }
@@ -87,9 +90,9 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
     public abstract float measuredCurrent();
 
     @Override
-    protected void defineSynchedData() {
-        entityData.define(TEMPERATURE, BASE_TEMPERATURE);
-        entityData.define(OVERHEAT_TICKS, (byte) 0);
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        builder.define(TEMPERATURE, BASE_TEMPERATURE);
+        builder.define(OVERHEAT_TICKS, (byte) 0);
     }
 
     protected boolean testForOverheat(float temperature, float energy) {
@@ -144,8 +147,13 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
     }
 
     @Override
-    public void tick() {
+    public void baseTick() {
         // We don't need Entity#baseTick() in wires
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
         var world = level();
         temperatureUpdate();
 
@@ -162,6 +170,11 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
                 deferEndpointResolution &= ~2;
                 makeWire();
             }
+        }
+
+        if(sublevelMove && deferEndpointResolution == 0) {
+            sendExtraData();
+            sublevelMove = false;
         }
 
         if(isOverheated()) {
@@ -227,6 +240,20 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         }
     }
 
+    public void sublevelMove(IWireEndpoint endpoint1, IWireEndpoint endpoint2) {
+        if(this.endpoint1 != endpoint1 && this.endpoint1.isValid(level())) {
+            this.endpoint1.moveWireEntity(this);
+        }
+        if(this.endpoint2 != endpoint2 && this.endpoint2.isValid(level())) {
+            this.endpoint2.moveWireEntity(this);
+        }
+        this.endpoint1 = endpoint1;
+        this.endpoint2 = endpoint2;
+        deferEndpointResolution |= 3;
+        deferTicks = 0;
+        sublevelMove = true;
+    }
+
     // This method shouldn't be used too much. It's only needed in very special cases.
     public void flipEndpoints() {
         var endpoint = endpoint1;
@@ -260,10 +287,10 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
     }
 
     @Override
-    public Packet<ClientGamePacketListener> getAddEntityPacket() {
+    public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity entity) {
         var extra = createExtraDataPacket();
         ModdedPackets.sendToClientsTracking(extra, this);
-        return super.getAddEntityPacket();
+        return super.getAddEntityPacket(entity);
     }
 
     @Override
@@ -286,7 +313,7 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
     protected void readAdditionalSaveData(CompoundTag nbt) {
         if(nbt.contains("Item")) {
             var itemTag = nbt.getCompound("Item");
-            var readItem = BuiltInRegistries.ITEM.get(new ResourceLocation(itemTag.getString("Id")));
+            var readItem = BuiltInRegistries.ITEM.get(ResourceLocation.parse(itemTag.getString("Id")));
             if(!IWire.isWire(level(), readItem))
                 throw new IllegalStateException("WireEntity item must be a WireItem");
             setItem(readItem, itemTag.getInt("Count"));
@@ -298,7 +325,7 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
 
         BlockPos lastPos = null;
         if(nbt.contains("LastKnownPos")) {
-            lastPos = NbtUtils.readBlockPos(nbt.getCompound("LastKnownPos"));
+            lastPos = NbtUtils.readBlockPos(nbt, "LastKnownPos").orElse(null);
         }
 
         IWireEndpoint endpoint1 = null, endpoint2 = null;
@@ -330,8 +357,7 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
     }
 
     public void setColor(DyeColor color) {
-        var rgb = color.getTextureDiffuseColors();
-        this.color = ((int) (rgb[0] * 255) << 16) | ((int) (rgb[1] * 255) << 8) | (int) (rgb[2] * 255);
+        this.color = color.getTextureDiffuseColor();
     }
 
     public void setItem(Item item, int count) {

@@ -89,11 +89,6 @@ public class TextFieldPropertyWidget<T, P extends PropertyEntry<T>> extends Prop
     }
 
     @Override
-    public void tick() {
-        widget.tick();
-    }
-
-    @Override
     public boolean charTyped(char chr, int modifiers) {
         return widget.charTyped(chr, modifiers);
     }

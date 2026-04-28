@@ -22,21 +22,25 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
@@ -63,10 +67,8 @@ import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.utility.Lang;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
-@ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoardBlockEntity> {
     public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
@@ -104,7 +106,7 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
     public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         withBlockEntityDo(world, pos, be -> {
             be.setSchematic(CircuitSchematic.fromStack(stack));
-            be.setAdditionalData(stack.getTag());
+            be.setAdditionalData(stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag());
         });
         super.setPlacedBy(world, pos, state, placer, stack);
     }
@@ -176,12 +178,12 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
     }
 
     @Override
-    public ItemStack getCloneItemStack(BlockGetter world, BlockPos pos, BlockState state) {
-        var stack = super.getCloneItemStack(world, pos, state);
-        withBlockEntityDo(world, pos, be -> {
+    public ItemStack getCloneItemStack(LevelReader level, BlockPos pos, BlockState state) {
+        var stack = super.getCloneItemStack(level, pos, state);
+        withBlockEntityDo(level, pos, be -> {
             var tag = new CompoundTag();
             tag.put("Schematic", be.getSchematic().serializeNbt());
-            stack.setTag(tag);
+            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
         });
         return stack;
     }
@@ -335,8 +337,8 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        var beResult = onBlockEntityUse(world, pos, be -> {
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
+        var beResult = onBlockEntityUse(level, pos, be -> {
             var hitLocalPos = hit.getLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
             hitLocalPos = VecHelper.rotateCentered(hitLocalPos, -getAngleY(state), Direction.Axis.Y);
             hitLocalPos = VecHelper.rotateCentered(hitLocalPos, -getAngleX(state), Direction.Axis.X);
@@ -364,27 +366,27 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
                             return null;
                         return CircuitBoardEditMenu.create(i, inventory, be);
                     }
-                }, be::sendToMenu);
+                }, buf -> be.sendToMenu(new RegistryFriendlyByteBuf(buf.unwrap(), level.registryAccess())));
                 return InteractionResult.SUCCESS;
             }
             return InteractionResult.PASS;
         });
         if(beResult != InteractionResult.PASS)
             return beResult;
-        return super.use(state, world, pos, player, hand, hit);
+        return super.useWithoutItem(state, level, pos, player, hit);
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable BlockGetter world, List<Component> tooltip, TooltipFlag options) {
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         var schematic = CircuitSchematic.fromStack(stack);
         if(schematic != null && schematic.getName() != null) {
-            tooltip.add(Lang
+            tooltipComponents.add(Lang
                     .translate("circuit_board.tooltip.schematic")
                     .add(Component.literal(schematic.getName()))
                     .style(ChatFormatting.GRAY)
                     .component());
         }
-        super.appendHoverText(stack, world, tooltip, options);
+        super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }
 
     @Override

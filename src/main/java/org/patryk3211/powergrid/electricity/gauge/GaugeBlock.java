@@ -51,7 +51,7 @@ public abstract class GaugeBlock<BE extends GaugeBlockEntity> extends Horizontal
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if(CustomDisplayBehaviour.use(level, pos, player, hand))
             return InteractionResult.SUCCESS;
-        return super.use(state, level, pos, player, hand, hit);
+        return InteractionResult.PASS;
     }
 
     @Override

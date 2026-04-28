@@ -19,10 +19,13 @@ import com.simibubi.create.AllItems;
 import com.simibubi.create.api.data.recipe.DeployingRecipeGen;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
 import com.tterrag.registrate.util.entry.ItemEntry;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.equipment.BoostRecipe;
+
+import java.util.concurrent.CompletableFuture;
 
 @SuppressWarnings("unused")
 public class DeployerApplicationRecipes extends DeployingRecipeGen {
@@ -45,8 +48,8 @@ public class DeployerApplicationRecipes extends DeployingRecipeGen {
     BOOST_ZAPPER = boost(ModdedItems.ELECTROZAPPER),
     BOOST_BATON = boost(ModdedItems.ELECTROBATON);
 
-    public DeployerApplicationRecipes(PackOutput generator) {
-        super(generator, PowerGrid.MOD_ID);
+    public DeployerApplicationRecipes(PackOutput generator, CompletableFuture<HolderLookup.Provider> registries) {
+        super(generator, registries, PowerGrid.MOD_ID);
     }
 
     private GeneratedRecipe boost(ItemEntry<?> boostItem) {

@@ -30,15 +30,17 @@ import net.minecraft.world.phys.BlockHitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ISocketElectric;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.IWire;
-import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
+import org.patryk3211.powergrid.electricity.wire.WireConnection;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
+import org.patryk3211.powergrid.compat.sable.SableUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -123,7 +125,7 @@ public class CordItem extends WireItem {
         assert IWire.isCord(level, stack.getItem());
         var entry = WireRegistry.forItem(level, stack.getItem());
 
-        float distance = (float) terminal1Pos.distanceTo(terminal2Pos);
+        float distance = (float) SableUtils.projectedDistance(level, terminal1Pos, terminal2Pos);
         if(distance > entry.maximumLength()) {
             IElectric.sendMessage(context, Lang.translate("message.connection_too_long").style(ChatFormatting.RED).component());
             return InteractionResult.FAIL;
@@ -170,26 +172,26 @@ public class CordItem extends WireItem {
 
     private static InteractionResult addEndpoint(UseOnContext context, ICordEndpoint endpoint) {
         var stack = context.getItemInHand();
-        var firstPoint = WireEndpointType.deserialize(stack.getTagElement("Connection"));
+        var firstPoint = stack.getOrDefault(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.EMPTY).endpoint();
         if(firstPoint == null) {
-            stack.getOrCreateTag().put("Connection", endpoint.serialize());
+            stack.set(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.of(endpoint));
             IElectric.sendMessage(context, Lang.translate("message.cord_next").style(ChatFormatting.GRAY).component());
             return InteractionResult.SUCCESS;
         } else if(firstPoint instanceof ICordEndpoint firstCordPoint) {
             // Both endpoints specified
             var result = connect(firstCordPoint, endpoint, context);
-            stack.removeTagKey("Connection");
+            stack.remove(ModdedDataComponents.CONNECTION_DATA.get());
             return result;
         } else {
             IElectric.sendMessage(context, Lang.translate("message.connection_failed").style(ChatFormatting.RED).component());
-            stack.removeTagKey("Connection");
+            stack.remove(ModdedDataComponents.CONNECTION_DATA.get());
             return InteractionResult.FAIL;
         }
     }
 
     @Override
     public boolean isFoil(ItemStack stack) {
-        return super.isFoil(stack) || (stack.hasTag() && stack.getTag().contains("Half"));
+        return super.isFoil(stack) || stack.has(ModdedDataComponents.CONNECTION_DATA.get());
     }
 
     @NotNull
@@ -205,9 +207,10 @@ public class CordItem extends WireItem {
             var stack = player.getMainHandItem();
             var terminal = electric.terminalIndexAt(state, hit.getLocation().subtract(blockPos.getX(), blockPos.getY(), blockPos.getZ()));
             if(terminal >= 0) {
-                if(stack.hasTag() && stack.getTag().contains("Half")) {
+                var connection = stack.getOrDefault(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.EMPTY);
+                if(connection.hasHalf()) {
                     // Tag has the first half of a split cord endpoint
-                    var endpointHalf = WireEndpointType.deserialize(stack.getTagElement("Half"));
+                    var endpointHalf = connection.half();
                     if(!(endpointHalf instanceof BlockWireEndpoint bwe))
                         return EventResult.interruptFalse();
                     var endpoint2 = new BlockWireEndpoint(blockPos, terminal);
@@ -219,12 +222,13 @@ public class CordItem extends WireItem {
                         return EventResult.interruptFalse();
                     }
                     var splitEndpoint = new SplitCordEndpoint(bwe, endpoint2);
-                    stack.removeTagKey("Half");
+//                    CompoundTag compoundTag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
+//                    compoundTag.remove("Half");
+//                    stack.set(DataComponents.CUSTOM_DATA, CustomData.of(compoundTag));
                     return EventResult.interrupt(addEndpoint(context, splitEndpoint).consumesAction());
                 } else {
                     var endpoint = new BlockWireEndpoint(blockPos, terminal);
-                    var tag = endpoint.serialize();
-                    stack.getOrCreateTag().put("Half", tag);
+                    stack.set(ModdedDataComponents.CONNECTION_DATA.get(), connection.withHalf(endpoint));
                     IElectric.sendMessage(context, Lang.translate("message.connection_next").style(ChatFormatting.GRAY).component());
                     return EventResult.interruptTrue();
                 }

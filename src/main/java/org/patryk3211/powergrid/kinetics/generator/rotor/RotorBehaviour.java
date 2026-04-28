@@ -21,6 +21,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import org.jetbrains.annotations.Nullable;
@@ -138,8 +139,8 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> implement
     }
 
     @Override
-    public void read(CompoundTag compound, boolean clientPacket) {
-        super.read(compound, clientPacket);
+    public void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(compound, registries, clientPacket);
         if(compound.contains("AngularVelocity")) {
             angularVelocity = compound.getFloat("AngularVelocity");
             if(Float.isNaN(angularVelocity))
@@ -148,8 +149,8 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> implement
     }
 
     @Override
-    public void write(CompoundTag compound, boolean clientPacket) {
-        super.write(compound, clientPacket);
+    public void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(compound, registries, clientPacket);
         compound.putFloat("AngularVelocity", angularVelocity);
     }
 

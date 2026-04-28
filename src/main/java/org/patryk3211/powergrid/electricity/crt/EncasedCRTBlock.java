@@ -112,4 +112,9 @@ public class EncasedCRTBlock extends HorizontalElectricBlock implements IBE<CRTB
         level.setBlock(pos, encasedState, UPDATE_ALL);
         refreshConnectionEntities(level, pos);
     }
+
+    @Override
+    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        return InteractionResult.PASS;
+    }
 }

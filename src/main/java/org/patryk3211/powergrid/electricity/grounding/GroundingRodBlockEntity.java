@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.electricity.grounding;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
@@ -124,7 +125,7 @@ public class GroundingRodBlockEntity extends ElectricBlockEntity {
             // Limit radius to 10 block to avoid having to scan the whole world
             var dangerRadius = Math.min(Math.abs(wire.getResistance() * wire.current() / (2 * Math.PI * DANGER_POTENTIAL)), 10);
             var blockRadius = (int) Math.round(dangerRadius);
-            var bb = new AABB(worldPosition.offset(-blockRadius, -blockRadius, -blockRadius), worldPosition.offset(blockRadius, blockRadius, blockRadius));
+            var bb = new AABB(worldPosition.offset(-blockRadius, -blockRadius, -blockRadius).getCenter(), worldPosition.offset(blockRadius, blockRadius, blockRadius).getCenter());
             var sqrDist = dangerRadius * dangerRadius;
             var center = worldPosition.getCenter();
             var entities = level.getEntitiesOfClass(LivingEntity.class, bb, e -> e.position().distanceToSqr(center) <= sqrDist && e.onGround());
@@ -166,8 +167,8 @@ public class GroundingRodBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
-        super.read(tag, clientPacket);
+    protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(tag, registries, clientPacket);
         if(tag.contains("Resistance")) {
             var R = tag.getFloat("Resistance");
             wire.setState(false);
@@ -179,8 +180,8 @@ public class GroundingRodBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
-        super.write(tag, clientPacket);
+    protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(tag, registries, clientPacket);
         if(wire.getState())
             tag.putFloat("Resistance", (float) wire.getResistance());
     }

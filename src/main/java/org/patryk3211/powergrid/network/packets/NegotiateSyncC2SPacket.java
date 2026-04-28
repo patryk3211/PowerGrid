@@ -1,16 +1,14 @@
 package org.patryk3211.powergrid.network.packets;
 
-import dev.architectury.networking.NetworkManager;
 import it.unimi.dsi.fastutil.objects.Reference2BooleanArrayMap;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
-import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.network.C2SPacket;
 
 import java.util.Map;
-import java.util.function.Supplier;
 
-public class NegotiateSyncC2SPacket implements SimplePacket {
+public class NegotiateSyncC2SPacket implements C2SPacket {
     public static final Map<ServerPlayer, Boolean> SYNC_TYPES = new Reference2BooleanArrayMap<>();
 
     private final boolean useDoubles;
@@ -30,15 +28,12 @@ public class NegotiateSyncC2SPacket implements SimplePacket {
     }
 
     @Override
-    public void encode(FriendlyByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeBoolean(useDoubles);
     }
 
     @Override
-    public void handle(Supplier<NetworkManager.PacketContext> context) {
-        var ctx = context.get();
-        ctx.queue(() -> {
-            SYNC_TYPES.put((ServerPlayer) ctx.getPlayer(), useDoubles);
-        });
+    public void handle(ServerPlayer player) {
+        SYNC_TYPES.put(player, useDoubles);
     }
 }

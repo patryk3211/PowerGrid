@@ -15,16 +15,16 @@
  */
 package org.patryk3211.powergrid.network.packets;
 
-import dev.architectury.networking.NetworkManager;
+import dev.ryanhcode.sable.companion.SableCompanion;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.electricity.wire.*;
-import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.network.C2SPacket;
 
-import java.util.function.Supplier;
-
-public class BlockWireAttachC2SPacket implements SimplePacket {
+public class BlockWireAttachC2SPacket implements C2SPacket {
     public final int entityId;
     public final int index;
     public final int gridPoint;
@@ -42,71 +42,69 @@ public class BlockWireAttachC2SPacket implements SimplePacket {
     }
 
     @Override
-    public void encode(FriendlyByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeInt(entityId);
         buf.writeInt(index);
         buf.writeInt(gridPoint);
     }
 
     @Override
-    public void handle(Supplier<NetworkManager.PacketContext> context) {
-        var ctx = context.get();
-        ctx.queue(() -> {
-            var player = ctx.getPlayer();
-            var entity = player.level().getEntity(entityId);
-            if(!(entity instanceof BlockWireEntity wire)) {
-                PowerGrid.LOGGER.error("Received block wire attach packet with invalid entity");
-                return;
-            }
-            var stack = player.getItemInHand(InteractionHand.MAIN_HAND);
-            if(!IWire.isWire(player.level(), stack.getItem())) {
-                PowerGrid.LOGGER.error("Received wire attach packet for player whose not holding a wire");
-                return;
-            }
-            if(index < 0 || index >= wire.segments.size()) {
-                PowerGrid.LOGGER.error("Received wire segment index out of bounds");
-                return;
-            }
-            var segment = wire.segments.get(index);
-            // Align to grid.
-            var gridLength = segment.gridLength;
-            if(gridPoint < 0 || gridPoint > gridLength) {
-                PowerGrid.LOGGER.error("Received wire segment length out of bounds");
-                return;
-            }
+    public void handle(ServerPlayer player) {
+        var entity = player.serverLevel().getEntity(entityId);
+        if(!(entity instanceof BlockWireEntity wire)) {
+            PowerGrid.LOGGER.error("Received block wire attach packet with invalid entity");
+            return;
+        }
+        var stack = player.getItemInHand(InteractionHand.MAIN_HAND);
+        if(!IWire.isWire(player.level(), stack.getItem())) {
+            PowerGrid.LOGGER.error("Received wire attach packet for player whose not holding a wire");
+            return;
+        }
+        if(index < 0 || index >= wire.segments.size()) {
+            PowerGrid.LOGGER.error("Received wire segment index out of bounds");
+            return;
+        }
+        var segment = wire.segments.get(index);
+        // Align to grid.
+        var gridLength = segment.gridLength;
+        if(gridPoint < 0 || gridPoint > gridLength) {
+            PowerGrid.LOGGER.error("Received wire segment length out of bounds");
+            return;
+        }
 
-            var existingEndpoint = WireEndpointType.deserialize(stack.getTagElement("Connection"));
+        var existingEndpoint = stack.getOrDefault(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.EMPTY).endpoint();
+        if(existingEndpoint != null && existingEndpoint.getSubLevel(player.level()) != SableCompanion.INSTANCE.getContaining(entity))
+            return;
 
-            IWireEndpoint endpoint;
-            if(gridPoint <= 1 && index == 0) {
-                // Extend wire at start.
-                if(wire.getEndpoint1() == null) {
-                    wire = wire.flip();
-                    endpoint = new BlockWireEntityEndpoint(wire, true);
-                } else {
-                    // Possibly a junction.
-                    endpoint = wire.getEndpoint1();
-                }
-            } else if(gridPoint >= segment.gridLength - 1 && index == wire.segments.size() - 1){
-                // Extend wire at end.
-                if(wire.getEndpoint2() == null) {
-                    endpoint = new BlockWireEntityEndpoint(wire, true);
-                } else {
-                    // Possibly a junction.
-                    endpoint = wire.getEndpoint2();
-                }
+        IWireEndpoint endpoint;
+        if(gridPoint <= 1 && index == 0) {
+            // Extend wire at start.
+            if(wire.getEndpoint1() == null) {
+                wire = wire.flip();
+                endpoint = new BlockWireEntityEndpoint(wire, true);
             } else {
-                // Junction.
-                endpoint = new DeferredJunctionWireEndpoint(wire, index, gridPoint);
+                // Possibly a junction.
+                endpoint = wire.getEndpoint1();
             }
-            if(endpoint != null && existingEndpoint == null) {
-                stack.getOrCreateTag().put("Connection", endpoint.serialize());
-            } else if(endpoint != null) {
-                var result = WireItem.connect(player.level(), stack, player, existingEndpoint, endpoint);
-                if(result.getResult().consumesAction()) {
-                    stack.removeTagKey("Connection");
-                }
+        } else if(gridPoint >= segment.gridLength - 1 && index == wire.segments.size() - 1) {
+            // Extend wire at end.
+            if(wire.getEndpoint2() == null) {
+                endpoint = new BlockWireEntityEndpoint(wire, true);
+            } else {
+                // Possibly a junction.
+                endpoint = wire.getEndpoint2();
             }
-        });
+        } else {
+            // Junction.
+            endpoint = new DeferredJunctionWireEndpoint(wire, index, gridPoint);
+        }
+        if(endpoint != null && existingEndpoint == null) {
+            stack.set(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.of(endpoint));
+        } else if(endpoint != null) {
+            var result = WireItem.connect(player.level(), stack, player, existingEndpoint, endpoint);
+            if(result.getResult().consumesAction()) {
+                stack.remove(ModdedDataComponents.CONNECTION_DATA.get());
+            }
+        }
     }
 }

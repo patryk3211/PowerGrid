@@ -52,6 +52,5 @@ public class CClient extends ConfigBase {
 
         public static final String hummingSoundMultiplier = "Multiplier for all humming ambient sounds";
         public static final String generatorSoundMultiplier = "Multiplier for generator ambient sound";
-        public static final String relaySoundMultiplier = "Multiplier for relay clicking sound";
     }
 }

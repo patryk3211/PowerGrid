@@ -181,8 +181,7 @@ public class CRTRenderer extends SafeBlockEntityRenderer<CRTBlockEntity> {
     }
 
     private static void putPoint(VertexConsumer consumer, Matrix4f m4, float x, float y, float r, float g, float b, int z) {
-        consumer.vertex(m4, x, y, -z * zDepth())
-                .color((int) r, (int) g, (int) b, 255)
-                .endVertex();
+        consumer.addVertex(m4, x, y, -z * zDepth())
+                .setColor((int) r, (int) g, (int) b, 255);
     }
 }

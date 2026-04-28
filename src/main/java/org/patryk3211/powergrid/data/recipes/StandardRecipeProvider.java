@@ -16,34 +16,33 @@
 package org.patryk3211.powergrid.data.recipes;
 
 import com.google.common.base.Supplier;
-import com.google.gson.JsonObject;
+import com.simibubi.create.Create;
 import com.simibubi.create.api.data.recipe.BaseRecipeProvider;
 import com.tterrag.registrate.util.entry.ItemProviderEntry;
-import net.createmod.catnip.platform.CatnipServices;
+import net.createmod.catnip.registry.RegisteredObjectsHelper;
 import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.*;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.crafting.AbstractCookingRecipe;
-import net.minecraft.world.item.crafting.Ingredient;
-import net.minecraft.world.item.crafting.RecipeSerializer;
-import net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.ItemLike;
 import org.patryk3211.powergrid.PowerGrid;
 
 import java.util.List;
-import java.util.function.Consumer;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
 /**
  * @see com.simibubi.create.foundation.data.recipe.CreateStandardRecipeGen
  */
 public abstract class StandardRecipeProvider extends BaseRecipeProvider {
-    public StandardRecipeProvider(PackOutput output) {
-        super(output, PowerGrid.MOD_ID);
+    public StandardRecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
+        super(output, registries, PowerGrid.MOD_ID);
     }
 
     static class Marker {
@@ -64,24 +63,24 @@ public abstract class StandardRecipeProvider extends BaseRecipeProvider {
 		return new GeneratedRecipeBuilder(currentFolder, result);
 	}
 
-	GeneratedRecipeBuilder create(ItemProviderEntry<? extends ItemLike> result) {
+	GeneratedRecipeBuilder create(ItemProviderEntry<? extends ItemLike, ? extends ItemLike> result) {
 		return create(result::get);
 	}
 
-	GeneratedRecipe createSpecial(Supplier<? extends SimpleCraftingRecipeSerializer<?>> serializer, String recipeType,
-                                  String path) {
-		ResourceLocation location = PowerGrid.asResource(recipeType + "/" + currentFolder + "/" + path);
+	GeneratedRecipe createSpecial(Function<CraftingBookCategory, Recipe<?>> builder, String recipeType,
+								  String path) {
+		ResourceLocation location = Create.asResource(recipeType + "/" + currentFolder + "/" + path);
 		return register(consumer -> {
-			SpecialRecipeBuilder b = SpecialRecipeBuilder.special(serializer.get());
+			SpecialRecipeBuilder b = SpecialRecipeBuilder.special(builder);
 			b.save(consumer, location.toString());
 		});
 	}
 
-	GeneratedRecipe conversionCycle(List<ItemProviderEntry<? extends ItemLike>> cycle) {
+	GeneratedRecipe conversionCycle(List<ItemProviderEntry<? extends ItemLike, ? extends ItemLike>> cycle) {
 		GeneratedRecipe result = null;
 		for (int i = 0; i < cycle.size(); i++) {
-			ItemProviderEntry<? extends ItemLike> currentEntry = cycle.get(i);
-			ItemProviderEntry<? extends ItemLike> nextEntry = cycle.get((i + 1) % cycle.size());
+			ItemProviderEntry<? extends ItemLike, ? extends ItemLike> currentEntry = cycle.get(i);
+			ItemProviderEntry<? extends ItemLike, ? extends ItemLike> nextEntry = cycle.get((i + 1) % cycle.size());
 			result = create(nextEntry).withSuffix("_from_conversion")
 				.unlockedBy(currentEntry::get)
 				.viaShapeless(b -> b.requires(currentEntry.get()));
@@ -89,15 +88,15 @@ public abstract class StandardRecipeProvider extends BaseRecipeProvider {
 		return result;
 	}
 
-	GeneratedRecipe clearData(ItemProviderEntry<? extends ItemLike> item) {
+	GeneratedRecipe clearData(ItemProviderEntry<? extends ItemLike, ? extends ItemLike> item) {
 		return create(item).withSuffix("_clear")
 			.unlockedBy(item::get)
 			.viaShapeless(b -> b.requires(item.get()));
 	}
 
 	@Override
-	public void buildRecipes(Consumer<FinishedRecipe> p_200404_1_) {
-		all.forEach(c -> c.register(p_200404_1_));
+	public void buildRecipes(RecipeOutput recipeOutput) {
+		all.forEach(c -> c.register(recipeOutput));
 		PowerGrid.LOGGER.info(getName() + " registered " + all.size() + " recipe" + (all.size() == 1 ? "" : "s"));
 	}
 
@@ -198,7 +197,7 @@ public abstract class StandardRecipeProvider extends BaseRecipeProvider {
 		}
 
 		private ResourceLocation getRegistryName() {
-			return compatDatagenOutput == null ? CatnipServices.REGISTRIES.getKeyOrThrow(result.get()
+			return compatDatagenOutput == null ? RegisteredObjectsHelper.getKeyOrThrow(result.get()
 				.asItem()) : compatDatagenOutput;
 		}
 
@@ -215,7 +214,7 @@ public abstract class StandardRecipeProvider extends BaseRecipeProvider {
 		}
 
 		class GeneratedCookingRecipeBuilder {
-			private Supplier<Ingredient> ingredient;
+			private final Supplier<Ingredient> ingredient;
 			private float exp;
 			private int cookingTime;
 
@@ -266,58 +265,29 @@ public abstract class StandardRecipeProvider extends BaseRecipeProvider {
 				return create(BLAST, builder, .5f);
 			}
 
-			private GeneratedRecipe create(RecipeSerializer<? extends AbstractCookingRecipe> serializer,
+			private <T extends AbstractCookingRecipe> GeneratedRecipe create(RecipeSerializer<T> serializer,
 																	  UnaryOperator<SimpleCookingRecipeBuilder> builder, float cookingTimeModifier) {
 				return register(consumer -> {
 					boolean isOtherMod = compatDatagenOutput != null;
 
-					SimpleCookingRecipeBuilder b = builder.apply(SimpleCookingRecipeBuilder.generic(ingredient.get(),
-						RecipeCategory.MISC, isOtherMod ? Items.DIRT : result.get(), exp,
-						(int) (cookingTime * cookingTimeModifier), serializer));
+					SimpleCookingRecipeBuilder b = builder.apply(
+							SimpleCookingRecipeBuilder.generic(
+									ingredient.get(),
+									RecipeCategory.MISC,
+									isOtherMod ? Items.DIRT : result.get(),
+									exp,
+									(int) (cookingTime * cookingTimeModifier),
+									serializer,
+									null
+							)
+					);
 
 					if (unlockedBy != null)
 						b.unlockedBy("has_item", inventoryTrigger(unlockedBy.get()));
-
-					b.save(result -> {
-						consumer.accept(
-							isOtherMod ? new ModdedCookingRecipeResult(result, compatDatagenOutput) : result);
-					}, createSimpleLocation(CatnipServices.REGISTRIES.getKeyOrThrow(serializer)
+					b.save(consumer, createSimpleLocation(RegisteredObjectsHelper.getKeyOrThrow(serializer)
 						.getPath()));
 				});
 			}
-		}
-	}
-
-	@Override
-	public String getName() {
-		return modid + "'s Standard Recipes";
-	}
-
-	private record ModdedCookingRecipeResult(FinishedRecipe wrapped, ResourceLocation outputOverride) implements FinishedRecipe {
-		@Override
-		public ResourceLocation getId() {
-			return wrapped.getId();
-		}
-
-		@Override
-		public RecipeSerializer<?> getType() {
-			return wrapped.getType();
-		}
-
-		@Override
-		public JsonObject serializeAdvancement() {
-			return wrapped.serializeAdvancement();
-		}
-
-		@Override
-		public ResourceLocation getAdvancementId() {
-			return wrapped.getAdvancementId();
-		}
-
-		@Override
-		public void serializeRecipeData(JsonObject object) {
-			wrapped.serializeRecipeData(object);
-			object.addProperty("result", outputOverride.toString());
 		}
 	}
 }

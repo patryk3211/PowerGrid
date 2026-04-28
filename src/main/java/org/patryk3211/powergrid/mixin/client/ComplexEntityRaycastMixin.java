@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.mixin.client;
 
+import dev.ryanhcode.sable.companion.SableCompanion;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
@@ -23,7 +24,6 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.mixin.LevelEntitiesAccessor;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -42,7 +42,7 @@ public abstract class ComplexEntityRaycastMixin {
         assert entity instanceof IComplexRaycast;
         IComplexRaycast checker = (IComplexRaycast) entity;
 
-        AABB entityBB = entity.getBoundingBox().inflate(entity.getPickRadius());
+        AABB entityBB = checker.getDeSabledBB().inflate(entity.getPickRadius());
         Optional<Vec3> potentialHit = entityBB.clip(min, max);
         if(entityBB.contains(min)) {
             // Casting entity inside of potential hit entity
@@ -74,20 +74,26 @@ public abstract class ComplexEntityRaycastMixin {
             currentHitDistance = startVec.distanceToSqr(currentHitPoint);
         }
 
-        for(var potentialHitEntity : ((LevelEntitiesAccessor) world).getEntities().getAll()) {
-            if(potentialHitEntity.isSpectator() || !(potentialHitEntity instanceof IComplexRaycast))
+        for(var potentialHitEntity : world.getEntities().getAll()) {
+            if(potentialHitEntity.isSpectator() || !(potentialHitEntity instanceof IComplexRaycast complex))
                 continue;
             // Perform a cheap bounding box distance check first before going for the complex cast.
-            var bb = potentialHitEntity.getBoundingBox();
+            var sublevel = SableCompanion.INSTANCE.getContaining(potentialHitEntity);
+            Vec3 startVec1 = startVec, endVec1 = endVec;
+            if(sublevel != null) {
+                startVec1 = sublevel.logicalPose().transformPositionInverse(startVec);
+                endVec1 = sublevel.logicalPose().transformPositionInverse(endVec);
+            }
+            var bb = complex.getDeSabledBB();
             // Closest point to start in bounding box
-            var cX = Mth.clamp(startVec.x, bb.minX, bb.maxX);
-            var cY = Mth.clamp(startVec.y, bb.minY, bb.maxY);
-            var cZ = Mth.clamp(startVec.z, bb.minZ, bb.maxZ);
-            if(startVec.distanceToSqr(cX, cY, cZ) >= currentHitDistance)
+            var cX = Mth.clamp(startVec1.x, bb.minX, bb.maxX);
+            var cY = Mth.clamp(startVec1.y, bb.minY, bb.maxY);
+            var cZ = Mth.clamp(startVec1.z, bb.minZ, bb.maxZ);
+            if(startVec1.distanceToSqr(cX, cY, cZ) >= currentHitDistance)
                 continue;
-            Vec3 hit = powerGrid$complexRaycast(potentialHitEntity, startVec, endVec, currentHitDistance);
+            Vec3 hit = powerGrid$complexRaycast(potentialHitEntity, startVec1, endVec1, currentHitDistance);
             if(hit != null) {
-                double hitSquaredDistance = startVec.distanceToSqr(hit);
+                double hitSquaredDistance = startVec1.distanceToSqr(hit);
                 if(hitSquaredDistance < currentHitDistance) {
                     currentHitEntity = potentialHitEntity;
                     currentHitPoint = hit;

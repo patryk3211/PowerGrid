@@ -54,10 +54,11 @@ public class LightFixtureRenderer extends SafeBlockEntityRenderer<LightFixtureBl
         if(color != null) {
             vb = consumer.getBuffer(RenderType.translucent());
             var bulbBuffer = CachedBuffers.partial(bulbState.getDyedBulb(), state);
-            var texDif = color.getTextureDiffuseColors();
-            r = (int) (texDif[0] * 255);
-            g = (int) (texDif[1] * 255);
-            b = (int) (texDif[2] * 255);
+            var texDif = color.getTextureDiffuseColor();
+            // Basic port of getTextureDiffuseColors
+            r = (texDif & 0xFF0000) >> 16;
+            g = (texDif & 0xFF00) >> 8;
+            b = (texDif & 0xFF) >> 0;
             rotateToFacing(bulbBuffer, facing)
                     .color(r, g, b, 255)
                     .translate(((LightFixtureBlock) state.getBlock()).modelOffset)

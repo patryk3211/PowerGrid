@@ -22,6 +22,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.ListTag;
@@ -116,7 +117,7 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     }
 
     @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
+    protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         boolean rebuild = false;
         if(tag.contains("Primary")) {
             var primary = tag.getCompound("Primary");
@@ -147,12 +148,12 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             couplingI2.avgHead = tag.getInt("SAvgHead");
         }
 
-        super.read(tag, clientPacket);
+        super.read(tag, registries, clientPacket);
     }
 
     @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
-        super.write(tag, clientPacket);
+    protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(tag, registries, clientPacket);
 
         if(primaryCoil != null && primaryCoil.isDefined()) {
             var primary = new CompoundTag();
@@ -179,8 +180,8 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     }
 
     @Override
-    public void writeSafe(CompoundTag tag) {
-        super.writeSafe(tag);
+    public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
+        super.writeSafe(tag, registries);
 
         if(primaryCoil != null && primaryCoil.isDefined()) {
             var primary = new CompoundTag();

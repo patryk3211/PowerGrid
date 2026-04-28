@@ -19,6 +19,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.item.render.CustomRenderedItemModel;
 import com.simibubi.create.foundation.item.render.CustomRenderedItemModelRenderer;
 import com.simibubi.create.foundation.item.render.PartialItemModelRenderer;
+import dev.ryanhcode.sable.companion.SableCompanion;
 import net.createmod.catnip.animation.AnimationTickHolder;
 import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.fabricmc.api.EnvType;
@@ -112,17 +113,19 @@ public class MultimeterItemRenderer extends CustomRenderedItemModelRenderer {
             case 0 -> {
                 var pos = WireEndpointType.deserialize(data.getCompound("Pos"));
                 if(pos != null && pos.isValid(world)) {
-                    renderProbe(pos.getExactPosition(world).subtract(origin), buffer, matrixStack, world, player, 0xFFFF4040);
+                    var position = SableCompanion.INSTANCE.projectOutOfSubLevel(world, pos.getExactPosition(world));
+                    renderProbe(position.subtract(origin), buffer, matrixStack, world, player, 0xFFFF4040);
                 }
                 var neg = WireEndpointType.deserialize(data.getCompound("Neg"));
                 if(neg != null && neg.isValid(world)) {
-                    renderProbe(neg.getExactPosition(world).subtract(origin), buffer, matrixStack, world, player, 0xFF202020);
+                    var position = SableCompanion.INSTANCE.projectOutOfSubLevel(world, neg.getExactPosition(world));
+                    renderProbe(position.subtract(origin), buffer, matrixStack, world, player, 0xFF202020);
                 }
             }
             case 1 -> {
                 if(data.contains("X")) {
-                    var pos = new Vec3(data.getFloat("X"), data.getFloat("Y"), data.getFloat("Z"));
-                    renderProbe(pos.subtract(origin), buffer, matrixStack, world, player, 0xFF202020);
+                    var pos = new Vec3(data.getDouble("X"), data.getDouble("Y"), data.getDouble("Z"));
+                    renderProbe(SableCompanion.INSTANCE.projectOutOfSubLevel(world, pos).subtract(origin), buffer, matrixStack, world, player, 0xFF202020);
                 }
             }
         }

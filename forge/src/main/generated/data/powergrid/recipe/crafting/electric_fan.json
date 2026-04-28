@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "powergrid:electric_motor"
+    },
+    {
+      "item": "create:encased_fan"
+    }
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid:electric_fan"
+  }
+}

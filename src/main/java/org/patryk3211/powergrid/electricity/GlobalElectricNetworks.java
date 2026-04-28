@@ -23,9 +23,11 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.datafix.DataFixTypes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.saveddata.SavedData;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
@@ -75,9 +77,13 @@ public class GlobalElectricNetworks {
                 return new WorldNetworks(key);
             if(key.isClientSide) return makeClientWorldNetworks(key);
             if(world instanceof ServerLevel server) {
-                return server.getDataStorage().computeIfAbsent(
-                        nbt -> new WorldNetworks(world, nbt),
+                var factory = new SavedData.Factory<>(
                         () -> new WorldNetworks(world),
+                        (nbt, registries) -> new WorldNetworks(world, nbt),
+                        DataFixTypes.LEVEL
+                );
+                return server.getDataStorage().computeIfAbsent(
+                        factory,
                         "powergrid_electric_network_data"
                 );
             } else {

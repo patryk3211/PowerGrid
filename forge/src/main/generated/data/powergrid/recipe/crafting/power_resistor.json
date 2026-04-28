@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:coal_block"
+    },
+    "C": {
+      "tag": "c:plates/copper"
+    },
+    "E": {
+      "item": "powergrid:conductive_casing"
+    }
+  },
+  "pattern": [
+    "CBC",
+    " E "
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid:power_resistor"
+  }
+}

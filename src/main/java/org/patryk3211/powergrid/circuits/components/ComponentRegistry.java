@@ -43,7 +43,7 @@ public class ComponentRegistry {
     public static final Codec<ComponentItemEntry> ITEM_CODEC = RecordCodecBuilder.create(instance -> instance
             .group(
                     BuiltInRegistries.ITEM.byNameCodec().fieldOf("item").forGetter(ComponentItemEntry::item),
-                    Codec.optionalField("tag", TagKey.codec(Registries.ITEM)).forGetter(ComponentItemEntry::tag)
+                    Codec.optionalField("tag", TagKey.codec(Registries.ITEM), false).forGetter(ComponentItemEntry::tag)
             ).apply(instance, ComponentItemEntry::new));
 
     @ExpectPlatform

@@ -70,7 +70,7 @@ public class RedstoneRelayComponent extends EdgeComponent implements IRedstoneCo
     public @NotNull ResourceLocation getModelId(@NotNull PlacedComponent component) {
         var base = super.getModelId(component);
         if(component.get(POWERED)) {
-            return new ResourceLocation(base.getNamespace(), base.getPath() + "_on");
+            return ResourceLocation.fromNamespaceAndPath(base.getNamespace(), base.getPath() + "_on");
         }
         return base;
     }

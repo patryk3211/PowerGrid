@@ -41,9 +41,7 @@ public class CircuitFileBox extends EditableScrollBox {
         onChanged();
     }
 
-    @Override
     public void tick() {
-        super.tick();
         if(tick++ >= 20) {
             refreshFiles();
             tick = 0;

@@ -28,7 +28,7 @@ import org.patryk3211.powergrid.ponder.scenes.*;
 
 public class PowerGridPonderScenes {
     public static void register(PonderSceneRegistrationHelper<ResourceLocation> helper) {
-        PonderSceneRegistrationHelper<ItemProviderEntry<?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
+        PonderSceneRegistrationHelper<ItemProviderEntry<?,?>> HELPER = helper.withKeyFunction(RegistryEntry::getId);
 
         HELPER.addStoryBoard(ModdedBlocks.VOLTAGE_METER, "gauges", GaugeScenes::voltage);
         HELPER.addStoryBoard(ModdedBlocks.CURRENT_METER, "gauges", GaugeScenes::current);
@@ -95,7 +95,7 @@ public class PowerGridPonderScenes {
         HELPER.forComponents(ModdedItems.MAGNET)
                 .addStoryBoard("magnet", MagnetScenes::magnet)
                 .addStoryBoard("lightning_attractor", MagnetScenes::lightningAttractor);
-        helper.addStoryBoard(new ResourceLocation("lightning_rod"), "lightning_attractor", MagnetScenes::lightningAttractor);
+        helper.addStoryBoard(ResourceLocation.withDefaultNamespace("lightning_rod"), "lightning_attractor", MagnetScenes::lightningAttractor);
 
         HELPER.addStoryBoard(ModdedBlocks.BASIN_HEATER, "basin_heater", DeviceScenes::basinHeater, PowerGridPonderTags.ELECTRIC_DEVICES);
 

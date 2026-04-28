@@ -33,9 +33,11 @@ import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Blocks;
 import org.patryk3211.powergrid.circuits.components.Components;
 import org.patryk3211.powergrid.collections.*;
+import org.patryk3211.powergrid.compat.sable.SableUtils;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlockEntity;
 import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
+import org.patryk3211.powergrid.electricity.fan.ElectricFanBlockEntity;
 import org.patryk3211.powergrid.electricity.heater.HeaterFanProcessingTypes;
 import org.patryk3211.powergrid.electricity.light.string.StringLightCordRecipe;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
@@ -67,16 +69,24 @@ public class PowerGrid {
 		ElectricalNetwork.LOGGER = LOGGER;
 
 		NativeMNA.tryLoad();
+		if(dev.architectury.platform.Platform.isModLoaded("sable")) {
+			SableUtils.makeFullProxy();
+		} else {
+			SableUtils.makeDummyProxy();
+		}
 
 		ModdedSoundEvents.prepare();
 
 		REGISTRATE = createRegistrate();
+		finalizeRegistrate();
 
 		register();
 
 		registerArchitecturyEvents();
 
-		ModdedPackets.registerPackets();
+		ModdedPackets.register();
+		ModPackets.PACKETS.registerC2SListener();
+		ModPackets.PACKETS.registerS2CListener();
 	}
 
 	public static void registerArchitecturyEvents() {
@@ -118,6 +128,7 @@ public class PowerGrid {
 
 		SubstituteBlockEntityProvider.INSTANCE.registerDefault(DeviceConnectorBlockEntity.class, DeviceConnectorBlockEntity::new);
 		SubstituteBlockEntityProvider.INSTANCE.registerDefault(PunchCardReaderBlockEntity.class, PunchCardReaderBlockEntity::new);
+		SubstituteBlockEntityProvider.INSTANCE.registerDefault(ElectricFanBlockEntity.class, ElectricFanBlockEntity::new);
 		SubstituteBlockEntityProvider.INSTANCE.lock();
 
 		ModdedDisplaySources.register();
@@ -132,7 +143,7 @@ public class PowerGrid {
 
 		ModdedParticles.register();
 
-		finalizeRegistrate();
+		ModdedDataComponents.REGISTER.register();
 		RECIPE_SERIALIZERS.register();
 		RECIPE_TYPES.register();
 		FAN_PROCESSING_TYPES.register();
@@ -146,7 +157,7 @@ public class PowerGrid {
 	}
 
 	public static ResourceLocation asResource(String path) {
-		return new ResourceLocation(MOD_ID, path);
+		return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
 	}
 
 	public static ResourceLocation texture(String path) {
@@ -176,7 +187,7 @@ public class PowerGrid {
 	private static Platform platform = null;
 
 	public enum Platform {
-		FABRIC, FORGE
+		FABRIC, NEOFORGE
 	}
 
 	public static Platform getPlatform() {
@@ -184,10 +195,10 @@ public class PowerGrid {
 			var str = System.getProperty("powergrid.platform", "auto");
 			platform = switch(str.toLowerCase()) {
 				case "fabric" -> Platform.FABRIC;
-				case "forge" -> Platform.FORGE;
+				case "forge" -> Platform.NEOFORGE;
 				case "auto" -> {
-					if(dev.architectury.platform.Platform.isForge())
-						yield Platform.FORGE;
+					if(dev.architectury.platform.Platform.isNeoForge())
+						yield Platform.NEOFORGE;
 					if(dev.architectury.platform.Platform.isFabric())
 						yield Platform.FABRIC;
 					throw new IllegalStateException("Cannot detect current platform");
@@ -201,7 +212,7 @@ public class PowerGrid {
 	public static <T> T forPlatform(T fabric, T forge) {
 		return switch(getPlatform()) {
 			case FABRIC -> fabric;
-			case FORGE -> forge;
+			case NEOFORGE -> forge;
 		};
 	}
 }

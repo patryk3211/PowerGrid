@@ -21,17 +21,18 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.Material;
 import net.minecraft.client.resources.model.ModelBaker;
 import net.minecraft.client.resources.model.ModelState;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.client.model.geometry.IGeometryBakingContext;
-import net.minecraftforge.client.model.geometry.IUnbakedGeometry;
+import net.neoforged.neoforge.client.model.geometry.IGeometryBakingContext;
+import net.neoforged.neoforge.client.model.geometry.IUnbakedGeometry;
+import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
 import java.util.function.Function;
 
 public class UnbakedCircuitBoardModel implements IUnbakedGeometry<UnbakedCircuitBoardModel> {
     @Override
-    public BakedModel bake(IGeometryBakingContext context, ModelBaker bakery, Function<Material, TextureAtlasSprite> textureProvider, ModelState state, ItemOverrides overrides, ResourceLocation modelLocation) {
+    public BakedModel bake(@NotNull IGeometryBakingContext context, ModelBaker bakery, Function<Material, TextureAtlasSprite> textureProvider, @NotNull ModelState state, @NotNull ItemOverrides overrides) {
         return new CircuitBoardModel(
-                bakery.bake(CircuitBoardModel.BASE_MODEL, state),
+                Objects.requireNonNull(bakery.bake(CircuitBoardModel.BASE_MODEL, state)),
                 textureProvider.apply(CircuitBoardModel.PAD_SPRITE_ID),
                 textureProvider.apply(CircuitBoardModel.COPPER_SPRITE_ID)
         );

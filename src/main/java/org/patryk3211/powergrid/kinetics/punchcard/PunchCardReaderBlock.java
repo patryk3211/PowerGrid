@@ -23,6 +23,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -49,10 +50,8 @@ import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 import org.patryk3211.powergrid.utility.Lang;
 
-import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
 
-@ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class PunchCardReaderBlock extends ElectricKineticBlock implements IBE<PunchCardReaderBlockEntity>, IHaveElectricProperties {
     public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
@@ -137,26 +136,33 @@ public class PunchCardReaderBlock extends ElectricKineticBlock implements IBE<Pu
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        return onBlockEntityUseItemOn(level, pos, be -> {
+            var side = hit.getDirection();
+            if(side != Direction.UP && side != state.getValue(HORIZONTAL_FACING) || stack.isEmpty())
+                return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+            if(stack.getItem() instanceof PunchCardItem) {
+                if(be.insertCard(stack, side)) {
+                    stack.shrink(1);
+                    return ItemInteractionResult.SUCCESS;
+                } else {
+                    return ItemInteractionResult.FAIL;
+                }
+            } else {
+                return ItemInteractionResult.FAIL;
+            }
+        });
+    }
+
+    @Override
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hit) {
         return onBlockEntityUse(level, pos, be -> {
             var side = hit.getDirection();
             if(side != Direction.UP && side != state.getValue(HORIZONTAL_FACING))
                 return InteractionResult.PASS;
-            var stack = player.getItemInHand(hand);
-            if(stack.isEmpty()) {
-                var extracted = be.extractCard();
-                player.setItemInHand(hand, extracted);
-                return InteractionResult.SUCCESS;
-            } else if(stack.getItem() instanceof PunchCardItem) {
-                if(be.insertCard(stack, side)) {
-                    stack.shrink(1);
-                    return InteractionResult.SUCCESS;
-                } else {
-                    return InteractionResult.FAIL;
-                }
-            } else {
-                return InteractionResult.FAIL;
-            }
+            var extracted = be.extractCard();
+            player.setItemInHand(InteractionHand.MAIN_HAND, extracted);
+            return InteractionResult.SUCCESS;
         });
     }
 

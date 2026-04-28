@@ -1,0 +1,65 @@
+modLoader = "javafml"
+loaderVersion = "[1,)"
+issueTrackerURL = "https://github.com/patryk3211/PowerGrid/issues"
+license = "Apache-2.0"
+
+[[mods]]
+modId = "powergrid"
+version = "${version}"
+displayName = "Create: Power Grid"
+authors = "patryk3211, Da-Negy, rvndm, casvara"
+description = '''
+Providing electricity to a world near you.
+'''
+logoFile = "assets/powergrid/icon.png"
+
+[[dependencies.powergrid]]
+modId = "neoforge"
+type = "required"
+versionRange = "${neoforge_version_range}"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.powergrid]]
+modId = "minecraft"
+type = "required"
+versionRange = "[${minecraft_version},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.powergrid]]
+modId = "architectury"
+type = "required"
+versionRange = "[${architectury_version},)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.powergrid]]
+modId = "create"
+type = "required"
+versionRange = "${create_forge_version}"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.powergrid]]
+modId = "tfmg"
+type = "optional"
+versionRange = "${tfmg_forge_range}"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.powergrid]]
+modId = "sable"
+type = "optional"
+versionRange = "[${sable_version},)"
+ordering = "NONE"
+side = "BOTH"
+
+[[mixins]]
+config = "powergrid.mixins.json"
+[[mixins]]
+config = "powergrid.client.mixins.json"
+[[mixins]]
+config = "powergrid-forge.mixins.json"
+[[accessTransformers]]
+file = "META-INF/accesstransformer.cfg"

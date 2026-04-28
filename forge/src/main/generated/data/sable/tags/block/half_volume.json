@@ -1,0 +1,9 @@
+{
+  "values": [
+    "powergrid:crt",
+    "powergrid:generator_commutator",
+    "powergrid:vertical_generator_housing",
+    "powergrid:generator_housing",
+    "powergrid:vertical_generator_housing"
+  ]
+}

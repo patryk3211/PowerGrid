@@ -24,6 +24,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
+import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -122,9 +123,9 @@ public class CircuitDesignTableLoadScreen extends AbstractSimiContainerScreen<Ci
                 return;
             }
             try (InputStream in = Files.newInputStream(file, StandardOpenOption.READ)) {
-                var nbt = NbtIo.readCompressed(in);
+                var nbt = NbtIo.readCompressed(in, NbtAccounter.unlimitedHeap());
                 var schematic = CircuitSchematic.fromNbt(nbt);
-                ModdedPackets.getChannel().sendToServer(new SaveSchematicC2SPacket(this.menu.contentHolder, null, schematic));
+                ModdedPackets.sendToServer(new SaveSchematicC2SPacket(this.menu.contentHolder, null, schematic));
             }
         } catch (IOException e) {
             PowerGrid.LOGGER.error("Failed to load circuit schematic", e);
@@ -134,7 +135,7 @@ public class CircuitDesignTableLoadScreen extends AbstractSimiContainerScreen<Ci
     }
 
     private void back() {
-        ModdedPackets.getChannel().sendToServer(new ChangeScreenC2SPacket(menu.contentHolder, 0));
+        ModdedPackets.sendToServer(new ChangeScreenC2SPacket(menu.contentHolder, 0));
     }
 
     @Override

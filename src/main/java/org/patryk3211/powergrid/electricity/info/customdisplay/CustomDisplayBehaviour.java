@@ -22,7 +22,9 @@ import dev.architectury.registry.menu.MenuRegistry;
 import net.createmod.catnip.lang.LangBuilder;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -68,7 +70,8 @@ public class CustomDisplayBehaviour extends BlockEntityBehaviour implements Menu
         if(behaviour == null)
             return false;
         if(!level.isClientSide && player instanceof ServerPlayer serverPlayer)
-            MenuRegistry.openExtendedMenu(serverPlayer, behaviour, behaviour.blockEntity::sendToMenu);
+            MenuRegistry.openExtendedMenu(serverPlayer, behaviour, buf ->
+                    behaviour.blockEntity.sendToMenu(new RegistryFriendlyByteBuf(buf, level.registryAccess())));
         return true;
     }
 
@@ -132,8 +135,8 @@ public class CustomDisplayBehaviour extends BlockEntityBehaviour implements Menu
     }
 
     @Override
-    public void read(CompoundTag nbt, boolean clientPacket) {
-        super.read(nbt, clientPacket);
+    public void read(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(nbt, registries, clientPacket);
         if(nbt.contains("Fmt", CompoundTag.TAG_COMPOUND)) {
             var tag = nbt.getCompound("Fmt");
             equationStr = tag.getString("Eq");
@@ -151,8 +154,8 @@ public class CustomDisplayBehaviour extends BlockEntityBehaviour implements Menu
     }
 
     @Override
-    public void write(CompoundTag nbt, boolean clientPacket) {
-        super.write(nbt, clientPacket);
+    public void write(CompoundTag nbt, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(nbt, registries, clientPacket);
         var tag = new CompoundTag();
         if(unit == null && unitStr != null) {
             tag.putString("UnitS", unitStr);

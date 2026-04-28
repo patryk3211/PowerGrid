@@ -71,14 +71,14 @@ public class CircuitDesignTableScreen extends AbstractSimiContainerScreen<Circui
         editButton = new CircuitEditButton(leftPos + 42 - windowXOffset, topPos + 18, 68, 68);
 
         confirmButton.withCallback(() ->
-                ModdedPackets.getChannel().sendToServer(new SaveSchematicC2SPacket(menu.contentHolder, false)));
+                ModdedPackets.sendToServer(new SaveSchematicC2SPacket(menu.contentHolder, false)));
         loadButton.withCallback(() ->
-                ModdedPackets.getChannel().sendToServer(new SaveSchematicC2SPacket(menu.contentHolder, true)));
+                ModdedPackets.sendToServer(new SaveSchematicC2SPacket(menu.contentHolder, true)));
 
         openButton.withCallback(() ->
-                ModdedPackets.getChannel().sendToServer(new ChangeScreenC2SPacket(menu.contentHolder, 2)));
+                ModdedPackets.sendToServer(new ChangeScreenC2SPacket(menu.contentHolder, 2)));
         editButton.withCallback(() ->
-                ModdedPackets.getChannel().sendToServer(new ChangeScreenC2SPacket(menu.contentHolder, 1)));
+                ModdedPackets.sendToServer(new ChangeScreenC2SPacket(menu.contentHolder, 1)));
         editButton.setTooltip(Tooltip.create(TOOLTIP_EDIT));
 
         addRenderableWidget(confirmButton);

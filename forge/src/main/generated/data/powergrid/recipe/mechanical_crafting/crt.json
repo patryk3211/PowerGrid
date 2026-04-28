@@ -1,0 +1,29 @@
+{
+  "type": "create:mechanical_crafting",
+  "accept_mirrored": true,
+  "category": "misc",
+  "key": {
+    "C": {
+      "tag": "c:copper_coils"
+    },
+    "E": {
+      "item": "create:electron_tube"
+    },
+    "G": {
+      "item": "minecraft:glass"
+    },
+    "g": {
+      "item": "minecraft:glowstone_dust"
+    }
+  },
+  "pattern": [
+    "  g  ",
+    " GGG ",
+    "CCGCC",
+    "  E  "
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid:crt"
+  }
+}

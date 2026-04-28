@@ -31,11 +31,13 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
+import org.patryk3211.powergrid.compat.sable.SableUtils;
 
 public interface IElectric extends IWrenchable {
     /**
@@ -89,20 +91,20 @@ public interface IElectric extends IWrenchable {
                 sendMessage(context, Lang.translate("message.connection_incorrect_wire_type").style(ChatFormatting.RED).component());
                 return InteractionResult.FAIL;
             }
-            if(stack.hasTag() && stack.getTag().contains("Connection")) {
+            if(stack.has(ModdedDataComponents.CONNECTION_DATA.get())) {
                 // Continuing a connection.
-                var endpoint = WireEndpointType.deserialize(stack.getTagElement("Connection"));
+                var endpoint = stack.get(ModdedDataComponents.CONNECTION_DATA.get()).endpoint();
                 if(endpoint == null)
                     return InteractionResult.FAIL;
                 var result = makeConnection(context.getLevel(), endpoint, new BlockWireEndpoint(pos, terminal), context);
-                if(result.consumesAction())
-                    stack.removeTagKey("Connection");
+                if(result.consumesAction()) {
+                    stack.remove(ModdedDataComponents.CONNECTION_DATA.get());
+                }
                 return result;
             } else {
                 // Must be first connection.
                 var endpoint = new BlockWireEndpoint(pos, terminal);
-                var tag = endpoint.serialize();
-                stack.getOrCreateTag().put("Connection", tag);
+                stack.set(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.of(endpoint));
                 sendMessage(context, Lang.translate("message.connection_next").style(ChatFormatting.GRAY).component());
                 return InteractionResult.SUCCESS;
             }
@@ -188,7 +190,7 @@ public interface IElectric extends IWrenchable {
         assert IWire.isWire(world, stack.getItem());
         var entry = WireRegistry.forItem(world, stack.getItem());
 
-        float distance = (float) terminal1Pos.distanceTo(terminal2Pos);
+        float distance = (float) SableUtils.projectedDistance(world, terminal1Pos, terminal2Pos);
         if(distance > entry.maximumLength()) {
             sendMessage(context, Lang.translate("message.connection_too_long").style(ChatFormatting.RED).component());
             return InteractionResult.FAIL;

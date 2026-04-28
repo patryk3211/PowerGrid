@@ -15,36 +15,27 @@
  */
 package org.patryk3211.powergrid.electricity.electromagnet;
 
-import com.mojang.brigadier.StringReader;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.simibubi.create.foundation.particle.ICustomParticleDataWithSprite;
+import io.netty.buffer.ByteBuf;
 import net.minecraft.client.particle.ParticleEngine;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleType;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import org.patryk3211.powergrid.collections.ModdedParticles;
 
 public class MagnetizationParticleData implements ICustomParticleDataWithSprite<MagnetizationParticleData>, ParticleOptions {
     public static final Codec<MagnetizationParticleData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             BlockPos.CODEC.fieldOf("pos").forGetter(MagnetizationParticleData::getControllerPos)
     ).apply(instance, MagnetizationParticleData::new));
-    public static final Deserializer<MagnetizationParticleData> FACTORY = new Deserializer<>() {
-        @Override
-        public MagnetizationParticleData fromCommand(ParticleType<MagnetizationParticleData> type, StringReader reader) throws CommandSyntaxException {
-            return new MagnetizationParticleData();
-        }
 
-        @Override
-        public MagnetizationParticleData fromNetwork(ParticleType<MagnetizationParticleData> type, FriendlyByteBuf buf) {
-            if(buf.readBoolean())
-                return new MagnetizationParticleData(buf.readBlockPos());
-            else return new MagnetizationParticleData();
-        }
-    };
+    public static final StreamCodec<ByteBuf, MagnetizationParticleData> STREAM_CODEC = ByteBufCodecs.fromCodec(CODEC);
+    public static final MapCodec<MagnetizationParticleData> MAP_CODEC = CODEC.fieldOf("magnetic");
 
     private final BlockPos controller;
 
@@ -57,13 +48,13 @@ public class MagnetizationParticleData implements ICustomParticleDataWithSprite<
     }
 
     @Override
-    public ParticleOptions.Deserializer<MagnetizationParticleData> getDeserializer() {
-        return FACTORY;
+    public MapCodec<MagnetizationParticleData> getCodec(ParticleType<MagnetizationParticleData> type) {
+        return MAP_CODEC;
     }
 
     @Override
-    public Codec<MagnetizationParticleData> getCodec(ParticleType<MagnetizationParticleData> type) {
-        return CODEC;
+    public StreamCodec<? super RegistryFriendlyByteBuf, MagnetizationParticleData> getStreamCodec() {
+        return STREAM_CODEC;
     }
 
     @Override
@@ -74,24 +65,6 @@ public class MagnetizationParticleData implements ICustomParticleDataWithSprite<
     @Override
     public ParticleType<?> getType() {
         return ModdedParticles.MAGNETIZATION;
-    }
-
-    @Override
-    public void writeToNetwork(FriendlyByteBuf buf) {
-        if(controller != null) {
-            buf.writeBoolean(true);
-            buf.writeBlockPos(controller);
-        } else {
-            buf.writeBoolean(false);
-        }
-    }
-
-    @Override
-    public String writeToString() {
-        if(controller != null)
-            return String.format("%s (%d, %d, %d)", BuiltInRegistries.PARTICLE_TYPE.getKey(getType()), controller.getX(), controller.getY(), controller.getZ());
-        else
-            return String.format("%s", BuiltInRegistries.PARTICLE_TYPE.getKey(getType()));
     }
 
     public BlockPos getControllerPos() {

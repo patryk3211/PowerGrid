@@ -61,7 +61,7 @@ public class ItemDisplay {
         private static Predicate<Item> makeExclusionPredicate() {
             Set<Item> exclusions = new ReferenceOpenHashSet<>();
 
-            List<ItemProviderEntry<?>> simpleExclusions = List.of(
+            List<ItemProviderEntry<?, ?>> simpleExclusions = List.of(
                     ModdedItems.INCOMPLETE_TRANSFORMER_CORE,
                     ModdedItems.INCOMPLETE_BATTERY,
                     ModdedItems.INCOMPLETE_CIRCUIT,
@@ -76,7 +76,7 @@ public class ItemDisplay {
                     ModdedBlocks.CIRCUIT_BOARD
             );
 
-            for (ItemProviderEntry<?> entry : simpleExclusions) {
+            for (ItemProviderEntry<?, ?> entry : simpleExclusions) {
                 exclusions.add(entry.asItem());
             }
 
@@ -109,7 +109,7 @@ public class ItemDisplay {
         private static Function<Item, ItemStack> makeStackFunc() {
             Map<Item, Function<Item, ItemStack>> factories = new Reference2ReferenceOpenHashMap<>();
 
-            Map<ItemProviderEntry<?>, Function<Item, ItemStack>> simpleFactories = Map.of(
+            Map<ItemProviderEntry<?, ?>, Function<Item, ItemStack>> simpleFactories = Map.of(
 //                    AllItems.COPPER_BACKTANK, item -> {
 //                        ItemStack stack = new ItemStack(item);
 //                        stack.getOrCreateTag().putInt("Air", BacktankUtil.maxAirWithoutEnchants());
@@ -138,7 +138,7 @@ public class ItemDisplay {
         private static Function<Item, CreativeModeTab.TabVisibility> makeVisibilityFunc() {
             Map<Item, CreativeModeTab.TabVisibility> visibilities = new Reference2ObjectOpenHashMap<>();
 
-            Map<ItemProviderEntry<?>, CreativeModeTab.TabVisibility> simpleVisibilities = Map.of(
+            Map<ItemProviderEntry<?, ?>, CreativeModeTab.TabVisibility> simpleVisibilities = Map.of(
 //                    AllItems.BLAZE_CAKE_BASE, CreativeModeTab.TabVisibility.SEARCH_TAB_ONLY
             );
 
@@ -208,7 +208,7 @@ public class ItemDisplay {
 
         private List<Item> collectBlocks(Predicate<Item> exclusionPredicate) {
             List<Item> items = new ReferenceArrayList<>();
-            for (RegistryEntry<Block> entry : PowerGrid.REGISTRATE.getAll(Registries.BLOCK)) {
+            for (RegistryEntry<Block, ? extends Block> entry : PowerGrid.REGISTRATE.getAll(Registries.BLOCK)) {
                 Item item = entry.get()
                         .asItem();
                 if (item == Items.AIR)
@@ -222,7 +222,7 @@ public class ItemDisplay {
 
         private List<Item> collectItems(Predicate<Item> exclusionPredicate) {
             List<Item> items = new ReferenceArrayList<>();
-            for (RegistryEntry<Item> entry : PowerGrid.REGISTRATE.getAll(Registries.ITEM)) {
+            for (RegistryEntry<Item, ? extends Item> entry : PowerGrid.REGISTRATE.getAll(Registries.ITEM)) {
                 Item item = entry.get();
                 if (item instanceof BlockItem)
                     continue;

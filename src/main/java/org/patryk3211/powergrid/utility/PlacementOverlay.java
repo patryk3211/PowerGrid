@@ -25,11 +25,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.GameType;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.info.TerminalHandler;
@@ -128,8 +130,7 @@ public class PlacementOverlay {
         if(wireStack == null)
             return null;
 
-        var tag = wireStack.getTag();
-        assert tag != null;
+        var tag = wireStack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag();
         if(!tag.contains("Turns") || !tag.contains("Initiator"))
             return null;
 

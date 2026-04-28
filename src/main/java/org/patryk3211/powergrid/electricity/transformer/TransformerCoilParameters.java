@@ -44,7 +44,7 @@ public class TransformerCoilParameters {
         terminal1 = tag.getInt("Terminal1");
         terminal2 = tag.getInt("Terminal2");
 
-        var identifier = new ResourceLocation(tag.getString("Item"));
+        var identifier = ResourceLocation.parse(tag.getString("Item"));
         item = BuiltInRegistries.ITEM.get(identifier);
 
         return turns != oldTurns || terminal1 != oldT1 || terminal2 != oldT2;

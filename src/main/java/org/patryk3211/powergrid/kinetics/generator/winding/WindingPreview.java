@@ -21,6 +21,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -34,9 +35,7 @@ import org.patryk3211.powergrid.utility.PlayerUtilities;
 import java.util.Random;
 
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.AXIS;
-import static org.patryk3211.powergrid.kinetics.generator.winding.WindingItem.getPlacementAxis;
-import static org.patryk3211.powergrid.kinetics.generator.winding.WindingItem.getPlacementDelta;
-import static org.patryk3211.powergrid.kinetics.generator.winding.WindingItem.isPlacementAxisAligned;
+import static org.patryk3211.powergrid.kinetics.generator.winding.WindingItem.*;
 
 @Environment(EnvType.CLIENT)
 public class WindingPreview {
@@ -46,9 +45,9 @@ public class WindingPreview {
     public static ItemStack getUsedWireStack(Player player) {
         var stack1 = player.getMainHandItem();
         var stack2 = player.getOffhandItem();
-        if(stack1 != null && stack1.getItem() instanceof WindingItem && stack1.hasTag()) {
+        if(stack1 != null && stack1.getItem() instanceof WindingItem && stack1.has(DataComponents.CUSTOM_DATA)) {
             return stack1;
-        } else if(stack2 != null && stack2.getItem() instanceof WindingItem && stack2.hasTag()) {
+        } else if(stack2 != null && stack2.getItem() instanceof WindingItem && stack2.has(DataComponents.CUSTOM_DATA)) {
             return stack2;
         } else {
             return null;
@@ -64,7 +63,7 @@ public class WindingPreview {
         if(stack == null)
             return;
 
-        var tag = stack.getTag();
+        var tag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
         var posArray = tag.getIntArray("Position");
         if(posArray.length < 3)
             return;
@@ -97,6 +96,8 @@ public class WindingPreview {
             canConnect = false;
 
         var length = getPlacementDelta(selected, firstPos);
+        if(Math.abs(length) > 64)
+            return;
         if(canConnect) {
             // Verify the winding can be placed
             if(length > 0) {
