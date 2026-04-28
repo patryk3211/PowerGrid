@@ -48,13 +48,13 @@ public class CRTBlock extends HorizontalElectricBlock implements IBE<CRTBlockEnt
             .style(ChatFormatting.RED).component();
     static final Component CATHODE = Lang.builder()
             .translate("crt.cathode")
-            .style(ChatFormatting.BLUE).component();
+            .style(ChatFormatting.RED).component();
     static final Component GRID = Lang.builder()
             .translate("crt.grid")
             .style(ChatFormatting.GRAY).component();
     static final Component ANODE = Lang.builder()
             .translate("crt.anode")
-            .style(ChatFormatting.RED).component();
+            .style(ChatFormatting.BLUE).component();
 
     static final Component X_COIL = Lang.builder()
             .translate("crt.coil.x")
@@ -75,12 +75,12 @@ public class CRTBlock extends HorizontalElectricBlock implements IBE<CRTBlockEnt
 
     public static final TerminalBoundingBox[] TERMINALS = new TerminalBoundingBox[] {
             new TerminalBoundingBox(CATHODE, 5, 5, 15, 6, 7, 16)
-                    .withColor(IDecoratedTerminal.BLUE),
+                    .withColor(IDecoratedTerminal.RED),
             new TerminalBoundingBox(HEATER, 10, 5, 15, 11, 7, 16)
                     .withColor(IDecoratedTerminal.RED),
             new TerminalBoundingBox(GRID, 7, 3, 15, 9, 4, 16),
             new TerminalBoundingBox(ANODE, 3, 6, 2, 4, 7, 3)
-                    .withColor(IDecoratedTerminal.RED),
+                    .withColor(IDecoratedTerminal.BLUE),
 
             new TerminalBoundingBox(X_COIL, 2, 2, 7, 3, 4, 8)
                     .withColor(IDecoratedTerminal.RED),
