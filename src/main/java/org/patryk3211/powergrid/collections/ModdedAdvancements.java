@@ -104,11 +104,13 @@ public class ModdedAdvancements implements DataProvider {
 
     /* -------======= Ooo, very ~secret~, don't look here =======------- */
     POTATO_BATTERY = create("potato_battery", b -> b
+            .after(ROOT)
             .icon(Items.BAKED_POTATO)
             .title("Innovative kitchen")
             .description("Cook a Potato Battery")
             .special(SECRET)),
     WIRE_CUT = create("wire_cut", b -> b
+            .after(ROOT)
             .icon(Items.SHEARS)
             .title("Wrong tool for the job")
             .description("Use shears to cut a wire")

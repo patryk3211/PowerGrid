@@ -1,4 +1,5 @@
 {
+  "parent": "powergrid:root",
   "criteria": {
     "0": {
       "trigger": "powergrid:potato_battery_builtin"
