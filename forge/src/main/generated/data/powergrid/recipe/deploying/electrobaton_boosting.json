@@ -10,10 +10,7 @@
   ],
   "results": [
     {
-      "item": "powergrid:electrobaton",
-      "nbt": {
-        "Damage": 0
-      }
+      "id": "powergrid:electrobaton"
     }
   ]
 }

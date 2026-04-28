@@ -2,6 +2,8 @@ package org.patryk3211.powergrid.collections;
 
 import com.google.common.collect.Sets;
 import net.minecraft.advancements.Advancement;
+import net.minecraft.advancements.AdvancementHolder;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
@@ -119,33 +121,35 @@ public class ModdedAdvancements implements DataProvider {
     }
 
     private final PackOutput output;
+    private final CompletableFuture<HolderLookup.Provider> registries;
 
-    public ModdedAdvancements(PackOutput output) {
+    public ModdedAdvancements(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
         this.output = output;
+        this.registries = registries;
     }
-
 
     @NotNull
     @Override
     public CompletableFuture<?> run(@NotNull CachedOutput cache) {
-        PackOutput.PathProvider pathProvider = output.createPathProvider(PackOutput.Target.DATA_PACK, "advancements");
-        List<CompletableFuture<?>> futures = new ArrayList<>();
-        Set<ResourceLocation> set = Sets.newHashSet();
-        Consumer<Advancement> consumer = (advancementx) -> {
-            ResourceLocation id = advancementx.getId();
-            if (!set.add(id)) {
-                throw new IllegalStateException("Duplicate advancement " + id);
-            } else {
+        return registries.thenCompose(provider -> {
+            PackOutput.PathProvider pathProvider = output.createPathProvider(PackOutput.Target.DATA_PACK, "advancement");
+            List<CompletableFuture<?>> futures = new ArrayList<>();
+
+            Set<ResourceLocation> set = Sets.newHashSet();
+            Consumer<AdvancementHolder> consumer = (advancement) -> {
+                ResourceLocation id = advancement.id();
+                if (!set.add(id))
+                    throw new IllegalStateException("Duplicate advancement " + id);
                 Path path = pathProvider.json(id);
-                futures.add(DataProvider.saveStable(cache, advancementx.deconstruct().serializeToJson(), path));
-            }
-        };
+                LOGGER.info("Saving advancement {}", id);
+                futures.add(DataProvider.saveStable(cache, provider, Advancement.CODEC, advancement.value(), path));
+            };
 
-        for(var advancement : ENTRIES) {
-            advancement.save(consumer);
-        }
+            for(var advancement : ENTRIES)
+                advancement.save(consumer, provider);
 
-        return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new));
+            return CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new));
+        });
     }
 
     public String getName() {

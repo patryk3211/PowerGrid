@@ -10,10 +10,7 @@
   ],
   "results": [
     {
-      "item": "powergrid:electrozapper",
-      "nbt": {
-        "Damage": 0
-      }
+      "id": "powergrid:electrozapper"
     }
   ]
 }

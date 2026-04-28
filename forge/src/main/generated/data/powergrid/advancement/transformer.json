@@ -2,8 +2,7 @@
   "parent": "powergrid:conductive_casing",
   "criteria": {
     "0": {
-      "conditions": {},
-      "trigger": "create:transformer_builtin"
+      "trigger": "powergrid:transformer_builtin"
     }
   },
   "display": {
@@ -12,12 +11,10 @@
       "color": "#DBA213",
       "translate": "advancement.powergrid.transformer.desc"
     },
-    "frame": "task",
-    "hidden": false,
     "icon": {
-      "item": "powergrid:transformer_core"
+      "count": 1,
+      "id": "powergrid:transformer_core"
     },
-    "show_toast": true,
     "title": {
       "translate": "advancement.powergrid.transformer"
     }

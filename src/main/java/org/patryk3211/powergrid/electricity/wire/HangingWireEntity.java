@@ -194,7 +194,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         var world = level();
         if(beginFlags != deferEndpointResolution) {
             grabEndpointPositions();
-            updateRenderParams();
+            updateCurveParams();
         }
         if(isDynamic && baseTerminalPos1 != null && baseTerminalPos2 != null) {
             var sublevel1 = SableCompanion.INSTANCE.getContaining(world, baseTerminalPos1);

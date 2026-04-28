@@ -2,8 +2,7 @@
   "parent": "powergrid:root",
   "criteria": {
     "0": {
-      "conditions": {},
-      "trigger": "create:lightning_builtin"
+      "trigger": "powergrid:lightning_builtin"
     }
   },
   "display": {
@@ -12,12 +11,10 @@
       "color": "#DBA213",
       "translate": "advancement.powergrid.lightning.desc"
     },
-    "frame": "task",
-    "hidden": false,
     "icon": {
-      "item": "minecraft:lightning_rod"
+      "count": 1,
+      "id": "minecraft:lightning_rod"
     },
-    "show_toast": true,
     "title": {
       "translate": "advancement.powergrid.lightning"
     }

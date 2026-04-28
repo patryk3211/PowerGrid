@@ -22,6 +22,8 @@ import dev.architectury.event.events.common.*;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import dev.architectury.registry.registries.DeferredRegister;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
@@ -31,6 +33,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Blocks;
+import org.patryk3211.powergrid.advancements.PowerGridTriggers;
 import org.patryk3211.powergrid.circuits.components.Components;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.compat.sable.SableUtils;
@@ -42,8 +45,8 @@ import org.patryk3211.powergrid.electricity.heater.HeaterFanProcessingTypes;
 import org.patryk3211.powergrid.electricity.light.string.StringLightCordRecipe;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.solver.NativeMNA;
-import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.EntityWireInteraction;
+import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.equipment.BoostRecipe;
 import org.patryk3211.powergrid.equipment.thunder.LightningRodMovementBehaviour;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlockEntity;
@@ -153,7 +156,13 @@ public class PowerGrid {
 	}
 
 	private static void setup() {
-		ModdedAdvancements.register();
+	}
+
+	public static void onRegister(Registry<?> registry) {
+		if(registry == BuiltInRegistries.TRIGGER_TYPES) {
+			ModdedAdvancements.register();
+			PowerGridTriggers.register();
+		}
 	}
 
 	public static ResourceLocation asResource(String path) {

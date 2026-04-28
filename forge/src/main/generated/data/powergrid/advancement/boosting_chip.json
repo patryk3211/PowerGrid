@@ -2,8 +2,7 @@
   "parent": "powergrid:electrical_gizmo",
   "criteria": {
     "0": {
-      "conditions": {},
-      "trigger": "create:boosting_chip_builtin"
+      "trigger": "powergrid:boosting_chip_builtin"
     }
   },
   "display": {
@@ -12,12 +11,10 @@
       "color": "#DBA213",
       "translate": "advancement.powergrid.boosting_chip.desc"
     },
-    "frame": "task",
-    "hidden": false,
     "icon": {
-      "item": "powergrid:integrated_circuit"
+      "count": 1,
+      "id": "powergrid:integrated_circuit"
     },
-    "show_toast": true,
     "title": {
       "translate": "advancement.powergrid.boosting_chip"
     }

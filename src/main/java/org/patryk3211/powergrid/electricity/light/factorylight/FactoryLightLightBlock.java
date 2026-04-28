@@ -24,7 +24,7 @@ public class FactoryLightLightBlock extends Block {
                 .noLootTable()
                 .noOcclusion()
                 .replaceable()
-                .noParticlesOnBreak()
+                .noTerrainParticles()
                 .pushReaction(PushReaction.DESTROY));
     }
 

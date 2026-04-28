@@ -5,9 +5,7 @@
       "conditions": {
         "items": [
           {
-            "items": [
-              "powergrid:conductive_casing"
-            ]
+            "items": "powergrid:conductive_casing"
           }
         ]
       },
@@ -15,17 +13,14 @@
     }
   },
   "display": {
-    "announce_to_chat": true,
     "description": {
       "color": "#DBA213",
       "translate": "advancement.powergrid.conductive_casing.desc"
     },
-    "frame": "task",
-    "hidden": false,
     "icon": {
-      "item": "powergrid:conductive_casing"
+      "count": 1,
+      "id": "powergrid:conductive_casing"
     },
-    "show_toast": true,
     "title": {
       "translate": "advancement.powergrid.conductive_casing"
     }

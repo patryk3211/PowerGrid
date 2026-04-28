@@ -5,9 +5,7 @@
       "conditions": {
         "items": [
           {
-            "items": [
-              "powergrid:acid_bucket"
-            ]
+            "items": "powergrid:acid_bucket"
           }
         ]
       },
@@ -20,12 +18,10 @@
       "color": "#DBA213",
       "translate": "advancement.powergrid.acid.desc"
     },
-    "frame": "task",
-    "hidden": false,
     "icon": {
-      "item": "powergrid:acid_bucket"
+      "count": 1,
+      "id": "powergrid:acid_bucket"
     },
-    "show_toast": true,
     "title": {
       "translate": "advancement.powergrid.acid"
     }

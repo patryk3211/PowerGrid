@@ -10,10 +10,7 @@
   ],
   "results": [
     {
-      "item": "powergrid:portable_drill",
-      "nbt": {
-        "Damage": 0
-      }
+      "id": "powergrid:portable_drill"
     }
   ]
 }

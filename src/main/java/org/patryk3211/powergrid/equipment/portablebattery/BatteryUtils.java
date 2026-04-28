@@ -72,9 +72,9 @@ public class BatteryUtils {
             outputPercent = chargePercent / 0.5f;
         }
         energy = (int) (energy * outputPercent);
-        if(energy == 0 || tag == null)
+        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+        if(energy == 0 || data == null)
             return 0.0f;
-        CustomData data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
         CompoundTag newTag = data.copyTag();
 
         newTag.putInt("Charge", charge - energy);
@@ -100,7 +100,7 @@ public class BatteryUtils {
             outputPercent = chargePercent / 0.5f;
         }
         energy = (int) (energy * outputPercent);
-        if(energy == 0 || !stack.has(DataComponents.CUSTOM_DATA))
+        if(energy == 0 || !battery.has(DataComponents.CUSTOM_DATA))
             return 0.0f;
         if(charge < energy * outputPercent)
             return 0.0f;

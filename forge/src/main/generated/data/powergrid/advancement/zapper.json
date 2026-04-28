@@ -5,9 +5,7 @@
       "conditions": {
         "items": [
           {
-            "items": [
-              "powergrid:electrozapper"
-            ]
+            "items": "powergrid:electrozapper"
           }
         ]
       },
@@ -20,13 +18,10 @@
       "color": "#DBA213",
       "translate": "advancement.powergrid.zapper.desc"
     },
-    "frame": "task",
-    "hidden": false,
     "icon": {
-      "item": "powergrid:electrozapper",
-      "nbt": "{Damage:0}"
+      "count": 1,
+      "id": "powergrid:electrozapper"
     },
-    "show_toast": true,
     "title": {
       "translate": "advancement.powergrid.zapper"
     }

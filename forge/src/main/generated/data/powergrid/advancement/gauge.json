@@ -2,8 +2,7 @@
   "parent": "powergrid:conductive_casing",
   "criteria": {
     "0": {
-      "conditions": {},
-      "trigger": "create:gauge_builtin"
+      "trigger": "powergrid:gauge_builtin"
     }
   },
   "display": {
@@ -12,12 +11,10 @@
       "color": "#DBA213",
       "translate": "advancement.powergrid.gauge.desc"
     },
-    "frame": "task",
-    "hidden": false,
     "icon": {
-      "item": "powergrid:voltage_gauge"
+      "count": 1,
+      "id": "powergrid:voltage_gauge"
     },
-    "show_toast": true,
     "title": {
       "translate": "advancement.powergrid.gauge"
     }

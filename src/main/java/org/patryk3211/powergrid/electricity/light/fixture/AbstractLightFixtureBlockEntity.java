@@ -17,9 +17,10 @@ package org.patryk3211.powergrid.electricity.light.fixture;
 
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
@@ -79,24 +80,24 @@ public abstract class AbstractLightFixtureBlockEntity extends ElectricBlockEntit
     }
 
     @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
-        super.write(tag, clientPacket);
+    protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(tag, registries, clientPacket);
         if(bulbState != null) {
             bulbState.write(tag);
         }
     }
 
     @Override
-    public void writeSafe(CompoundTag tag) {
-        super.writeSafe(tag);
+    public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
+        super.writeSafe(tag, registries);
         if(bulbState != null) {
             bulbState.write(tag);
         }
     }
 
     @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
-        super.read(tag, clientPacket);
+    protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(tag, registries, clientPacket);
         var currentItem = bulbState != null ? bulbState.getItem() : null;
         var nbtItem = LightBulbState.getBulbItem(tag);
         if(currentItem != nbtItem) {
@@ -181,13 +182,13 @@ public abstract class AbstractLightFixtureBlockEntity extends ElectricBlockEntit
         return ItemRequirement.NONE;
     }
 
-    public InteractionResult setColor(DyeColor color) {
+    public ItemInteractionResult setColor(DyeColor color) {
         if(bulbState == null || !dyeable)
-            return InteractionResult.PASS;
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         if(bulbState.setColor(color)) {
             notifyUpdate();
-            return InteractionResult.SUCCESS;
+            return ItemInteractionResult.SUCCESS;
         }
-        return InteractionResult.PASS;
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
     }
 }

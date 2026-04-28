@@ -22,6 +22,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.equipment.BoostRecipe;
 import org.spongepowered.asm.mixin.Mixin;
@@ -43,14 +44,8 @@ public class RecipeApplierMixin {
         if(outputs == null || outputs.isEmpty())
             return;
         if(recipe instanceof BoostRecipe) {
-            if(stackIn.hasTag()) {
-                var tagIn = stackIn.getTag();
-                var tagOut = outputs.get(0).getTag();
-                for(var key : tagIn.getAllKeys()) {
-                    if(key.equals("Boosted"))
-                        continue;
-                    tagOut.put(key, tagIn.get(key).copy());
-                }
+            if(stackIn.has(ModdedDataComponents.BOOST.get())) {
+                outputs.get(0).set(ModdedDataComponents.BOOST.get(), stackIn.get(ModdedDataComponents.BOOST.get()));
             }
             return;
         }

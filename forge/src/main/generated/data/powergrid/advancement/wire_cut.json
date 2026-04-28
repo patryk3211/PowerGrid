@@ -1,12 +1,10 @@
 {
   "criteria": {
     "0": {
-      "conditions": {},
-      "trigger": "create:wire_cut_builtin"
+      "trigger": "powergrid:wire_cut_builtin"
     }
   },
   "display": {
-    "announce_to_chat": true,
     "description": {
       "color": "#DBA213",
       "translate": "advancement.powergrid.wire_cut.desc"
@@ -14,10 +12,9 @@
     "frame": "goal",
     "hidden": true,
     "icon": {
-      "item": "minecraft:shears",
-      "nbt": "{Damage:0}"
+      "count": 1,
+      "id": "minecraft:shears"
     },
-    "show_toast": true,
     "title": {
       "translate": "advancement.powergrid.wire_cut"
     }

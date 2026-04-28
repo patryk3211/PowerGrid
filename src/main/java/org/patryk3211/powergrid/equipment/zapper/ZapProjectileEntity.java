@@ -192,14 +192,15 @@ public class ZapProjectileEntity extends AbstractHurtingProjectile {
 //        float knockback = projectileType.getKnockback() + additionalKnockback;
     }
 
+
     @Override
-    protected void addAdditionalSaveData(CompoundTag compound) {
+    public void addAdditionalSaveData(CompoundTag compound) {
         super.addAdditionalSaveData(compound);
         compound.putFloat("Power", power);
     }
 
     @Override
-    protected void readAdditionalSaveData(CompoundTag compound) {
+    public void readAdditionalSaveData(CompoundTag compound) {
         super.readAdditionalSaveData(compound);
         power = compound.getFloat("Power");
     }

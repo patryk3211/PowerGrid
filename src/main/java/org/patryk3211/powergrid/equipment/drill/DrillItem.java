@@ -1,15 +1,19 @@
 package org.patryk3211.powergrid.equipment.drill;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.*;
+import net.minecraft.world.item.DiggerItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Tiers;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.equipment.ItemBoostUtils;
 import org.patryk3211.powergrid.equipment.portablebattery.BatteryUtils;
@@ -21,7 +25,8 @@ public class DrillItem extends DiggerItem {
     public static final int TICKS_PER_SPEED_LEVEL = 20;
 
     public DrillItem(Properties properties) {
-        super(1.0f, -3.0f, Tiers.DIAMOND, BlockTags.MINEABLE_WITH_PICKAXE, properties.stacksTo(1));
+        super(Tiers.DIAMOND, BlockTags.MINEABLE_WITH_PICKAXE, properties.stacksTo(1));
+//        1.0f, -3.0f, Tiers.DIAMOND, BlockTags.MINEABLE_WITH_PICKAXE, properties.stacksTo(1));
     }
 
     public static boolean canMine(BlockState state) {
@@ -69,7 +74,9 @@ public class DrillItem extends DiggerItem {
                 ext.powerGrid$blockDrilled(power);
             }
             if(!level.isClientSide && state.getDestroySpeed(level, pos) != 0.0F && power < 0.3f) {
-                stack.hurtAndBreak(1, miningEntity, (livingEntity) -> livingEntity.broadcastBreakEvent(EquipmentSlot.MAINHAND));
+                Tool tool = stack.get(DataComponents.TOOL);
+                if(tool != null)
+                    stack.hurtAndBreak(tool.damagePerBlock(), miningEntity, EquipmentSlot.MAINHAND);
             }
             return true;
         }
@@ -77,9 +84,9 @@ public class DrillItem extends DiggerItem {
     }
 
     @Override
-    public boolean isCorrectToolForDrops(BlockState block) {
+    public boolean isCorrectToolForDrops(ItemStack stack, BlockState state) {
         // Diamond level mines all
-        return canMine(block);
+        return canMine(state);
     }
 
     public void leftClickEvent(Level level, BlockPos pos, ItemStack stack, Player player, boolean end) {
@@ -89,8 +96,8 @@ public class DrillItem extends DiggerItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
-        super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+        super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
         ItemBoostUtils.addTooltip(stack, tooltipComponents);
     }
 }

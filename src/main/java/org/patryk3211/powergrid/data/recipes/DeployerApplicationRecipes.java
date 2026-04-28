@@ -17,7 +17,7 @@ package org.patryk3211.powergrid.data.recipes;
 
 import com.simibubi.create.AllItems;
 import com.simibubi.create.api.data.recipe.DeployingRecipeGen;
-import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
+import com.simibubi.create.content.kinetics.deployer.ItemApplicationRecipe;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
@@ -54,7 +54,7 @@ public class DeployerApplicationRecipes extends DeployingRecipeGen {
 
     private GeneratedRecipe boost(ItemEntry<?> boostItem) {
         GeneratedRecipe generatedRecipe =
-                c -> new ProcessingRecipeBuilder<>(BoostRecipe::new, boostItem.getId().withSuffix("_boosting"))
+                c -> new ItemApplicationRecipe.Builder<>(BoostRecipe::new, boostItem.getId().withSuffix("_boosting"))
                         .require(boostItem)
                         .require(ModdedItems.INTEGRATED_CIRCUIT)
                         .output(boostItem)

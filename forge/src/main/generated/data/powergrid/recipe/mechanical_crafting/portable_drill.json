@@ -1,6 +1,7 @@
 {
   "type": "create:mechanical_crafting",
-  "acceptMirrored": true,
+  "accept_mirrored": true,
+  "category": "misc",
   "key": {
     "A": {
       "item": "create:andesite_alloy"
@@ -15,10 +16,10 @@
       "item": "create:precision_mechanism"
     },
     "Z": {
-      "tag": "forge:plates/zinc"
+      "tag": "c:plates/zinc"
     },
     "z": {
-      "tag": "forge:ingots/zinc"
+      "tag": "c:ingots/zinc"
     }
   },
   "pattern": [
@@ -27,6 +28,7 @@
     " A   "
   ],
   "result": {
-    "item": "powergrid:portable_drill"
+    "count": 1,
+    "id": "powergrid:portable_drill"
   }
 }

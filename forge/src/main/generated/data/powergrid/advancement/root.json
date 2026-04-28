@@ -1,7 +1,6 @@
 {
   "criteria": {
     "0": {
-      "conditions": {},
       "trigger": "minecraft:inventory_changed"
     }
   },
@@ -12,10 +11,9 @@
       "color": "#DBA213",
       "translate": "advancement.powergrid.root.desc"
     },
-    "frame": "task",
-    "hidden": false,
     "icon": {
-      "item": "powergrid:electric_motor"
+      "count": 1,
+      "id": "powergrid:electric_motor"
     },
     "show_toast": false,
     "title": {
