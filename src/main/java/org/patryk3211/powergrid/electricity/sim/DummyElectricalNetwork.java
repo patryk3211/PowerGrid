@@ -34,7 +34,7 @@ public class DummyElectricalNetwork extends GraphedElectricalNetwork {
     @Override
     public void cleanup() { }
     @Override
-    public void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision) { }
+    public void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision, double searchAlpha) { }
 
     @Override
     public void warmUp(int ticks) {

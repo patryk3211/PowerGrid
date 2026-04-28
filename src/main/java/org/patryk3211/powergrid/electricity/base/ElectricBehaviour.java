@@ -490,6 +490,11 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
         return GlobalElectricNetworks.getWorldNetworks(getWorld()).findConnectedWires(this);
     }
 
+    @Override
+    public String toString() {
+        return String.format("ElectricBehaviour(be=%s)", blockEntity);
+    }
+
     public interface SyncAppender {
         void writeToSync(FriendlyByteBuf buffer);
         void readFromSync(FriendlyByteBuf buffer);

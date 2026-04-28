@@ -66,6 +66,7 @@ public class RelayComponent extends MirrorableComponent {
         builder.add(normallyClosed);
         builder.add(normallyOpen);
 
+        placed.add(normallyClosed);
         placed.add(normallyOpen);
 
         thermals.builder()
@@ -84,13 +85,14 @@ public class RelayComponent extends MirrorableComponent {
         if(placed.wires.isEmpty())
             return true;
 
-        var NO = (RelaySwitchWire) placed.wires.get(0);
-        if(NO.wasSwitched()) {
+        var NC = (RelaySwitchWire) placed.wires.get(0);
+        var NO = (RelaySwitchWire) placed.wires.get(1);
+        if(NO.wasSwitched() | NC.wasSwitched()) {
             boolean state = NO.getState();
             placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(
                     world,
                     placed.getPos(),
-                    (0.75f * ModdedConfigs.client().relaySoundMultiplier.getF()),
+                    0.75f,
                     state ? 2.0f : 1.9f
             ));
             placed.set(STATE, state);

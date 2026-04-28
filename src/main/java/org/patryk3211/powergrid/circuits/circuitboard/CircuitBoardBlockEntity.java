@@ -255,6 +255,7 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
 
     private void bakeCircuit() {
         componentCache.clear();
+        shapeCache = null;
         disconnectViad();
         baked = BakedCircuit.from(schematic, this);
         for(var placed : schematic.components()) {

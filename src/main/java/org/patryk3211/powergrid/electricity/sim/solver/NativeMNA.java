@@ -31,7 +31,7 @@ import java.nio.file.Paths;
 import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.LOGGER;
 
 public class NativeMNA implements IMNA {
-    private static final String EXPECTED_VERSION = "6";
+    private static final String EXPECTED_VERSION = "7";
 
     private static final int OPERATION_BUFFER_COMMAND_LENGTH = 256;
     private static final int JACOBIAN_COMMAND_SIZE = Integer.BYTES * 2 + Double.BYTES;
@@ -150,8 +150,8 @@ public class NativeMNA implements IMNA {
     }
 
     @Override
-    public void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision) {
-        setPrecision(nativePtr, absoluteCriterion, relativeCriterion, minimumPrecision);
+    public void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision, double searchAlpha) {
+        setPrecision(nativePtr, absoluteCriterion, relativeCriterion, minimumPrecision, searchAlpha);
     }
 
     @Override
@@ -390,7 +390,7 @@ public class NativeMNA implements IMNA {
     private static native void finishJacobianWrite(long ptr, int cmdCount);
     private static native void processJacobianBuffer(long ptr, int cmdCount);
     private static native void processRHSBuffer(long ptr);
-    private static native void setPrecision(long ptr, double absoluteCriterion, double relativeCriterion, double minimumPrecision);
+    private static native void setPrecision(long ptr, double absoluteCriterion, double relativeCriterion, double minimumPrecision, double searchAlpha);
     private native ByteBuffer singleTick(long ptr, int maxIters, int jacobianCmdCount);
     private static native int verifySupport();
 }

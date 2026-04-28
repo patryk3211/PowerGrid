@@ -63,7 +63,8 @@ public class JavaMNA implements IMNA {
 
     private double minimumAllowedPrecision = 1e-6;
     private double absoluteStoppingCriterion = 1e-7;
-    private double relativeStoppingCriterion = 1e-12;
+    private double relativeStoppingCriterion = 1e-14;
+    private double maxSearchAlpha = 0.99;
 
     private final List<ExchangeRow> changedRows = new ArrayList<>();
 
@@ -87,10 +88,11 @@ public class JavaMNA implements IMNA {
     }
 
     @Override
-    public void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision) {
+    public void setPrecision(double absoluteCriterion, double relativeCriterion, double minimumPrecision, double searchAlpha) {
         this.absoluteStoppingCriterion = absoluteCriterion;
         this.relativeStoppingCriterion = relativeCriterion;
         this.minimumAllowedPrecision = minimumPrecision;
+        this.maxSearchAlpha = searchAlpha;
     }
 
     @Override
@@ -253,19 +255,11 @@ public class JavaMNA implements IMNA {
                 System.out.printf("Solution possibly not converged after %d Newton iterations, final norm: %g\n", i, norm);
             }
         } else {
-            converged = i < maxIterations - 10;
-            if (!converged) {
-                if (LOGGER != null) {
-                    LOGGER.debug("Dirty converge at {} iterations", i);
-                } else {
-                    System.out.printf("Solution possibly not converged (residual recalculation was disabled) after %d Newton iterations\n", i);
-                }
-            } else {
-                if (LOGGER == null) {
-                    System.out.printf("Converged after %d iterations\n", i);
-                }
+            converged = true;
+            if(LOGGER == null) {
+                System.out.printf("Converged after %d iterations\n", i);
             }
-            if (converged && warmUpTicks > 0) {
+            if(warmUpTicks > 0) {
                 // This effectively freezes component states and allows the network
                 // to settle completely after a structure change (or world load).
                 --warmUpTicks;
@@ -295,10 +289,8 @@ public class JavaMNA implements IMNA {
         int maxIterations = network.maxIterations.apply(network.hasHooks());
         int i;
         double norm = 0;
-        boolean skipped = false;
-        boolean slowdown = false;
         for (i = 0; i < maxIterations; ++i) {
-            if(!skipped)
+            if(i == 0)
                 iterHooks(i, maxIterations);
             var workMatrix = Jacobian;
             computeResidual();
@@ -306,26 +298,10 @@ public class JavaMNA implements IMNA {
             workMatrix.mult(StateVector, ErrorVector);
             CommonOps_DDRM.subtract(ErrorVector, ResidualVector, ErrorVector);
             var nextNorm = CommonOps_DDRM.elementMaxAbs(ErrorVector);
-            if(i != 0 && nextNorm > norm && !skipped) {
-                CommonOps_DDRM.add(StateVector, -0.5, StateDelta, StateVector);
-                skipped = true; --i;
-                slowdown = true;
-                continue;
-            }
             var dNorm = Math.abs(nextNorm - norm);
             norm = nextNorm;
             if (norm < absoluteStoppingCriterion || dNorm < relativeStoppingCriterion)
                 break;
-            if (i >= maxIterations - 11) {
-                // Right before non-linear devices are disabled.
-                // Only append new problem frames if the network has been converging before.
-                if(converged)
-                    network.convergenceProblems(norm, residualAccess);
-                converged = false; //norm <= minimumAllowedPrecision;
-//                if(!converged)
-//                    break;
-            }
-            skipped = false;
 
             if(SCALING) {
                 prepareScaled(workMatrix);
@@ -372,8 +348,21 @@ public class JavaMNA implements IMNA {
                 if(SCALING)
                     CommonOps_DDRM.multRows(columnScales, StateVector);
                 CommonOps_DDRM.subtract(StateVector, StateDelta, StateDelta);
-                if(slowdown)
-                    CommonOps_DDRM.add(StateVector, -0.5, StateDelta, StateVector);
+                // Perform solution fitting
+                double alpha = 0;
+                workMatrix = Jacobian;
+                while(alpha < maxSearchAlpha) {
+                    iterHooks(i, maxIterations);
+                    computeResidual();
+                    workMatrix.mult(StateVector, ErrorVector);
+                    CommonOps_DDRM.subtract(ErrorVector, ResidualVector, ErrorVector);
+                    double testNorm = CommonOps_DDRM.elementMaxAbs(ErrorVector);
+                    if(testNorm < norm)
+                        break;
+                    double deltaAlpha = (1 - alpha) * 0.5;
+                    alpha += deltaAlpha;
+                    CommonOps_DDRM.add(StateVector, -deltaAlpha, StateDelta, StateVector);
+                }
             } else {
                 StateVector.zero();
                 StateDelta.zero();

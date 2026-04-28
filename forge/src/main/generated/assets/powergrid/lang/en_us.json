@@ -232,6 +232,7 @@
   "powergrid.component.property.barretter_resistance": "Minimum Resistance",
   "powergrid.component.property.bjt_gain": "Gain",
   "powergrid.component.property.capacitor_value": "Capacitance [mF]",
+  "powergrid.component.property.color": "Color",
   "powergrid.component.property.current": "Current",
   "powergrid.component.property.current.summary": "Maximum current that this component can handle for prolonged periods of time",
   "powergrid.component.property.current_gauge_max": "Max Current",

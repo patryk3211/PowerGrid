@@ -18,10 +18,13 @@ package org.patryk3211.powergrid.electricity.bell;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
@@ -30,6 +33,7 @@ public class AlarmBellBlockEntity extends ElectricBlockEntity {
     private ElectricWire wire;
 
     private boolean hasSoundInstance = false;
+    private float prevPitch, prevVolume;
 
     public AlarmBellBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -46,8 +50,12 @@ public class AlarmBellBlockEntity extends ElectricBlockEntity {
             Minecraft.getInstance().getSoundManager().play(new AlarmBellSoundInstance(this));
             hasSoundInstance = true;
         } else if(getVolume() == 0 && hasSoundInstance) {
+            var pos = worldPosition.getCenter();
+            Minecraft.getInstance().getSoundManager().play(new SimpleSoundInstance(ModdedSoundEvents.ALARM_BELL_END.getMainEvent(), SoundSource.BLOCKS, prevVolume, prevPitch, level.random, pos.x, pos.y, pos.z));
             hasSoundInstance = false;
         }
+        prevVolume = getVolume();
+        prevPitch = getPitch();
     }
 
     @Override

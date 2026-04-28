@@ -33,10 +33,10 @@ public class RelaySwitchWire extends SwitchedWire implements IOuterHook {
     public void preSolve() {
         if(coilWire.isConverged()) {
             var I = Math.abs(coilWire.current());
-            if (getState() && I < offCurrent) {
+            if((getState() != normallyClosed) && I < offCurrent) {
                 setState(normallyClosed);
                 switched = true;
-            } else if (!getState() && I > onCurrent) {
+            } else if((getState() == normallyClosed) && I > onCurrent) {
                 setState(!normallyClosed);
                 switched = true;
             }

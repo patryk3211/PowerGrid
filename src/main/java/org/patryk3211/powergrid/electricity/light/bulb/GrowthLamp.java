@@ -29,16 +29,18 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class GrowthLamp extends LightBulb {
-    public GrowthLamp(net.minecraft.world.item.Item.Properties settings) {
+
+    public GrowthLamp(Item.Properties settings) {
         super(settings);
     }
 
     @Override
     public <F extends SmartBlockEntity & IFixtureEntity> LightBulbState createState(F fixture) {
-        return new org.patryk3211.powergrid.electricity.light.bulb.GrowthLamp.State(this, fixture, modelSupplier, dyedModelSupplier);
+        return new GrowthLamp.State(this, fixture, modelSupplier, dyedModelSupplier);
     }
 
     public static class State extends SimpleState {
+
         public <T extends Item & ILightBulb,
                 F extends SmartBlockEntity & IFixtureEntity> State(T bulb, F fixture,
                                                                    Supplier<Function<LightBulb.State, PartialModel>> modelProviderSupplier,
@@ -54,7 +56,7 @@ public class GrowthLamp extends LightBulb {
             int zMin = -radius, zMax = radius;
 
             if(facing != null) {
-                switch (facing) {
+                switch(facing) {
                     case EAST -> xMin = 0;
                     case WEST -> xMax = 0;
                     case UP -> yMin = 0;
@@ -64,17 +66,24 @@ public class GrowthLamp extends LightBulb {
                 }
             }
 
+            int chanceValue = ModdedConfigs.server().electricity.growthLampChance.get();
             var serverWorld = (ServerLevel) fixtureBE.getLevel();
             var random = serverWorld.random;
-            int chanceValue = ModdedConfigs.server().electricity.growthLampChance.get() / getPowerLevel();
-            if(chanceValue <= 0 || random.nextInt(chanceValue) == 0) {
-                var x = random.nextIntBetweenInclusive(xMin, xMax);
-                var y = random.nextIntBetweenInclusive(yMin, yMax);
-                var z = random.nextIntBetweenInclusive(zMin, zMax);
-                var pos = origin.offset(x, y, z);
-                var state = serverWorld.getBlockState(pos);
-                if(state.is(ModdedTags.Block.AFFECTED_BY_LAMP.tag))
-                    state.randomTick(serverWorld, pos, random);
+            // Iterate over every block in the cube and boost all valid crops
+            for(int x = xMin; x <= xMax; x++) {
+                for(int y = yMin; y <= yMax; y++) {
+                    for(int z = zMin; z <= zMax; z++) {
+                        // Per-block chance check - keeps performance reasonable
+                        if(chanceValue > 1 && random.nextInt(chanceValue) != 0)
+                            continue;
+
+                        var pos = origin.offset(x, y, z);
+                        var state = serverWorld.getBlockState(pos);
+
+                        if(state.is(ModdedTags.Block.AFFECTED_BY_LAMP.tag))
+                            state.randomTick(serverWorld, pos, random);
+                    }
+                }
             }
         }
     }

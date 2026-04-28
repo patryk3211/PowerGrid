@@ -74,7 +74,7 @@ public class SparkParticleData implements ParticleOptions, ICustomParticleDataWi
         return gravity;
     }
 
-    public static void explodeParticles(Level world, float x, float y, float z, Direction dir, int count) {
+    public static void explodeParticles(Level world, double x, double y, double z, Direction dir, int count) {
         var r = world.random;
         var offset = dir.step().mul(0.1f);
         for(int i = 0; i < count; ++i) {
