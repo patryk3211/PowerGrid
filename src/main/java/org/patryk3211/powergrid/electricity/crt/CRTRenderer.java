@@ -47,9 +47,9 @@ public class CRTRenderer extends SafeBlockEntityRenderer<CRTBlockEntity> {
         var bg = CachedBuffers.partialFacing(ModdedPartialModels.CRT_BACKGROUND, state, facing.getOpposite());
         bg.light(light).renderInto(ms, buffer.getBuffer(RenderType.solid()));
 
-        final int R = (int) color[0] * 256,
-                G = (int) color[1] * 256,
-                B = (int) color[2] * 256;
+        final int R = (int) (color[0] * 255),
+                G = (int) (color[1] * 256),
+                B = (int) (color[2] * 256);
         var consumer = buffer.getBuffer(ModdedRenderLayers.getAdditiveCrt());
 
         ms.pushPose();
