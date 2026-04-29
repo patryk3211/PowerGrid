@@ -53,12 +53,12 @@ public class EncasedCRTBlock extends HorizontalElectricBlock implements IBE<CRTB
 
     public static final TerminalBoundingBox[] TERMINALS = new TerminalBoundingBox[] {
             new TerminalBoundingBox(CATHODE, 5, 5, 15, 6, 7, 16)
-                    .withColor(IDecoratedTerminal.RED),
+                    .withColor(IDecoratedTerminal.BLUE),
             new TerminalBoundingBox(HEATER, 10, 5, 15, 11, 7, 16)
                     .withColor(IDecoratedTerminal.RED),
             new TerminalBoundingBox(GRID, 7, 3, 15, 9, 4, 16),
             new TerminalBoundingBox(ANODE, 7, 7, 15, 9, 8, 16)
-                    .withColor(IDecoratedTerminal.BLUE),
+                    .withColor(IDecoratedTerminal.RED),
 
             new TerminalBoundingBox(X_COIL, 4, 2, 14, 5, 4, 15)
                     .withColor(IDecoratedTerminal.RED),
