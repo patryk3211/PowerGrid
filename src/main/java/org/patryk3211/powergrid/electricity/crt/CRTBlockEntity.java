@@ -17,7 +17,10 @@ package org.patryk3211.powergrid.electricity.crt;
 
 import dev.architectury.utils.EnvExecutor;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
@@ -36,6 +39,7 @@ public class CRTBlockEntity extends ElectricBlockEntity {
     protected float[] xPoints = new float[sampleCount()];
     protected float[] yPoints = new float[sampleCount()];
     protected float[] brightness = new float[sampleCount()];
+    protected DyeColor traceColor = DyeColor.RED;
     protected int head;
 
     public CRTBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -46,6 +50,10 @@ public class CRTBlockEntity extends ElectricBlockEntity {
         return EnvExecutor.getEnvSpecific(() -> () -> ModdedConfigs.client().crtPointCount.get(), () -> () -> 1);
     }
 
+    public DyeColor getColor() {
+        return traceColor;
+    }
+
     @Override
     public float resistance(String suffix) {
         return ResistanceValues.get(ModdedBlocks.CRT.get(), suffix);
@@ -54,6 +62,28 @@ public class CRTBlockEntity extends ElectricBlockEntity {
     @Override
     public boolean isNoisy() {
         return false;
+    }
+
+    @Override
+    protected void write(CompoundTag tag, boolean clientPacket) {
+        super.write(tag, clientPacket);
+        tag.putInt("Color", traceColor.ordinal());
+    }
+
+    @Override
+    public void writeSafe(CompoundTag tag) {
+        super.writeSafe(tag);
+        tag.putInt("Color", traceColor.ordinal());
+    }
+
+    @Override
+    protected void read(CompoundTag tag, boolean clientPacket) {
+        super.read(tag, clientPacket);
+        if (tag.contains("Color")) {
+            traceColor = DyeColor.values()[tag.getInt("Color")];
+        } else {
+            traceColor = DyeColor.RED;
+        }
     }
 
     @Override
@@ -122,5 +152,11 @@ public class CRTBlockEntity extends ElectricBlockEntity {
         gridCathode = builder.connect(1e+6f, builder.terminalNode(2), builder.terminalNode(0));
         heater = builder.connect(resistance("heater"), builder.terminalNode(1), builder.terminalNode(0));
         anodeCathode = builder.connectSwitch(1, builder.terminalNode(3), builder.terminalNode(0), false);
+    }
+
+    public InteractionResult setColor(DyeColor color) {
+        traceColor = color;
+        notifyUpdate();
+        return InteractionResult.SUCCESS;
     }
 }
