@@ -256,7 +256,6 @@
   "powergrid.gui.thermometer.temperature": "Температура: ",
   "powergrid.gui.thermometer.title": "Виміряна температура",
   "powergrid.gui.transformer.info_header": "Інформація про трансформатор",
-  "powergrid.gui.transformer.parallel_resistance": "Парарельний опір",
   "powergrid.gui.voltage_meter.title": "Виміряна напруга",
   "powergrid.keyinfo.pick_component": "Вибрати компонент",
   "powergrid.keyinfo.place_trace": "Прокласти доріжку",
