@@ -1,16 +1,11 @@
 package org.patryk3211.powergrid.compat.cold_sweat;
 
 import com.momosoftworks.coldsweat.api.event.core.registry.BlockTempRegisterEvent;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 public class ColdSweatBridge {
     @SubscribeEvent
     public static void onBlockTempsRegister(BlockTempRegisterEvent event) {
         event.register(new ElectricBlockTemp());
-    }
-
-    public static void init() { // Loads the class
-        MinecraftForge.EVENT_BUS.register(ColdSweatBridge.class);
     }
 }

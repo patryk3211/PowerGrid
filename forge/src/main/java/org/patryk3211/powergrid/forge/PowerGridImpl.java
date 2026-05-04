@@ -92,7 +92,7 @@ public class PowerGridImpl {
         }
 
         if (Platform.isModLoaded("cold_sweat")) {
-            ColdSweatBridge.init();
+            MinecraftForge.EVENT_BUS.register(ColdSweatBridge.class);
         }
 
         SubstituteBlockEntityProvider.INSTANCE.register(PunchCardReaderBlockEntity.class, PunchCardReaderBlockEntityImpl::new);
