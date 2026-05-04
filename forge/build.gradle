@@ -41,7 +41,7 @@ dependencies {
     modCompileOnly "maven.modrinth:create-tfmg:1.2.0"
 
     // Cold Sweat
-    modImplementation "curse.maven:cold-sweat-506194:${cold_sweat_cursemaven_fileid}-sources-${cold_sweat_sources_cursemaven_fileid}"
+    modCompileOnly "curse.maven:cold-sweat-506194:${cold_sweat_cursemaven_fileid}-sources-${cold_sweat_sources_cursemaven_fileid}"
 
     compileOnly("io.github.llamalad7:mixinextras-common:${mixin_extras_version}")
     annotationProcessor(implementation(include("io.github.llamalad7:mixinextras-neoforge:${mixin_extras_version}")))
