@@ -58,6 +58,7 @@ import org.patryk3211.powergrid.circuits.components.forge.ComponentRegistryImpl;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.collections.forge.ModdedSoundEventsImpl;
 import org.patryk3211.powergrid.commands.PerformanceCommand;
+import org.patryk3211.powergrid.compat.cold_sweat.ColdSweatBridge;
 import org.patryk3211.powergrid.compat.tfmg.TFMGBridge;
 import org.patryk3211.powergrid.compat.tfmg.TFMGProxyImpl;
 import org.patryk3211.powergrid.data.BlockTagProvider;
@@ -98,6 +99,10 @@ public class PowerGridImpl {
         if(Platform.isModLoaded("tfmg")) {
             TFMGBridge.init();
             ProxyProvider.add(TFMGProxy.class, new TFMGProxyImpl());
+        }
+
+        if (Platform.isModLoaded("cold_sweat")) {
+            NeoForge.EVENT_BUS.register(ColdSweatBridge.class);
         }
 
         SubstituteBlockEntityProvider.INSTANCE.register(PunchCardReaderBlockEntity.class, PunchCardReaderBlockEntityImpl::new);
