@@ -44,7 +44,11 @@ public class VoltageSource extends PonderElementBase {
             var node = target.getNode(scene.getWorld());
             if(node.getNetwork() == null) {
                 var global = GlobalElectricNetworks.getWorldNetworks(scene.getWorld());
-                target.joinNetwork(scene.getWorld(), global.newNetwork());
+                global.prepareUnpaused(node);
+                if(node.getNetwork() == null) {
+                    // Still no network.
+                    target.joinNetwork(scene.getWorld(), global.newNetwork());
+                }
             }
             var network = node.getNetwork();
             source = new VoltageSourceCoupling(node, null, 0, voltage);

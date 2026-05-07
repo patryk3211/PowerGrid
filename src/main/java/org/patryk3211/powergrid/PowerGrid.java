@@ -38,6 +38,7 @@ import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock
 import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
 import org.patryk3211.powergrid.electricity.heater.HeaterFanProcessingTypes;
 import org.patryk3211.powergrid.electricity.light.string.StringLightCordRecipe;
+import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterRegistry;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.solver.NativeMNA;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
@@ -135,6 +136,7 @@ public class PowerGrid {
 		ModdedParticles.PARTICLE_TYPES.register();
 
 		MovementBehaviour.REGISTRY.register(Blocks.LIGHTNING_ROD, new LightningRodMovementBehaviour());
+		RedstoneConverterRegistry.init();
 	}
 
 	public static ResourceLocation asResource(String path) {

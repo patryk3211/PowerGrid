@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.ponder.scenes;
 
+import com.simibubi.create.content.redstone.analogLever.AnalogLeverBlockEntity;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import net.createmod.catnip.math.Pointing;
 import net.createmod.ponder.api.scene.PonderStoryBoard;
@@ -34,6 +35,7 @@ import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseState;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
+import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterBlockEntity;
 import org.patryk3211.powergrid.kinetics.rheostat.RheostatBlockEntity;
 import org.patryk3211.powergrid.kinetics.variac.VariacBlockEntity;
 import org.patryk3211.powergrid.ponder.base.ElectricInstructions;
@@ -617,6 +619,87 @@ public class RelayScenes {
         scene.overlay().showText(80)
                 .text("The overall resistance can also be tuned with a value panel on top of the pile")
                 .pointAt(util.vector().of(2.5, 5.0, 2.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.markAsFinished();
+    }
+
+    public static void redstoneConverter(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("redstone_converter", "Reading redstone");
+        scene.configureBasePlate(0, 0, 5);
+
+        var converter = util.grid().at(2, 1, 2);
+        var gauge = util.grid().at(2, 1, 3);
+        var conn1 = util.grid().at(4, 2, 1);
+        var conn2 = util.grid().at(4, 2, 3);
+
+        scene.showBasePlate();
+        scene.idle(5);
+        scene.world().showSection(util.select().fromTo(2, 1, 0, 2, 1, 2), Direction.DOWN);
+        scene.idle(5);
+        scene.world().showSection(util.select().position(2, 1, 3), Direction.DOWN);
+        scene.world().showSection(util.select().fromTo(4, 1, 1, 4, 2, 1), Direction.DOWN);
+        scene.world().showSection(util.select().fromTo(4, 1, 3, 4, 2, 3), Direction.DOWN);
+        scene.idle(5);
+        scene.electric().connect(conn1, 0, converter, 0);
+        scene.electric().connect(conn2, 0, converter, 1);
+        scene.electric().connect(converter, 2, gauge, 0);
+        scene.electric().connect(gauge, 1, conn2, 0);
+        scene.electric().tickForever();
+        scene.idle(5);
+        scene.electric().addSource(conn1, 0, 2);
+        scene.electric().addSource(conn2, 0, 0);
+        scene.idle(5);
+
+        scene.overlay().showText(80)
+                .text("The Redstone Converter is a device that converts redstone signals into resistance changes")
+                .pointAt(util.vector().of(2.5, 1.2, 2.5))
+                .attachKeyFrame()
+                .placeNearTarget();
+        scene.idle(90);
+
+        scene.world().modifyBlockEntityNBT(util.select().position(2, 1, 0),
+                AnalogLeverBlockEntity.class, nbt -> nbt.putInt("State", 2));
+        scene.world().modifyBlock(util.grid().at(2, 1, 1), state -> state.setValue(BlockStateProperties.POWER, 2), false);
+        scene.world().toggleRedstonePower(util.select().position(converter));
+        scene.world().modifyBlockEntity(converter, RedstoneConverterBlockEntity.class, conv -> conv.updateResistance(2 / 15f));
+        scene.idle(40);
+        scene.world().modifyBlockEntityNBT(util.select().position(2, 1, 0),
+                AnalogLeverBlockEntity.class, nbt -> nbt.putInt("State", 5));
+        scene.world().modifyBlock(util.grid().at(2, 1, 1), state -> state.setValue(BlockStateProperties.POWER, 5), false);
+        scene.world().modifyBlockEntity(converter, RedstoneConverterBlockEntity.class, conv -> conv.updateResistance(5 / 15f));
+        scene.idle(40);
+        scene.world().modifyBlockEntityNBT(util.select().position(2, 1, 0),
+                AnalogLeverBlockEntity.class, nbt -> nbt.putInt("State", 12));
+        scene.world().modifyBlock(util.grid().at(2, 1, 1), state -> state.setValue(BlockStateProperties.POWER, 12), false);
+        scene.world().modifyBlockEntity(converter, RedstoneConverterBlockEntity.class, conv -> conv.updateResistance(12 / 15f));
+        scene.idle(40);
+
+        scene.overlay().showText(60)
+                .text("Its internal structure resembles that of a potentiometer")
+                .attachKeyFrame()
+                .placeNearTarget();
+        scene.idle(70);
+
+        scene.overlay().showText(80)
+                .text("Resistance between non-inverting and tap pads will go down with the applied signal...")
+                .pointAt(util.vector().of(2.8, 1.1, 2.4))
+                .attachKeyFrame()
+                .placeNearTarget();
+        scene.idle(90);
+
+        scene.overlay().showText(80)
+                .text("...while resistance between inverting and tap pads will go up")
+                .pointAt(util.vector().of(2.8, 1.1, 2.6))
+                .attachKeyFrame()
+                .placeNearTarget();
+        scene.idle(90);
+
+        scene.overlay().showText(80)
+                .text("For some blocks, the Redstone Converter can provide more precision than a Redstone Comparator")
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(90);
