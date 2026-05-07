@@ -87,6 +87,11 @@ public class PowerGrid {
 		PlayerEvent.PLAYER_QUIT.register(PowerGrid::playerQuit);
 		InteractionEvent.RIGHT_CLICK_BLOCK.register(WireItem::useOn);
 		InteractionEvent.RIGHT_CLICK_ITEM.register(WireItem::use);
+		LifecycleEvent.SETUP.register(PowerGrid::setup);
+	}
+
+	private static void setup() {
+		RedstoneConverterRegistry.init();
 	}
 
 	private static void playerQuit(ServerPlayer player) {
@@ -136,7 +141,6 @@ public class PowerGrid {
 		ModdedParticles.PARTICLE_TYPES.register();
 
 		MovementBehaviour.REGISTRY.register(Blocks.LIGHTNING_ROD, new LightningRodMovementBehaviour());
-		RedstoneConverterRegistry.init();
 	}
 
 	public static ResourceLocation asResource(String path) {
