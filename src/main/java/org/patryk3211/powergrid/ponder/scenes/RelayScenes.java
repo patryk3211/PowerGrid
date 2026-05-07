@@ -698,6 +698,12 @@ public class RelayScenes {
                 .placeNearTarget();
         scene.idle(90);
 
+        scene.overlay().showText(70)
+                .text("When attached to a block it'll act similar to a Redstone Comparator")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(80);
+
         scene.overlay().showText(80)
                 .text("For some blocks, the Redstone Converter can provide more precision than a Redstone Comparator")
                 .placeNearTarget()
