@@ -187,7 +187,7 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
     }
 
     public void resetTemperature() {
-        this.temperature = BASE_TEMPERATURE;
+        setTemperature(BASE_TEMPERATURE);
     }
 
     public void setDissipationFactor(float dissipationFactor) {
@@ -243,7 +243,7 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
         if(!world.isClientSide || blockEntity.isVirtual()) {
             var tracked = trackedBehaviour != null ? get(world, trackedBehaviour, TYPE) : null;
             if (tracked != null) {
-                this.temperature = tracked.temperature;
+                setTemperature(tracked.getTemperature());
             }
 
             var iter = coolingAir.entrySet().iterator();
@@ -257,20 +257,20 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
 
             if (tracked == null) {
                 // Dissipate energy
-                float dissipatedPower = dissipationFactor * totalCoolingFactorMultiplier * (temperature - BASE_TEMPERATURE);
-                temperature -= dissipatedPower / 20f / thermalMass;
-                if (dissipatedPower > 0 && temperature < BASE_TEMPERATURE)
-                    temperature = BASE_TEMPERATURE;
+                float dissipatedPower = dissipationFactor * totalCoolingFactorMultiplier * (getTemperature() - BASE_TEMPERATURE);
+                setTemperature(getTemperature() - dissipatedPower / 20f / thermalMass);
+                if (dissipatedPower > 0 && getTemperature() < BASE_TEMPERATURE)
+                    setTemperature(BASE_TEMPERATURE);
                 if (dissipatedPower != 0)
                     world.blockEntityChanged(getPos());
             }
-            if (!Float.isFinite(temperature)) {
+            if (!Float.isFinite(getTemperature())) {
                 // Reset if something went wrong.
-                temperature = BASE_TEMPERATURE;
+                setTemperature(BASE_TEMPERATURE);
                 prevTemperature = BASE_TEMPERATURE;
             }
-            var temperatureDelta = temperature - prevTemperature;
-            prevTemperature = temperature;
+            var temperatureDelta = getTemperature() - prevTemperature;
+            prevTemperature = getTemperature();
 
             if(isOverheated()) {
                 if(temperatureDelta > 0 && overheatTicks++ >= OVERHEAT_TICKS) {
@@ -284,8 +284,8 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
                 } else if(temperatureDelta <= 0) {
                     // Overheated but temperature is falling, the device is safe this time.
                     overheatTicks = 0;
-                    if(temperature > overheatTemperature + 10) {
-                        temperature = overheatTemperature + 10;
+                    if(getTemperature() > overheatTemperature + 10) {
+                        setTemperature(overheatTemperature + 10);
                         blockEntity.sendData();
                     }
                 }
@@ -293,12 +293,12 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
         } else {
             var tracked = trackedBehaviour != null ? get(world, trackedBehaviour, TYPE) : null;
             if (tracked != null) {
-                this.temperature = tracked.temperature;
+                setTemperature(tracked.getTemperature());
             }
 
-            if(((behaviourFlags & OVERHEAT_PARTICLES) != 0) && temperature >= overheatTemperature - 50) {
+            if(((behaviourFlags & OVERHEAT_PARTICLES) != 0) && getTemperature() >= overheatTemperature - 50) {
                 var random = getWorld().getRandom();
-                float chance = (temperature - overheatTemperature + 100) / 100;
+                float chance = (getTemperature() - overheatTemperature + 100) / 100;
                 if (random.nextFloat() < chance) {
                     if (particleGenerator == null) {
                         double x = pos.getX() + random.nextDouble();
@@ -329,13 +329,13 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
     }
 
     public boolean isOverheated() {
-        return temperature >= overheatTemperature;
+        return getTemperature() >= overheatTemperature;
     }
 
     public void applyTickPower(double power) {
         if(Double.isFinite(power)) {
             var energy = power / 20f;
-            temperature += (float) (energy / thermalMass);
+            setTemperature(getTemperature() + (float) (energy / thermalMass));
         }
     }
 
@@ -349,13 +349,13 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
     @Override
     public void read(CompoundTag nbt, boolean clientPacket) {
         super.read(nbt, clientPacket);
-        temperature = nbt.getFloat("Temperature");
+        setTemperature(nbt.getFloat("Temperature"));
     }
 
     @Override
     public void write(CompoundTag nbt, boolean clientPacket) {
         super.write(nbt, clientPacket);
-        nbt.putFloat("Temperature", temperature);
+        nbt.putFloat("Temperature", getTemperature());
     }
 
     @Override
@@ -373,12 +373,12 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
 
     @Override
     public void writeToSync(FriendlyByteBuf buffer, boolean useDoubles, Function<OwnedFloatingNode, TransmissionLine> lineLookup) {
-        buffer.writeFloat(temperature);
+        buffer.writeFloat(getTemperature());
     }
 
     @Override
     public void readFromSync(FriendlyByteBuf buffer, boolean useDoubles) {
-        temperature = buffer.readFloat();
+        setTemperature(buffer.readFloat());
     }
 
     @Override
