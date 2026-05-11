@@ -727,6 +727,16 @@ public class ModdedBlocks {
             .transform(EncasingRegistry.addVariantTo(CRT))
             .register();
 
+    public static final BlockEntry<EncasedCRTBlock> BRASS_CRT = REGISTRATE.block("brass_encased_crt", p -> new EncasedCRTBlock(p, AllBlocks.BRASS_CASING::get))
+            .initialProperties(SharedProperties::wooden)
+            .lang("Brass Encased CRT")
+            .blockstate(horizontalBlock("block/crt_brass"))
+            .addLayer(() -> RenderType::translucent)
+            .transform(axeOrPickaxe())
+            .properties(p -> p.mapColor(MapColor.PODZOL))
+            .transform(EncasingRegistry.addVariantTo(CRT))
+            .register();
+
     public static BlockEntry<PunchCardReaderBlock> PUNCH_CARD_READER = REGISTRATE.block("punch_card_reader", PunchCardReaderBlock::new)
             .initialProperties(SharedProperties::softMetal)
             .blockstate(horizontalBlock("block/punch_card_reader/block"))

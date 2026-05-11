@@ -41,14 +41,15 @@ public class CRTRenderer extends SafeBlockEntityRenderer<CRTBlockEntity> {
     @Override
     protected void renderSafe(CRTBlockEntity be, float partialTicks, PoseStack ms, MultiBufferSource buffer, int light, int overlay) {
         var state = be.getBlockState();
+        var color = be.getColor().getTextureDiffuseColors();
         var facing = state.getValue(CRTBlock.HORIZONTAL_FACING);
 
         var bg = CachedBuffers.partialFacing(ModdedPartialModels.CRT_BACKGROUND, state, facing.getOpposite());
         bg.light(light).renderInto(ms, buffer.getBuffer(RenderType.solid()));
 
-        final int R = ModdedConfigs.client().crtRed.get(),
-                G = ModdedConfigs.client().crtGreen.get(),
-                B = ModdedConfigs.client().crtBlue.get();
+        final int R = (int) (color[0] * 255),
+                G = (int) (color[1] * 256),
+                B = (int) (color[2] * 256);
         var consumer = buffer.getBuffer(ModdedRenderLayers.getAdditiveCrt());
 
         ms.pushPose();
