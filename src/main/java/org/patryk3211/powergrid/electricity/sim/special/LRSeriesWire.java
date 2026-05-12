@@ -29,16 +29,11 @@ public class LRSeriesWire extends AbstractElectricWire implements IStaticResidua
     private double Ieq;
     private double I;
     private double Vprev;
-    private double residualScale;
 
     public LRSeriesWire(double L, double R, IElectricNode node1, IElectricNode node2) {
         super(node1, node2);
         this.inductance = L;
         this.resistance = R;
-
-        var R_Inductor = (2 * inductance) / getDeltaTime();
-        var G_I = 1 / R_Inductor;
-        residualScale = 1 - G_I / (1 / resistance + G_I);
     }
 
     @Override
@@ -66,9 +61,9 @@ public class LRSeriesWire extends AbstractElectricWire implements IStaticResidua
     @Override
     public void postUpperSolve() {
        if(isConverged()) {
-            Vprev = inductance * (current() - I) / getDeltaTime();
-            I = current() * 0.99999;
-        }
+           Vprev = 0.5 * inductance * (current() - I) / getDeltaTime();
+           I = current() * 0.99999;
+       }
     }
 
     @Override
@@ -79,6 +74,7 @@ public class LRSeriesWire extends AbstractElectricWire implements IStaticResidua
         }
         var G_I = getDeltaTime() / (2 * inductance);
 
+        double residualScale = 1 - G_I / (1 / resistance + G_I);
         Ieq = (Vprev * G_I + I) * residualScale;
         if(node1 != null)
             residual.add(node1.getIndex(), -Ieq);
@@ -91,9 +87,6 @@ public class LRSeriesWire extends AbstractElectricWire implements IStaticResidua
         this.inductance = L;
         this.resistance = R;
 
-        var R_Inductor = (2 * inductance) / 0.05;
-        var G_I = 1 / R_Inductor;
-        residualScale = 1 - G_I / (1 / resistance + G_I);
         if(network != null) {
             network.updateConductance(this, conductance() - oldConductance);
         }

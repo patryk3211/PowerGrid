@@ -24,7 +24,7 @@ import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
-import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
+import org.patryk3211.powergrid.electricity.sim.special.RelaySwitchWire;
 
 import static org.patryk3211.powergrid.circuits.components.RelayComponent.*;
 
@@ -42,29 +42,34 @@ public class DoubleRelayComponent extends MirrorableComponent {
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
         // Target power is 1.2 W
-        var current = placed.get(THRESHOLD_CURRENT);
-        var resistance = placed.get(THRESHOLD_VOLTAGE) / current;
+        var onCurrent = placed.get(THRESHOLD_CURRENT);
+        var offCurrent = onCurrent * ModdedConfigs.server().electricity.holdingCurrentPercent.getF();
+        var resistance = placed.get(THRESHOLD_VOLTAGE) / onCurrent;
         var coilWire = builder.connect(resistance, builder.terminalNode(0), builder.terminalNode(1));
 
         final var switchResistance = 0.05f;
         var state = placed.get(STATE);
 
         var common1 = builder.terminalNode(3);
-        var nc1 = builder.connectSwitch(switchResistance, common1, builder.terminalNode(2), !state);
-        var no1 = builder.connectSwitch(switchResistance, common1, builder.terminalNode(4), state);
+        var nc1 = new RelaySwitchWire(switchResistance, common1, builder.terminalNode(2), !state, coilWire, onCurrent, offCurrent, true);
+        var no1 = new RelaySwitchWire(switchResistance, common1, builder.terminalNode(4), state, coilWire, onCurrent, offCurrent, false);
 
         var common2 = builder.terminalNode(6);
-        var nc2 = builder.connectSwitch(switchResistance, common2, builder.terminalNode(5), !state);
-        var no2 = builder.connectSwitch(switchResistance, common2, builder.terminalNode(7), state);
+        var nc2 = new RelaySwitchWire(switchResistance, common2, builder.terminalNode(5), !state, coilWire, onCurrent, offCurrent, true);
+        var no2 = new RelaySwitchWire(switchResistance, common2, builder.terminalNode(7), state, coilWire, onCurrent, offCurrent, false);
 
-        placed.add(coilWire);
+        builder.add(nc1);
+        builder.add(no1);
+        builder.add(nc2);
+        builder.add(no2);
+
         placed.add(nc1);
         placed.add(no1);
         placed.add(nc2);
         placed.add(no2);
 
         thermals.builder()
-                .setMaxCurrent(current * 2, resistance, 125f)
+                .setMaxCurrent(onCurrent * 2, resistance, 125f)
                 .setThermalMass(0.02f)
                 .addHeatSource(coilWire);
         thermals.builder()
@@ -84,31 +89,19 @@ public class DoubleRelayComponent extends MirrorableComponent {
         if(placed.wires.isEmpty())
             return true;
 
-        var coilWire = placed.wires.get(0);
-        if(coilWire.isConverged()) {
-            var confCurrent = placed.get(THRESHOLD_CURRENT);
-            var current = Math.abs(coilWire.current());
-            var NC1 = (SwitchedWire) placed.wires.get(1);
-            var NO1 = (SwitchedWire) placed.wires.get(2);
-            var NC2 = (SwitchedWire) placed.wires.get(3);
-            var NO2 = (SwitchedWire) placed.wires.get(4);
-            if(placed.get(STATE) && current < confCurrent * ModdedConfigs.server().electricity.holdingCurrentPercent.getF()) {
-                // Below the set current the relay can turn off
-                NC1.setState(true);
-                NO1.setState(false);
-                NC2.setState(true);
-                NO2.setState(false);
-                placed.set(STATE, false);
-                placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), 0.75f, 1.9f));
-            } else if(!placed.get(STATE) && current > confCurrent) {
-                // Above the threshold current the relay can turn on
-                NC1.setState(false);
-                NO1.setState(true);
-                NC2.setState(false);
-                NO2.setState(true);
-                placed.set(STATE, true);
-                placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), 0.75f, 2.0f));
-            }
+        var NC1 = (RelaySwitchWire) placed.wires.get(0);
+        var NO1 = (RelaySwitchWire) placed.wires.get(1);
+        var NC2 = (RelaySwitchWire) placed.wires.get(2);
+        var NO2 = (RelaySwitchWire) placed.wires.get(3);
+        if(NO1.wasSwitched() | NC1.wasSwitched() | NO2.wasSwitched() | NC2.wasSwitched()) {
+            boolean state = NO1.getState();
+            placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(
+                    world,
+                    placed.getPos(),
+                    0.75f,
+                    state ? 2.0f : 1.9f
+            ));
+            placed.set(STATE, state);
         }
 
         return true;

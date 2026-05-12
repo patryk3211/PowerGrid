@@ -248,6 +248,8 @@ subprojects {
 			modLoaders.add('forge')
 		}
 
+		displayName = "Power Grid - ${mod_version.toString()} - ${isFabric ? 'Fabric' : 'Forge'}"
+
 		var createVersion = isFabric ? 'create-fabric' : 'create';
 		curseforge {
 			projectId = curseforgeId

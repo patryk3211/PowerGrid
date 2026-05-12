@@ -427,7 +427,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         var rA = cSolver.solverAbsolutePrecision.get();
         var rR = cSolver.solverRelativePrecision.get();
         var rM = cSolver.solverAbsoluteMinimumPrecision.get();
-        network.setPrecision(rA, rR, rM);
+        var sA = cSolver.solverMaxSearchAlpha.get();
+        network.setPrecision(rA, rR, rM, sA);
         network.bjtSmoothAlpha = cSolver.bjtLimAlpha.getF();
         network.diodeSmoothAlpha = cSolver.diodeLimAlpha.getF();
         network.triodeLimCathode = cSolver.triodeLimCathode.getF();
@@ -944,6 +945,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public void addAndMigrateNode(OwnedFloatingNode oldNode, OwnedFloatingNode newNode) {
+        if(newNode == null)
+            return;
         var endpoint = newNode.endpoint;
         if(oldNode != null && oldNode != newNode) {
             // Migrate connections into the new node.

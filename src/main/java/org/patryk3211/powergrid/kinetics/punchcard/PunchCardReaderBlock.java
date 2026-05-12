@@ -126,6 +126,17 @@ public class PunchCardReaderBlock extends ElectricKineticBlock implements IBE<Pu
     }
 
     @Override
+    public void onRemove(BlockState state, Level level, BlockPos pos, BlockState newState, boolean moving) {
+        super.onRemove(state, level, pos, newState, moving);
+        if(!state.is(newState.getBlock())) {
+            var be = getBlockEntity(level, pos);
+            if(be != null) {
+                be.dropItems();
+            }
+        }
+    }
+
+    @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         return onBlockEntityUse(level, pos, be -> {
             var side = hit.getDirection();

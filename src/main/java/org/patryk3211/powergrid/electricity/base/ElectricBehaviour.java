@@ -485,6 +485,11 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
         this.syncAppender = syncAppender;
     }
 
+    @Override
+    public String toString() {
+        return String.format("ElectricBehaviour(be=%s)", blockEntity);
+    }
+
     public interface SyncAppender {
         void writeToSync(FriendlyByteBuf buffer);
         void readFromSync(FriendlyByteBuf buffer);

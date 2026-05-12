@@ -28,7 +28,7 @@ import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
-import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
+import org.patryk3211.powergrid.electricity.sim.special.RelaySwitchWire;
 import org.patryk3211.powergrid.utility.Unit;
 
 public class RelayComponent extends MirrorableComponent {
@@ -51,22 +51,26 @@ public class RelayComponent extends MirrorableComponent {
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
         // Target power is 1.2 W
-        var current = placed.get(THRESHOLD_CURRENT);
-        var resistance = placed.get(THRESHOLD_VOLTAGE) / current;
+        var onCurrent = placed.get(THRESHOLD_CURRENT);
+        var offCurrent = onCurrent * ModdedConfigs.server().electricity.holdingCurrentPercent.getF();
+
+        var resistance = placed.get(THRESHOLD_VOLTAGE) / onCurrent;
         var coilWire = builder.connect(resistance, builder.terminalNode(0), builder.terminalNode(1));
 
         final var switchResistance = 0.05f;
         var common = builder.terminalNode(3);
         var state = placed.get(STATE);
-        var normallyClosed = builder.connectSwitch(switchResistance, common, builder.terminalNode(2), !state);
-        var normallyOpen = builder.connectSwitch(switchResistance, common, builder.terminalNode(4), state);
+        var normallyClosed = new RelaySwitchWire(switchResistance, common, builder.terminalNode(2), !state, coilWire, onCurrent, offCurrent, true);
+        var normallyOpen = new RelaySwitchWire(switchResistance, common, builder.terminalNode(4), state, coilWire, onCurrent, offCurrent, false);
 
-        placed.add(coilWire);
+        builder.add(normallyClosed);
+        builder.add(normallyOpen);
+
         placed.add(normallyClosed);
         placed.add(normallyOpen);
 
         thermals.builder()
-                .setMaxCurrent(current * 2, resistance, 125f)
+                .setMaxCurrent(onCurrent * 2, resistance, 125f)
                 .setThermalMass(0.02f)
                 .addHeatSource(coilWire);
         thermals.builder()
@@ -81,25 +85,17 @@ public class RelayComponent extends MirrorableComponent {
         if(placed.wires.isEmpty())
             return true;
 
-        var coilWire = placed.wires.get(0);
-        if(coilWire.isConverged()) {
-            var confCurrent = placed.get(THRESHOLD_CURRENT);
-            var current = Math.abs(coilWire.current());
-            var NC = (SwitchedWire) placed.wires.get(1);
-            var NO = (SwitchedWire) placed.wires.get(2);
-            if(placed.get(STATE) && current < confCurrent * ModdedConfigs.server().electricity.holdingCurrentPercent.getF()) {
-                // Below the set current the relay can turn off
-                NC.setState(true);
-                NO.setState(false);
-                placed.set(STATE, false);
-                placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), 0.75f, 1.9f));
-            } else if(!placed.get(STATE) && current > confCurrent) {
-                // Above the threshold current the relay can turn on
-                NC.setState(false);
-                NO.setState(true);
-                placed.set(STATE, true);
-                placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), 0.75f, 2.0f));
-            }
+        var NC = (RelaySwitchWire) placed.wires.get(0);
+        var NO = (RelaySwitchWire) placed.wires.get(1);
+        if(NO.wasSwitched() | NC.wasSwitched()) {
+            boolean state = NO.getState();
+            placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(
+                    world,
+                    placed.getPos(),
+                    0.75f,
+                    state ? 2.0f : 1.9f
+            ));
+            placed.set(STATE, state);
         }
 
         return true;
