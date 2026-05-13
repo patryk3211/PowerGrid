@@ -10,6 +10,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 
@@ -25,9 +27,8 @@ public class ElectricBlockTemp extends BlockTemp {
         if (behaviour == null)
             return 0;
 
-        // 1200ºC will approximately equal to a seething blaze burner
-        double temp = Math.max(Temperature.convert(behaviour.getTemperature() - 22f, Temperature.Units.C, Temperature.Units.MC, false) / 80, 0);
-        double rangeMax = temp * 11.67; // around 7 blocks at 1200ºC
+        double temp = Math.max((behaviour.getTemperature() - 22f) * ModdedConfigs.server().coldSweat.coldSweatTempScalar.get() / 100, 0);
+        double rangeMax = Math.max((behaviour.getTemperature() - 22f) * ModdedConfigs.server().coldSweat.coldSweatRangeScalar.get() / 100, 0);
         return CSMath.blend(temp, 0, distance, 0.5, rangeMax);
     }
 }
