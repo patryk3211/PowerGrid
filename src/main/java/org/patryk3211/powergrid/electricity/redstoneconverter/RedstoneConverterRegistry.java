@@ -26,6 +26,13 @@ public class RedstoneConverterRegistry {
         REGISTRY.register(ModdedBlocks.VOLTAGE_METER.get(), pgGauge);
         REGISTRY.register(ModdedBlocks.CURRENT_METER.get(), pgGauge);
         REGISTRY.register(ModdedBlocks.POWER_METER.get(), pgGauge);
+
+        registerUnifiedBlock(ModdedBlocks.BATTERY.get());
+        registerUnifiedBlock(ModdedBlocks.GENERATOR_CLUTCH.get());
+    }
+
+    public static <T extends Block&IRedstoneConverterBehaviour> void registerUnifiedBlock(T block) {
+        REGISTRY.register(block, block);
     }
 
     public static float get(Level level, BlockState state, BlockPos pos, Direction face) {
