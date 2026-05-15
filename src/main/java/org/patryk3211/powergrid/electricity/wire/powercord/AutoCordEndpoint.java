@@ -21,6 +21,7 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -55,6 +56,12 @@ public class AutoCordEndpoint implements ICordEndpoint {
     public IWireEndpoint makeOffset(BlockPos offset) {
         return new AutoCordEndpoint(pos.offset(offset), terminal1, terminal2,
                 placement.add(offset.getX(), offset.getY(), offset.getZ()), plugFacing);
+    }
+
+    @Override
+    public IWireEndpoint makeOffset(BlockPos blockOffset, Vec3 offset) {
+        return new AutoCordEndpoint(pos.offset(blockOffset), terminal1, terminal2,
+                placement.add(offset.x, offset.y, offset.z), plugFacing);
     }
 
     @Override
@@ -149,5 +156,9 @@ public class AutoCordEndpoint implements ICordEndpoint {
     @Nullable
     public Direction getPlugFacing() {
         return plugFacing;
+    }
+
+    public AutoCordEndpoint rotate(Rotation rotation) {
+        return new AutoCordEndpoint(pos, terminal1, terminal2, placement, plugFacing == null ? null : rotation.rotate(plugFacing));
     }
 }

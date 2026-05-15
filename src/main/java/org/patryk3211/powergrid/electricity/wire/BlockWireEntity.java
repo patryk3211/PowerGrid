@@ -29,6 +29,7 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
@@ -407,6 +408,16 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
 
         sendExtraData();
         return junction;
+    }
+
+    @Override
+    public void sublevelRotate(Rotation rotation) {
+        for(int i = 0; i < segments.size(); ++i) {
+            var point = segments.get(i);
+            segments.set(i, new Point(rotation.rotate(point.direction), point.gridLength));
+        }
+        bakeBoundingBoxes();
+        sendExtraData();
     }
 
     public static class Point {

@@ -313,6 +313,12 @@ public class JunctionWireEndpoint implements IWireEndpoint {
     }
 
     @Override
+    public IWireEndpoint makeOffset(BlockPos blockOffset, Vec3 offset) {
+        var newPos = pos.add(offset);
+        return new JunctionWireEndpoint(newPos, makeUuid(newPos, getId(id)));
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if(obj == this)
             return true;

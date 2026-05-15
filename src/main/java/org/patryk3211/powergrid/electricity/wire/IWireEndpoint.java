@@ -71,6 +71,10 @@ public interface IWireEndpoint {
         return null;
     }
 
+    default IWireEndpoint makeOffset(BlockPos blockOffset, Vec3 offset) {
+        return makeOffset(blockOffset);
+    }
+
     default SubLevelAccess getSubLevel(Level world) {
         return SableCompanion.INSTANCE.getContaining(world, getExactPosition(world));
     }
