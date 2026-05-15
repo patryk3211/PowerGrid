@@ -959,6 +959,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public void addAndMigrateNode(OwnedFloatingNode oldNode, OwnedFloatingNode newNode) {
+        if(newNode == null)
+            return;
         var endpoint = newNode.endpoint;
         if(oldNode != null && oldNode != newNode) {
             // Migrate connections into the new node.

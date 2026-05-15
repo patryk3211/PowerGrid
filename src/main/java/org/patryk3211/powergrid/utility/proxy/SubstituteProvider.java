@@ -39,6 +39,10 @@ public class SubstituteProvider<T> {
             mappings.put(clazz, value);
     }
 
+    public boolean isRegistered(Class<?> clazz) {
+        return mappings.containsKey(clazz);
+    }
+
     public void lock() {
         this.locked = true;
     }

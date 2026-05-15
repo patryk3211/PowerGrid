@@ -73,6 +73,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     private final Precalculated1<Float, StampedSupplier<LRSeriesWire>> fieldValue = new Precalculated1<>(WindingBlockEntity::fieldCalc, 0.001f);
 
     private boolean rebuildParallels = false;
+    private boolean adding = false;
 
     public WindingBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -332,7 +333,6 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             safeRebuildParallels();
     }
 
-
     private void addParallel(WindingBlockEntity otherMain) {
         assert level != null;
         assert isMain() : "Only main block entities can keep track of parallel windings";
@@ -340,6 +340,9 @@ public class WindingBlockEntity extends ElectricBlockEntity {
         assert !level.isClientSide || isVirtual() : "Parallel block entity collection can only occur on server";
         if(otherMain == this)
             return;
+        if(adding)
+            PowerGrid.LOGGER.warn("Prevented recursive add");
+        adding = true;
         if(ownerPosition != null) {
             var ownerWinding = level.getBlockEntity(ownerPosition, ModdedBlockEntities.WINDING.get());
             ownerWinding.ifPresentOrElse(owner -> owner.addParallel(otherMain), () -> {
@@ -353,6 +356,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                 parallelPositions = new HashSet<>();
             if(!parallelPositions.add(otherMain.getBlockPos())) {
                 // Already handled, don't need any more checking.
+                adding = false;
                 return;
             }
             if(otherMain.parallelPositions != null) {
@@ -378,6 +382,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             otherMain.sendData();
             sendData();
         }
+        adding = false;
     }
 
     @Override

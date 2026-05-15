@@ -20,7 +20,9 @@ import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -91,6 +93,14 @@ public class EncasedCRTBlock extends HorizontalElectricBlock implements IBE<CRTB
     }
 
     @Override
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+        if (stack.getItem() instanceof DyeItem dye) {
+            return onBlockEntityUseItemOn(level, pos, be -> be.setColor(dye.getDyeColor()));
+        }
+        return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+    }
+
+    @Override
     public InteractionResult onSneakWrenched(BlockState state, UseOnContext context) {
         var level = context.getLevel();
         if(level.isClientSide)
@@ -111,10 +121,5 @@ public class EncasedCRTBlock extends HorizontalElectricBlock implements IBE<CRTB
                 .setValue(HORIZONTAL_FACING, state.getValue(HORIZONTAL_FACING));
         level.setBlock(pos, encasedState, UPDATE_ALL);
         refreshConnectionEntities(level, pos);
-    }
-
-    @Override
-    public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        return InteractionResult.PASS;
     }
 }

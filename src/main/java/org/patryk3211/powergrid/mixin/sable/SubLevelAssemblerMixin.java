@@ -4,18 +4,17 @@ import dev.ryanhcode.sable.api.SubLevelAssemblyHelper;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.Rotation;
+import org.jetbrains.annotations.Contract;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.compat.sable.SableUtils;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.WorldNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
-import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
-import org.patryk3211.powergrid.electricity.wire.BlockWireEntity;
-import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.JunctionWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.*;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -27,7 +26,17 @@ import java.util.Set;
 @Mixin(SubLevelAssemblyHelper.class)
 public class SubLevelAssemblerMixin {
     @Unique
-    private static void powerGrid$handleJunction(ServerLevel level, WorldNetworks global, BlockPos offset, JunctionWireEndpoint junction, Set<TransmissionLinePart> checked, Set<BaseWireEntity> altered, Set<TransmissionLinePart> abandonedLines) {
+    @Contract("_, null, _ -> null")
+    private static IWireEndpoint powerGrid$offsetEndpoint(Level level, IWireEndpoint endpoint, SubLevelAssemblyHelper.AssemblyTransform transform) {
+        if(endpoint == null)
+            return null;
+        var pos = endpoint.getExactPosition(level);
+        var blockPos = BlockPos.containing(pos);
+        return endpoint.makeOffset(transform.apply(blockPos).subtract(blockPos), transform.apply(pos).subtract(pos));
+    }
+
+    @Unique
+    private static void powerGrid$handleJunction(ServerLevel level, WorldNetworks global, SubLevelAssemblyHelper.AssemblyTransform transform, JunctionWireEndpoint junction, Set<TransmissionLinePart> checked, Set<BaseWireEntity> altered, Set<TransmissionLinePart> abandonedLines) {
         var connected = global.findConnectedWires(junction);
         if(connected == null)
             return;
@@ -47,16 +56,19 @@ public class SubLevelAssemblerMixin {
                 owner.dropWire();
                 linePart.remove();
 
-                var movedE1 = e1.makeOffset(offset);
-                var movedE2 = e2.makeOffset(offset);
+                var movedE1 = powerGrid$offsetEndpoint(level, e1, transform);
+                var movedE2 = powerGrid$offsetEndpoint(level, e2, transform);
                 owner.sublevelMove(movedE1, movedE2);
+                if(transform.getRotation() != Rotation.NONE) {
+                    owner.sublevelRotate(transform.getRotation());
+                }
                 if(linePart.owner != null)
                     altered.add(linePart.owner);
 
                 if(linePart.getEndpoint1() == junction) {
-                    powerGrid$handleJunction(level, global, offset, e2, checked, altered, abandonedLines);
+                    powerGrid$handleJunction(level, global, transform, e2, checked, altered, abandonedLines);
                 } else if(linePart.getEndpoint2() == junction) {
-                    powerGrid$handleJunction(level, global, offset, e1, checked, altered, abandonedLines);
+                    powerGrid$handleJunction(level, global, transform, e1, checked, altered, abandonedLines);
                 } else {
                     PowerGrid.LOGGER.warn("Bad wire tree structure");
                 }
@@ -71,7 +83,6 @@ public class SubLevelAssemblerMixin {
             return;
         var altered = new ReferenceOpenHashSet<BaseWireEntity>();
         var abandonedLines = new ReferenceOpenHashSet<TransmissionLinePart>();
-        var offset = transform.apply(BlockPos.ZERO);
         var checked = new ReferenceOpenHashSet<TransmissionLinePart>();
         for(var blockPos : blocks) {
             var behaviour = ElectricBehaviour.get(level, blockPos, ElectricBehaviour.TYPE);
@@ -89,41 +100,30 @@ public class SubLevelAssemblerMixin {
                 }
                 IWireEndpoint endpoint1 = owner.getEndpoint1();
                 IWireEndpoint endpoint2 = owner.getEndpoint2();
-                if(endpoint1 instanceof JunctionWireEndpoint junction) {
-                    if(checked.add(linePart)) {
-                        if(endpoint2 != null)
-                            endpoint2 = endpoint2.makeOffset(offset);
-                        endpoint1 = endpoint1.makeOffset(offset);
+                if(checked.add(linePart) && !altered.contains(owner)) {
+                    if(endpoint1 instanceof JunctionWireEndpoint junction) {
+                        endpoint1 = powerGrid$offsetEndpoint(level, endpoint1, transform);
+                        endpoint2 = powerGrid$offsetEndpoint(level, endpoint2, transform);
                         // Needs to be dropped here or else the wires will be killed once junction is empty.
                         owner.dropWire();
                         linePart.remove();
-                        powerGrid$handleJunction(level, global, offset, junction, checked, altered, abandonedLines);
-                    }
-                } else if(endpoint2 instanceof JunctionWireEndpoint junction) {
-                    if(checked.add(linePart)) {
-                        if(endpoint1 != null)
-                            endpoint1 = endpoint1.makeOffset(offset);
-                        endpoint2 = endpoint2.makeOffset(offset);
+                        powerGrid$handleJunction(level, global, transform, junction, checked, altered, abandonedLines);
+                    } else if(endpoint2 instanceof JunctionWireEndpoint junction) {
+                        endpoint1 = powerGrid$offsetEndpoint(level, endpoint1, transform);
+                        endpoint2 = powerGrid$offsetEndpoint(level, endpoint2, transform);
                         // Needs to be dropped here or else the wires will be killed once junction is empty.
                         owner.dropWire();
                         linePart.remove();
-                        powerGrid$handleJunction(level, global, offset, junction, checked, altered, abandonedLines);
+                        powerGrid$handleJunction(level, global, transform, junction, checked, altered, abandonedLines);
+                    } else {
+                        endpoint1 = powerGrid$offsetEndpoint(level, endpoint1, transform);
+                        endpoint2 = powerGrid$offsetEndpoint(level, endpoint2, transform);
                     }
-                } else {
-                    if(endpoint1 != null) {
-                        var pos = endpoint1.getExactPosition(level);
-                        if(blockPos.getX() == Mth.floor(pos.x) && blockPos.getY() == Mth.floor(pos.y) && blockPos.getZ() == Mth.floor(pos.z)) {
-                            endpoint1 = endpoint1.makeOffset(offset);
-                        }
-                    }
-                    if (endpoint2 != null) {
-                        var pos = endpoint2.getExactPosition(level);
-                        if(blockPos.getX() == Mth.floor(pos.x) && blockPos.getY() == Mth.floor(pos.y) && blockPos.getZ() == Mth.floor(pos.z)) {
-                            endpoint2 = endpoint2.makeOffset(offset);
-                        }
+                    owner.sublevelMove(endpoint1, endpoint2);
+                    if(transform.getRotation() != Rotation.NONE) {
+                        owner.sublevelRotate(transform.getRotation());
                     }
                 }
-                owner.sublevelMove(endpoint1, endpoint2);
                 if(linePart.owner != null)
                     altered.add(linePart.owner);
             }
