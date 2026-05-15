@@ -41,6 +41,7 @@ import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.material.PushReaction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -252,6 +253,10 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         deferEndpointResolution |= 3;
         deferTicks = 0;
         sublevelMove = true;
+    }
+
+    public void sublevelRotate(Rotation rotation) {
+
     }
 
     // This method shouldn't be used too much. It's only needed in very special cases.

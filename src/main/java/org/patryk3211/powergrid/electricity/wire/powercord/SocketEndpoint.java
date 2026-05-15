@@ -81,7 +81,6 @@ public class SocketEndpoint implements ICordEndpoint {
     public void read(CompoundTag nbt) {
         var optionalPos = NbtUtils.readBlockPos(nbt,"Pos");
         if (optionalPos.isPresent())
-
             pos = NbtUtils.readBlockPos(nbt,"Pos").get();
     }
 

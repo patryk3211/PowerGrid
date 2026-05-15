@@ -27,6 +27,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableFloat;
@@ -326,6 +327,16 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     public void endpointRemoved(IWireEndpoint endpoint) {
         if(endpoint.equals(getEndpoint1()) || endpoint.equals(getEndpoint2()))
             kill();
+    }
+
+    @Override
+    public void sublevelRotate(Rotation rotation) {
+        if(endpoint1 instanceof AutoCordEndpoint auto) {
+            sublevelMove(auto.rotate(rotation), endpoint2);
+        }
+        if(endpoint2 instanceof AutoCordEndpoint auto) {
+            sublevelMove(endpoint1, auto.rotate(rotation));
+        }
     }
 
     @Override
