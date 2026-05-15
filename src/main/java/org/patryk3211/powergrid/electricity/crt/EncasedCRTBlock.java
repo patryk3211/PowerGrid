@@ -21,6 +21,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -88,6 +89,15 @@ public class EncasedCRTBlock extends HorizontalElectricBlock implements IBE<CRTB
     @Override
     public Block getCasing() {
         return casing.get();
+    }
+
+    @Override
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        var stack = player.getItemInHand(hand);
+        if (stack.getItem() instanceof DyeItem dye) {
+            return onBlockEntityUse(level, pos, be -> be.setColor(dye.getDyeColor()));
+        }
+        return InteractionResult.PASS;
     }
 
     @Override
