@@ -44,6 +44,7 @@ import org.patryk3211.powergrid.equipment.zapper.ElectroZapperItem;
 import org.patryk3211.powergrid.equipment.zapper.ElectroZapperItemRenderer;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingItem;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardItem;
+import org.patryk3211.powergrid.utility.proxy.SubstituteItemProvider;
 
 import java.util.function.Supplier;
 
@@ -213,7 +214,9 @@ public class ModdedItems {
             .model(barrier())
             .register();
 
-    public static final ItemEntry<PortableBatteryItem> PORTABLE_BATTERY = REGISTRATE.item("portable_battery", p -> new PortableBatteryItem(ZincArmorMaterial.INSTANCE, p, PowerGrid.asResource("zinc"), PORTABLE_BATTERY_PLACEABLE))
+    public static final ItemEntry<PortableBatteryItem> PORTABLE_BATTERY = REGISTRATE.item("portable_battery",
+                    p -> SubstituteItemProvider.INSTANCE.invoke(PortableBatteryItem.class, ZincArmorMaterial.INSTANCE, p, PowerGrid.asResource("zinc"), PORTABLE_BATTERY_PLACEABLE))
+            //p -> new PortableBatteryItem(ZincArmorMaterial.INSTANCE, p, PowerGrid.asResource("zinc"), PORTABLE_BATTERY_PLACEABLE))
             .model(itemWithParent("block/portable_battery/block"))
             .properties(p -> p.durability(-1))
 			.tag(forgeItemTag("chestplates"))

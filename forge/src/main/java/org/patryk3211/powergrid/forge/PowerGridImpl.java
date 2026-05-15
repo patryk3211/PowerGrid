@@ -67,6 +67,8 @@ import org.patryk3211.powergrid.data.recipe.forge.MixingRecipes;
 import org.patryk3211.powergrid.data.recipes.*;
 import org.patryk3211.powergrid.electricity.wire.registry.WireItemEntry;
 import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
+import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryItem;
+import org.patryk3211.powergrid.equipment.portablebattery.forge.ForgePortableBatteryItem;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardMenu;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlockEntity;
 import org.patryk3211.powergrid.kinetics.punchcard.forge.PunchCardMenuImpl;
@@ -75,6 +77,7 @@ import org.patryk3211.powergrid.network.CustomPayloadWrapper;
 import org.patryk3211.powergrid.ponder.PowerGridPonderPlugin;
 import org.patryk3211.powergrid.utility.proxy.ProxyProvider;
 import org.patryk3211.powergrid.utility.proxy.SubstituteBlockEntityProvider;
+import org.patryk3211.powergrid.utility.proxy.SubstituteItemProvider;
 import org.patryk3211.powergrid.utility.proxy.TFMGProxy;
 
 import java.util.List;
@@ -99,6 +102,8 @@ public class PowerGridImpl {
             TFMGBridge.init();
             ProxyProvider.add(TFMGProxy.class, new TFMGProxyImpl());
         }
+
+        SubstituteItemProvider.INSTANCE.shadow(PortableBatteryItem.class, ForgePortableBatteryItem.class);
 
         SubstituteBlockEntityProvider.INSTANCE.register(PunchCardReaderBlockEntity.class, PunchCardReaderBlockEntityImpl::new);
         PunchCardMenu.CONSTRUCTORS = PunchCardMenuImpl.constructors();
