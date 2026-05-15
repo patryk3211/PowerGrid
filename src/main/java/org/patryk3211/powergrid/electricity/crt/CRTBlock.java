@@ -98,16 +98,11 @@ public class CRTBlock extends HorizontalElectricBlock implements IBE<CRTBlockEnt
     }
 
     @Override
-    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        return InteractionResult.PASS;
-    }
-
-    @Override
     protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
         if(stack.getItem() instanceof DyeItem dye) {
-            return onBlockEntityUse(level, pos, be -> be.setColor(dye.getDyeColor()));
+            return onBlockEntityUseItemOn(level, pos, be -> be.setColor(dye.getDyeColor()));
         } else {
-            return tryEncase(state, level, pos, player.getItemInHand(hand), player, hand, hit);
+            return tryEncase(state, level, pos, player.getItemInHand(hand), player, hand, hitResult);
         }
     }
 
