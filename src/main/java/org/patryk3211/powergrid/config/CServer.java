@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.config;
 
+import dev.architectury.platform.Platform;
 import net.createmod.catnip.config.ConfigBase;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
@@ -23,6 +24,7 @@ public class CServer extends ConfigBase {
     public static final int CONFIG_VERSION = 4;
     public final ConfigInt version = i(CONFIG_VERSION, "configVersion", Comments.version);
 
+    public final CColdSweat coldSweat = (Platform.isModLoaded("cold_sweat")) ? nested(0, CColdSweat::new, Comments.coldSweat) : null;
     public final CKinetics kinetics = nested(0, CKinetics::new, Comments.kinetics);
     public final CRecipes recipes = nested(0, CRecipes::new, Comments.recipes);
     public final CElectricity electricity = nested(0, CElectricity::new, Comments.electricity);
@@ -56,6 +58,7 @@ public class CServer extends ConfigBase {
         public static final String electricity = "All things related to purely electrical devices";
         public static final String kinetics = "Things related to kinetic and electrokinetic devices";
         public static final String recipes = "Recipe configuration values";
+        public static final String coldSweat = "Cold Sweat configuration values";
         public static final String version = "Config version check, values below 0 will disable config version checker";
     }
 }

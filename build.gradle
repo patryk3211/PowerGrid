@@ -67,6 +67,11 @@ allprojects {
 			name = "RyanHCode Maven"
 			url = "https://maven.ryanhcode.dev/releases"
 		}
+
+		maven { // Cold Sweat
+			url = "https://cursemaven.com"
+			content { includeGroup("curse.maven") }
+		}
 	}
 
 	loom {
