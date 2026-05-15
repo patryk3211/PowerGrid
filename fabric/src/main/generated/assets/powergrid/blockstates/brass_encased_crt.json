@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "powergrid:block/crt_brass",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "powergrid:block/crt_brass"
+    },
+    "facing=south": {
+      "model": "powergrid:block/crt_brass",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "powergrid:block/crt_brass",
+      "y": 270
+    }
+  }
+}

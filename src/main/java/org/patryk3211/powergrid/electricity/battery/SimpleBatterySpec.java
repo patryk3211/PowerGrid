@@ -22,11 +22,11 @@ import java.util.function.Supplier;
 
 public class SimpleBatterySpec implements BatterySpec {
     public static final SimpleBatterySpec ACID_BATTERY = new SimpleBatterySpec(
-            () -> ModdedConfigs.server().electricity.acidBatteryCapacity.getF() * 10,
-            () -> ModdedConfigs.server().electricity.acidBatteryCapacity.getF() * 10 * ModdedConfigs.server().electricity.acidBatteryInitialCharge.getF(),
+            () -> ModdedConfigs.server().electricity.acidBatteryCapacity.getF() * 3600,
+            () -> ModdedConfigs.server().electricity.acidBatteryCapacity.getF() * 3600 * ModdedConfigs.server().electricity.acidBatteryInitialCharge.getF(),
             e -> 1.2f * e + 11.5f,
             // This resistance makes the battery effectively dead after a deep discharge
-            e -> Math.min(10000, (float) Math.exp(-21.18323 * e + 10.58157) + 0.1f)
+            e -> Math.min(10000, (float) Math.exp(-21.18323 * e + 10.58157) + ModdedConfigs.server().electricity.acidBatteryFullChargeInternalResistance.getF())
     );
 
     private final Supplier<Float> maxCharge;
