@@ -481,7 +481,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     }
 
     @Override
-    protected void unloaded() {
+    public void unloaded() {
         if(wire1 instanceof TransmissionLinePart part1 && wire2 instanceof TransmissionLinePart part2) {
             var reason = getRemovalReason();
             if(reason != null && reason.shouldDestroy()) {

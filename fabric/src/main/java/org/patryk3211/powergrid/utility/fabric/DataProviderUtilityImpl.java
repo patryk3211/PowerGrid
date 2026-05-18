@@ -96,27 +96,13 @@ public class DataProviderUtilityImpl {
                 });
     }
 
-    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> surfaceSwitch(String baseName) {
-        return (ctx, prov) ->
-                prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
-                    var builder = ConfiguredModel.builder();
-                    var suffix = state.getValue(SwitchBlock.OPEN) ? "_off" : "_on";
-                    surfaceFacingTransforms(state, (x, y, vertical) -> {
-                        var suffix2 = vertical ? "_v" : "_h";
-                        builder.modelFile(modModel(prov, baseName + suffix + suffix2));
-                        builder.rotationX(x).rotationY(y);
-                    });
-                    return builder.build();
-                });
-    }
-
-    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> surfaceBlock(String baseName) {
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> surfaceBlock(Function<BlockState, String> baseName) {
         return (ctx, prov) ->
                 prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
                     var builder = ConfiguredModel.builder();
                     surfaceFacingTransforms(state, (x, y, vertical) -> {
                         var suffix = vertical ? "_v" : "_h";
-                        builder.modelFile(modModel(prov, baseName + suffix));
+                        builder.modelFile(modModel(prov, baseName.apply(state) + suffix));
                         builder.rotationX(x).rotationY(y);
                     });
                     return builder.build();

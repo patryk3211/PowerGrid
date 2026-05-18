@@ -21,9 +21,11 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
@@ -39,13 +41,14 @@ import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Power;
 import org.patryk3211.powergrid.electricity.info.Voltage;
+import org.patryk3211.powergrid.electricity.redstoneconverter.IRedstoneConverterBehaviour;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
 @MethodsReturnNonnullByDefault
-public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> implements IAcceptConnector, IHaveElectricProperties {
+public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> implements IAcceptConnector, IHaveElectricProperties, IRedstoneConverterBehaviour {
     protected BatterySpec spec;
 
     public BatteryBlock(Properties settings) {
@@ -123,6 +126,28 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
     @Override
     public boolean isPolarized() {
         return true;
+    }
+
+    @Override
+    public boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
+
+    @Override
+    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+        var be = getBlockEntity(level, pos);
+        if(be == null)
+            return 0;
+        double fill = be.getEnergy() / be.getCapacity();
+        return Mth.floor(fill * 14.0f) + (fill > 0 ? 1 : 0);
+    }
+
+    @Override
+    public float getSignal(Level level, BlockState state, BlockPos pos, Direction face) {
+        var be = getBlockEntity(level, pos);
+        if(be == null)
+            return 0;
+        return (float) (be.getEnergy() / be.getCapacity());
     }
 
     @Override

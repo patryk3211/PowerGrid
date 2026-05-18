@@ -47,6 +47,7 @@ public class GeneratorClutchBlockEntity extends GeneratingKineticBlockEntity imp
     private float motorLoad;
     private boolean recalculateStress = false;
     private int generatedSpeed;
+    private int prevRedstoneOut;
 
     public GeneratorClutchBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -150,6 +151,21 @@ public class GeneratorClutchBlockEntity extends GeneratingKineticBlockEntity imp
             updateFromNetwork(capacity, stress, getOrCreateNetwork().getSize());
     }
 
+    public int getRedstoneOutput() {
+        float load = getLoad();
+        return Mth.floor(load * 14.0f) + (load > 0 ? 1 : 0);
+    }
+
+    public float getLoad() {
+        float load;
+        if(mode.get() == ClutchMode.MOTOR) {
+            load = this.motorLoad;
+        } else {
+            load = this.load;
+        }
+        return load;
+    }
+
     @Override
     public void tick() {
         super.tick();
@@ -169,6 +185,10 @@ public class GeneratorClutchBlockEntity extends GeneratingKineticBlockEntity imp
                 force = Math.abs(maxForce);
             }
             rotorBehaviour.applyTickForce(-force * Math.signum(rotorBehaviour.getAngularVelocity()));
+        }
+        if(getRedstoneOutput() != prevRedstoneOut) {
+            level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+            prevRedstoneOut = getRedstoneOutput();
         }
     }
 
