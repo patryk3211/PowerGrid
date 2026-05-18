@@ -94,7 +94,7 @@ public abstract class Rotation4ElectricBlock extends DirectionalElectricBlock {
                 case CLOCKWISE_90 -> 1;
                 case CLOCKWISE_180 -> 2;
                 case COUNTERCLOCKWISE_90 -> 3;
-            } % 4);
+            }) % 4;
             return state.setValue(ROTATION, rotation);
         }
         return super.rotate(state, rot);
