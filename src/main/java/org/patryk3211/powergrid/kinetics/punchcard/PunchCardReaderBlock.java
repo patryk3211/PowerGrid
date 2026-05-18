@@ -137,6 +137,18 @@ public class PunchCardReaderBlock extends ElectricKineticBlock implements IBE<Pu
     }
 
     @Override
+    public boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
+
+    @Override
+    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+        return getBlockEntityOptional(level, pos)
+                .map(PunchCardReaderBlockEntity::getRedstoneOutput)
+                .orElse(0);
+    }
+
+    @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         return onBlockEntityUse(level, pos, be -> {
             var side = hit.getDirection();
