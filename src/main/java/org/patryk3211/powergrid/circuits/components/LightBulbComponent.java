@@ -82,9 +82,11 @@ public class LightBulbComponent extends OrientableComponent implements IRendered
     @Override
     public void render(CircuitBoardBlockEntity be, PlacedComponent placed, float partialTicks, PoseStack ms, MultiBufferSource bufferSource, int light, int overlay) {
         var glowModel = ModdedPartialModels.LIGHT_BULB_GLOW_DYED;
+        var bulbModel = ModdedPartialModels.LIGHT_BULB_BULB_DYED;
 
         if (placed.get(COLOR) == DyeColor.WHITE) {
             glowModel = ModdedPartialModels.LIGHT_BULB_GLOW;
+            bulbModel = ModdedPartialModels.LIGHT_BULB_BULB;
         }
         
         var color = placed.get(COLOR).getTextureDiffuseColors();
@@ -94,7 +96,7 @@ public class LightBulbComponent extends OrientableComponent implements IRendered
         var blue = color[2];
 
         // Render the bulb here to avoid adding all circuit board quads to cutout layer.
-        var bulb = CachedBuffers.partial(ModdedPartialModels.LIGHT_BULB_BULB, be.getBlockState());
+        var bulb = CachedBuffers.partial(bulbModel, be.getBlockState());
         bulb.color((int) (red * 255), (int) (green * 255), (int) (blue * 255), 255);
         bulb.light(light).renderInto(ms, bufferSource.getBuffer(RenderType.cutoutMipped()));
         
