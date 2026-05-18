@@ -78,7 +78,7 @@ public abstract class WireEntity extends BaseWireEntity {
     }
 
     @Override
-    protected void unloaded() {
+    public void unloaded() {
         if(wire instanceof TransmissionLinePart part) {
             var reason = getRemovalReason();
             if(reason != null && reason.shouldDestroy()) {
