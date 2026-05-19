@@ -49,11 +49,6 @@ public class ZeroToNineNumberModule implements IDisplayModule {
         return 9;
     }
 
-    @Override
-    public IDisplayModule isDamaged() {
-        return null;
-    }
-
     public DisplayModuleType getDisplayModuleType() {
         return DisplayModuleType.ZERO_TO_NINE;
     }

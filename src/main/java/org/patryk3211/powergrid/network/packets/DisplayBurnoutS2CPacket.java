@@ -23,16 +23,6 @@ public class DisplayBurnoutS2CPacket implements SimplePacket {
         this.slotIndex = slotIndex;
     }
 
-    public DisplayBurnoutS2CPacket(FriendlyByteBuf buf) {
-        this.pos = buf.readBlockPos();
-        this.slotIndex = buf.readInt();
-    }
-
-//    @Override
-//    public void write(FriendlyByteBuf buf) {
-//        buf.writeBlockPos(pos);
-//        buf.writeInt(slotIndex);
-//    }
     @Override
     public void encode(FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);

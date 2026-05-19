@@ -34,8 +34,6 @@ public interface IDisplayModule {
 
     default int getDisplayTextureCharacterCount() {return 0;}
 
-    IDisplayModule isDamaged(); //todo Implement damage system if required
-
     String serialize();
 
 }

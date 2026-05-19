@@ -45,11 +45,6 @@ public class HexadecimalAlphanumericModule implements IDisplayModule {
     }
 
     @Override
-    public IDisplayModule isDamaged() {
-        return null;
-    }
-
-    @Override
     public ResourceLocation getDisplayTexture() {
         return PowerGrid.texture("block/modular_display/zerotof");
     }

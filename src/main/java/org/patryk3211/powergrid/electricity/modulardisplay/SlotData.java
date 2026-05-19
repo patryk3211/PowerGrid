@@ -17,7 +17,7 @@ public class SlotData {
 
     public boolean isEmpty()    { return module == null; }
 
-    public boolean getHalfClick() { return module.getHalfClick();}
+    public boolean getHalfClick() { return module != null ? module.getHalfClick() : false;}
 
     public int getIndex() {
         return module != null ? module.getIndex() : -1;

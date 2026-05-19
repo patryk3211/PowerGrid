@@ -92,6 +92,8 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedBlocks.ELECTRIC_FAN, "electric_fan", DeviceScenes::electricFan, PowerGridPonderTags.ELECTRIC_DEVICES);
         HELPER.addStoryBoard(AllBlocks.ENCASED_FAN, "encased_fan", DeviceScenes::encasedFan);
 
+        HELPER.addStoryBoard(ModdedBlocks.MODULAR_DISPLAY, "modular_display", DeviceScenes::modularDisplay, PowerGridPonderTags.ELECTRIC_DEVICES);
+
         HELPER.forComponents(ModdedItems.MAGNET)
                 .addStoryBoard("magnet", MagnetScenes::magnet)
                 .addStoryBoard("lightning_attractor", MagnetScenes::lightningAttractor);
@@ -136,5 +138,6 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedItems.POTENTIOMETER, "circuit/potentiometer", CircuitScenes::potentiometer, PowerGridPonderTags.CIRCUIT_COMPONENTS);
         HELPER.addStoryBoard(ModdedItems.REGULATOR_TUBE, "circuit/regulator_tube", CircuitScenes::regulatorTube, PowerGridPonderTags.CIRCUIT_COMPONENTS);
         HELPER.addStoryBoard(ModdedItems.NEON_BULB, "circuit/neon", CircuitScenes::neonBulb, PowerGridPonderTags.CIRCUIT_COMPONENTS);
+        HELPER.addStoryBoard(ModdedItems.DISPLAY_MODULE, "circuit/display_module", CircuitScenes::displayModule, PowerGridPonderTags.CIRCUIT_COMPONENTS);
     }
 }
