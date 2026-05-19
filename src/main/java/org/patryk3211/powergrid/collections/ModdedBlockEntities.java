@@ -47,6 +47,7 @@ import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntit
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureRenderer;
 import org.patryk3211.powergrid.electricity.modulardisplay.ModularDisplayBlockEntity;
 import org.patryk3211.powergrid.electricity.modulardisplay.ModularDisplayBlockEntityRenderer;
+import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterBlockEntity;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlockEntity;
 import org.patryk3211.powergrid.electricity.socket.SocketBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlockEntity;
@@ -326,6 +327,11 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<SocketBlockEntity> SOCKET =
             REGISTRATE.blockEntity("socket", SocketBlockEntity::new)
                     .validBlock(ModdedBlocks.SOCKET)
+                    .register();
+
+    public static final BlockEntityEntry<RedstoneConverterBlockEntity> REDSTONE_CONVERTER =
+            REGISTRATE.blockEntity("redstone_converter", RedstoneConverterBlockEntity::new)
+                    .validBlock(ModdedBlocks.REDSTONE_CONVERTER)
                     .register();
 
     public static final BlockEntityEntry<CarbonPileCoilBlockEntity> CARBON_PILE_COIL =

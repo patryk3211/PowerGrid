@@ -149,6 +149,9 @@
   "powergrid.crt.heater": "Heater",
   "powergrid.crt.grid": "Grid",
 
+  "powergrid.redconv.inverting": "Inverting",
+  "powergrid.redconv.noninverting": "Non-Inverting",
+
   "powergrid.devices.creative.voltage": "Output voltage",
   "powergrid.devices.creative.current": "Output current",
   "powergrid.devices.resistor.resistance": "Resistance",

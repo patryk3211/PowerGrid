@@ -60,6 +60,11 @@ allprojects {
 		}
 
 		maven { url = "https://maven.terraformersmc.com/releases" } // Mod Menu, EMI
+
+		maven { // Cold Sweat
+			url = "https://cursemaven.com"
+			content { includeGroup("curse.maven") }
+		}
 	}
 
 	loom {

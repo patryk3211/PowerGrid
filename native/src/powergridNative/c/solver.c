@@ -27,7 +27,7 @@ void solver_init(solver_t *solver, void *rhsOpBuf, void *jacobianOpBuf, int cmdC
     solver->m_B.Dtype = SLU_D;
     solver->m_B.Mtype = SLU_GE;
     solver->m_B.Store = &solver->m_Bstore;
-    
+
     solver->m_minimumAllowedPrecision = 1e-6;
     solver->m_absoluteStoppingCriterion = 1e-7;
     solver->m_relativeStoppingCriterion = 1e-12;
@@ -55,16 +55,22 @@ static void solver_free_bufs(solver_t *solver) {
     solver->m_state = 0;
     solver->m_residual = 0;
     solver->m_stateDelta = 0;
+
+    PG_TRACE("[Solver::free_bufs] Deleting old jBuffers");
+    if(solver->m_stateBuffer != 0) {
+        (*solver->m_env)->DeleteGlobalRef(solver->m_env, solver->m_stateBuffer);
+        solver->m_stateBuffer = 0;
+    }
+    if(solver->m_bBuffer != 0) {
+        (*solver->m_env)->DeleteGlobalRef(solver->m_env, solver->m_bBuffer);
+        solver->m_bBuffer = 0;
+    }
 }
 
 void solver_destroy(solver_t *solver) {
     PG_TRACE("[Solver::~Solver] entering");
     sparsematrix_destroy(&solver->m_A);
     solver_free_bufs(solver);
-    if(solver->m_stateBuffer != 0)
-        (*solver->m_env)->DeleteGlobalRef(solver->m_env, solver->m_stateBuffer);
-    if(solver->m_bBuffer != 0)
-        (*solver->m_env)->DeleteGlobalRef(solver->m_env, solver->m_bBuffer);
     PG_TRACE("[Solver::~Solver] returning");
 }
 
@@ -91,12 +97,6 @@ void solver_resize(solver_t *solver, int size) {
     solver->m_Bstore.lda = solver->m_B.nrow = size;
     solver->m_Xstore.nzval = solver->m_state;
     solver->m_Bstore.nzval = solver->m_b;
-
-    PG_TRACE("[Solver::resize] Deleting old jBuffers");
-    if(solver->m_stateBuffer != 0)
-        (*solver->m_env)->DeleteGlobalRef(solver->m_env, solver->m_stateBuffer);
-    if(solver->m_bBuffer != 0)
-        (*solver->m_env)->DeleteGlobalRef(solver->m_env, solver->m_bBuffer);
 
     PG_TRACE("[Solver::resize] Allocating new jBuffers");
     solver->m_stateBuffer = (*solver->m_env)->NewDirectByteBuffer(solver->m_env, solver->m_state, size * sizeof(double));
@@ -187,6 +187,7 @@ jobject solver_single_tick(solver_t *solver, int maxIters, jobject mnaObj, int c
     for(i = 0; i < maxIters; ++i) {
         if(i == 0) {
             // Run inner hooks
+            PG_ASSERT_(solver->m_stateBuffer, "jBuffer 'state' not initialized!");
             int cmdCount = (*solver->m_env)->CallIntMethod(solver->m_env, mnaObj, solver->m_iterHookMethod, i, solver->m_stateBuffer);
             if(cmdCount != 0)
                 solver_process_jacobian_buffer(solver, cmdCount);
@@ -194,10 +195,11 @@ jobject solver_single_tick(solver_t *solver, int maxIters, jobject mnaObj, int c
 
         // Compute residual vector
         memcpy(solver->m_b, solver->m_rhs, solver->m_size * sizeof(double));
+        PG_ASSERT_(solver->m_bBuffer, "jBuffer 'b' not initialized!");
         (*solver->m_env)->CallVoidMethod(solver->m_env, mnaObj, solver->m_residualAddMethod, solver->m_bBuffer);
         memcpy(solver->m_residual, solver->m_b, solver->m_size * sizeof(double));
         int inc = 1;
-        
+
         char trans = 'N';
         // R = A * x - R
         SuperMatrix* A = sparsematrix_supermatrix(&solver->m_A);
@@ -222,11 +224,13 @@ jobject solver_single_tick(solver_t *solver, int maxIters, jobject mnaObj, int c
             alpha = 0;
             while(alpha < solver->m_maxSearchAlpha) {
                 // Run inner hooks
+                PG_ASSERT_(solver->m_stateBuffer, "jBuffer 'state' not initialized!");
                 int cmdCount = (*solver->m_env)->CallIntMethod(solver->m_env, mnaObj, solver->m_iterHookMethod, i, solver->m_stateBuffer);
                 if(cmdCount != 0)
                     solver_process_jacobian_buffer(solver, cmdCount);
                 // Compute residual vector
                 memcpy(solver->m_b, solver->m_rhs, solver->m_size * sizeof(double));
+                PG_ASSERT_(solver->m_bBuffer, "jBuffer 'b' not initialized!");
                 (*solver->m_env)->CallVoidMethod(solver->m_env, mnaObj, solver->m_residualAddMethod, solver->m_bBuffer);
                 memcpy(solver->m_residual, solver->m_b, solver->m_size * sizeof(double));
                 // R = A * x - R

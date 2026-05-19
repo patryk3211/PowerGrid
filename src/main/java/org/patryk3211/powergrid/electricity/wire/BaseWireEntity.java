@@ -485,7 +485,12 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         return -1;
     }
 
-    protected abstract void unloaded();
+    public void redeferEndpoints() {
+        deferEndpointResolution |= 3;
+        deferTicks = 3;
+    }
+
+    public abstract void unloaded();
 
     public static void entityUnload(Entity entity, ServerLevel world) {
         if(entity instanceof BaseWireEntity wire)

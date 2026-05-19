@@ -15,8 +15,8 @@
  */
 package org.patryk3211.powergrid.ponder;
 
-import com.simibubi.create.AllItems;
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllItems;
 import com.simibubi.create.infrastructure.ponder.AllCreatePonderTags;
 import com.tterrag.registrate.util.entry.ItemProviderEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
@@ -106,6 +106,8 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedBlocks.MV_SWITCH, "switch", RelayScenes.switchSceneFor(ModdedBlocks.MV_SWITCH, "mv_switch"), PowerGridPonderTags.ELECTRIC_RELAYS);
         HELPER.addStoryBoard(ModdedBlocks.HV_SWITCH, "hv_switch", RelayScenes::hvSwitch, PowerGridPonderTags.ELECTRIC_RELAYS);
         HELPER.addStoryBoard(ModdedBlocks.HV_BREAKER, "hv_breaker", RelayScenes::hvBreaker, PowerGridPonderTags.ELECTRIC_RELAYS);
+
+        HELPER.addStoryBoard(ModdedBlocks.REDSTONE_CONVERTER, "redstone_converter", RelayScenes::redstoneConverter);
 
         HELPER.forComponents(ModdedBlocks.CONTACTOR)
                 .addStoryBoard("contactor", RelayScenes::contactor, PowerGridPonderTags.ELECTRIC_RELAYS)

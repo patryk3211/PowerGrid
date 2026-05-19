@@ -371,6 +371,10 @@ public class TransmissionLine extends ElectricWire {
         if(ModdedConfigs.logsEnabled())
             PowerGrid.LOGGER.debug("{}: Unresolving transmission line between {} and {}", this, node1, node2);
         for(var segment : segments) {
+            if(segment.owner != null) {
+                segment.owner.redeferEndpoints();
+                segment.owner.unloaded();
+            }
             segment.setLine(null);
         }
         if(ENABLE_VALIDATION)

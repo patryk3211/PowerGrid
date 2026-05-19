@@ -237,7 +237,7 @@ public class StringLightCordEntity extends CordEntity {
     }
 
     @Override
-    protected void unloaded() {
+    public void unloaded() {
         super.unloaded();
         if(pWire1 != null) {
             pWire1.remove();

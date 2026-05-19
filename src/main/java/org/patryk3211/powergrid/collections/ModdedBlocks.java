@@ -78,6 +78,7 @@ import org.patryk3211.powergrid.electricity.grounding.GroundingRodBlock;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.light.string.StringLightBlock;
+import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterBlock;
 import org.patryk3211.powergrid.electricity.modulardisplay.ModularDisplayBlock;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlock;
 import org.patryk3211.powergrid.electricity.socket.SocketBlock;
@@ -640,6 +641,16 @@ public class ModdedBlocks {
             .transform(pickaxeOnly())
             .item()
                 .model(itemWithParent("block/power_plug_v"))
+                .build()
+            .register();
+
+    public static final BlockEntry<RedstoneConverterBlock> REDSTONE_CONVERTER = REGISTRATE.block("redstone_converter", RedstoneConverterBlock::new)
+            .blockstate(surfaceBlock(state -> state.getValue(POWERED) ? "block/redstone_converter/on" : "block/redstone_converter/off"))
+            .transform(pickaxeOnly())
+            .transform(CResistance.setResistances("min", 5, "max", 1000))
+            .transform(CThermal.maxPower(50, 0.75f))
+            .item()
+                .model(itemWithParent("block/redstone_converter/off_v"))
                 .build()
             .register();
 

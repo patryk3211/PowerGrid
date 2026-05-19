@@ -37,10 +37,11 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.electricity.redstoneconverter.IRedstoneConverterBehaviour;
 import org.patryk3211.powergrid.kinetics.generator.IRotorAssemblyPart;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBehaviour;
 
-public class GeneratorClutchBlock extends DirectionalKineticBlock implements IBE<GeneratorClutchBlockEntity>, IRotorAssemblyPart {
+public class GeneratorClutchBlock extends DirectionalKineticBlock implements IBE<GeneratorClutchBlockEntity>, IRotorAssemblyPart, IRedstoneConverterBehaviour {
     public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
     public static final VoxelShaper SHAPER = VoxelShaper.forDirectional(Shapes.or(
             box(0, 0, 0, 16, 16, 10),
@@ -124,6 +125,25 @@ public class GeneratorClutchBlock extends DirectionalKineticBlock implements IBE
     public boolean canConnect(BlockState state, Direction dir) {
         // Facing side is the kinetic input, opposite is the rotor assembly.
         return state.getValue(FACING) == dir.getOpposite();
+    }
+
+    @Override
+    public boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
+
+    @Override
+    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+        return getBlockEntityOptional(level, pos)
+                .map(GeneratorClutchBlockEntity::getRedstoneOutput)
+                .orElse(0);
+    }
+
+    @Override
+    public float getSignal(Level level, BlockState state, BlockPos pos, Direction face) {
+        return getBlockEntityOptional(level, pos)
+                .map(GeneratorClutchBlockEntity::getLoad)
+                .orElse(0.0f);
     }
 
     @Override
