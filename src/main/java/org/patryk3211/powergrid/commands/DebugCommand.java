@@ -41,6 +41,8 @@ public class DebugCommand {
                     return owned;
             }
             checkNodes.addAll(connected);
+            if(checkNodes.size() > 10000)
+                break;
         }
         return null;
     }

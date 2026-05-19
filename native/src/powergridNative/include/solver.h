@@ -39,8 +39,6 @@ typedef struct Solver {
     jobject m_stateBuffer;
     jobject m_bBuffer;
 
-    SuperMatrix m_X;
-    DNformat m_Xstore;
     SuperMatrix m_B;
     DNformat m_Bstore;
 
