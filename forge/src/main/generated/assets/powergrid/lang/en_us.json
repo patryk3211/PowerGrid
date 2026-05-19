@@ -61,6 +61,7 @@
   "block.powergrid.generator_commutator": "Generator Commutator",
   "block.powergrid.generator_housing": "Generator Housing",
   "block.powergrid.generator_induction_rotor": "Generator Induction Rotor",
+  "block.powergrid.generator_large_induction_rotor": "Generator Large Induction Rotor",
   "block.powergrid.generator_vertical_commutator": "Vertical Generator Commutator",
   "block.powergrid.grounding_rod": "Grounding Rod",
   "block.powergrid.heating_coil": "Heating Coil",

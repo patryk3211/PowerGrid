@@ -26,6 +26,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.BlockState;
+import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 
 public class RotorRenderer extends SafeBlockEntityRenderer<RotorBlockEntity> {
     public RotorRenderer(BlockEntityRendererProvider.Context context) {
@@ -33,7 +34,7 @@ public class RotorRenderer extends SafeBlockEntityRenderer<RotorBlockEntity> {
 
     @Override
     protected void renderSafe(RotorBlockEntity rotor, float partialTicks, PoseStack matrixStack, MultiBufferSource buffer, int light, int overlay) {
-        if(VisualizationManager.supportsVisualization(rotor.getLevel()))
+        if(VisualizationManager.supportsVisualization(rotor.getLevel()) && rotor.getType() != ModdedBlockEntities.GENERATOR_LARGE_INDUCTION_ROTOR.get())
             return;
 
         var state = rotor.getBlockState();
@@ -44,7 +45,7 @@ public class RotorRenderer extends SafeBlockEntityRenderer<RotorBlockEntity> {
 
         rotorModel.light(light);
         rotorModel.rotateCentered(rotorAngle, Direction.get(Direction.AxisDirection.POSITIVE, axis));
-        rotorModel.renderInto(matrixStack, buffer.getBuffer(RenderType.solid()));
+        rotorModel.renderInto(matrixStack, buffer.getBuffer(RenderType.cutoutMipped()));
     }
 
     public static float getRotorAngle(SmartBlockEntity rotor, float partialTicks) {

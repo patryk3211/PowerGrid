@@ -156,6 +156,12 @@ public class ModdedBlockEntities {
                     .renderer(() -> RotorRenderer::new)
                     .register();
 
+    public static final BlockEntityEntry<InductionRotorBlockEntity> GENERATOR_LARGE_INDUCTION_ROTOR =
+            REGISTRATE.blockEntity("generator_large_induction_rotor", InductionRotorBlockEntity::new)
+                    .validBlock(ModdedBlocks.GENERATOR_LARGE_INDUCTION_ROTOR)
+                    .renderer(() -> RotorRenderer::new)
+                    .register();
+
     public static final BlockEntityEntry<CommutatorBlockEntity> GENERATOR_COMMUTATOR =
             REGISTRATE.blockEntity("generator_commutator", CommutatorBlockEntity::new)
                     .visual(() -> CommutatorVisual::new)

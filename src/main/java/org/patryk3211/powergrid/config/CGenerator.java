@@ -29,6 +29,7 @@ public class CGenerator extends ConfigBase {
 
 	public final ConfigFloat generatorRotorInertia = f(0.5f, 0, "generatorRotorInertia");
 	public final ConfigFloat generatorInductionRotorInertia = f(0.5f, 0, "generatorInductionRotorInertia");
+	public final ConfigFloat generatorLargeInductionRotorInertia = f(2.0f, 0, "generatorLargeInductionRotorInertia");
 	public final ConfigFloat generatorCommutatorInertia = f(0.1f, 0, "generatorCommutatorInertia");
 	public final ConfigFloat generatorClutchInertia = f(0.1f, 0, "generatorClutchInertia");
 

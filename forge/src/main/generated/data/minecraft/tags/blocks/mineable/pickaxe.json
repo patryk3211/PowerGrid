@@ -12,6 +12,7 @@
     "powergrid:power_gauge",
     "powergrid:plotter",
     "powergrid:generator_induction_rotor",
+    "powergrid:generator_large_induction_rotor",
     "powergrid:generator_commutator",
     "powergrid:generator_vertical_commutator",
     "powergrid:generator_clutch",

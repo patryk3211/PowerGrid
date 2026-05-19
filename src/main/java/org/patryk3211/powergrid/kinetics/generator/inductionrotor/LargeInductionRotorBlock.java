@@ -13,20 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.patryk3211.powergrid.kinetics.generator.rotor;
+package org.patryk3211.powergrid.kinetics.generator.inductionrotor;
 
-import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
+import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 
-public class SimpleRotorBlockEntity extends RotorBlockEntity {
-    public SimpleRotorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
-        super(typeIn, pos, state);
+public class LargeInductionRotorBlock extends InductionRotorBlock {
+    public LargeInductionRotorBlock(Properties properties) {
+        super(properties);
     }
 
     @Override
-    public float inertia() {
-        return ModdedConfigs.server().kinetics.generatorControls.generatorRotorInertia.getF();
+    public float getInertia() {
+        return ModdedConfigs.server().kinetics.generatorControls.generatorLargeInductionRotorInertia.getF();
+    }
+
+    @Override
+    public BlockEntityType<? extends InductionRotorBlockEntity> getBlockEntityType() {
+        return ModdedBlockEntities.GENERATOR_LARGE_INDUCTION_ROTOR.get();
     }
 }

@@ -39,6 +39,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
@@ -84,6 +85,11 @@ public class VerticalCommutatorBlock extends AbstractRotorBlock implements IBE<C
                 })
                 .build();
         outlines = getShapeForEachState(terminals.shapeMapper());
+    }
+
+    @Override
+    public float getInertia() {
+        return ModdedConfigs.server().kinetics.generatorControls.generatorCommutatorInertia.getF();
     }
 
     @Override

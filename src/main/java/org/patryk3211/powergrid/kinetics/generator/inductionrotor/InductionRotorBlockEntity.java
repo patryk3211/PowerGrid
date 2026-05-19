@@ -15,12 +15,10 @@
  */
 package org.patryk3211.powergrid.kinetics.generator.inductionrotor;
 
-import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.sim.calculation.Precalculated;
 import org.patryk3211.powergrid.electricity.sim.calculation.PrecalculatedN;
 import org.patryk3211.powergrid.electricity.sim.calculation.StampedSupplier;
@@ -28,23 +26,11 @@ import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
 
-import java.util.List;
-
 public class InductionRotorBlockEntity extends RotorBlockEntity {
     public final PrecalculatedN<Float, StampedSupplier<Precalculated<Float>>> totalField = new PrecalculatedN<>(this::recalculateField, 0.0f);
 
     public InductionRotorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
-    }
-
-    @Override
-    public float inertia() {
-        return ModdedConfigs.server().kinetics.generatorControls.generatorInductionRotorInertia.getF();
-    }
-
-    @Override
-    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
-        super.addBehaviours(behaviours);
     }
 
     @Override
