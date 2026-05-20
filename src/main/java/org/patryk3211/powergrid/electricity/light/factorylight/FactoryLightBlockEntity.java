@@ -1,6 +1,7 @@
 package org.patryk3211.powergrid.electricity.light.factorylight;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
@@ -187,10 +188,10 @@ public class FactoryLightBlockEntity extends AbstractLightFixtureBlockEntity imp
         assert level != null;
         if(bulbState != null) {
             level.setBlock(worldPosition, getBlockState().setValue(FactoryLightBlock.POWER, bulbPower + 1), UPDATE_ALL_IMMEDIATE);
-            projectDown();
         } else {
             level.setBlock(worldPosition, getBlockState().setValue(FactoryLightBlock.POWER, 0), UPDATE_ALL_IMMEDIATE);
         }
+        projectDown();
     }
 
     private void projectDown() {
@@ -210,6 +211,16 @@ public class FactoryLightBlockEntity extends AbstractLightFixtureBlockEntity imp
                     break;
                 }
                 effectsPos = pos;
+            }
+        } else {
+            for(int i = 1; i < projectionDistance(); ++i) {
+                var pos = worldPosition.below(i);
+                var state = level.getBlockState(pos);
+                if(state.getBlock() instanceof FactoryLightLightBlock) {
+                    level.setBlock(pos, Blocks.AIR.defaultBlockState(), UPDATE_ALL_IMMEDIATE);
+                } else {
+                    break;
+                }
             }
         }
     }
