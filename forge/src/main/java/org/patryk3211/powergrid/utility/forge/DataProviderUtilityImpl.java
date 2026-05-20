@@ -34,7 +34,6 @@ import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
 import org.patryk3211.powergrid.electricity.carbonpile.CarbonPileBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
-import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseState;
 import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightBlock;
@@ -97,27 +96,13 @@ public class DataProviderUtilityImpl {
                 });
     }
 
-    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> surfaceSwitch(String baseName) {
-        return (ctx, prov) ->
-                prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
-                    var builder = ConfiguredModel.builder();
-                    var suffix = state.getValue(SwitchBlock.OPEN) ? "_off" : "_on";
-                    surfaceFacingTransforms(state, (x, y, vertical) -> {
-                        var suffix2 = vertical ? "_v" : "_h";
-                        builder.modelFile(modModel(prov, baseName + suffix + suffix2));
-                        builder.rotationX(x).rotationY(y);
-                    });
-                    return builder.build();
-                });
-    }
-
-    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> surfaceBlock(String baseName) {
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> surfaceBlock(Function<BlockState, String> baseName) {
         return (ctx, prov) ->
                 prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
                     var builder = ConfiguredModel.builder();
                     surfaceFacingTransforms(state, (x, y, vertical) -> {
                         var suffix = vertical ? "_v" : "_h";
-                        builder.modelFile(modModel(prov, baseName + suffix));
+                        builder.modelFile(modModel(prov, baseName.apply(state) + suffix));
                         builder.rotationX(x).rotationY(y);
                     });
                     return builder.build();
@@ -156,11 +141,11 @@ public class DataProviderUtilityImpl {
     // This function needs two models. One for Y axis and one for other axis.
     public static void surfaceFacingTransforms(BlockState state, TriConsumer<Integer, Integer, Boolean> transformer) {
         var facing = state.getValue(FACING);
-        boolean axis_along_first = false;
+        int axis_along = 0;
         if(state.hasProperty(ALONG_FIRST_AXIS)) {
-            axis_along_first = state.getValue(ALONG_FIRST_AXIS);
+            axis_along = state.getValue(ALONG_FIRST_AXIS) ? 1 : 2;
         } else if (state.hasProperty(ROTATION_4)) {
-            axis_along_first = state.getValue(ROTATION_4) % 2 == 1;
+            axis_along = state.getValue(ROTATION_4);
         }
 
         int x = 0, y = 0;
@@ -173,11 +158,17 @@ public class DataProviderUtilityImpl {
             case SOUTH -> y = 90;
         }
 
-        if(!axis_along_first) {
-            if(verticalModel) {
-                y = 90;
-            } else {
-                x = -90;
+        if(verticalModel) {
+            switch(axis_along) {
+                case 0 -> y = -90;
+                case 2 -> y = 90;
+                case 3 -> y = 180;
+            }
+        } else {
+            switch(axis_along) {
+                case 0 -> x = -90;
+                case 1 -> x = 180;
+                case 2 -> x = 90;
             }
         }
 

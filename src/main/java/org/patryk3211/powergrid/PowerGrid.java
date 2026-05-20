@@ -38,6 +38,7 @@ import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock
 import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
 import org.patryk3211.powergrid.electricity.heater.HeaterFanProcessingTypes;
 import org.patryk3211.powergrid.electricity.light.string.StringLightCordRecipe;
+import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterRegistry;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.solver.NativeMNA;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
@@ -90,6 +91,11 @@ public class PowerGrid {
 		PlayerEvent.PLAYER_QUIT.register(PowerGrid::playerQuit);
 		InteractionEvent.RIGHT_CLICK_BLOCK.register(WireItem::useOn);
 		InteractionEvent.RIGHT_CLICK_ITEM.register(WireItem::use);
+		LifecycleEvent.SETUP.register(PowerGrid::setup);
+	}
+
+	private static void setup() {
+		RedstoneConverterRegistry.init();
 	}
 
 	private static void playerQuit(ServerPlayer player) {

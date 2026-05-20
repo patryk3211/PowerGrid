@@ -16,12 +16,6 @@ void solver_init(solver_t *solver, void *rhsOpBuf, void *jacobianOpBuf, int cmdC
 
     sparsematrix_init(&solver->m_A);
 
-    solver->m_X.ncol = 1;
-    solver->m_X.Stype = SLU_DN;
-    solver->m_X.Dtype = SLU_D;
-    solver->m_X.Mtype = SLU_GE;
-    solver->m_X.Store = &solver->m_Xstore;
-
     solver->m_B.ncol = 1;
     solver->m_B.Stype = SLU_DN;
     solver->m_B.Dtype = SLU_D;
@@ -93,9 +87,7 @@ void solver_resize(solver_t *solver, int size) {
     memset(solver->m_state, 0, sizeof(double) * size);
 
     PG_TRACE("[Solver::resize] Assigning new pointers");
-    solver->m_Xstore.lda = solver->m_X.nrow = size;
     solver->m_Bstore.lda = solver->m_B.nrow = size;
-    solver->m_Xstore.nzval = solver->m_state;
     solver->m_Bstore.nzval = solver->m_b;
 
     PG_TRACE("[Solver::resize] Allocating new jBuffers");
@@ -132,7 +124,6 @@ static void solver_swap_buffers(solver_t *solver) {
     solver->m_state = solver->m_b;
     solver->m_b = buf;
 
-    solver->m_Xstore.nzval = solver->m_state;
     solver->m_Bstore.nzval = solver->m_b;
 
     jobject jbuf = solver->m_stateBuffer;

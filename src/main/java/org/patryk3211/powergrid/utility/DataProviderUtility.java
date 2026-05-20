@@ -26,6 +26,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
+import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
@@ -62,13 +63,16 @@ public class DataProviderUtility {
         throw new AssertionError();
     }
 
-    @ExpectPlatform
     public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> surfaceSwitch(String baseName) {
-        throw new AssertionError();
+        return surfaceBlock(state -> baseName + (state.getValue(SwitchBlock.OPEN) ? "_off" : "_on"));
+    }
+
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> surfaceBlock(String baseName) {
+        return surfaceBlock(state -> baseName);
     }
 
     @ExpectPlatform
-    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> surfaceBlock(String baseName) {
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> surfaceBlock(Function<BlockState, String> baseName) {
         throw new AssertionError();
     }
 

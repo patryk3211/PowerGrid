@@ -18,21 +18,10 @@ package org.patryk3211.powergrid.electricity.socket;
 import com.simibubi.create.foundation.block.IBE;
 import net.createmod.catnip.math.VoxelShaper;
 import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.world.item.context.BlockPlaceContext;
-import net.minecraft.world.level.LevelAccessor;
-import net.minecraft.world.level.LevelReader;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.base.CustomProperties;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
@@ -41,9 +30,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class SocketBlock extends DirectionalElectricBlock implements IBE<SocketBlockEntity>, ISocketElectric {
-    public static final IntegerProperty ROTATION = CustomProperties.ROTATION_4;
-
+public class SocketBlock extends Rotation4ElectricBlock implements IBE<SocketBlockEntity>, ISocketElectric {
     private final TerminalBoundingBox[] TERMINALS_DOWN = new TerminalBoundingBox[] {
             new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6, 0, 3, 10, 2, 4)
                     .withColor(IDecoratedTerminal.RED),
@@ -88,39 +75,6 @@ public class SocketBlock extends DirectionalElectricBlock implements IBE<SocketB
     }
 
     @Override
-    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        super.createBlockStateDefinition(builder);
-        builder.add(ROTATION);
-    }
-
-    @Override
-    public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
-        var facing = ctx.getClickedFace().getOpposite();
-        int rotation = 0;
-        if(facing.getAxis() == Direction.Axis.Y) {
-            var player = ctx.getHorizontalDirection();
-            rotation = player.get2DDataValue();
-        } else {
-            rotation = 1;
-        }
-
-        if(ctx.getPlayer() != null && ctx.getPlayer().isShiftKeyDown())
-            rotation = (rotation + 2) % 3;
-        return defaultBlockState()
-                .setValue(FACING, facing)
-                .setValue(ROTATION, rotation);
-    }
-
-    @Override
-    public BlockState getRotatedBlockState(BlockState originalState, Direction targetedFace) {
-        if(targetedFace.getAxis() == originalState.getValue(FACING).getAxis()) {
-            return originalState.cycle(ROTATION);
-        } else {
-            return super.getRotatedBlockState(originalState, targetedFace);
-        }
-    }
-
-    @Override
     public Class<SocketBlockEntity> getBlockEntityClass() {
         return SocketBlockEntity.class;
     }
@@ -140,19 +94,5 @@ public class SocketBlock extends DirectionalElectricBlock implements IBE<SocketB
             case EAST -> SOCKET_EAST;
             case WEST -> SOCKET_WEST;
         };
-    }
-
-    @Override
-    public BlockState rotate(BlockState state, Rotation rot) {
-        if(state.getValue(FACING).getAxis() == Direction.Axis.Y) {
-            int rotation = (state.getValue(ROTATION) + switch(rot) {
-                case NONE -> 0;
-                case CLOCKWISE_90 -> 1;
-                case CLOCKWISE_180 -> 2;
-                case COUNTERCLOCKWISE_90 -> 3;
-            } % 4);
-            return state.setValue(ROTATION, rotation);
-        }
-        return super.rotate(state, rot);
     }
 }
