@@ -28,6 +28,7 @@ import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
 
 public class InductionRotorBlockEntity extends RotorBlockEntity {
     public final PrecalculatedN<Float, StampedSupplier<Precalculated<Float>>> totalField = new PrecalculatedN<>(this::recalculateField, 0.0f);
+    protected float fieldMultiplier = 1;
 
     public InductionRotorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -64,7 +65,7 @@ public class InductionRotorBlockEntity extends RotorBlockEntity {
 
     private void recalculateField(StampedSupplier<Precalculated<Float>>[] deps, Precalculated<Float>.ValueHandler handler) {
         float sum = 0;
-        // Average field around 4 sides of the rotor.
+        // Average field around sides of the rotor.
         for(int i = 0; i < deps.length; ++i) {
             if(deps[i] == null)
                 continue;
@@ -72,6 +73,6 @@ public class InductionRotorBlockEntity extends RotorBlockEntity {
             if(calc != null)
                 sum += calc.get();
         }
-        handler.emit(sum / deps.length);
+        handler.emit(sum / deps.length * fieldMultiplier);
     }
 }

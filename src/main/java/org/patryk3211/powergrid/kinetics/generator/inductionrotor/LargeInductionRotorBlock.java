@@ -15,13 +15,23 @@
  */
 package org.patryk3211.powergrid.kinetics.generator.inductionrotor;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.protocol.game.DebugPackets;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 
 public class LargeInductionRotorBlock extends InductionRotorBlock {
     public LargeInductionRotorBlock(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    public void neighborChanged(BlockState state, Level level, BlockPos pos, Block neighborBlock, BlockPos neighborPos, boolean movedByPiston) {
+        DebugPackets.sendNeighborsUpdatePacket(level, pos);
     }
 
     @Override
