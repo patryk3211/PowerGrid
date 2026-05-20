@@ -59,5 +59,11 @@
 				"down": {"uv": [11, 0, 13, 2], "rotation": 270, "texture": "#0"}
 			}
 		}
-	]
+	],
+	"display": {
+		"gui": {
+			"rotation": [30, 45, 0],
+			"translation": [0, 3.25, 0]
+		}
+	}
 }
