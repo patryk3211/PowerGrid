@@ -107,7 +107,8 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
 
         if(!level.isClientSide || isVirtual()) {
             float rotation = (currentTarget - currentAngle) / 360.0f;
-            if (Math.abs(rotation) < 0.01f)
+            // Precision of 0.25 degree
+            if(Math.abs(rotation) < 0.25 / 360)
                 rotation = 0;
 
             var dT = 0.05f;
