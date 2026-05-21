@@ -8,6 +8,7 @@
     "ArmBlockEntityMixin",
     "BeltDeployerMixin",
     "BlockStateBaseMixin",
+    "ChuteBlockEntityMixin",
     "EntityMixin",
     "FanProcessingMixin",
     "KineticBlockEntityAccessor",
