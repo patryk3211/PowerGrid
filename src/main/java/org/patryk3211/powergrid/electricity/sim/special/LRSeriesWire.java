@@ -61,7 +61,7 @@ public class LRSeriesWire extends AbstractElectricWire implements IStaticResidua
     @Override
     public void postUpperSolve() {
        if(isConverged()) {
-           Vprev = 0.5 * inductance * (current() - I) / getDeltaTime();
+           Vprev = inductance * (current() - I) / getDeltaTime();
            I = current() * 0.99999;
        }
     }
