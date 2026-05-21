@@ -686,7 +686,7 @@ public class CircuitScenes {
         scene.idle(70);
 
         scene.overlay().showText(60)
-                .text("You can change them by clicking and holding on the module")
+                .text("You can change them in the circuit design table")
                 .pointAt(util.vector().of(2.5, 1.45, 2.5))
                 .placeNearTarget()
                 .attachKeyFrame();
@@ -721,9 +721,10 @@ public class CircuitScenes {
             be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
         });
 
-        scene.overlay().showControls(util.vector().topOf(board), Pointing.DOWN, 20).leftClick();
-        scene.addKeyframe();
         scene.idle(20);
+        scene.effects().indicateSuccess(board);
+        scene.addKeyframe();
+
 
         scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
             be.getSchematic().components().get(0).set(ModularDisplayComponent.CURRENT_MODULE, DisplayModuleType.SYMBOLS);
@@ -760,9 +761,9 @@ public class CircuitScenes {
             be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
         });
 
-        scene.overlay().showControls(util.vector().topOf(board), Pointing.DOWN, 20).leftClick();
-        scene.addKeyframe();
         scene.idle(20);
+        scene.effects().indicateSuccess(board);
+        scene.addKeyframe();
 
         scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
             be.getSchematic().components().get(0).set(ModularDisplayComponent.CURRENT_MODULE, DisplayModuleType.ALPHABET);
@@ -802,20 +803,19 @@ public class CircuitScenes {
         scene.idle(20);
 
         scene.overlay().showText(60)
-                .text("You can also dye the displays")
+                .text("You can also change the color of the display in the circuit design table")
                 .pointAt(util.vector().of(2.5, 1.45, 2.5))
                 .placeNearTarget()
                 .attachKeyFrame();
 
         scene.idle(70);
 
-        scene.overlay()
-                .showControls(util.vector().topOf(board), Pointing.DOWN, 30)
-                .withItem(Items.RED_DYE.getDefaultInstance()).rightClick();
+
 
         scene.idle(20);
+        scene.effects().indicateSuccess(board);
         scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
-            be.getSchematic().components().get(0).set(ModularDisplayComponent.CURRENT_COLOR, DyeColor.RED.getName());
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.CURRENT_COLOR, DyeColor.GREEN);
             be.getSchematic().components().get(0).stateUpdated();
         });
 

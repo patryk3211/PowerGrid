@@ -72,5 +72,6 @@
   "powergrid.component.property.modular_display_current": "Minimum Current",
   "powergrid.component.property.modular_display_current.summary":"Minimum current required to actuate this component",
   "powergrid.component.property.modular_display_resistance": "Coil resistance",
-  "powergrid.component.property.modular_display_module": "Default module"
+  "powergrid.component.property.modular_display_module": "Module",
+  "powergrid.component.property.modular_display_text_color": "Text color"
 }

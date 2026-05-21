@@ -1164,6 +1164,20 @@ public class DeviceScenes {
         scene.effects().indicateSuccess(block);
         scene.idle(40);
 
+        scene.overlay().showText(60)
+                .text("You can remove them by shift clicking")
+                .pointAt(util.vector().of(2.25, 1.75, 2))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.overlay().showControls(util.vector().of(2.25, 1.75, 2), Pointing.DOWN, 40).rightClick().whileSneaking();
+        scene.idle(40);
+
+        scene.world().modifyBlockEntity(block, ModularDisplayBlockEntity.class, be -> {
+            be.modules[0] = null;
+        });
+
+        scene.idle(20);
+
         scene.rotateCameraY(-135);
         scene.idle(20);
 
@@ -1172,6 +1186,10 @@ public class DeviceScenes {
                 .pointAt(util.vector().of(2.25, 1.75, 3))
                 .placeNearTarget()
                 .attachKeyFrame();
+
+        scene.world().modifyBlockEntity(block, ModularDisplayBlockEntity.class, be -> {
+            be.modules[0] = new ZeroToNineNumberModule(0, false, DyeColor.WHITE);
+        });
         scene.idle(90);
 
         scene.rotateCameraY(135);

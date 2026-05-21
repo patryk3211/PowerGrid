@@ -1,21 +1,12 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.google.common.collect.ImmutableCollection;
-import com.google.common.collect.ImmutableList;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBehaviour;
-import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsBoard;
-import com.simibubi.create.foundation.blockEntity.behaviour.ValueSettingsFormatter;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.DyeItem;
-import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
 import org.patryk3211.powergrid.PowerGrid;
@@ -25,26 +16,20 @@ import org.patryk3211.powergrid.circuits.components.properties.*;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
-import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.modulardisplay.DisplayModuleType;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
-import org.patryk3211.powergrid.network.packets.UpdateComponentBiPacket;
-import org.patryk3211.powergrid.utility.CustomValueSettingsScreen;
-import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
-public class ModularDisplayComponent extends OrientableComponent implements IRenderedComponent, IInteractableComponent{
+public class ModularDisplayComponent extends OrientableComponent implements IRenderedComponent{
     public static final IntProperty INDEX = new IntProperty(PowerGrid.MOD_ID, "modular_display_index", 0, 0, 30).hidden().cast();
     public static final BooleanProperty HALF_CLICK = new BooleanProperty(PowerGrid.MOD_ID, "modular_display_half_click").hidden().cast();
     public static final BooleanProperty WIRE_RESET = new BooleanProperty(PowerGrid.MOD_ID, "modular_display_reset").hidden().cast();
-    public static final StringProperty CURRENT_COLOR = new StringProperty(PowerGrid.MOD_ID, "modular_display_current_color","WHITE").hidden().cast();
     public static final ConstantProperty MIN_CURRENT = new ConstantProperty(PowerGrid.MOD_ID, "modular_display_current", Unit.CURRENT.formatWithPrefixes(.5f).component());
     public static final ConstantProperty RESISTANCE = new ConstantProperty(PowerGrid.MOD_ID, "modular_display_resistance", Unit.RESISTANCE.formatWithPrefixes(25).component());
     public static final EnumProperty<DisplayModuleType> CURRENT_MODULE = new EnumProperty<DisplayModuleType>(PowerGrid.MOD_ID, "modular_display_module",
             DisplayModuleType.class, new DisplayModuleType[]{DisplayModuleType.ZERO_TO_NINE, DisplayModuleType.NINE_TO_ZERO, DisplayModuleType.ONE_TO_ZERO, DisplayModuleType.HEXADECIMAL, DisplayModuleType.SYMBOLS, DisplayModuleType.ALPHABET});
-
-    private ValueSettingsBoard board = null;
+    public static final EnumProperty<DyeColor> CURRENT_COLOR = new EnumProperty<DyeColor>(PowerGrid.MOD_ID, "modular_display_text_color", DyeColor.class);
 
     public ModularDisplayComponent(ComponentFootprint footprint) {
         super(footprint);
@@ -65,7 +50,7 @@ public class ModularDisplayComponent extends OrientableComponent implements IRen
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(CURRENT_MODULE, RESISTANCE, MIN_CURRENT, INDEX, HALF_CLICK, WIRE_RESET, CURRENT_COLOR, power(25));
+        properties.add(CURRENT_MODULE, CURRENT_COLOR, RESISTANCE, MIN_CURRENT, INDEX, HALF_CLICK, WIRE_RESET, power(25));
     }
 
     @Override
@@ -183,7 +168,7 @@ public class ModularDisplayComponent extends OrientableComponent implements IRen
         float vMin = 0f;
         float vMax = FRAME_HEIGHT / SHEET_HEIGHT;
 
-        float[] rgb = DyeColor.byName(placed.get(CURRENT_COLOR), DyeColor.WHITE).getTextureDiffuseColors();
+        float[] rgb = placed.get(CURRENT_COLOR).getTextureDiffuseColors();
 
         renderQuad(matrix, buffer,
                 PowerGrid.texture(displayTexture),
@@ -226,46 +211,4 @@ public class ModularDisplayComponent extends OrientableComponent implements IRen
                 .endVertex();
     }
 
-    @Override
-    public VoxelShape getShape(@NotNull PlacedComponent placed) {
-        return IInteractableComponent.extrudedFootprint(placed, 7 / 16f);
-    }
-
-    @Override
-    public InteractionResult use(CircuitBoardBlockEntity be, PlacedComponent component, Player player) {
-
-        if (player.getMainHandItem().getItem() instanceof DyeItem dye && !be.getLevel().isClientSide()){
-            component.set(CURRENT_COLOR, dye.getDyeColor().getName());
-            component.notifyClients(CURRENT_COLOR);
-            return InteractionResult.SUCCESS;
-        }
-
-        component.onClientWorld(() -> world -> {
-            if (board == null) {
-                board = new ValueSettingsBoard(
-                        Lang.translateDirect("devices.display_module.module_type"),
-                        DisplayModuleType.values().length - 1,
-                        1,
-                        ImmutableList.of(Component.literal("Index")),
-                        new ValueSettingsFormatter.ScrollOptionSettingsFormatter(DisplayModuleType.values())
-                );
-            }
-
-            var value = component.get(CURRENT_MODULE).getId();
-
-            CustomValueSettingsScreen.beginInteraction(() -> new CustomValueSettingsScreen(
-                    be.getBlockPos(), board,
-                    new ValueSettingsBehaviour.ValueSettings(0, value),
-                    setting -> {
-                        component.set(CURRENT_MODULE, DisplayModuleType.byId(setting.value()));
-                        component.set(WIRE_RESET, true);
-                        component.set(INDEX, 0);
-                        ModdedPackets.sendToServer(new UpdateComponentBiPacket(be, component, CURRENT_MODULE));
-                        ModdedPackets.sendToServer(new UpdateComponentBiPacket(be, component, INDEX));
-                        ModdedPackets.sendToServer(new UpdateComponentBiPacket(be, component, WIRE_RESET));
-                    }
-            ));
-        });
-        return InteractionResult.SUCCESS;
-    }
 }
