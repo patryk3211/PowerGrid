@@ -3,6 +3,7 @@ package org.patryk3211.powergrid.network.packets;
 import dev.architectury.networking.NetworkManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.Direction;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
@@ -59,9 +60,8 @@ public class DisplayBurnoutS2CPacket implements SimplePacket {
             default    -> { x = pos.getX() + 0.5f;          z = pos.getZ() + 0.5f; }
         }
 
+        RandomSource random = RandomSource.create();
         SparkParticleData.explodeParticles(world, x, y, z, facing, 10);
-        ModdedSoundEvents.COMPONENT_EXPLODE.playAt(world, pos, 1.0f, world.random.nextFloat() * 0.1f + 0.9f, true);
+        ModdedSoundEvents.COMPONENT_EXPLODE.playAt(world, pos, 1.0f, random.nextFloat() * 0.1f + 0.9f, true);
     }
-
-
 }
