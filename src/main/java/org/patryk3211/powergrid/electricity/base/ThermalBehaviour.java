@@ -342,8 +342,16 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
     public void applyWirePower(@Nullable AbstractElectricWire wire) {
         if(wire == null)
             return;
-        if(wire.isConverged())
+        if(wire.isConverged()) {
+            var network = wire.getNetwork();
+            if(network != null) {
+                if(wire.getNode1() != null && network.isLeaf(wire.getNode1()))
+                    return;
+                if(wire.getNode2() != null && network.isLeaf(wire.getNode2()))
+                    return;
+            }
             applyTickPower(wire.power());
+        }
     }
 
     @Override
