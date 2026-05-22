@@ -7,11 +7,11 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import java.util.Collection;
 
 public class DisplaySlotThermal extends BlockEntityBehaviour {
 
@@ -27,10 +27,9 @@ public class DisplaySlotThermal extends BlockEntityBehaviour {
     private final Runnable burnoutCallback;
 
     private float temperature = BASE_TEMPERATURE;
-    private float prevTemperature = BASE_TEMPERATURE;
     private int overheatTicks = 0;
-    private boolean firstTick = true;
     private float lastSyncedTemperature = BASE_TEMPERATURE;
+    private final Collection<AbstractElectricWire> heatSources;
 
     private final float thermalMass;
     private final float dissipationFactor;
@@ -43,13 +42,14 @@ public class DisplaySlotThermal extends BlockEntityBehaviour {
     }
 
     public DisplaySlotThermal(SmartBlockEntity be, int slotIndex, float thermalMass,
-                              float dissipationFactor, Runnable burnoutCallback) {
+                              float dissipationFactor, Runnable burnoutCallback, Collection<AbstractElectricWire> heatSources) {
         super(be);
         this.slotIndex = slotIndex;
         this.type = TYPES[slotIndex];
         this.thermalMass = thermalMass;
         this.dissipationFactor = dissipationFactor;
         this.burnoutCallback = burnoutCallback;
+        this.heatSources = heatSources;
     }
 
 
@@ -58,45 +58,45 @@ public class DisplaySlotThermal extends BlockEntityBehaviour {
         return type;
     }
 
+    private void temperatureChanged() {
+        if(hasOverheated()) {
+            if(burnoutCallback != null)
+                burnoutCallback.run();
+            resetTemperature();
+        }
+    }
+
+    public boolean hasOverheated() {
+        return temperature >= OVERHEAT_TEMPERATURE && overheatTicks >= OVERHEAT_TICKS;
+    }
+
     @Override
     public void tick() {
-        super.tick();
-
-        if (firstTick) {
-            firstTick = false;
+        if (hasOverheated())
             return;
-        }
 
-        var world = getWorld();
-        var pos = getPos();
+        if (!getWorld().isClientSide) {
 
-        if (!world.isClientSide) {
 
-            float dissipatedPower = dissipationFactor * (temperature - BASE_TEMPERATURE);
-            temperature -= dissipatedPower / 20f / thermalMass;
-
-            if (dissipatedPower > 0 && temperature < BASE_TEMPERATURE)
-                temperature = BASE_TEMPERATURE;
-
-            if (!Float.isFinite(temperature)) {
-                temperature = BASE_TEMPERATURE;
-                prevTemperature = BASE_TEMPERATURE;
+            float power = -dissipationFactor * (temperature - BASE_TEMPERATURE);
+            for (var source : heatSources) {
+                if (!source.isConverged())
+                    return;
+                power += source.power();
             }
-
-            float temperatureDelta = temperature - prevTemperature;
-            prevTemperature = temperature;
-
-            if (isOverheated()) {
-                if (temperatureDelta > 0 && overheatTicks++ >= OVERHEAT_TICKS) {
-                    if (burnoutCallback != null)
-                        burnoutCallback.run();
-                    resetTemperature();
-                } else if (temperatureDelta <= 0) {
-                    overheatTicks = 0;
-                    if (temperature > OVERHEAT_TEMPERATURE + 10)
-                        temperature = OVERHEAT_TEMPERATURE + 10;
-                }
+            temperature += power / 20f / thermalMass;
+            if (!Float.isFinite(temperature))
+                temperature = BASE_TEMPERATURE;
+            if (temperature > OVERHEAT_TEMPERATURE + 10)
+                temperature = OVERHEAT_TEMPERATURE + 10;
+            if (power < 0 && temperature < 22f)
+                temperature = 22f;
+            if (temperature >= OVERHEAT_TEMPERATURE && power > 0) {
+                ++overheatTicks;
+            } else if (power < 0) {
+                overheatTicks = 0;
             }
+            temperatureChanged();
 
             boolean crossedSmokeThreshold =
                     (lastSyncedTemperature >= SMOKE_START_TEMPERATURE) != (temperature >= SMOKE_START_TEMPERATURE);
@@ -106,11 +106,12 @@ public class DisplaySlotThermal extends BlockEntityBehaviour {
                 lastSyncedTemperature = temperature;
                 blockEntity.sendData();
             }
+        }
 
-        } else {
-            if (temperature >= SMOKE_START_TEMPERATURE) {
-                spawnSmokeParticles(world, pos, world.getRandom());
-            }
+        if (temperature >= SMOKE_START_TEMPERATURE) {
+            var world = getWorld();
+            var pos = getPos();
+            spawnSmokeParticles(world, pos, world.getRandom());
         }
     }
 
@@ -156,19 +157,6 @@ public class DisplaySlotThermal extends BlockEntityBehaviour {
         world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f);
     }
 
-    public void applyTickPower(double power) {
-        if (Double.isFinite(power)) {
-            float energy = (float)(power / 20f);
-            temperature += energy / thermalMass;
-        }
-    }
-
-    public void applyWirePower(@Nullable AbstractElectricWire wire) {
-        if (wire == null) return;
-        if (wire.isConverged())
-            applyTickPower(wire.power());
-    }
-
     public boolean isOverheated() {
         return temperature >= OVERHEAT_TEMPERATURE;
     }
@@ -179,7 +167,6 @@ public class DisplaySlotThermal extends BlockEntityBehaviour {
 
     public void resetTemperature() {
         temperature = BASE_TEMPERATURE;
-        prevTemperature = BASE_TEMPERATURE;
         overheatTicks = 0;
     }
 
@@ -194,7 +181,6 @@ public class DisplaySlotThermal extends BlockEntityBehaviour {
         super.read(nbt, clientPacket);
         if (nbt.contains("SlotTemp_" + slotIndex)) {
             temperature = nbt.getFloat("SlotTemp_" + slotIndex);
-            prevTemperature = temperature;
         }
     }
 }

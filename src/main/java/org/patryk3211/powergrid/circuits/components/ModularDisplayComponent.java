@@ -130,8 +130,7 @@ public class ModularDisplayComponent extends OrientableComponent implements IRen
 
         thermals.builder()
                 .setThermalMass(0.15f)
-                .setMaxPower(30, 125f)
-                .setDissipationFactor(.25f)
+                .setMaxPower(25, 125f)
                 .addHeatSource(coil);
 
     }

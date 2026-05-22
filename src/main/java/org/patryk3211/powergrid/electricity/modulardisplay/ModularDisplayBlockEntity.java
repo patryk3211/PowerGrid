@@ -55,14 +55,14 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
         moduleTypeBehaviour.setValue(0);
         moduleTypeBehaviour.withCallback(value -> onSlotTypeChanged(lastHitSlot, value));
         behaviours.add(moduleTypeBehaviour);
-
+        int w1 = 0, w2 = 1, w3 = 2;
         for (int i = 0; i < SLOT_COUNT; i++) {
             final int slot = i;
             slotThermals[i] = new DisplaySlotThermal(
                     this,
                     slot,
                     .15f,
-                    0.13f,
+                    25 / (125 - 22f), //~.24
                     () -> {
                         modules[slot] = null;
                         emptySlotWires(slot);
@@ -75,8 +75,11 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
                                     64.0
                             );
                         }
-                    }
+
+                    },
+                    List.of(wires[w1], wires[w2], wires[w3])
             );
+            w1+=3; w2+=3; w3+=3;
             behaviours.add(slotThermals[i]);
         }
     }
@@ -127,12 +130,6 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
 
         if (heldModule == null)
             return false;
-
-        if (current != null) {
-            if (!player.getInventory().add(new ItemStack(ModdedItems.DISPLAY_MODULE.get()))) {
-                player.drop(new ItemStack(ModdedItems.DISPLAY_MODULE.get()), false);
-            }
-        }
 
         modules[slotIndex] = heldModule;
         if (!player.isCreative()) held.shrink(1);
@@ -212,7 +209,6 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
         if (slotIndex < 0 || slotIndex >= SLOT_COUNT) return;
         if (modules[slotIndex] != null) {
             modules[slotIndex] = modules[slotIndex].withIndex(digit);
-            markUpdated();
         }
     }
 
@@ -221,7 +217,6 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
         if (modules[slotIndex] != null) {
             int newVal = modules[slotIndex].getIndex() + 1;
             modules[slotIndex] = modules[slotIndex].withIndex(newVal);
-            markUpdated();
         }
     }
 
@@ -229,7 +224,6 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
         if (slotIndex < 0 || slotIndex >= SLOT_COUNT) return;
         if (modules[slotIndex] != null) {
             modules[slotIndex] = modules[slotIndex].withHalfClick(halfClick);
-            markUpdated();
         }
     }
 
@@ -245,7 +239,6 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
                     continue;
                 }
 
-                slotThermals[i].applyWirePower(wires[w1]);
                 slotThermals[i].tick();
                 w1+=3; w2+=3; w3+=3;
             }
@@ -259,7 +252,6 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
         boolean updated = false;
         boolean playSound = false;
         for (int i = 0; i < SLOT_COUNT; i++) {
-            var coil = wires[w1];
             var coilNodeToNegative = (SwitchedWire) wires[w2];
             var coilNodeToReset = (SwitchedWire) wires[w3];
             var coilNodeToNegativeCurrent = Math.abs(coilNodeToNegative.current());
