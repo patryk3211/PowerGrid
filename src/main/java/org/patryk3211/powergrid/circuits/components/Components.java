@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.circuits.components;
 
 import com.simibubi.create.AllItems;
 import com.tterrag.registrate.util.entry.RegistryEntry;
+import net.minecraft.world.item.Items;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
@@ -27,6 +28,11 @@ public class Components {
     public static final RegistryEntry<Component, ViaComponent> VIA = REGISTRATE.component("via", ViaComponent::new)
             .footprint(1, 1, b -> b.addPad(0, 0))
             .item(AllItems.COPPER_NUGGET)
+            .register();
+
+    public static final RegistryEntry<Component, LabelComponent> LABEL = REGISTRATE.component("label", LabelComponent::new)
+            .footprint(3, 1, b -> b.withOutline())
+            .item(Items.PAPER)
             .register();
 
     public static final RegistryEntry<Component, ElectronTubeComponent> ELECTRON_TUBE = REGISTRATE.component("electron_tube", ElectronTubeComponent::new)

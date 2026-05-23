@@ -81,9 +81,13 @@ public class LightBulbComponent extends OrientableComponent implements IRendered
 
     @Override
     public void render(CircuitBoardBlockEntity be, PlacedComponent placed, float partialTicks, PoseStack ms, MultiBufferSource bufferSource, int light, int overlay) {
-        // Render the bulb here to avoid adding all circuit board quads to cutout layer.
-        var bulb = CachedBuffers.partial(ModdedPartialModels.LIGHT_BULB_BULB, be.getBlockState());
-        bulb.light(light).renderInto(ms, bufferSource.getBuffer(RenderType.cutoutMipped()));
+        var glowModel = ModdedPartialModels.LIGHT_BULB_GLOW_DYED;
+        var bulbModel = ModdedPartialModels.LIGHT_BULB_BULB_DYED;
+
+        if (placed.get(COLOR) == DyeColor.WHITE) {
+            glowModel = ModdedPartialModels.LIGHT_BULB_GLOW;
+            bulbModel = ModdedPartialModels.LIGHT_BULB_BULB;
+        }
         
         var color = placed.get(COLOR).getTextureDiffuseColor();
 
@@ -91,6 +95,11 @@ public class LightBulbComponent extends OrientableComponent implements IRendered
         var green = (color >> 8) & 0xFF;
         var blue = color & 0xFF;
 
+        // Render the bulb here to avoid adding all circuit board quads to cutout layer.
+        var bulb = CachedBuffers.partial(bulbModel, be.getBlockState());
+        bulb.color((int) (red * 255), (int) (green * 255), (int) (blue * 255), 255);
+        bulb.light(light).renderInto(ms, bufferSource.getBuffer(RenderType.cutoutMipped()));
+        
         int a = 0, r = 0, g = 0, b = 0;
         if(placed.customData instanceof FloatPair temps) {
             a = (int) (temps.lerped(partialTicks) * 128);
@@ -101,7 +110,7 @@ public class LightBulbComponent extends OrientableComponent implements IRendered
         var center = 1.5f / 16f;
         var orientation = placed.get(ORIENTATION);
         if(a != 0) {
-            var buffer = CachedBuffers.partial(ModdedPartialModels.LIGHT_BULB_GLOW, be.getBlockState());
+            var buffer = CachedBuffers.partial(glowModel, be.getBlockState());
             buffer
                     .disableDiffuse()
                     .color(r, g, b, 255)

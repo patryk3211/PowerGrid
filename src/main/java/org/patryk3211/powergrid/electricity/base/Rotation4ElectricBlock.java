@@ -40,8 +40,14 @@ public abstract class Rotation4ElectricBlock extends DirectionalElectricBlock {
                                 case NORTH -> terminal.rotateAroundZ(90).rotateAroundY(90);
                                 case SOUTH -> terminal.rotateAroundZ(90).rotateAroundY(-90);
                             };
-                            var rotation = state.getValue(ROTATION);
-                            terminal = terminal.rotate(facing.getAxis(), 90 * rotation - 90);
+                            int rotation = state.getValue(ROTATION);
+                            if(facing == Direction.SOUTH) {
+                                terminal = terminal.rotate(facing.getAxis(), -(90 * rotation - 90));
+                            } else if(facing == Direction.EAST) {
+                                terminal = terminal.rotate(facing.getAxis(), 180 - (90 * rotation - 90));
+                            } else {
+                                terminal = terminal.rotate(facing.getAxis(), 90 * rotation - 90);
+                            }
                             return terminal;
                         })
                 )
@@ -94,7 +100,7 @@ public abstract class Rotation4ElectricBlock extends DirectionalElectricBlock {
                 case CLOCKWISE_90 -> 1;
                 case CLOCKWISE_180 -> 2;
                 case COUNTERCLOCKWISE_90 -> 3;
-            } % 4);
+            }) % 4;
             return state.setValue(ROTATION, rotation);
         }
         return super.rotate(state, rot);

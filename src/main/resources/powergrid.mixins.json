@@ -10,6 +10,7 @@
     "BlockStateBaseMixin",
     "ChunkMapAccessor",
     "ChunkMapAccessor$TrackedEntityAccessor",
+    "ChuteBlockEntityMixin",
     "EntityMixin",
     "FanProcessingMixin",
     "KineticBlockEntityAccessor",
