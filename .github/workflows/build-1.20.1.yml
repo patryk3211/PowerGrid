@@ -56,7 +56,7 @@ jobs:
            "embeds": [
               {
                 "title": "Auto-build has finished",
-                "description": "Make sure to backup your world, these build are not guaranteed to work!",
+                "description": "Make sure to backup your world, these builds are not guaranteed to work!",
                 "url": "https://github.com/patryk3211/PowerGrid/actions",
                 "color": 565479
               }
