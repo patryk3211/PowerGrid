@@ -17,7 +17,8 @@
     "LightningAccessor",
     "RecipeApplierMixin",
     "SoundEntryBuilderMixin",
-    "sable.SubLevelAssemblerMixin"
+    "sable.SubLevelAssemblerMixin",
+    "simulated.GimbalSensorScrollMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -34,6 +34,7 @@ import net.minecraft.world.level.block.Blocks;
 import org.patryk3211.powergrid.circuits.components.Components;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.compat.sable.SableUtils;
+import org.patryk3211.powergrid.compat.simulated.SimulatedBridge;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlockEntity;
 import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
@@ -82,6 +83,10 @@ public class PowerGrid {
 		register();
 
 		registerArchitecturyEvents();
+
+		if(dev.architectury.platform.Platform.isModLoaded("simulated")) {
+			SimulatedBridge.init();
+		}
 
 		ModdedPackets.register();
 		ModPackets.PACKETS.registerC2SListener();
