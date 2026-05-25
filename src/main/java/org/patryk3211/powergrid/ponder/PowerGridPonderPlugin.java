@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.ponder;
 
-import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.createmod.ponder.api.level.PonderLevel;
 import net.createmod.ponder.api.registration.PonderPlugin;
