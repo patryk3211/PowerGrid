@@ -80,45 +80,70 @@ public class LightBulbComponent extends OrientableComponent implements IRendered
     }
 
     @Override
-    public void render(CircuitBoardBlockEntity be, PlacedComponent placed, float partialTicks, PoseStack ms, MultiBufferSource bufferSource, int light, int overlay) {
+    public void render(CircuitBoardBlockEntity be, PlacedComponent placed, float partialTicks, 
+                       PoseStack ms, MultiBufferSource bufferSource, int light, int overlay) {
+                    
+        DyeColor dyeColor = placed.get(COLOR);
+    
+        // Select correct models - WHITE uses undyed models for proper appearance
         var glowModel = ModdedPartialModels.LIGHT_BULB_GLOW_DYED;
         var bulbModel = ModdedPartialModels.LIGHT_BULB_BULB_DYED;
-
-        if (placed.get(COLOR) == DyeColor.WHITE) {
+    
+        if (dyeColor == DyeColor.WHITE) {
             glowModel = ModdedPartialModels.LIGHT_BULB_GLOW;
             bulbModel = ModdedPartialModels.LIGHT_BULB_BULB;
         }
-        
-        var color = placed.get(COLOR).getTextureDiffuseColor();
-
-        var red = (color >> 16) & 0xFF;
-        var green = (color >> 8) & 0xFF;
-        var blue = color & 0xFF;
-
-        // Render the bulb here to avoid adding all circuit board quads to cutout layer.
-        var bulb = CachedBuffers.partial(bulbModel, be.getBlockState());
-        bulb.color((int) (red * 255), (int) (green * 255), (int) (blue * 255), 255);
-        bulb.light(light).renderInto(ms, bufferSource.getBuffer(RenderType.cutoutMipped()));
-        
-        int a = 0, r = 0, g = 0, b = 0;
-        if(placed.customData instanceof FloatPair temps) {
-            a = (int) (temps.lerped(partialTicks) * 128);
-            r = (int) (red * temps.lerped(partialTicks) * 128 / 256);
-            g = (int) (green * temps.lerped(partialTicks) * 128 / 256);
-            b = (int) (blue * temps.lerped(partialTicks) * 128 / 256);
+    
+        // === Get proper RGB color for the bulb ===
+        float red, green, blue;
+    
+        if (dyeColor == DyeColor.WHITE) {
+            // Pure white for the white bulb
+            red = green = blue = 1.0f;
+        } else {
+            // Using getFireworkColor() gives much better and more intuitive colors
+            // than getTextureDiffuseColor() which was causing wrong hues (orange→blue, etc.)
+            int fireworkColor = dyeColor.getFireworkColor();
+    
+            red   = ((fireworkColor >> 16) & 0xFF) / 255.0f;
+            green = ((fireworkColor >> 8)  & 0xFF) / 255.0f;
+            blue  = (fireworkColor & 0xFF) / 255.0f;
+    
+            // Slightly boost saturation and brightness for better visual appeal
+            red   = Math.min(1.0f, red * 1.25f);
+            green = Math.min(1.0f, green * 1.25f);
+            blue  = Math.min(1.0f, blue * 1.25f);
         }
-        var center = 1.5f / 16f;
-        var orientation = placed.get(ORIENTATION);
-        if(a != 0) {
-            var buffer = CachedBuffers.partial(glowModel, be.getBlockState());
-            buffer
-                    .disableDiffuse()
-                    .color(r, g, b, 255)
+    
+        // Render the bulb glass / housing
+        var bulb = CachedBuffers.partial(bulbModel, be.getBlockState());
+        bulb.color((int)(red * 255), (int)(green * 255), (int)(blue * 255), 255)
+            .light(light)
+            .renderInto(ms, bufferSource.getBuffer(RenderType.cutoutMipped()));
+    
+        // === Render glowing effect when powered ===
+        if (placed.customData instanceof FloatPair temps) {
+            float brightness = temps.lerped(partialTicks);   // Value between 0.0 and 1.0
+    
+            if (brightness > 0.01f) {
+                // Calculate final color with brightness applied
+                int r = (int) (red * brightness * 255);
+                int g = (int) (green * brightness * 255);
+                int b = (int) (blue * brightness * 255);
+                int alpha = (int) (brightness * 255);
+    
+                var center = 1.5f / 16f;
+                var orientation = placed.get(ORIENTATION);
+    
+                var glow = CachedBuffers.partial(glowModel, be.getBlockState());
+                glow.disableDiffuse()
+                    .color(r, g, b, alpha)
                     .light(LightTexture.FULL_BRIGHT)
                     .translate(center, center, center)
                     .rotateYDegrees(orientation.ordinal() * 90)
                     .translateBack(center, center, center)
                     .renderInto(ms, bufferSource.getBuffer(RenderTypes.additive()));
+            }
         }
     }
 }
