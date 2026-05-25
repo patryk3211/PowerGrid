@@ -434,7 +434,9 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         } else if(stack.getItem() instanceof DyeItem dye) {
             if(wireEntry.colorable()) {
                 setColor(dye.getDyeColor());
-                sendExtraData();
+                if(!level().isClientSide) {
+                    sendExtraData();
+                }
                 return InteractionResult.SUCCESS;
             }
         } else if(stack.getItem() instanceof DebugItem debugger) {
