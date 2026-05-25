@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity.base;
 
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
@@ -114,10 +115,7 @@ public interface IElectric extends IWrenchable {
 
     @Nullable
     default ElectricBehaviour getBehaviour(Level world, BlockPos pos, BlockState state) {
-        var blockEntity = world.getBlockEntity(pos);
-        if(blockEntity instanceof SmartBlockEntity smartEntity)
-            return smartEntity.getBehaviour(ElectricBehaviour.TYPE);
-        return null;
+        return BlockEntityBehaviour.get(world, pos, ElectricBehaviour.TYPE);
     }
 
     @Nullable
