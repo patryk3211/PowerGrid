@@ -32,9 +32,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 
-import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
 import static org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock.POWER;
 
 public abstract class LightBulbState implements ElectricBehaviour.SyncAppender {
@@ -49,6 +49,8 @@ public abstract class LightBulbState implements ElectricBehaviour.SyncAppender {
     protected boolean burned;
     private int overheatTicks;
     private boolean playEffect;
+
+    private Float cachedAmbientTemperature = null;
 
     @Nullable
     protected DyeColor color;
@@ -71,8 +73,8 @@ public abstract class LightBulbState implements ElectricBehaviour.SyncAppender {
             return;
         double energy = power / 20.0;
         temperature += (float) (energy / thermalMass);
-        if(energy < 0 && temperature < BASE_TEMPERATURE)
-            temperature = BASE_TEMPERATURE;
+        if(energy < 0 && temperature < cachedAmbientTemperature)
+            temperature = cachedAmbientTemperature;
     }
 
     protected void updatePowerLevel(int newLevel) {
@@ -98,15 +100,18 @@ public abstract class LightBulbState implements ElectricBehaviour.SyncAppender {
     public void tick() {
         if(burned)
             return;
-
         var world = fixture.getLevel();
+        if(cachedAmbientTemperature == null) {
+            cachedAmbientTemperature = ThermalBehaviour.getAmbientTemperature(world, fixture.getBlockPos());
+        }
+
         if(!world.isClientSide) {
             var filament = fixture.getFilament();
-            float dissipatedPower = dissipationFactor * (temperature - BASE_TEMPERATURE);
+            float dissipatedPower = dissipationFactor * (temperature - cachedAmbientTemperature);
             if(filament.isConverged())
                 applyPower(filament.power() - dissipatedPower);
             if(!Float.isFinite(temperature))
-                temperature = BASE_TEMPERATURE;
+                temperature = cachedAmbientTemperature;
             filament.setResistance(bulb.resistanceFunction(temperature));
 
             if (isOverheated() && overheatTicks++ >= 4) {
