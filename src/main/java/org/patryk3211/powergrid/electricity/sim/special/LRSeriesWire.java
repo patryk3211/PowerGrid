@@ -58,12 +58,24 @@ public class LRSeriesWire extends AbstractElectricWire implements IStaticResidua
         }
     }
 
+    public void setCurrent(float I, float Vprev) {
+        valueChange(I, this.I);
+        if(Float.isFinite(I) && Float.isFinite(Vprev)) {
+            this.Vprev = Vprev;
+            this.I = I;
+        }
+    }
+
+    public double getVprev() {
+        return Vprev;
+    }
+
     @Override
     public void postUpperSolve() {
-       if(isConverged()) {
-           Vprev = inductance * (current() - I) / getDeltaTime();
-           I = current() * 0.99999;
-       }
+        if(isConverged()) {
+            Vprev = inductance * (current() - I) / getDeltaTime();
+            I = current() * 0.99999;
+        }
     }
 
     @Override

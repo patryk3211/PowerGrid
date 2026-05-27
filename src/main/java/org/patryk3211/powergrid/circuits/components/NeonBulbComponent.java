@@ -23,6 +23,7 @@ import net.createmod.catnip.render.CachedBuffers;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.DyeColor;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
@@ -40,6 +41,9 @@ import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.electricity.sim.special.NeonBulbWire;
 import org.patryk3211.powergrid.utility.Unit;
 
+import java.util.Collection;
+import java.util.List;
+
 public class NeonBulbComponent extends OrientableComponent implements IRenderedComponent, IGoggleLabel {
     public static final FloatProperty BREAKDOWN_VOLTAGE = new FloatProperty(PowerGrid.MOD_ID, "neon_tube_vb", 60, 30, 300);
     public static final CalculatedProperty<Float> HOLDING_VOLTAGE = new CalculatedProperty<>(PowerGrid.MOD_ID, "neon_tube_vh",
@@ -49,7 +53,8 @@ public class NeonBulbComponent extends OrientableComponent implements IRenderedC
             placed -> 0.2f / placed.get(BREAKDOWN_VOLTAGE),
             v -> Unit.CURRENT.formatWithPrefixes(v).string());
     public static final EnumProperty<DyeColor> COLOR = new EnumProperty<DyeColor>(PowerGrid.MOD_ID, "color", DyeColor.class, new DyeColor[]{DyeColor.RED, DyeColor.YELLOW, DyeColor.BLUE, DyeColor.GREEN, DyeColor.WHITE});
-    public static final BooleanProperty LIT = (BooleanProperty) new BooleanProperty(PowerGrid.MOD_ID, "lit").hidden();
+    public static final BooleanProperty VERTICAL = new BooleanProperty(PowerGrid.MOD_ID, "vertical");
+    public static final BooleanProperty LIT = new BooleanProperty(PowerGrid.MOD_ID, "lit").hidden().cast();
 
     public NeonBulbComponent(ComponentFootprint footprint) {
         super(footprint);
@@ -58,7 +63,19 @@ public class NeonBulbComponent extends OrientableComponent implements IRenderedC
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(BREAKDOWN_VOLTAGE, HOLDING_VOLTAGE, HOLDING_CURRENT, COLOR, LABEL, LIT, power(1.5f));
+        properties.add(BREAKDOWN_VOLTAGE, HOLDING_VOLTAGE, HOLDING_CURRENT, COLOR, VERTICAL, LABEL, LIT, power(1.5f));
+    }
+
+    @Override
+    public @NotNull ResourceLocation getModelId(@NotNull PlacedComponent component) {
+        var id = ComponentRegistry.getId(this);
+        return component.get(VERTICAL) ? id.withSuffix("_vertical") : id;
+    }
+
+    @Override
+    public @NotNull Collection<ResourceLocation> requestedModels() {
+        var id = ComponentRegistry.getId(this);
+        return List.of(id, id.withSuffix("_vertical"));
     }
 
     @Override
@@ -148,6 +165,10 @@ public class NeonBulbComponent extends OrientableComponent implements IRenderedC
         var bulb = CachedBuffers.partial(ModdedPartialModels.NEON_TUBE_BULB, be.getBlockState());
         bulb.light(light).renderInto(ms, bufferSource.getBuffer(RenderType.translucent()));
 
+        var glowPartial = placed.get(VERTICAL) ? ModdedPartialModels.NEON_TUBE_VERTICAL_GLOW : ModdedPartialModels.NEON_TUBE_GLOW;
+        var yRotation = placed.get(VERTICAL) ? 0 : 1;
+        var lowerOffset = placed.get(VERTICAL) ? -1/16f : 0f;
+
         var color = placed.get(COLOR).getTextureDiffuseColor();
         var red = (color >> 16) & 0xFF;
         var green = (color >> 8) & 0xFF;
@@ -170,25 +191,26 @@ public class NeonBulbComponent extends OrientableComponent implements IRenderedC
         var orientation = placed.get(ORIENTATION);
 
         if(a1 != 0) {
-            var buffer = CachedBuffers.partial(ModdedPartialModels.NEON_TUBE_GLOW, be.getBlockState());
+            var buffer = CachedBuffers.partial(glowPartial, be.getBlockState());
             buffer
                     .disableDiffuse()
                     .color(r1, g1, b1, 255)
                     .light(LightTexture.FULL_BRIGHT)
                     .translate(center, center, center)
-                    .rotateYDegrees(orientation.ordinal() * 90)
+                    .rotateYDegrees(yRotation * orientation.ordinal() * 90)
                     .translateBack(center, center, center)
                     .renderInto(ms, bufferSource.getBuffer(RenderTypes.additive()));
         }
         if(a2 != 0) {
-            var buffer = CachedBuffers.partial(ModdedPartialModels.NEON_TUBE_GLOW, be.getBlockState());
+            var buffer = CachedBuffers.partial(glowPartial, be.getBlockState());
             buffer
                     .disableDiffuse()
                     .color(r2, g2, b2, 255)
                     .light(LightTexture.FULL_BRIGHT)
                     .translate(center, center, center)
-                    .rotateYDegrees(180 + orientation.ordinal() * 90)
+                    .rotateYDegrees(yRotation * (180 + orientation.ordinal() * 90))
                     .translateBack(center, center, center)
+                    .translate(0, lowerOffset, 0)
                     .renderInto(ms, bufferSource.getBuffer(RenderTypes.additive()));
         }
     }

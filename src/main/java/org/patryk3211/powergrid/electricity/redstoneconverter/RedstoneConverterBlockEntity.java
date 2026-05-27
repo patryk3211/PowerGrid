@@ -1,6 +1,7 @@
 package org.patryk3211.powergrid.electricity.redstoneconverter;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
@@ -39,6 +40,7 @@ public class RedstoneConverterBlockEntity extends ElectricBlockEntity {
     }
 
     public void updateResistance(float strength) {
+        strength = Mth.clamp(strength, 0, 1);
         float min = resistance("min"), max = resistance("max");
         nonInverting.setResistance(min * strength + max * (1 - strength));
         inverting.setResistance(min * (1 - strength) + max * strength);

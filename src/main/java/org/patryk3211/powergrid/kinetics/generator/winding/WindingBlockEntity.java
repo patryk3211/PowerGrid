@@ -71,6 +71,7 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     private int totalCoilCount = 0;
     private LRSeriesWire coilWire;
     private final Precalculated1<Float, StampedSupplier<LRSeriesWire>> fieldValue = new Precalculated1<>(WindingBlockEntity::fieldCalc, 0.001f);
+    private float I = 0, Vprev = 0;
 
     private boolean rebuildParallels = false;
     private boolean adding = false;
@@ -478,19 +479,23 @@ public class WindingBlockEntity extends ElectricBlockEntity {
                 }
             }
         }
-        var current = tag.getFloat("Current");
+        I = tag.getFloat("I");
+        Vprev = tag.getFloat("Vprev");
         if(coilWire != null) {
-            coilWire.valueChange(current, coilWire.current(), 5);
-            coilWire.setCurrent(current);
-            fieldValue.setValue((float) fieldStrength(current));
-        }
+            coilWire.setCurrent(I, Vprev);
+        }/* else {
+            this.I = I;
+            this.Vprev = Vprev;
+        }*/
+        fieldValue.setValue((float) fieldStrength(I));
     }
 
     @Override
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
         if(coilWire != null) {
-            tag.putFloat("Current", (float) coilWire.current());
+            tag.putFloat("I", (float) coilWire.current());
+            tag.putFloat("Vprev", (float) coilWire.getVprev());
         }
         if(clientPacket) {
             if(isMain()) {
@@ -513,6 +518,9 @@ public class WindingBlockEntity extends ElectricBlockEntity {
             builder.setTerminalCount(2);
             var R = Math.max(resistance, resistance());
             coilWire = new LRSeriesWire(R * 0.01f, R, builder.terminalNode(0), builder.terminalNode(1));
+            coilWire.setCurrent(I, Vprev);
+            I = 0;
+            Vprev = 0;
             builder.add(coilWire);
         }
     }
