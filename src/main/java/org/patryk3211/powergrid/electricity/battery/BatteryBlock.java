@@ -139,7 +139,7 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
         if(be == null)
             return 0;
         double fill = be.getEnergy() / be.getCapacity();
-        return Mth.floor(fill * 14.0f) + (fill > 0 ? 1 : 0);
+        return Mth.floor(fill * 14.0f) + (fill > 0.001 ? 1 : 0);
     }
 
     @Override

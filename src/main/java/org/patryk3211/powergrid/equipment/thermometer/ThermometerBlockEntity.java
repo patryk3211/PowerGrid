@@ -53,7 +53,7 @@ public class ThermometerBlockEntity extends SmartBlockEntity implements IHaveGog
         if(thermal != null) {
             return thermal.getTemperature();
         }
-        return 22f;
+        return ThermalBehaviour.getAmbientTemperature(level, worldPosition);
     }
 
     @Override
