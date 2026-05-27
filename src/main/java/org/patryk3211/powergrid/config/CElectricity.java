@@ -59,6 +59,7 @@ public class CElectricity extends ConfigBase {
 
     public final ConfigBool entityWireInteraction = b(true, "entityWireInteractions", Comments.entityWireInteractions);
     public final ConfigInt factoryLightProjectionRange = i(16, 0, "factoryLightProjectionRange", Comments.factoryLightProjectionRange);
+    public final ConfigBool plotterRecordNonconvergence = b(false, "plotterRecordNonconvergence", Comments.plotterRecordNonconvergence);
 
     public final CSolver solver = nested(1, CSolver::new, Comments.solver);
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
@@ -116,5 +117,7 @@ public class CElectricity extends ConfigBase {
         public static final String entityResistance = "Resistance of entities when they are shorting wires";
 
         public static final String entityWireInteractions = "Enables entities to form circuits when touching wires";
+
+        public static final String plotterRecordNonconvergence = "Control whether the plotter records voltage values when networks are not converged";
     }
 }

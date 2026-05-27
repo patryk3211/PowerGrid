@@ -38,6 +38,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.gauge.GaugeValueBehaviour;
 import org.patryk3211.powergrid.electricity.info.customdisplay.CustomDisplayBehaviour;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
@@ -163,6 +164,8 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
     public void tick() {
         super.tick();
         if(!isSpeedRequirementFulfilled())
+            return;
+        if(!wire.isConverged() && !ModdedConfigs.server().electricity.plotterRecordNonconvergence.get())
             return;
         var ticks = wire.samples == null ? 1 : wire.samples.length;
         int newSize = (int) (128 / Math.abs(getSpeed()) * 40 * ticks);

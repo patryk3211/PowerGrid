@@ -94,6 +94,8 @@
   "powergrid.tooltip.voltage.min": "Minimum voltage:",
   "powergrid.tooltip.power.rated": "Rated power:",
 
+  "powergrid.tooltip.voltage.kindled": "Kindled Blaze Equivalent:",
+
   "powergrid.tooltip.device_connector.header": "When converting to FE:",
   "powergrid.tooltip.device_connector.rate": "Conversion rate:",
   "powergrid.tooltip.device_connector.fe_w": "FE/W",

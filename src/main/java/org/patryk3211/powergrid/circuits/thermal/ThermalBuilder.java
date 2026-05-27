@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.circuits.thermal;
 
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 
 import java.util.HashSet;
@@ -54,7 +55,7 @@ public class ThermalBuilder {
     }
 
     public ThermalBuilder setMaxPower(float power, float temperature) {
-        this.dissipationFactor = power / (temperature - 22f);
+        this.dissipationFactor = ThermalBehaviour.dissipationFactor(power, temperature);
         return this;
     }
 

@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.electricswitch;
 
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -30,11 +31,14 @@ import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
+import java.util.List;
+
 public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
     protected LerpedFloat rod;
     @Nullable
     private SwitchedWire wire;
 
+    // Only used for audio
     private int state = 1;
     private int splitCooldown;
 
@@ -46,6 +50,12 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
         return ThermalBehaviour.fromConfig(this);
+    }
+
+    @Override
+    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+        super.addBehaviours(behaviours);
+        electricBehaviour.reducedSync();
     }
 
     @Override
@@ -70,6 +80,12 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
     @Override
     public void initialize() {
         super.initialize();
+        if(rod.getValue() == 1)
+            state = 2;
+        if(rod.getValue() == 0)
+            state = 0;
+        if(wire == null && isClosed())
+            electricBehaviour.rebuildCircuit(false);
         if(wire != null) {
             wire.setState(false);
             wire.setResistance(getResistance());
@@ -159,6 +175,8 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
         super.read(compound, clientPacket);
         // Always force the value to be set
         rod.readNBT(compound.getCompound("Rod"), false);
+        if(wire == null && isClosed())
+            electricBehaviour.rebuildCircuit(false);
         if(wire != null) {
             wire.setState(false);
             wire.setResistance(getResistance());
