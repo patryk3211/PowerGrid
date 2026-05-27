@@ -66,11 +66,6 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     }
 
     @Override
-    public float inertia() {
-        return ModdedConfigs.server().kinetics.generatorControls.generatorCommutatorInertia.getF();
-    }
-
-    @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
         oldSource = source = builder.addInternalNode(GeneratorCoupling.class, builder.terminalNode(0), builder.terminalNode(1), resistance, rotorBehaviour);

@@ -65,10 +65,7 @@ import org.patryk3211.powergrid.kinetics.base.TunedBlockVisual;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchRenderer;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchVisual;
-import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBlockEntity;
-import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorRenderer;
-import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorVisual;
-import org.patryk3211.powergrid.kinetics.generator.inductionrotor.InductionRotorBlockEntity;
+import org.patryk3211.powergrid.kinetics.generator.inductionrotor.*;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorVisual;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
@@ -154,6 +151,12 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("generator_induction_rotor", InductionRotorBlockEntity::new)
                     .visual(() -> RotorVisual.of(ModdedPartialModels.INDUCTION_ROTOR))
                     .validBlock(ModdedBlocks.GENERATOR_INDUCTION_ROTOR)
+                    .renderer(() -> RotorRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<LargeInductionRotorBlockEntity> GENERATOR_LARGE_INDUCTION_ROTOR =
+            REGISTRATE.blockEntity("generator_large_induction_rotor", LargeInductionRotorBlockEntity::new)
+                    .validBlock(ModdedBlocks.GENERATOR_LARGE_INDUCTION_ROTOR)
                     .renderer(() -> RotorRenderer::new)
                     .register();
 

@@ -20,4 +20,6 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public interface IRotorAssemblyPart {
     boolean canConnect(BlockState state, Direction dir);
+
+    float getInertia();
 }

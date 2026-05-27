@@ -101,6 +101,7 @@ import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.housing.VerticalGeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.InductionRotorBlock;
+import org.patryk3211.powergrid.kinetics.generator.inductionrotor.LargeInductionRotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.VerticalCommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 import org.patryk3211.powergrid.kinetics.motor.ConstantSpeedMotorBlock;
@@ -288,6 +289,19 @@ public class ModdedBlocks {
             .defaultLoot()
             .item()
                 .model(itemWithParent("block/generator/induction_rotor"))
+                .build()
+            .register();
+
+    public static final BlockEntry<LargeInductionRotorBlock> GENERATOR_LARGE_INDUCTION_ROTOR = REGISTRATE.block("generator_large_induction_rotor", LargeInductionRotorBlock::new)
+            .blockstate(rotorModel("block/generator/large_induction_rotor"))
+            .initialProperties(SharedProperties::softMetal)
+            .properties(BlockBehaviour.Properties::noOcclusion)
+            .transform(pickaxeOnly())
+            .transform(CResistance.setResistance(1.0))
+            .transform(CStress.setImpact(128))
+            .defaultLoot()
+            .item()
+                .model(itemWithParent("block/generator/large_induction_rotor"))
                 .build()
             .register();
 
