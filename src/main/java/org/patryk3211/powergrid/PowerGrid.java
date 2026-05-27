@@ -37,12 +37,14 @@ import org.patryk3211.powergrid.advancements.PowerGridTriggers;
 import org.patryk3211.powergrid.circuits.components.Components;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.compat.sable.SableUtils;
+import org.patryk3211.powergrid.compat.simulated.SimulatedBridge;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlockEntity;
 import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlockEntity;
 import org.patryk3211.powergrid.electricity.heater.HeaterFanProcessingTypes;
 import org.patryk3211.powergrid.electricity.light.string.StringLightCordRecipe;
+import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterRegistry;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.solver.NativeMNA;
 import org.patryk3211.powergrid.electricity.wire.EntityWireInteraction;
@@ -87,6 +89,10 @@ public class PowerGrid {
 
 		registerArchitecturyEvents();
 
+		if(dev.architectury.platform.Platform.isModLoaded("simulated")) {
+			SimulatedBridge.init();
+		}
+
 		ModdedPackets.register();
 		ModPackets.PACKETS.registerC2SListener();
 		ModPackets.PACKETS.registerS2CListener();
@@ -103,6 +109,11 @@ public class PowerGrid {
 		PlayerEvent.PLAYER_QUIT.register(PowerGrid::playerQuit);
 		InteractionEvent.RIGHT_CLICK_BLOCK.register(WireItem::useOn);
 		InteractionEvent.RIGHT_CLICK_ITEM.register(WireItem::use);
+		LifecycleEvent.SETUP.register(PowerGrid::setup);
+	}
+
+	private static void setup() {
+		RedstoneConverterRegistry.init();
 	}
 
 	private static void playerQuit(ServerPlayer player) {

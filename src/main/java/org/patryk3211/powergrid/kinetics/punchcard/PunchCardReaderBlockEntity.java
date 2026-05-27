@@ -77,6 +77,11 @@ public class PunchCardReaderBlockEntity extends ElectricKineticBlockEntity {
         sendData();
     }
 
+    public int getRedstoneOutput() {
+        var item = currentItem();
+        return item.isEmpty() ? 0 : Math.min(Mth.floor(progress.getValue() * 16), 15);
+    }
+
     @Override
     public void electricalTick() {
         assert level != null;
@@ -98,6 +103,7 @@ public class PunchCardReaderBlockEntity extends ElectricKineticBlockEntity {
             }
             level.playSound(null, worldPosition, SoundEvents.WOODEN_BUTTON_CLICK_OFF,
                     SoundSource.BLOCKS, 0.25f, 1.5f);
+            level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
             oldIndex = index;
         }
     }

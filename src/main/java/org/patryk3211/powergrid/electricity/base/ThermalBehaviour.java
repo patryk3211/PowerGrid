@@ -52,7 +52,8 @@ import java.util.function.Function;
 
 public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchronizedElement {
     public static final BehaviourType<ThermalBehaviour> TYPE = new BehaviourType<>("thermal");
-    public static final float BASE_TEMPERATURE = 22.0f;
+    public static final float STANDARD_TEMPERATURE = 22.0f;
+    public static final float ABSOLUTE_ZERO = -273.15f;
     public static final int OVERHEAT_TICKS = 2;
 
     public static final int OVERHEAT_PARTICLES = 1;
@@ -62,6 +63,8 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
     private float temperature;
     private float prevTemperature;
     private int overheatTicks;
+
+    private float cachedAmbientTemperature;
 
     // thermalMass = ΔE/ΔT
     private float thermalMass;
@@ -86,13 +89,17 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
         this.dissipationFactor = dissipationFactor;
         this.overheatTemperature = overheatTemperature;
 
-        this.temperature = BASE_TEMPERATURE;
+        this.temperature = -1000;
         this.totalCoolingFactorMultiplier = 1.0f;
 
         if(!shouldOverheat()) {
             // Overheating disabled but some devices still need the temperature in their behaviour.
             behaviourFlags = 0;
         }
+    }
+
+    public static float getAmbientTemperature(Level level, BlockPos pos) {
+        return 13.65f * level.getBiome(pos).value().getBaseTemperature() + 7.1f;
     }
 
     @Nullable
@@ -130,7 +137,7 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
     }
 
     public static float dissipationFactor(float power, float temperature) {
-        return power / (temperature - BASE_TEMPERATURE);
+        return power / (temperature - STANDARD_TEMPERATURE);
     }
 
     @Nullable
@@ -186,11 +193,11 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
     }
 
     public float maxPower() {
-        return (overheatTemperature - BASE_TEMPERATURE) * dissipationFactor;
+        return (overheatTemperature - cachedAmbientTemperature) * dissipationFactor;
     }
 
     public void resetTemperature() {
-        this.temperature = BASE_TEMPERATURE;
+        this.temperature = cachedAmbientTemperature;
     }
 
     public void setDissipationFactor(float dissipationFactor) {
@@ -238,7 +245,11 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
 
         if(firstTick) {
             firstTick = false;
+            cachedAmbientTemperature = getAmbientTemperature(getWorld(), getPos());
             return;
+        }
+        if(temperature < ABSOLUTE_ZERO) {
+            temperature = cachedAmbientTemperature;
         }
 
         var world = getWorld();
@@ -260,17 +271,17 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
 
             if (tracked == null) {
                 // Dissipate energy
-                float dissipatedPower = dissipationFactor * totalCoolingFactorMultiplier * (temperature - BASE_TEMPERATURE);
+                float dissipatedPower = dissipationFactor * totalCoolingFactorMultiplier * (temperature - cachedAmbientTemperature);
                 temperature -= dissipatedPower / 20f / thermalMass;
-                if (dissipatedPower > 0 && temperature < BASE_TEMPERATURE)
-                    temperature = BASE_TEMPERATURE;
+                if (dissipatedPower > 0 && temperature < cachedAmbientTemperature)
+                    temperature = cachedAmbientTemperature;
                 if (dissipatedPower != 0)
                     world.blockEntityChanged(getPos());
             }
             if (!Float.isFinite(temperature)) {
                 // Reset if something went wrong.
-                temperature = BASE_TEMPERATURE;
-                prevTemperature = BASE_TEMPERATURE;
+                temperature = cachedAmbientTemperature;
+                prevTemperature = cachedAmbientTemperature;
             }
             var temperatureDelta = temperature - prevTemperature;
             prevTemperature = temperature;
@@ -348,8 +359,16 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
     public void applyWirePower(@Nullable AbstractElectricWire wire) {
         if(wire == null)
             return;
-        if(wire.isConverged())
+        if(wire.isConverged()) {
+            var network = wire.getNetwork();
+            if(network != null) {
+                if(wire.getNode1() != null && network.isLeaf(wire.getNode1()))
+                    return;
+                if(wire.getNode2() != null && network.isLeaf(wire.getNode2()))
+                    return;
+            }
             applyTickPower(wire.power());
+        }
     }
 
     @Override

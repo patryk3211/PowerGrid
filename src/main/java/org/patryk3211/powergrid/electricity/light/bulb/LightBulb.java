@@ -119,7 +119,7 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
     public static <I extends LightBulb, P> NonNullUnaryOperator<ItemBuilder<I, P>> setProperties(float ratedPower, float ratedVoltage, float minResistance, float thermalMass) {
         float R_max = ratedVoltage * ratedVoltage / ratedPower;
         final float operatingTemperature = 1450f;
-        final float dissipationFactor = ratedPower / (operatingTemperature - ThermalBehaviour.BASE_TEMPERATURE);
+        final float dissipationFactor = ratedPower / (operatingTemperature - ThermalBehaviour.STANDARD_TEMPERATURE);
         NonNullUnaryOperator<ItemBuilder<I, P>> result = setProperties(minResistance, R_max, operatingTemperature, dissipationFactor, operatingTemperature + 400f, thermalMass);
         return result.andThen(b -> {
             b.onRegister(item -> {

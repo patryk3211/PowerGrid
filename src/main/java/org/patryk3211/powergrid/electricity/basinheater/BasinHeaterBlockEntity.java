@@ -66,8 +66,10 @@ public class BasinHeaterBlockEntity extends ElectricBlockEntity {
             return;
         }
         var T = thermalBehaviour.getTemperature();
-        if(T < 600) {
+        if(T < 300) {
             setState(HeatLevel.NONE);
+        } if(T < 600) {
+            setState(HeatLevel.FADING);
         } else if(T < 1200) {
             setState(HeatLevel.KINDLED);
         } else {
@@ -86,7 +88,7 @@ public class BasinHeaterBlockEntity extends ElectricBlockEntity {
         if (value == HeatLevel.SEETHING) {
             return 2;
         }
-        if (value.isAtLeast(HeatLevel.FADING)) {
+        if (value.isAtLeast(HeatLevel.KINDLED)) {
             return 1;
         }
         return BoilerHeater.NO_HEAT;

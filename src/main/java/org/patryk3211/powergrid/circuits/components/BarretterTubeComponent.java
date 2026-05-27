@@ -32,9 +32,8 @@ import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.special.BarretterWire;
-
-import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
 
 public class BarretterTubeComponent extends OrientableComponent implements IRenderedComponent {
     public static final FloatProperty MINIMUM_RESISTANCE = new FloatProperty(PowerGrid.MOD_ID, "barretter_resistance", 10, 10, 1000);
@@ -63,7 +62,7 @@ public class BarretterTubeComponent extends OrientableComponent implements IRend
         placed.customData = data;
 
         final var operatingTemperature = 1400f;
-        final var dissipationFactor = 50 / (operatingTemperature - BASE_TEMPERATURE);
+        final var dissipationFactor = ThermalBehaviour.dissipationFactor(50, operatingTemperature);
         thermals.builder()
                 .addHeatSource(tube)
                 .setThermalMass(0.05f)

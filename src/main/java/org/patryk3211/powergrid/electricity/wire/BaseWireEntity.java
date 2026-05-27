@@ -54,7 +54,7 @@ import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItem;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 
-import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
+import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.STANDARD_TEMPERATURE;
 
 public abstract class BaseWireEntity extends Entity implements EntityDataS2CPacket.IConsumer {
     protected static final EntityDataAccessor<Float> TEMPERATURE = SynchedEntityData.defineId(BaseWireEntity.class, EntityDataSerializers.FLOAT);
@@ -92,7 +92,7 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
 
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
-        builder.define(TEMPERATURE, BASE_TEMPERATURE);
+        builder.define(TEMPERATURE, STANDARD_TEMPERATURE);
         builder.define(OVERHEAT_TICKS, (byte) 0);
     }
 
@@ -122,7 +122,7 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         energy += I * I * getResistance() / 20f;
         if(!overheated) {
             // If wire is overheated it is considered dead.
-            energy -= dissipationFactor * (temperature - BASE_TEMPERATURE) / 20f;
+            energy -= dissipationFactor * (temperature - ThermalBehaviour.getAmbientTemperature(level(), blockPosition())) / 20f;
             temperature += energy / thermalMass;
 
             if(testForOverheat(temperature, energy)) {
@@ -482,6 +482,9 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         } else if(stack.getItem() instanceof DyeItem dye) {
             if(wireEntry.colorable()) {
                 setColor(dye.getDyeColor());
+                if(!level().isClientSide) {
+                    sendExtraData();
+                }
                 return InteractionResult.SUCCESS;
             }
         } else if(stack.getItem() instanceof DebugItem debugger) {
@@ -537,7 +540,12 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         return wireEntry.insulated();
     }
 
-    protected abstract void unloaded();
+    public void redeferEndpoints() {
+        deferEndpointResolution |= 3;
+        deferTicks = 3;
+    }
+
+    public abstract void unloaded();
 
     public static void entityUnload(Entity entity, ServerLevel world) {
         if(entity instanceof BaseWireEntity wire)

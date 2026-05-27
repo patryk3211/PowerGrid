@@ -45,8 +45,10 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     protected ElectricBehaviour electricBehaviour;
     protected ThermalBehaviour thermalBehaviour;
     protected GeneratorCoupling source;
-    private float resistance = 0;
+    private GeneratorCoupling oldSource;
+    private float resistance = 1e-6f;
     private boolean updateBehaviour = true;
+    private float emf = 0;
 
     private final PrecalculatedN<Float, Precalculated<Float>> totalFieldStrength = new PrecalculatedN<>(CommutatorBlockEntity::fieldSum, 0.0f);
 
@@ -60,6 +62,7 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
 
     public CommutatorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
+        source.setFieldStrengthProvider(totalFieldStrength);
     }
 
     @Override
@@ -70,8 +73,10 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        source = builder.addInternalNode(GeneratorCoupling.class, builder.terminalNode(0), builder.terminalNode(1), resistance, rotorBehaviour);
+        oldSource = source = builder.addInternalNode(GeneratorCoupling.class, builder.terminalNode(0), builder.terminalNode(1), resistance, rotorBehaviour);
         source.setFieldStrengthProvider(totalFieldStrength);
+        source.setEmfValue(emf);
+        emf = 0;
     }
 
     private void assemblyChanged() {
@@ -84,6 +89,9 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
         super.addBehaviours(behaviours);
         rotorBehaviour.setChangeCallback(this::assemblyChanged);
 
+        electricBehaviour = new ElectricBehaviour(this);
+        electricBehaviour.setSyncAppender(rotorBehaviour);
+        behaviours.add(electricBehaviour);
 //        thermalBehaviour = specifyThermalBehaviour();
 //        if(thermalBehaviour != null)
 //            behaviours.add(thermalBehaviour);
@@ -131,8 +139,12 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     @Override
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
+        resistance = tag.getFloat("Resistance");
         if(source != null) {
             source.setEmfValue(tag.getFloat("EmfState"));
+            source.setResistance(resistance);
+        } else {
+            emf = tag.getFloat("EmfState");
         }
     }
 
@@ -141,6 +153,7 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
         super.write(tag, registries, clientPacket);
         if(source != null) {
             tag.putFloat("EmfState", (float) source.getEmfValue());
+            tag.putFloat("Resistance", resistance);
         }
     }
 
@@ -165,19 +178,26 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
             });
             List<TransmissionLinePart> wires = null;
             ElectricBehaviour oldBehaviour = electricBehaviour;
-            if(electricBehaviour != null) {
-                wires = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(electricBehaviour);
-                electricBehaviour.pause();
-            }
-            if(proxyTarget.getValue() != null) {
-                electricBehaviour = new ProxyElectricBehaviour(this, proxyTarget::getValue);
+            source = oldSource;
+            if(proxyTarget.getValue() == null && source != null && !(electricBehaviour instanceof ProxyElectricBehaviour)) {
+                // Not going to be a proxy and we have a good behavior.
+                source.setResistance(resistance);
             } else {
-                electricBehaviour = new ElectricBehaviour(this);
+                if(electricBehaviour != null) {
+                    wires = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(electricBehaviour);
+                    electricBehaviour.pause();
+                }
+                if(proxyTarget.getValue() != null) {
+                    electricBehaviour = new ProxyElectricBehaviour(this, proxyTarget::getValue);
+                    oldSource = source = null;
+                } else {
+                    electricBehaviour = new ElectricBehaviour(this);
+                }
+                electricBehaviour.setSyncAppender(rotorBehaviour);
+                if(oldBehaviour != null)
+                    electricBehaviour.inheritConnections(oldBehaviour);
+                attachBehaviourLate(electricBehaviour);
             }
-            electricBehaviour.setSyncAppender(rotorBehaviour);
-            if(oldBehaviour != null)
-                electricBehaviour.inheritConnections(oldBehaviour);
-            attachBehaviourLate(electricBehaviour);
             updateBehaviour = false;
             if(wires != null) {
                 // Rewire connected wires.

@@ -392,22 +392,18 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
             // Block entities no longer ticking.
             // Above level 33 the entities get completely unloaded so no need to pause them.
             for(var be : chunk.getBlockEntities().values()) {
-                if(be instanceof SmartBlockEntity smart) {
-                    var electric = smart.getBehaviour(ElectricBehaviour.TYPE);
-                    if(electric == null)
-                        continue;
-                    electric.pause();
-                }
+                var electric = BlockEntityBehaviour.get(be, ElectricBehaviour.TYPE);
+                if(electric == null)
+                    continue;
+                electric.pause();
             }
         } else if(ChunkLevel.isBlockTicking(newLevel)) {
             // Block entities ticking again.
             for(var be : chunk.getBlockEntities().values()) {
-                if(be instanceof SmartBlockEntity smart) {
-                    var electric = smart.getBehaviour(ElectricBehaviour.TYPE);
-                    if(electric == null)
-                        continue;
-                    electric.unpause();
-                }
+                var electric = BlockEntityBehaviour.get(be, ElectricBehaviour.TYPE);
+                if(electric == null)
+                    continue;
+                electric.unpause();
             }
         }
     }

@@ -47,9 +47,14 @@ public class ModdedPartialModels {
 
     public static final PartialModel NEON_TUBE_BULB = model("component/neon_bulb_bulb");
     public static final PartialModel NEON_TUBE_GLOW = model("component/neon_bulb_glow");
+    public static final PartialModel NEON_TUBE_VERTICAL_GLOW = model("component/neon_bulb_vertical_glow");
+
+    public static final PartialModel LABEL = model("component/label");
 
     public static final PartialModel LIGHT_BULB_BULB = model("component/light_bulb_bulb");
     public static final PartialModel LIGHT_BULB_GLOW = model("component/light_bulb_glow");
+    public static final PartialModel LIGHT_BULB_BULB_DYED = model("component/light_bulb_bulb_dyed");
+    public static final PartialModel LIGHT_BULB_GLOW_DYED = model("component/light_bulb_glow_dyed");
 
     public static final PartialModel BARRETTER_GLOW = model("component/barretter_tube_glow");
 

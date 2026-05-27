@@ -34,9 +34,8 @@ import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.special.ElectronTubeWire;
-
-import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
 
 public class ElectronTubeComponent extends MirrorableComponent implements IRenderedComponent {
     public static final FloatProperty GAIN = new FloatProperty(PowerGrid.MOD_ID, "tube_gain", 5, 1, 100);
@@ -81,7 +80,7 @@ public class ElectronTubeComponent extends MirrorableComponent implements IRende
         placed.customData = data;
 
         final var operatingTemperature = 1400f;
-        final var dissipationFactor = targetPower / (operatingTemperature - BASE_TEMPERATURE);
+        final var dissipationFactor = ThermalBehaviour.dissipationFactor(targetPower, operatingTemperature);
         thermals.builder()
                 .addHeatSource(heater)
                 .setThermalMass(0.001f * targetPower / 5f)
