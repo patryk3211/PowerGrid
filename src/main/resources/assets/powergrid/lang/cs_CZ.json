@@ -537,7 +537,6 @@
   "powergrid.ponder.hv_breaker.text_3": "Jeho stav pak lze přepnout redstonovým pulsem",
   "powergrid.ponder.hv_breaker.text_4": "Jistič může být vypnut, aniž byste ho museli znovu narahovat",
   "powergrid.ponder.hv_switch.header": "Mechanický spínač",
-  "powergrid.ponder.hv_switch.text_1": "Vysokonapěťový spínač vám umožňuje přepínat elektřiny pomocí kinetického vstupu",
   "powergrid.ponder.improved_grounding.header": "Lepší zemnící reference",
   "powergrid.ponder.improved_grounding.text_1": "Běžné bloky nejsou příliš vodivé a způsobí, že zemnič bude mít vysokou impendanci",
   "powergrid.ponder.improved_grounding.text_2": "Můžete zlepšit vlastnosti podloží přidáním vodivých bloků blízko zemniče",
