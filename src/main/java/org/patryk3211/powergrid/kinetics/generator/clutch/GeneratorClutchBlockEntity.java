@@ -152,7 +152,7 @@ public class GeneratorClutchBlockEntity extends GeneratingKineticBlockEntity imp
 
     public int getRedstoneOutput() {
         float load = getLoad();
-        return Mth.floor(load * 14.0f) + (load > 0 ? 1 : 0);
+        return Mth.floor(load * 14.0f) + (load > 0.001 ? 1 : 0);
     }
 
     public float getLoad() {

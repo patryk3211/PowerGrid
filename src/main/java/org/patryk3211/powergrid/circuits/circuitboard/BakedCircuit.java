@@ -245,6 +245,10 @@ public class BakedCircuit {
     public void tick() {
         if(firstTick) {
             firstTick = false;
+            float ambient = ThermalBehaviour.getAmbientTemperature(be.getLevel(), be.getBlockPos());
+            for(var unit : thermalUnits) {
+                unit.setAmbientTemperature(ambient);
+            }
             return;
         }
         var client = be.getLevel().isClientSide;

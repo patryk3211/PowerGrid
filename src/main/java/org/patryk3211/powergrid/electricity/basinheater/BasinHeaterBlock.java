@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity.basinheater;
 
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import com.simibubi.create.foundation.block.IBE;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -80,6 +81,10 @@ public class BasinHeaterBlock extends ElectricBlock implements IBE<BasinHeaterBl
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance(), player, tooltip);
-        Voltage.min((int) Math.sqrt(BasinHeaterBlockEntity.power() * resistance()), player, tooltip);
+        int power = (int) Math.sqrt(BasinHeaterBlockEntity.power() * resistance());
+        Voltage.voltage("tooltip.voltage.min", ChatFormatting.DARK_AQUA,
+                power / 2, player, tooltip);
+        Voltage.voltage("tooltip.voltage.kindled", ChatFormatting.AQUA,
+                power, player, tooltip);
     }
 }

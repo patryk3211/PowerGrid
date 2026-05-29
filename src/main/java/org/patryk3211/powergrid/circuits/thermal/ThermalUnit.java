@@ -25,8 +25,6 @@ import java.util.Collection;
 import java.util.UUID;
 import java.util.function.Consumer;
 
-import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
-
 public class ThermalUnit {
     private final UUID componentUUID;
     private final int index;
@@ -40,9 +38,11 @@ public class ThermalUnit {
     @Nullable
     private final Runnable overheatCallback;
 
-    private float temperature = 22f;
+    private float temperature = -1000;
     private int overheatTicks;
     private Vec3 position;
+
+    private float ambientTemperature;
 
     public ThermalUnit(UUID componentUUID, int index, float thermalMass, float dissipationFactor, float overheatTemperature, Collection<AbstractElectricWire> heatSources, @Nullable Consumer<Float> temperatureCallback, @Nullable Runnable overheatCallback) {
         this.componentUUID = componentUUID;
@@ -70,10 +70,16 @@ public class ThermalUnit {
         return temperature >= overheatTemperature && overheatTicks >= ThermalBehaviour.OVERHEAT_TICKS;
     }
 
+    public void setAmbientTemperature(float ambient) {
+        this.ambientTemperature = ambient;
+        if(temperature < ThermalBehaviour.ABSOLUTE_ZERO)
+            temperature = ambient;
+    }
+
     public void tick(float dissipationMultiplier) {
         if(hasOverheated())
             return;
-        float power = -dissipationFactor * (temperature - BASE_TEMPERATURE) * dissipationMultiplier;
+        float power = -dissipationFactor * (temperature - ambientTemperature) * dissipationMultiplier;
         for(var source : heatSources) {
             if(!source.isConverged())
                 return;
@@ -81,11 +87,11 @@ public class ThermalUnit {
         }
         temperature += power / 20f / thermalMass;
         if(!Float.isFinite(temperature))
-            temperature = BASE_TEMPERATURE;
+            temperature = ambientTemperature;
         if(temperature > overheatTemperature + 10)
             temperature = overheatTemperature + 10;
-        if(power < 0 && temperature < 22f)
-            temperature = 22f;
+        if(power < 0 && temperature < ambientTemperature)
+            temperature = ambientTemperature;
         if(temperature >= overheatTemperature && power > 0) {
             ++overheatTicks;
         } else if(power < 0) {
