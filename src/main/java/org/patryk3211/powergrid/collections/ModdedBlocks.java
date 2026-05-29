@@ -81,6 +81,7 @@ import org.patryk3211.powergrid.electricity.light.string.StringLightBlock;
 import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterBlock;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlock;
 import org.patryk3211.powergrid.electricity.socket.SocketBlock;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlock;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerCoreBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
@@ -758,6 +759,14 @@ public class ModdedBlocks {
             .transform(CThermal.maxPower(10, 0.2f))
             .item()
                 .model(itemWithParent("block/punch_card_reader/item"))
+                .build()
+            .register();
+
+    public static BlockEntry<SolarPanelBlock> SOLAR_PANEL = REGISTRATE.block("solar_panel", SolarPanelBlock::new)
+            .initialProperties(SharedProperties::softMetal)
+            .blockstate(surfaceBlock("block/solar_test_block"))
+            .item()
+                .model(itemWithParent("block/solar_test_block_v"))
                 .build()
             .register();
 
