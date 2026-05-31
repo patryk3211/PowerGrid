@@ -7,21 +7,28 @@ import li.cil.tis3d.api.serial.SerialInterfaceProvider;
 import li.cil.tis3d.api.serial.SerialProtocolDocumentationReference;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import org.jetbrains.annotations.NotNull;
-import org.patryk3211.powergrid.electricity.gauge.GaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.GaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.IGaugeBlock;
 
 import java.util.Optional;
 
 public class GaugeBlockSerialProvider<T extends Block & IBE<BE> & IGaugeBlock, BE extends GaugeBlockEntity> implements SerialInterfaceProvider {
+    private final SerialProtocolDocumentationReference docs;
     private final T block;
 
     private GaugeBlockSerialProvider(T block) {
         this.block = block;
+        var key = BuiltInRegistries.BLOCK.getKey(block);
+        docs = new SerialProtocolDocumentationReference(
+                Component.translatable("block.powergrid." + key.getPath()),
+                key.getNamespace() + "_" + key.getPath() + ".md"
+        );
     }
 
     @Override
@@ -40,7 +47,7 @@ public class GaugeBlockSerialProvider<T extends Block & IBE<BE> & IGaugeBlock, B
 
     @Override
     public @NotNull Optional<SerialProtocolDocumentationReference> getDocumentationReference() {
-        return Optional.empty();
+        return Optional.of(docs);
     }
 
     @Override
