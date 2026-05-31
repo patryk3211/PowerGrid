@@ -61,6 +61,7 @@ import org.patryk3211.powergrid.commands.PerformanceCommand;
 import org.patryk3211.powergrid.compat.cold_sweat.ColdSweatBridge;
 import org.patryk3211.powergrid.compat.tfmg.TFMGBridge;
 import org.patryk3211.powergrid.compat.tfmg.TFMGProxyImpl;
+import org.patryk3211.powergrid.compat.tis3d.ModdedSerialInterfaceProviders;
 import org.patryk3211.powergrid.data.BlockTagProvider;
 import org.patryk3211.powergrid.data.EntityTagProvider;
 import org.patryk3211.powergrid.data.ItemTagProvider;
@@ -125,6 +126,10 @@ public class PowerGridImpl {
         PowerGrid.REGISTRATE.addLang("itemGroup", PowerGrid.asResource("main"), "Power Grid");
         TABS.register(bus);
         COMMAND_ARGUMENT_TYPES.register(bus);
+
+        if(Platform.isModLoaded("tis3d")) {
+            ModdedSerialInterfaceProviders.register();
+        }
 
         NeoForge.EVENT_BUS.register(ForgeEvents.class);
 
