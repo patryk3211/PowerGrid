@@ -11,7 +11,6 @@ import net.minecraft.world.item.Tiers;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.equipment.ItemBoostUtils;
 import org.patryk3211.powergrid.equipment.portablebattery.BatteryUtils;
@@ -20,7 +19,7 @@ import java.util.List;
 
 public class SawItem extends AxeItem {
     public SawItem(Properties properties) {
-        super(Tiers.IRON, 1.0f, -1.0f, properties);
+        super(Tiers.IRON, properties);
     }
 
     @Override
@@ -48,7 +47,7 @@ public class SawItem extends AxeItem {
 
     @Override
     public float getDestroySpeed(ItemStack stack, BlockState state) {
-        return (isCorrectToolForDrops(state) ? baseSpeed() : 1.0F) * (ItemBoostUtils.isBoosted(stack) ? 2 : 1);
+        return (isCorrectToolForDrops(stack, state) ? baseSpeed() : 1.0F) * (ItemBoostUtils.isBoosted(stack) ? 2 : 1);
     }
 
     @Override
@@ -57,7 +56,7 @@ public class SawItem extends AxeItem {
             boolean boosted = ItemBoostUtils.useBoost(stack, player);
             float power = BatteryUtils.drawEnergy(player, energyPerUse() * (boosted ? 2 : 1));
             if(!level.isClientSide && state.getDestroySpeed(level, pos) != 0.0F && power < 0.3f) {
-                stack.hurtAndBreak(1, miningEntity, (livingEntity) -> livingEntity.broadcastBreakEvent(EquipmentSlot.MAINHAND));
+                stack.hurtAndBreak(1, miningEntity, EquipmentSlot.MAINHAND);
             }
             return true;
         }
@@ -65,8 +64,8 @@ public class SawItem extends AxeItem {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable Level level, List<Component> tooltipComponents, TooltipFlag isAdvanced) {
-        super.appendHoverText(stack, level, tooltipComponents, isAdvanced);
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+        super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
         ItemBoostUtils.addTooltip(stack, tooltipComponents);
     }
 }
