@@ -4,7 +4,7 @@
 The protocol for interacting with a voltage meter supports both read and write operations.
 Any use of this protocol for enjoyment voids warranty.
 
-When writing to the serial interface of a furnace, both negative and positive values are allowed, this values moves the comma around from the reading.
+When writing to the serial interface of a voltage meter, both negative and positive values are allowed, this values moves the comma around from the reading.
 When `0` it returns in unit Volts, when `-3` it returns in mV.
 Use any extreme values at your own risk, any values lower than -3 are not supported and *WILL& void your warranty.
 

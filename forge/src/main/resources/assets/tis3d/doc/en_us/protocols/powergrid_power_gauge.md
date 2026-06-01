@@ -4,7 +4,7 @@
 The protocol for interacting with a power meter supports both read and write operations.
 *Any conversion to non-SI units such as but not limited to horsepower, BTU/h and foot-pound per minute will be reported.*
 
-When writing to the serial interface of a furnace, both negative and positive values are allowed, this values moves the comma around from the reading.
+When writing to the serial interface of a power meter, both negative and positive values are allowed, this values moves the comma around from the reading.
 When `0` it returns in unit Watts, when `-3` it returns in mW.
 Use any extreme values at your own risk, any values lower than -3 are not supported and *WILL* void your warranty.
 
