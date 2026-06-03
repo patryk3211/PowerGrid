@@ -764,9 +764,9 @@ public class ModdedBlocks {
 
     public static BlockEntry<SolarPanelBlock> SOLAR_PANEL = REGISTRATE.block("solar_panel", SolarPanelBlock::new)
             .initialProperties(SharedProperties::softMetal)
-            .blockstate(surfaceBlock("block/solar_test_block"))
+            .blockstate(surfaceBlock("block/solar_panel_block"))
             .item()
-                .model(itemWithParent("block/solar_test_block_v"))
+                .model(itemWithParent("block/solar_panel_block_v"))
                 .build()
             .register();
 
