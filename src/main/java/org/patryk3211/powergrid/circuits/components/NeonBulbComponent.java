@@ -53,7 +53,7 @@ public class NeonBulbComponent extends OrientableComponent implements IRenderedC
             placed -> 0.2f / placed.get(BREAKDOWN_VOLTAGE),
             v -> Unit.CURRENT.formatWithPrefixes(v).string());
     public static final EnumProperty<DyeColor> COLOR = new EnumProperty<DyeColor>(PowerGrid.MOD_ID, "color", DyeColor.class, new DyeColor[]{DyeColor.RED, DyeColor.YELLOW, DyeColor.BLUE, DyeColor.GREEN, DyeColor.WHITE});
-    public static final BooleanProperty VERTICAL = new BooleanProperty(PowerGrid.MOD_ID, "vertical");
+    public static final BooleanProperty VERTICAL = new BooleanProperty(PowerGrid.MOD_ID, "neon_tube_vertical");
     public static final BooleanProperty LIT = new BooleanProperty(PowerGrid.MOD_ID, "lit").hidden().cast();
 
     public NeonBulbComponent(ComponentFootprint footprint) {
