@@ -48,7 +48,7 @@ import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureRenderer;
 import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterBlockEntity;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlockEntity;
 import org.patryk3211.powergrid.electricity.socket.SocketBlockEntity;
-import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity;
+import org.patryk3211.powergrid.electricity.solarpanel.MultiBlockSolarPanelEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapRenderer;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlockEntity;
@@ -356,8 +356,8 @@ public class ModdedBlockEntities {
                     .renderer(() -> PunchCardReaderRenderer::new)
                     .register();
 
-    public static final BlockEntityEntry<SolarPanelBlockEntity> SOLAR_PANEL =
-            REGISTRATE.blockEntity("solar_panel", SolarPanelBlockEntity::new)
+    public static final BlockEntityEntry<MultiBlockSolarPanelEntity> SOLAR_PANEL =
+            REGISTRATE.blockEntity("solar_panel", MultiBlockSolarPanelEntity::new)
                     .validBlock(ModdedBlocks.SOLAR_PANEL)
                     .register();
 
