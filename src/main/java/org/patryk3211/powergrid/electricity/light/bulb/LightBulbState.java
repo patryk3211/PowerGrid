@@ -36,10 +36,6 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
-import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
-
-import static org.patryk3211.powergrid.electricity.base.ThermalBehaviour.BASE_TEMPERATURE;
-import static org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock.POWER;
 
 public abstract class LightBulbState implements ElectricBehaviour.SyncAppender {
     protected final Item item;
@@ -107,7 +103,7 @@ public abstract class LightBulbState implements ElectricBehaviour.SyncAppender {
             return;
         var world = fixtureBE.getLevel();
         if(cachedAmbientTemperature == null) {
-            cachedAmbientTemperature = ThermalBehaviour.getAmbientTemperature(world, fixture.getBlockPos());
+            cachedAmbientTemperature = ThermalBehaviour.getAmbientTemperature(world, fixtureBE.getBlockPos());
         }
         if(!world.isClientSide) {
             var filament = fixtureLogic.getFilament();
