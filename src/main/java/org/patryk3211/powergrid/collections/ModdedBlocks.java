@@ -81,6 +81,7 @@ import org.patryk3211.powergrid.electricity.light.string.StringLightBlock;
 import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterBlock;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlock;
 import org.patryk3211.powergrid.electricity.socket.SocketBlock;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBearingBlock;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlock;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerCoreBlock;
@@ -767,6 +768,14 @@ public class ModdedBlocks {
             .blockstate(surfaceBlock("block/solar_panel_block"))
             .item()
                 .model(itemWithParent("block/solar_panel_block_v"))
+                .build()
+            .register();
+
+    public static BlockEntry<SolarPanelBearingBlock> SOLAR_PANEL_BEARING = REGISTRATE.block("solar_panel_bearing", SolarPanelBearingBlock::new)
+            .initialProperties(SharedProperties::softMetal)
+            .blockstate(northFacing("block/solar_panel_bearing_block_v"))
+            .item()
+                .model(itemWithParent("block/solar_panel_bearing_block_v"))
                 .build()
             .register();
 

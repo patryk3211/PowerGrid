@@ -1,0 +1,91 @@
+package org.patryk3211.powergrid.electricity.solarpanel;
+
+import com.simibubi.create.api.contraption.ContraptionType;
+import com.simibubi.create.content.contraptions.AssemblyException;
+import com.simibubi.create.content.contraptions.bearing.BearingContraption;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import org.apache.commons.lang3.tuple.Pair;
+import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedContraptions;
+
+public class SolarPanelBearingContraption extends BearingContraption {
+    protected int panelBlocks;
+    protected Direction panelDirection = null;
+
+
+    public SolarPanelBearingContraption() {
+        super();
+    }
+
+    public SolarPanelBearingContraption(Direction facing) {
+        this.facing = facing;
+    }
+
+    @Override
+    public boolean assemble(Level world, BlockPos pos) throws AssemblyException {
+        BlockPos offset = pos.relative(facing);
+        if (!searchMovedStructure(world, offset, null))
+            return false;
+        startMoving(world);
+        expandBoundsAroundAxis(facing.getAxis());
+        if (panelBlocks < 1)
+            throw new AssemblyException(Component.translatable(
+                    "powergrid.contraption.assembly.not_enough_panels"));
+        for (StructureTemplate.StructureBlockInfo info : getBlocks().values()) {
+            if (!(info.state().getBlock() instanceof SolarPanelBlock))
+                continue;
+            Direction panelFacing = info.state().getValue(SolarPanelBlock.FACING).getOpposite();
+            if (panelDirection == null) {
+                panelDirection = panelFacing;
+            } else if (panelFacing != panelDirection) {
+                throw new AssemblyException(Component.translatable(
+                        "powergrid.contraption.assembly.mismatched_panel_facing"));
+            }
+        }
+        if (blocks.isEmpty())
+            return false;
+        return true;
+    }
+
+    @Override
+    public void addBlock(Level level, BlockPos pos, Pair<StructureTemplate.StructureBlockInfo, BlockEntity> capture) {
+        BlockPos localPos = pos.subtract(anchor);
+        if (!getBlocks().containsKey(localPos) && ModdedBlockEntities.SOLAR_PANEL.is(capture.getRight())){
+            panelBlocks++;
+        }
+        super.addBlock(level, pos, capture);
+    }
+
+    @Override
+    public CompoundTag writeNBT(boolean spawnPacket) {
+        CompoundTag tag = super.writeNBT(spawnPacket);
+        tag.putInt("Panels", panelBlocks);
+        tag.putInt("PanelDirection", panelDirection.get3DDataValue());
+        tag.putInt("Facing", facing.get3DDataValue());
+        return tag;
+    }
+
+    @Override
+    public void readNBT(Level world, CompoundTag tag, boolean spawnData) {
+        panelBlocks = tag.getInt("Panels");
+        facing = Direction.from3DDataValue(tag.getInt("Facing"));
+        panelDirection = Direction.from3DDataValue(tag.getInt("PanelDirection"));
+        super.readNBT(world, tag, spawnData);
+    }
+
+    @Override
+    public ContraptionType getType() {
+        return ModdedContraptions.SOLAR_PANEL.value();
+    }
+
+    public int getPanelBlocks(){
+        return panelBlocks;
+    }
+}
+

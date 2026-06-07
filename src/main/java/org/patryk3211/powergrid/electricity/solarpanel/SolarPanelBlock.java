@@ -13,7 +13,8 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -24,7 +25,6 @@ import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
-import org.patryk3211.powergrid.electricity.battery.MultiBlockBatteryEntity;
 import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 
@@ -34,7 +34,7 @@ import java.util.function.Predicate;
 public class SolarPanelBlock extends Rotation4ElectricBlock implements IBE<MultiBlockSolarPanelEntity>,IHaveElectricProperties, IAcceptConnector {
 
     private static final VoxelShape SHAPE = Shapes.or(
-            box(0, 0, 0, 16, 4, 16)
+            box(0, 6, 0, 16, 10, 16)
     );
 
     private static final int placementHelperId = PlacementHelpers.register(new SolarPanelBlock.PlacementHelper());
@@ -91,6 +91,20 @@ public class SolarPanelBlock extends Rotation4ElectricBlock implements IBE<Multi
     @Override
     public boolean isPolarized() {
         return true;
+    }
+
+    @Override
+    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        var be = context.getLevel().getBlockEntity(context.getClickedPos());
+        if (be instanceof SolarPanelBlockEntity blockEntity) {
+            blockEntity.getPlacedBlockRotation();
+        }
+        return super.onWrenched(state, context);
+    }
+
+    @Override
+    public BlockState getStateForPlacement(BlockPlaceContext context) {
+        return defaultBlockState().setValue(FACING, context.getNearestLookingDirection());
     }
 
     @MethodsReturnNonnullByDefault
