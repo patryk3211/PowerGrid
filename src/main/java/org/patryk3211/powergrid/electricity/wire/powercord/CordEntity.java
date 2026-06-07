@@ -17,7 +17,6 @@ package org.patryk3211.powergrid.electricity.wire.powercord;
 
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
-import dev.ryanhcode.sable.companion.SableCompanion;
 import net.createmod.ponder.api.level.PonderLevel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -47,6 +46,7 @@ import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
+import org.patryk3211.powergrid.utility.VSUtils;
 
 // A lot of code is copied from HangingWireEntity because I can't think of a good way to make the code generic.
 public class CordEntity extends BaseWireEntity implements IComplexRaycast {
@@ -54,7 +54,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
 
     public Vec3 terminalPos1;
     public Vec3 terminalPos2;
-    public AABB deSabledBB;
+    public AABB deVSedBB;
     private boolean isDynamic = false;
     private Vec3 baseTerminalPos1;
     private Vec3 baseTerminalPos2;
@@ -103,16 +103,8 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
 
     public void updateRenderParams() {
         var item = getWireEntry();
-<<<<<<< HEAD
         curveParams = new CurveParameters(terminalPos1, terminalPos2,
                 item.horizontalCoefficient(), item.verticalCoefficient(), item.wireThickness());
-=======
-        var dX = terminalPos2.x - terminalPos1.x;
-        var dY = Math.abs(terminalPos2.y - terminalPos1.y);
-        var dZ = terminalPos2.z - terminalPos1.z;
-        var hL = Math.sqrt(dX * dX + dZ * dZ);
-        renderParams = new CurveParameters(terminalPos1, terminalPos2, item.horizontalCoefficient() * hL + item.verticalCoefficient() * dY, item.wireThickness());
->>>>>>> 3d68e74b (Cross contraption wires)
         this.setBoundingBox(this.makeBoundingBox());
     }
 
@@ -134,19 +126,19 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             if(y < minY.getValue())
                 minY.setValue(y);
         }, 0.5f);
-        deSabledBB = new AABB(
+        deVSedBB = new AABB(
                 terminalPos1.x - pos.x, terminalPos1.y - pos.y, terminalPos1.z - pos.z,
                 terminalPos2.x - pos.x, terminalPos2.y - pos.y, terminalPos2.z - pos.z
         );
-        deSabledBB = deSabledBB.setMinY(deSabledBB.minY + minY.getValue() - box.minY).inflate(0.1f);
+        deVSedBB = deVSedBB.setMinY(deVSedBB.minY + minY.getValue() - box.minY).inflate(0.1f);
         return box.setMinY(minY.getValue()).inflate(0.1f);
     }
 
     @Override
-    public AABB getDeSabledBB() {
-        if(SableCompanion.INSTANCE.getContaining(this) == null || deSabledBB == null)
+    public AABB getDeVSedBB() {
+        if(!VSUtils.inShip(this) || deVSedBB == null)
             return getBoundingBox();
-        return deSabledBB.move(SableCompanion.INSTANCE.projectOutOfSubLevel(level(), position()));
+        return deVSedBB.move(VSUtils.projectToWorld(level(), position()));
     }
 
     @NotNull
@@ -252,22 +244,13 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
 
                 var tag = new CompoundTag();
                 var list = new ListTag();
-<<<<<<< HEAD
                 list.add(DoubleTag.valueOf(terminalPos1.x));
                 list.add(DoubleTag.valueOf(terminalPos1.y));
                 list.add(DoubleTag.valueOf(terminalPos1.z));
                 list.add(DoubleTag.valueOf(terminalPos2.x));
                 list.add(DoubleTag.valueOf(terminalPos2.y));
                 list.add(DoubleTag.valueOf(terminalPos2.z));
-=======
-                list.add(FloatTag.valueOf((float) terminalPos1.x));
-                list.add(FloatTag.valueOf((float) terminalPos1.y));
-                list.add(FloatTag.valueOf((float) terminalPos1.z));
-                list.add(FloatTag.valueOf((float) terminalPos2.x));
-                list.add(FloatTag.valueOf((float) terminalPos2.y));
-                list.add(FloatTag.valueOf((float) terminalPos2.z));
                 tag.putBoolean("D", isDynamic);
->>>>>>> 3d68e74b (Cross contraption wires)
                 tag.put("V", list);
                 var packet = new EntityDataS2CPacket(this, tag);
                 ModdedPackets.sendToClientsTracking(packet, this);
@@ -285,10 +268,10 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             updateRenderParams();
         }
         if(isDynamic) {
-            terminalPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, baseTerminalPos1);
-            terminalPos2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, baseTerminalPos2);
-            terminal1Velocity = SableCompanion.INSTANCE.getVelocity(world, baseTerminalPos1);
-            terminal2Velocity = SableCompanion.INSTANCE.getVelocity(world, baseTerminalPos2);
+            terminalPos1 = VSUtils.projectToWorld(world, baseTerminalPos1);
+            terminalPos2 = VSUtils.projectToWorld(world, baseTerminalPos2);
+            terminal1Velocity = VSUtils.getVelocity(world, baseTerminalPos1);
+            terminal2Velocity = VSUtils.getVelocity(world, baseTerminalPos2);
             var vect = terminalPos2.subtract(terminalPos1);
             var facing = vect.cross(UP);
             float facingAngle = (float) (Math.atan2(facing.x, -facing.z) * 180 / Math.PI);
@@ -346,16 +329,10 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     @Override
     public void onEntityDataPacket(CompoundTag data) {
         if(data.contains("V")) {
-<<<<<<< HEAD
             var list = data.getList("V", Tag.TAG_DOUBLE);
             terminalPos1 = new Vec3(list.getDouble(0), list.getDouble(1), list.getDouble(2));
             terminalPos2 = new Vec3(list.getDouble(3), list.getDouble(4), list.getDouble(5));
-=======
-            var list = data.getList("V", Tag.TAG_FLOAT);
-            terminalPos1 = new Vec3(list.getFloat(0), list.getFloat(1), list.getFloat(2));
-            terminalPos2 = new Vec3(list.getFloat(3), list.getFloat(4), list.getFloat(5));
             isDynamic = data.getBoolean("D");
->>>>>>> 3d68e74b (Cross contraption wires)
             updateRenderParams();
         } else {
             super.onEntityDataPacket(data);
@@ -417,13 +394,13 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
         var world = level();
         terminalPos1 = getEndpoint1().getExactPosition(world);
         terminalPos2 = getEndpoint2().getExactPosition(world);
-        if(getEndpoint1().getSubLevel(world) != getEndpoint2().getSubLevel(world)) {
+        if(getEndpoint1().getShip(world) != getEndpoint2().getShip(world)) {
             // Make outside of sublevels
             baseTerminalPos1 = terminalPos1;
             baseTerminalPos2 = terminalPos2;
             isDynamic = true;
-            terminalPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, terminalPos1);
-            terminalPos2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, terminalPos2);
+            terminalPos1 = VSUtils.projectToWorld(world, terminalPos1);
+            terminalPos2 = VSUtils.projectToWorld(world, terminalPos2);
         }
     }
 
@@ -438,7 +415,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             Vec3 ray = max.subtract(min);
             var rayLength = ray.lengthSqr();
             ray = ray.normalize();
-            Vec3 planeOrigin = SableCompanion.INSTANCE.projectOutOfSubLevel(level(), position());
+            Vec3 planeOrigin = VSUtils.projectToWorld(level(), position());
             Vec3 planeNormal = getViewVector(1);
             Vec3 planeOriginVector = planeOrigin.subtract(min);
 

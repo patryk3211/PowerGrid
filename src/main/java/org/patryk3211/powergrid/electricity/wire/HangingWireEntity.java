@@ -17,7 +17,6 @@ package org.patryk3211.powergrid.electricity.wire;
 
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
-import dev.ryanhcode.sable.companion.SableCompanion;
 import net.createmod.ponder.api.level.PonderLevel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -35,14 +34,14 @@ import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
-import org.patryk3211.powergrid.utility.SableUtils;
+import org.patryk3211.powergrid.utility.VSUtils;
 
 public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     private static final Vec3 UP = new Vec3(0, 1, 0);
 
     public Vec3 terminalPos1;
     public Vec3 terminalPos2;
-    public AABB deSabledBB;
+    public AABB deVSedBB;
     private boolean isDynamic = false;
     private Vec3 baseTerminalPos1;
     private Vec3 baseTerminalPos2;
@@ -58,7 +57,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     }
 
     public static boolean checkClearance(Level world, Vec3 start, Vec3 end) {
-        if(!SableUtils.sameSubLevel(world, start, end))
+        if(!VSUtils.sameShip(world, start, end))
             return true;
         var result = BlockTrace.raycast(world, start, end);
         if(result.getType() == HitResult.Type.BLOCK) {
@@ -100,19 +99,19 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             if(y < minY.getValue())
                 minY.setValue(y);
         }, 0.5f);
-        deSabledBB = new AABB(
+        deVSedBB = new AABB(
                 terminalPos1.x - pos.x, terminalPos1.y - pos.y, terminalPos1.z - pos.z,
                 terminalPos2.x - pos.x, terminalPos2.y - pos.y, terminalPos2.z - pos.z
         );
-        deSabledBB = deSabledBB.setMinY(deSabledBB.minY + minY.getValue() - box.minY).inflate(0.1f);
+        deVSedBB = deVSedBB.setMinY(deVSedBB.minY + minY.getValue() - box.minY).inflate(0.1f);
         return box.setMinY(minY.getValue()).inflate(0.1f);
     }
 
     @Override
-    public AABB getDeSabledBB() {
-        if(SableCompanion.INSTANCE.getContaining(this) == null || deSabledBB == null)
+    public AABB getDeVSedBB() {
+        if(!VSUtils.inShip(this) || deVSedBB == null)
             return getBoundingBox();
-        return deSabledBB.move(SableCompanion.INSTANCE.projectOutOfSubLevel(level(), position()));
+        return deVSedBB.move(VSUtils.projectToWorld(level(), position()));
     }
 
     public static HangingWireEntity create(Level world, BlockWireEndpoint endpoint1, BlockWireEndpoint endpoint2, ItemStack item, @Nullable Float resistance) {
@@ -190,10 +189,10 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             updateRenderParams();
         }
         if(isDynamic) {
-            terminalPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, baseTerminalPos1);
-            terminalPos2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, baseTerminalPos2);
-            terminal1Velocity = SableCompanion.INSTANCE.getVelocity(world, baseTerminalPos1);
-            terminal2Velocity = SableCompanion.INSTANCE.getVelocity(world, baseTerminalPos2);
+            terminalPos1 = VSUtils.projectToWorld(world, baseTerminalPos1);
+            terminalPos2 = VSUtils.projectToWorld(world, baseTerminalPos2);
+            terminal1Velocity = VSUtils.getVelocity(world, baseTerminalPos1);
+            terminal2Velocity = VSUtils.getVelocity(world, baseTerminalPos2);
             var vect = terminalPos2.subtract(terminalPos1);
             var facing = vect.cross(UP);
             float facingAngle = (float) (Math.atan2(facing.x, -facing.z) * 180 / Math.PI);
@@ -301,7 +300,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             Vec3 ray = max.subtract(min);
             var rayLength = ray.lengthSqr();
             ray = ray.normalize();
-            Vec3 planeOrigin = SableCompanion.INSTANCE.projectOutOfSubLevel(level(), position());
+            Vec3 planeOrigin = VSUtils.projectToWorld(level(), position());
             Vec3 planeNormal = getViewVector(1);
             Vec3 planeOriginVector = planeOrigin.subtract(min);
 
@@ -370,13 +369,13 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         var world = level();
         terminalPos1 = getEndpoint1().getExactPosition(world);
         terminalPos2 = getEndpoint2().getExactPosition(world);
-        if(getEndpoint1().getSubLevel(world) != getEndpoint2().getSubLevel(world)) {
+        if(getEndpoint1().getShip(world) != getEndpoint2().getShip(world)) {
             // Make outside of sublevels
             baseTerminalPos1 = terminalPos1;
             baseTerminalPos2 = terminalPos2;
             isDynamic = true;
-            terminalPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, terminalPos1);
-            terminalPos2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, terminalPos2);
+            terminalPos1 = VSUtils.projectToWorld(world, terminalPos1);
+            terminalPos2 = VSUtils.projectToWorld(world, terminalPos2);
         }
     }
 

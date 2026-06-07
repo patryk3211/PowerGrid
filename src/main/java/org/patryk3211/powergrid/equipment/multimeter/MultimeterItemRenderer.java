@@ -19,7 +19,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.item.render.CustomRenderedItemModel;
 import com.simibubi.create.foundation.item.render.CustomRenderedItemModelRenderer;
 import com.simibubi.create.foundation.item.render.PartialItemModelRenderer;
-import dev.ryanhcode.sable.companion.SableCompanion;
 import net.createmod.catnip.animation.AnimationTickHolder;
 import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.fabricmc.api.EnvType;
@@ -42,6 +41,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.electricity.wire.HangingWireRenderer;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
+import org.patryk3211.powergrid.utility.VSUtils;
 
 @Environment(EnvType.CLIENT)
 public class MultimeterItemRenderer extends CustomRenderedItemModelRenderer {
@@ -113,12 +113,12 @@ public class MultimeterItemRenderer extends CustomRenderedItemModelRenderer {
             case 0 -> {
                 var pos = WireEndpointType.deserialize(data.getCompound("Pos"));
                 if(pos != null && pos.isValid(world)) {
-                    var position = SableCompanion.INSTANCE.projectOutOfSubLevel(world, pos.getExactPosition(world));
+                    var position = VSUtils.projectToWorld(world, pos.getExactPosition(world));
                     renderProbe(position.subtract(origin), buffer, matrixStack, world, player, 0xFFFF4040);
                 }
                 var neg = WireEndpointType.deserialize(data.getCompound("Neg"));
                 if(neg != null && neg.isValid(world)) {
-                    var position = SableCompanion.INSTANCE.projectOutOfSubLevel(world, neg.getExactPosition(world));
+                    var position = VSUtils.projectToWorld(world, neg.getExactPosition(world));
                     renderProbe(position.subtract(origin), buffer, matrixStack, world, player, 0xFF202020);
                 }
             }
