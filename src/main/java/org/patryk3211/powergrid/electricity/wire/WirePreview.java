@@ -18,7 +18,6 @@ package org.patryk3211.powergrid.electricity.wire;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.AllSpecialTextures;
-import dev.ryanhcode.sable.companion.SableCompanion;
 import net.createmod.catnip.animation.AnimationTickHolder;
 import net.createmod.catnip.data.Pair;
 import net.createmod.catnip.outliner.Outliner;
@@ -50,7 +49,7 @@ import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
 import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlacementOverlay;
-import org.patryk3211.powergrid.utility.SableUtils;
+import org.patryk3211.powergrid.utility.VSUtils;
 
 @Environment(EnvType.CLIENT)
 public class WirePreview {
@@ -151,15 +150,15 @@ public class WirePreview {
             }
         }
 
-        var projCurrentPos = SableCompanion.INSTANCE.projectOutOfSubLevel(world, currentPos);
-        var projHitPos = SableCompanion.INSTANCE.projectOutOfSubLevel(world, hitPoint);
-        float length = (float) projCurrentPos.distanceTo(projHitPos);
+        var projCurrentPos = VSUtils.projectToWorld(world, currentPos);
+        var projHitPos = VSUtils.projectToWorld(world, hitPoint);
+        float length = (float) VSUtils.projectedDistance(world, currentPos, hitPoint);
         // Stop rendering the preview above a thousand blocks to stop the game from freezing
         if(length > 1000)
             return;
         boolean isBlockWire = endpoint.type() != WireEndpointType.BLOCK;
         if(isBlockWire || hitTerminal == null) {
-            if(!SableUtils.sameSubLevel(world, currentPos, hitPoint))
+            if(!VSUtils.sameShip(world, currentPos, hitPoint))
                 return;
             length = 0;
             currentPos = BlockTrace.alignPosition(currentPos);
@@ -253,7 +252,7 @@ public class WirePreview {
         if(target == null || target.getType() != HitResult.Type.BLOCK)
             return null;
         var hitPoint = target.getLocation();
-        var distance = SableUtils.projectedDistance(player.level(), currentPos, hitPoint);
+        var distance = VSUtils.projectedDistance(player.level(), currentPos, hitPoint);
         var msg = Lang.translate("gui.endpoint_distance")
                 .add(Lang.numberConstant(distance).style(distance < wireEntry.maximumLength() ? ChatFormatting.GREEN : ChatFormatting.RED))
                 .style(ChatFormatting.WHITE);

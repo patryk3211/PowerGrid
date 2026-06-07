@@ -23,5 +23,5 @@ public interface IComplexRaycast {
     @Nullable
     Vec3 raycast(Vec3 min, Vec3 max);
 
-    AABB getDeSabledBB();
+    AABB getDeVSedBB();
 }

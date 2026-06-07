@@ -1,0 +1,4 @@
+// 1.20.1	2026-06-07T17:31:11.645306731	Create: Power Grid/Tags for minecraft:block
+a41e68c57767fd2d6690a048aa60a7ad8e74165e data/powergrid/tags/blocks/affected_by_lamp.json
+7a8ba9a168892077e9cc495c703a98e86f9c7668 data/powergrid/tags/blocks/conductive_ground.json
+d38293997f4f6ac74452c9b97b6c2bfbd41c4a0c data/powergrid/tags/blocks/carbon_pile_block.json

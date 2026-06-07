@@ -27,6 +27,7 @@ allprojects {
 	}
 
 	repositories {
+		mavenLocal()
 		maven { url = "https://maven.parchmentmc.org" } // Parchment mappings
 
 		maven { url = "https://mvn.devos.one/releases" } // Porting Lib releases
@@ -64,6 +65,10 @@ allprojects {
 		maven { // Cold Sweat
 			url = "https://cursemaven.com"
 			content { includeGroup("curse.maven") }
+		}
+		maven {
+			name = "Valkyrien Skies Internal"
+			url = 'https://maven.valkyrienskies.org'
 		}
 	}
 
@@ -314,6 +319,22 @@ dependencies {
 	modApi "dev.architectury:architectury:${project.architectury_api_version}"
 
 	annotationProcessor(implementation("io.github.llamalad7:mixinextras-common:${mixin_extras_version}"))
+
+	modApi("org.valkyrienskies:valkyrienskies-120-common:${vs2_version}") {
+		exclude group: "com.simibubi"
+		exclude group: "maven.modrinth"
+	}
+	implementation("org.valkyrienskies.core:api:${vscore_version}") {
+		exclude group: 'org.joml', module: ''
+	}
+	implementation("org.valkyrienskies.core:impl:${vscore_version}") {
+		exclude group: 'org.joml', module: ''
+	}
+	implementation("org.valkyrienskies.core:internal:${vscore_version}") {
+		exclude group: 'org.joml', module: ''
+	}
+
+	compileOnly("org.joml:joml-primitives:1.10.0")
 }
 
 

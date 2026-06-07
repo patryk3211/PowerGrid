@@ -25,6 +25,7 @@ import net.minecraft.data.DataProvider;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.data.BlockTagProvider;
+import org.patryk3211.powergrid.data.EntityHandlerProvider;
 import org.patryk3211.powergrid.data.ItemTagProvider;
 import org.patryk3211.powergrid.data.recipe.fabric.MixingRecipes;
 import org.patryk3211.powergrid.data.recipes.*;
@@ -51,6 +52,7 @@ public class PowerGridDataGenerator implements DataGeneratorEntrypoint {
 		addProvider(pack, MagnetizingRecipes::new);
 		pack.addProvider(BlockTagProvider::new);
 		pack.addProvider(ItemTagProvider::new);
+		pack.addProvider((FabricDataGenerator.Pack.Factory<EntityHandlerProvider>) EntityHandlerProvider::new);
 		addProvider(pack, ItemApplicationRecipes::new);
 		addProvider(pack, DeployerApplicationRecipes::new);
 

@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import dev.ryanhcode.sable.companion.SableCompanion;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
@@ -36,6 +35,7 @@ import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
+import org.patryk3211.powergrid.utility.VSUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,7 +44,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
     public AABB mainBoundingBox;
     public final List<AABB> boundingBoxes = new ArrayList<>();
     public final List<Point> segments = new ArrayList<>();
-    private AABB deSabledBB;
+    private AABB deVSedBB;
 
     private float totalLength = 0;
 
@@ -147,10 +147,10 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
     }
 
     @Override
-    public AABB getDeSabledBB() {
-        if(SableCompanion.INSTANCE.getContaining(this) == null || mainBoundingBox == null)
+    public AABB getDeVSedBB() {
+        if(!VSUtils.inShip(this) || mainBoundingBox == null)
             return getBoundingBox();
-        return mainBoundingBox.move(SableCompanion.INSTANCE.projectOutOfSubLevel(level(), position()));
+        return mainBoundingBox.move(VSUtils.projectToWorld(level(), position()));
     }
 
     public float getTotalLength() {
@@ -264,7 +264,7 @@ public class BlockWireEntity extends WireEntity implements IComplexRaycast {
     @Override
     public @Nullable Vec3 raycast(Vec3 min, Vec3 max) {
         Vec3 closestHit = null;
-        var localPos = SableCompanion.INSTANCE.projectOutOfSubLevel(level(), position());
+        var localPos = VSUtils.projectToWorld(level(), position());
         min = min.subtract(localPos);
         max = max.subtract(localPos);
         double distance = max.distanceToSqr(min);

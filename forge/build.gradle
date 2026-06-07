@@ -55,6 +55,56 @@ dependencies {
     modLocalRuntime("mezz.jei:jei-${minecraft_version}-forge:${jei_version}")
 //    modLocalRuntime("maven.modrinth:create-tfmg:1.0.2c")
 //    modLocalRuntime("me.shedaniel:RoughlyEnoughItems-forge:$rei_version")
+    modApi("org.valkyrienskies:valkyrienskies-120-forge:${vs2_version}") { transitive = false
+        exclude group: 'org.valkyrienskies.core', module: ''
+    }
+    implementation("org.valkyrienskies.core:api:${vscore_version}") { transitive = false
+        exclude group: 'org.joml', module: ''
+    }
+    implementation("org.valkyrienskies.core:util:${vscore_version}") { transitive = false
+        exclude group: 'org.joml', module: ''
+    }
+    implementation("org.valkyrienskies.core:internal:${vscore_version}") { transitive = false
+        exclude group: 'org.joml', module: ''
+    }
+
+    forgeRuntimeLibrary("org.valkyrienskies.core:api:${vscore_version}") { transitive = false
+        exclude group: 'org.joml', module: ''
+    }
+    forgeRuntimeLibrary("org.valkyrienskies.core:util:${vscore_version}") { transitive = false
+        exclude group: 'org.joml', module: ''
+    }
+
+    forgeRuntimeLibrary("maven.modrinth:kotlin-for-forge:${kff_version}")
+
+    forgeRuntimeLibrary include("javax.inject:javax.inject:1") { transitive = false }
+
+    // JOML for Math
+    forgeRuntimeLibrary include("org.joml:joml-primitives:1.10.0")
+
+    // Apache Commons Math for Linear Programming
+    forgeRuntimeLibrary include("org.apache.commons:commons-math3:3.6.1") { transitive = false }
+
+    // Jackson Binary Dataformat for Object Serialization
+    def jacksonVersion = '2.14.0'
+    // forked to remove module-info
+    forgeRuntimeLibrary include("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion-rubyfork") { transitive = false }
+    forgeRuntimeLibrary include("com.fasterxml.jackson.module:jackson-module-parameter-names:$jacksonVersion") { transitive = false }
+    forgeRuntimeLibrary include("com.fasterxml.jackson.dataformat:jackson-dataformat-cbor:$jacksonVersion") { transitive = false }
+    forgeRuntimeLibrary include("com.fasterxml.jackson.core:jackson-databind:$jacksonVersion") { transitive = false }
+    forgeRuntimeLibrary include("com.fasterxml.jackson.core:jackson-annotations:$jacksonVersion") { transitive = false }
+    forgeRuntimeLibrary include("com.fasterxml.jackson.core:jackson-core:$jacksonVersion") { transitive = false }
+    forgeRuntimeLibrary include("com.github.Rubydesic:jackson-kotlin-dsl:1.2.0") { transitive = false }
+
+    forgeRuntimeLibrary include("com.networknt:json-schema-validator:1.0.71") { transitive = false }
+    forgeRuntimeLibrary include("com.ethlo.time:itu:1.7.0") { transitive = false }
+    forgeRuntimeLibrary include("com.github.victools:jsonschema-module-jackson:4.25.0") { transitive = false }
+    forgeRuntimeLibrary include("com.github.victools:jsonschema-generator:4.25.0") { transitive = false }
+    forgeRuntimeLibrary include("com.fasterxml:classmate:1.5.1") { transitive = false }
+    forgeRuntimeLibrary include("com.flipkart.zjsonpatch:zjsonpatch:0.4.11") { transitive = false }
+    forgeRuntimeLibrary include("org.apache.commons:commons-collections4:4.3") { transitive = false }
+
+    forgeRuntimeLibrary include("com.google.dagger:dagger:2.43.2") { transitive = false }
 }
 
 loom {

@@ -16,7 +16,6 @@
 package org.patryk3211.powergrid.electricity.wire.powercord;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import dev.ryanhcode.sable.companion.SableCompanion;
 import net.createmod.catnip.render.CachedBuffers;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -39,7 +38,9 @@ import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.electricity.wire.CurveParameters;
 import org.patryk3211.powergrid.electricity.wire.HangingWireRenderer;
 import org.patryk3211.powergrid.electricity.wire.registry.WireItemEntry;
+import org.patryk3211.powergrid.utility.VSUtils;
 
+import static org.patryk3211.powergrid.electricity.wire.HangingWireRenderer.lodLevel;
 import static org.patryk3211.powergrid.electricity.wire.HangingWireRenderer.renderSegment;
 
 @Environment(EnvType.CLIENT)
@@ -94,7 +95,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
 
         var world = entity.level();
         var rawPos = entity.position();
-        var pos = SableCompanion.INSTANCE.projectOutOfSubLevel(world, rawPos);
+        var pos = VSUtils.projectToWorld(world, rawPos);
         final var playerPos = ModdedConfigs.client().wireLOD.get() ? Minecraft.getInstance().player.position() : null;
         float segmentSize = 0.5f;
         final boolean simpleModel;

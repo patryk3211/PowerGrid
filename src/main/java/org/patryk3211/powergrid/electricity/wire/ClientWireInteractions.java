@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import dev.ryanhcode.sable.companion.SableCompanion;
 import net.createmod.catnip.math.VecHelper;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -31,11 +30,11 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
-import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.network.packets.BlockWireAttachC2SPacket;
 import org.patryk3211.powergrid.network.packets.BlockWireCutC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
+import org.valkyrienskies.mod.common.VSGameUtilsKt;
 
 @Environment(EnvType.CLIENT)
 public class ClientWireInteractions {
@@ -157,8 +156,8 @@ public class ClientWireInteractions {
             return InteractionResult.FAIL;
         }
 
-        var existingEndpoint = stack.getOrDefault(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.EMPTY).endpoint();
-        if(existingEndpoint != null && existingEndpoint.getSubLevel(mc.level) != SableCompanion.INSTANCE.getContaining(entity)) {
+        var existingEndpoint = WireEndpointType.deserialize(stack.getTagElement("Connection"));
+        if(existingEndpoint != null && existingEndpoint.getShip(mc.level) != VSGameUtilsKt.getShipManaging(entity)) {
             mc.player.displayClientMessage(Lang.translate("message.connection_failed").style(ChatFormatting.RED).component(), true);
             return InteractionResult.FAIL;
         }

@@ -1,0 +1,7 @@
+// 1.20.1	2026-06-07T17:47:52.056910796	Power Grid's Sequenced Assembly Recipes
+d9b7470ea0667f9fb043fc550ae0f553d7f4b502 data/powergrid/recipes/sequenced_assembly/bjt_npn.json
+8414271695dc6af0e1c2a1b267fffe18537f9640 data/powergrid/recipes/sequenced_assembly/bjt_pnp.json
+70cded1fe7e4febefbb79f3815ada1a135668343 data/powergrid/recipes/sequenced_assembly/electrical_gizmo.json
+cc1cf006577365c2b92aeeb4dfdb7a440779e3d0 data/powergrid/recipes/sequenced_assembly/punch_card.json
+88fe3b69cbfc5aa3c3461a5af0db785554003cec data/powergrid/recipes/sequenced_assembly/transformer_core.json
+8d6d743ada4585915c42260e3746e79ae231816e data/powergrid/recipes/sequenced_assembly/unetched_circuit_board.json

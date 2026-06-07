@@ -1,0 +1,5 @@
+// 1.20.1	2026-06-07T17:31:11.644987882	Create: Power Grid/Powergrid Entity Handlers
+3cee135de21f0756a789babb826f24665c5ce576 data/powergrid/vs_entities/cord.json
+3cee135de21f0756a789babb826f24665c5ce576 data/powergrid/vs_entities/hanging_wire.json
+3cee135de21f0756a789babb826f24665c5ce576 data/powergrid/vs_entities/string_light_cord.json
+3cee135de21f0756a789babb826f24665c5ce576 data/powergrid/vs_entities/block_wire.json

@@ -74,7 +74,7 @@ public class WireItem extends Item implements IWire {
     }
 
     public static InteractionResultHolder<BlockWireEntity> connect(Level world, ItemStack stack, Player player, IWireEndpoint endpoint1, IWireEndpoint endpoint2) {
-        if(endpoint1.getSubLevel(world) != endpoint2.getSubLevel(world)) {
+        if(endpoint1.getShip(world) != endpoint2.getShip(world)) {
             // Abort, block wires must be in the same sublevel.
             if(player != null)
                 player.displayClientMessage(Lang.translate("message.connection_failed").style(ChatFormatting.RED).component(), true);

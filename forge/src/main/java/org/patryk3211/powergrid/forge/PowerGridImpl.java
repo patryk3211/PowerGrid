@@ -55,7 +55,7 @@ import org.patryk3211.powergrid.compat.cold_sweat.ColdSweatBridge;
 import org.patryk3211.powergrid.compat.tfmg.TFMGBridge;
 import org.patryk3211.powergrid.compat.tfmg.TFMGProxyImpl;
 import org.patryk3211.powergrid.data.BlockTagProvider;
-import org.patryk3211.powergrid.data.EntityTagProvider;
+import org.patryk3211.powergrid.data.EntityHandlerProvider;
 import org.patryk3211.powergrid.data.ItemTagProvider;
 import org.patryk3211.powergrid.data.recipe.forge.MixingRecipes;
 import org.patryk3211.powergrid.data.recipes.*;
@@ -209,7 +209,7 @@ public class PowerGridImpl {
 
         generator.addProvider(true, new BlockTagProvider(output, event.getLookupProvider()));
         generator.addProvider(true, new ItemTagProvider(output, event.getLookupProvider()));
-        generator.addProvider(true, new EntityTagProvider(output, event.getLookupProvider()));
+        generator.addProvider(true, new EntityHandlerProvider(output));
         generator.addProvider(true, ModdedSoundEvents.provider(output));
     }
 

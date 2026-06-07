@@ -90,8 +90,6 @@ public class BlockWireEndpoint implements IWireEndpoint {
     @Override
     @NotNull
     public Vec3 getExactPosition(Level world) {
-//        var rawPos = IElectric.getTerminalPos(world, pos, this.terminal);
-//        return SableCompanion.INSTANCE.projectOutOfSubLevel(world, rawPos);
         return IElectric.getTerminalPos(world, pos, this.terminal);
     }
 

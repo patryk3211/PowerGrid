@@ -17,7 +17,6 @@ package org.patryk3211.powergrid.electricity.wire;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import dev.ryanhcode.sable.companion.SableCompanion;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
@@ -35,6 +34,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
+import org.patryk3211.powergrid.utility.VSUtils;
 
 @Environment(EnvType.CLIENT)
 public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
@@ -92,7 +92,7 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
         }
 
         var rawPos = entity.position();
-        var pos = SableCompanion.INSTANCE.projectOutOfSubLevel(entity.level(), rawPos);
+        var pos = VSUtils.projectToWorld(entity.level(), rawPos);
         final var playerPos = ModdedConfigs.client().wireLOD.get() ? Minecraft.getInstance().player.position() : null;
         float segmentSize = 0.5f;
         final boolean simpleModel;
@@ -129,6 +129,7 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
         var world = entity.level();
         rp.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
             var blockPos = BlockPos.containing((x1 + x2) * 0.5 + pos.x, (y1 + y2) * 0.5 + pos.y, (z1 + z2) * 0.5 + pos.z);
+            //todo: might want to transform to ships?
             var sky = world.getBrightness(LightLayer.SKY, blockPos);
             var block = world.getBrightness(LightLayer.BLOCK, blockPos);
             renderSegment(matrices, buffer,
