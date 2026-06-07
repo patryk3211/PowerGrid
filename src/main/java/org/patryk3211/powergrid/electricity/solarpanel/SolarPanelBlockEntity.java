@@ -18,15 +18,15 @@ import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
     protected VoltageSourceCoupling sourceCoupling;
 
-    private final int SOLAR_CONSTANT = 1361;
-    private final float SHORT_CURRENT = 9.2f;
-    protected final int CELLS_IN_SERIES = 48;
-    private final int STRINGS_IN_PARALLEL = 1;
-    private final float BETAVOC = -0.0023f;
-    private final float ALPHAISC = 0.0005f;
-    private final float NOCT = 52;
-    private final double I_O = 1.11e-4;
-    private final double IDEALITY = 1.8;
+    protected static final int SOLAR_CONSTANT = 1361;
+    protected static final float SHORT_CURRENT = 9.2f;
+    protected static final int CELLS_IN_SERIES = 48;
+    protected static final int STRINGS_IN_PARALLEL = 1;
+    protected static final float BETAVOC = -0.0023f;
+    protected static final float ALPHAISC = 0.0005f;
+    protected static final float NOCT = 52;
+    protected static final double I_O = 1.11e-4;
+    protected static final double IDEALITY = 1.8;
 
     private int temp = 0;
     private float cloudCover = 0;
@@ -105,7 +105,7 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
         super.electricalTick();
     }
 
-    private double[] getTempAdjusted(double irradiance, double cellTemp, double Vt) {
+    public static double[] getTempAdjusted(double irradiance, double cellTemp, double Vt) {
         var Isc_T = SHORT_CURRENT * STRINGS_IN_PARALLEL * (irradiance / 1000) * (1 + ALPHAISC * (cellTemp - 25));
         if (Isc_T <= 0) return new double[]{0, 0};
         var Voc_base = IDEALITY * Vt * Math.log(Isc_T / I_O + 1);
@@ -113,11 +113,11 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
         return new double[]{Isc_T, Voc_T};
     }
 
-    private double getCellTemp(double Irradiance){
+    public double getCellTemp(double Irradiance){
         return AMBIENT_TEMP + (NOCT - 20) * (Irradiance / 800);
     }
 
-    private double getIrradiance(double AM, double cloudCover, int YPos, float panelTiltDeg, float panelAzimuthDeg, Level world) {
+    public double getIrradiance(double AM, double cloudCover, int YPos, float panelTiltDeg, float panelAzimuthDeg, Level world) {
         if (AM == Double.POSITIVE_INFINITY) return 0;
         var transmisttance = 1 - cloudCover;
         var irradiance = SOLAR_CONSTANT * Math.pow(0.7,Math.pow(AM, 0.678));
@@ -147,7 +147,7 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
         return (irradiance * sunVisablity) * transmisttance * cosIncidence + diffuseLight +  reflected;
     }
 
-    private double getAM(Level world){
+    public double getAM(Level world){
         var sunAngle = Math.max(0, Math.cos(world.getSunAngle(0)));
         if (sunAngle <= 0) {
             return Double.POSITIVE_INFINITY;
@@ -160,7 +160,7 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
         return Math.max(1, result);
     }
 
-    private float sunRaycast(Level world, double sunAzimuthRad, double sunElevationRad){
+    public float sunRaycast(Level world, double sunAzimuthRad, double sunElevationRad){
         var blockPos = getBlockPos();
         int castLength = 0;
         ChunkAccess chunk;
@@ -193,7 +193,7 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
         return 0;
     }
 
-    private void getPlacedBlockRotation(){
+    public void getPlacedBlockRotation(){
         var face = this.getBlockState().getValue(Rotation4ElectricBlock.FACING).getOpposite();
 
         switch (face){
@@ -225,4 +225,5 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
                 break;
         }
     }
+
 }
