@@ -49,6 +49,7 @@ import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.network.packets.MultimeterDataC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
+import org.patryk3211.powergrid.utility.VSUtils;
 
 import java.util.List;
 
@@ -129,7 +130,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                 var neg = WireEndpointType.deserialize(data.getCompound("Neg"));
                 if(pos != null) {
                     var posPos = pos.getExactPosition(level);
-                    if(posPos.distanceTo(entity.position()) > maxDistance || !pos.isValid(level)) {
+                    if(entity.distanceToSqr(posPos) > maxDistance * maxDistance || !pos.isValid(level)) {
                         if(entity instanceof Player player)
                             player.displayClientMessage(Lang.translate("message.multimeter_disconnected")
                                     .style(ChatFormatting.GRAY)
@@ -139,7 +140,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                 }
                 if(neg != null) {
                     var negPos = neg.getExactPosition(level);
-                    if(negPos.distanceTo(entity.position()) > maxDistance || !neg.isValid(level)) {
+                    if(entity.distanceToSqr(negPos) > maxDistance * maxDistance || !neg.isValid(level)) {
                         if(entity instanceof Player player)
                             player.displayClientMessage(Lang.translate("message.multimeter_disconnected")
                                     .style(ChatFormatting.GRAY)
@@ -166,7 +167,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
                 }
                 if(data.contains("X")) {
                     var point = new Vec3(data.getFloat("X"), data.getFloat("Y"), data.getFloat("Z"));
-                    if(point.distanceTo(entity.position()) > maxDistance) {
+                    if(entity.distanceToSqr(point) > maxDistance * maxDistance) {
                         if(entity instanceof Player player)
                             player.displayClientMessage(Lang.translate("message.multimeter_disconnected")
                                     .style(ChatFormatting.GRAY)

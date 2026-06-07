@@ -43,3 +43,6 @@ replay_*.log
 DESIGN.md
 *.bbmodel
 *.jar
+
+fabric/src/main/generated/.cache/
+forge/src/main/generated/.cache/
