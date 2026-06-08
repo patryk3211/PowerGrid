@@ -404,6 +404,7 @@
   "powergrid.message.connection_too_long": "This terminal is too far away",
   "powergrid.message.connection_two_wire_types": "Cannot connect wires of different types",
   "powergrid.message.cord_next": "Connect the second end of the cord",
+  "powergrid.message.cut_reset": "Block wire cut discarded",
   "powergrid.message.disable_config_message": "[Disable this message]",
   "powergrid.message.multimeter_disconnected": "Multimeter disconnected",
   "powergrid.message.no_original_connector": "The starting connector is missing",

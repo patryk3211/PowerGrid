@@ -69,4 +69,8 @@ public enum ModdedKeys {
     public boolean matchesKey(int keyCode, int scanCode) {
         return keybind.matches(keyCode, scanCode);
     }
+
+    public boolean matchesMouse(int button) {
+        return keybind.matchesMouse(button);
+    }
 }
