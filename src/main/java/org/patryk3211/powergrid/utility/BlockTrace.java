@@ -199,6 +199,9 @@ public class BlockTrace {
         double x = Math.floor((end.x - start.x) * 16) / 16;
         double y = Math.floor((end.y - start.y) * 16) / 16;
         double z = Math.floor((end.z - start.z) * 16) / 16;
+        if(Math.abs(x) > 16) x = Math.signum(x) * 16;
+        if(Math.abs(y) > 16) y = Math.signum(y) * 16;
+        if(Math.abs(z) > 16) z = Math.signum(z) * 16;
         if(x != 0) points.add(BlockWireEntity.Point.x((float) x));
         if(y != 0) points.add(BlockWireEntity.Point.y((float) y));
         if(z != 0) points.add(BlockWireEntity.Point.z((float) z));
