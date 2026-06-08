@@ -153,6 +153,19 @@ public class WirePreview {
         // Stop rendering the preview above a thousand blocks to stop the game from freezing
         if(length > 1000)
             return;
+
+        if(WireItem.alternateWirePlacement(player)) {
+            length = 0;
+            currentPos = BlockTrace.alignPosition(currentPos);
+            renderedPos1 = currentPos;
+            renderedTrace = Pair.of(null, BlockTrace.alternatePath(currentPos, hitPoint));
+            for(var p : renderedTrace.getSecond().points()) {
+                length += p.length();
+            }
+            renderPath = 2;
+            return;
+        }
+
         boolean isBlockWire = endpoint.type() != WireEndpointType.BLOCK;
         if(isBlockWire || hitTerminal == null) {
             length = 0;
@@ -227,116 +240,6 @@ public class WirePreview {
             }
         }
         matrixStack.popPose();
-//        ItemStack wireStack = getUsedWireStack(player);
-//        if(wireStack == null)
-//            return;
-//        if(!(wireStack.getItem() instanceof WireItem wireItem))
-//            return;
-//        if(wireStack.getItem() instanceof CordItem) {
-//            renderCord(buffer, matrixStack, world, player, target, wireStack);
-//            return;
-//        }
-//        if(target.getType() != HitResult.Type.BLOCK) {
-//            if(target.getType() == HitResult.Type.ENTITY) {
-//                var entityHit = (EntityHitResult) target;
-//                if(!(entityHit.getEntity() instanceof BlockWireEntity)) {
-//                    return;
-//                }
-//            } else {
-//                return;
-//            }
-//        }
-//
-//        var tag = wireStack.getTagElement("Connection");
-//        var consumer = buffer.getBuffer(RenderType.entityTranslucent(wireItem.getWireTexture()));
-//        float thickness = wireItem.getWireThickness();
-//
-//        var endpoint = WireEndpointType.deserialize(tag);
-//        if(endpoint == null)
-//            return;
-//
-//        var currentPos = endpoint.getExactPosition(world);
-//        Direction continueDir = null;
-//        if(endpoint instanceof BlockWireEntityEndpoint bwe) {
-//            var entity = bwe.getEntity(world);
-//            if(entity != null) {
-//                var segments = entity.segments;
-//                if(segments.isEmpty())
-//                    return;
-//                if (bwe.getEnd()) {
-//                    var last = segments.get(segments.size() - 1);
-//                    continueDir = last.direction;
-//                } else {
-//                    var first = segments.get(0);
-//                    continueDir = first.direction.getOpposite();
-//                }
-//            }
-//        }
-//
-//        var hitPoint = target.getLocation();
-//        ITerminalPlacement hitTerminal = null;
-//        if(target.getType() == HitResult.Type.BLOCK) {
-//            var blockTarget = (BlockHitResult) target;
-//            var state = world.getBlockState(blockTarget.getBlockPos());
-//            var electric = IElectric.getAt(world, blockTarget.getBlockPos());
-//            if(electric != null) {
-//                var pos = blockTarget.getBlockPos();
-//                var terminal = electric.terminalAt(state, hitPoint.subtract(pos.getX(), pos.getY(), pos.getZ()));
-//                if(terminal != null) {
-//                    hitPoint = terminal.getOrigin().add(pos.getX(), pos.getY(), pos.getZ());
-//                    hitTerminal = terminal;
-//                } else {
-//                    hitPoint = hitPoint.relative(blockTarget.getDirection(), 1/32f);
-//                }
-//            } else {
-//                hitPoint = hitPoint.relative(blockTarget.getDirection(), 1/32f);
-//            }
-//        }
-//
-//        float length = (float) currentPos.distanceTo(hitPoint);
-//        // Stop rendering the preview above a thousand blocks to stop the game from freezing
-//        if(length > 1000)
-//            return;
-//        boolean isBlockWire = endpoint.type() != WireEndpointType.BLOCK;
-//        if(isBlockWire || hitTerminal == null) {
-//            length = 0;
-//            currentPos = BlockTrace.alignPosition(currentPos);
-//            var output = BlockTrace.findPathWithState(world, currentPos, hitPoint, hitTerminal, continueDir);
-//            if(output != null) {
-//                if(DEBUG_BLOCK_TRACING) {
-//                    var lineBuffer = buffer.getBuffer(ModdedRenderLayers.getDebugLines());
-//                    var state = output.getFirst();
-//                    for (var cell : state.states.values()) {
-//                        if (cell.backtrace == null)
-//                            continue;
-//                        int color = 0xFFFF0000;
-//                        if(!cell.isSupported())
-//                            color |= 0xFF00;
-//                        if(!cell.backtrace.isSupported())
-//                            color |= 0xFF;
-//                        BlockWireRenderer.debugLine(matrixStack, lineBuffer, LightTexture.FULL_BRIGHT, color, state.transform(cell.position), state.transform(cell.backtrace.position));
-//                    }
-//                }
-//                var points = output.getSecond();
-//                if(points != null) {
-//                    for(var p : points.points()) {
-//                        var nextPos = currentPos.add(p.vector());
-//                        int color = points.reachedTarget() ? 0x80AAFFAA : 0x80FFAAAA;
-//                        BlockWireRenderer.renderSegment(matrixStack, consumer, LightTexture.FULL_BRIGHT, color, currentPos, p.direction, thickness, p.length(), 0);
-//                        currentPos = nextPos;
-//                        length += p.length();
-//                    }
-//                }
-//            }
-//        } else {
-//            var color = length < wireItem.getMaximumLength() ? 0x80AAFFAA : 0x80FFAAAA;
-//            HangingWireRenderer.renderFromPositions(matrixStack, consumer, currentPos, hitPoint, 1.01, 1.2, thickness, LightTexture.FULL_BRIGHT, color);
-//        }
-//
-//        if(!player.isCreative()) {
-//            int requiredItemCount = Math.max(Math.round(length * wireItem.getItemUseMultiplier()), 1);
-//            PlacementOverlay.setItemRequirement(wireStack.getItem(), requiredItemCount, wireStack.getCount() >= requiredItemCount);
-//        }
     }
 
     public static Component distanceOverlay(Player player) {

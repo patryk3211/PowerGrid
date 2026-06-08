@@ -194,6 +194,18 @@ public class BlockTrace {
         return Pair.of(state, null);
     }
 
+    public static TraceResult alternatePath(Vec3 start, Vec3 end) {
+        var points = new ArrayList<BlockWireEntity.Point>();
+        double x = Math.floor((end.x - start.x) * 16) / 16;
+        double y = Math.floor((end.y - start.y) * 16) / 16;
+        double z = Math.floor((end.z - start.z) * 16) / 16;
+        if(x != 0) points.add(BlockWireEntity.Point.x((float) x));
+        if(y != 0) points.add(BlockWireEntity.Point.y((float) y));
+        if(z != 0) points.add(BlockWireEntity.Point.z((float) z));
+        points.sort(Comparator.comparingInt(a -> a.gridLength));
+        return new TraceResult(points, true);
+    }
+
     public record TraceResult(List<BlockWireEntity.Point> points, boolean reachedTarget) { }
 
     public static class TraceCell {

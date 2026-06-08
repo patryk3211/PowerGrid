@@ -23,6 +23,10 @@ import org.patryk3211.powergrid.PowerGrid;
  * @see com.simibubi.create.AllKeys
  */
 public enum ModdedKeys {
+    CATEGORY_POWER_GRID("Power Grid"),
+
+    ALTERNATE_WIRE_PLACEMENT("alternate_wire_placement", GLFW.GLFW_KEY_LEFT_CONTROL),
+
     CATEGORY_CIRCUIT_EDITOR("Power Grid - Circuit Editor"),
 
     ROTATE_COMPONENT("rotate_component", GLFW.GLFW_KEY_R),

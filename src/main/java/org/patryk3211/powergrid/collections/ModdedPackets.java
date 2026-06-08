@@ -43,6 +43,7 @@ public enum ModdedPackets {
     ENTITY_DATA(EntityDataS2CPacket.class, EntityDataS2CPacket::new),
     STATE(StateS2CPacket.class, StateS2CPacket::new),
 
+    ALTERNATE_PLACEMENT_STATUS(AlternatePlacementStatusC2SPacket.class, AlternatePlacementStatusC2SPacket::new),
     TRANSFORMER_WINDING(TransformerWindingC2SPacket.class, TransformerWindingC2SPacket::new),
     CHANGE_SCREEN(ChangeScreenC2SPacket.class, ChangeScreenC2SPacket::new),
     SAVE_SCHEMATIC(SaveSchematicC2SPacket.class, SaveSchematicC2SPacket::new),

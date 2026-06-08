@@ -20,6 +20,8 @@ import com.tterrag.registrate.builders.ItemBuilder;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import dev.architectury.event.CompoundEventResult;
 import dev.architectury.event.EventResult;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
@@ -42,6 +44,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedKeys;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.info.*;
@@ -111,7 +114,9 @@ public class WireItem extends Item implements IWire {
             terminal = wireEndpoint.getTerminalPlacement(world);
         }
 
-        var result = BlockTrace.findPath(world, lastPoint, targetPoint, terminal, continueDir);
+        var result = alternateWirePlacement(player)
+                ? BlockTrace.alternatePath(lastPoint, targetPoint)
+                : BlockTrace.findPath(world, lastPoint, targetPoint, terminal, continueDir);
         if(result != null && result.reachedTarget()) {
             float addedLength = 0;
             for(var point : result.points())
@@ -211,7 +216,9 @@ public class WireItem extends Item implements IWire {
             continueDir = first.direction.getOpposite();
         }
 
-        var result = BlockTrace.findPath(world, lastPoint, targetPoint, null, continueDir);
+        var result = alternateWirePlacement(player)
+                ? BlockTrace.alternatePath(lastPoint, targetPoint)
+                : BlockTrace.findPath(world, lastPoint, targetPoint, null, continueDir);
         if(result == null || !result.reachedTarget())
             return InteractionResultHolder.fail(null);
 
@@ -282,6 +289,12 @@ public class WireItem extends Item implements IWire {
             return CompoundEventResult.interruptTrue(stack);
         }
         return CompoundEventResult.pass();
+    }
+
+    public static boolean alternateWirePlacement(Player player) {
+        return EnvExecutor
+                .getInEnv(Env.CLIENT, () -> ModdedKeys.ALTERNATE_WIRE_PLACEMENT::isPressed)
+                .orElseGet(() -> player instanceof IAlternatePlacementExtension ext && ext.powerGrid$alternatePlacement());
     }
 
     public static EventResult useOn(Player player, InteractionHand hand, BlockPos blockPos, Direction direction) {
