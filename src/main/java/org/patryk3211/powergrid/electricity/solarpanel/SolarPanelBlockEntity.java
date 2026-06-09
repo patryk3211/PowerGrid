@@ -2,18 +2,20 @@ package org.patryk3211.powergrid.electricity.solarpanel;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.world.level.ClipContext;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
+
+import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBearingBlockEntity.DDA;
 
 public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
     protected VoltageSourceCoupling sourceCoupling;
@@ -179,18 +181,34 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
                 break;
             }
         }
-        var centerBlockPos = getBlockPos().getCenter().add(0, -3f/16, 0);
+        var centerBlockPos = getBlockPos().getCenter().add(0, 3f/16, 0);
         var end = centerBlockPos.add(new Vec3(sunX, sunY, 0).scale(castLength));
-        ClipContext clipContext = new ClipContext(centerBlockPos, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.WATER, null);
-        BlockHitResult result = level.clip(clipContext);
-        if (result.getType() == HitResult.Type.MISS){
-            return 1F;
+        var results = DDA(world, centerBlockPos, end);
+        float returnValue = 1;
+        for (BlockPos result : results) {
+            var blockState = world.getBlockState(result);
+
+            if (blockState.is(ModdedTags.Block.GLASS_BLOCK.tag) || blockState.is(ModdedTags.Block.GLASS_PANE.tag)) {
+                returnValue *= .8f;
+                continue;
+            }
+            if (blockState.is(Blocks.WATER)) {
+                returnValue *= .5f;
+                continue;
+            }
+            if (blockState.is(BlockTags.LEAVES)) {
+                returnValue *= .2f;
+                continue;
+            }
+            if (blockState.is(Blocks.IRON_BARS)) {
+                returnValue *= 9f / 16;
+                continue;
+            }
+
+            returnValue = 0;
+            break;
         }
-        if (result.getType() == HitResult.Type.BLOCK){
-            //todo think about adding blocks that can pass light (glass, water, ice, leaves, trapdoors, slime/honey) but this would require more raycasting
-            return 0F;
-        }
-        return 0;
+        return returnValue;
     }
 
     public void getPlacedBlockRotation(){

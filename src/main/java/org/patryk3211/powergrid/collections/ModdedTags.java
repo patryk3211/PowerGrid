@@ -50,7 +50,9 @@ public class ModdedTags {
         AFFECTED_BY_LAMP("affected_by_lamp"),
         IGNORE_IN_ROTOR_ASSEMBLY_SIZE("ignore_in_rotor_assembly_size"),
         CONDUCTIVE_GROUND("conductive_ground"),
-        CARBON_PILE_BLOCK("carbon_pile_block");
+        CARBON_PILE_BLOCK("carbon_pile_block"),
+        GLASS_BLOCK(FORGE_NAMESPACE, "glass"),
+        GLASS_PANE(FORGE_NAMESPACE, "glass_panes");
 
         public final TagKey<net.minecraft.world.level.block.Block> tag;
 

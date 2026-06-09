@@ -18,23 +18,25 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
-import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
-import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
+import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -129,6 +131,13 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
 
         running = true;
         angle = 0;
+
+        if (contraption == null) {
+            if (movedContraption != null) {
+                contraption = (SolarPanelBearingContraption) movedContraption.getContraption();
+            }
+        }
+
         sendData();
         getPlacedBlockRotation();
     }
@@ -147,7 +156,6 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         running = false;
         assembleNextTick = false;
         sendData();
-        getPlacedBlockRotation();
     }
 
     @Override
@@ -349,16 +357,87 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         }
         var centerPanelPos = getContraptionCenter();
         var end = centerPanelPos.add(new Vec3(sunX, sunY, 0).scale(castLength));
-        ClipContext clipContext = new ClipContext(centerPanelPos, end, ClipContext.Block.OUTLINE, ClipContext.Fluid.WATER, null);
-        BlockHitResult result = level.clip(clipContext);
-        if (result.getType() == HitResult.Type.MISS) {
-            return 1F;
+        var results = DDA(world, centerPanelPos, end);
+        float returnValue = 1;
+        for (BlockPos result : results) {
+            var blockState = world.getBlockState(result);
+
+            if (blockState.is(ModdedTags.Block.GLASS_BLOCK.tag) || blockState.is(ModdedTags.Block.GLASS_PANE.tag)) {
+                returnValue *= .8f;
+                continue;
+            }
+            if (blockState.is(Blocks.WATER)) {
+                returnValue *= .5f;
+                continue;
+            }
+            if (blockState.is(BlockTags.LEAVES)) {
+                returnValue *= .2f;
+                continue;
+            }
+            if (blockState.is(Blocks.IRON_BARS)) {
+                returnValue *= 9f / 16;
+                continue;
+            }
+
+            returnValue = 0;
+            break;
         }
-        if (result.getType() == HitResult.Type.BLOCK) {
-            //todo think about adding blocks that can pass light (glass, water, ice, leaves, trapdoors, slime/honey) but this would require more raycasting
-            return 0F;
+        return returnValue;
+    }
+
+    public static List<BlockPos> DDA(Level level, Vec3 start, Vec3 end) {
+        List<BlockPos> blockHits = new ArrayList<>();
+        Vec3 dir = end.subtract(start);
+        double length = dir.length();
+        Vec3 norm = dir.normalize();
+
+        int x = (int) Math.floor(start.x);
+        int y = (int) Math.floor(start.y);
+        int z = (int) Math.floor(start.z);
+
+        int endX = (int) Math.floor(end.x);
+        int endY = (int) Math.floor(end.y);
+        int endZ = (int) Math.floor(end.z);
+
+        int stepX = norm.x >= 0 ? 1 : -1;
+        int stepY = norm.y >= 0 ? 1 : -1;
+        int stepZ = norm.z >= 0 ? 1 : -1;
+
+        double tDeltaX = norm.x == 0 ? Double.MAX_VALUE : Math.abs(1.0 / norm.x);
+        double tDeltaY = norm.y == 0 ? Double.MAX_VALUE : Math.abs(1.0 / norm.y);
+        double tDeltaZ = norm.z == 0 ? Double.MAX_VALUE : Math.abs(1.0 / norm.z);
+
+        double tMaxX = norm.x == 0 ? Double.MAX_VALUE : (stepX > 0 ? Math.ceil(start.x) - start.x : start.x - Math.floor(start.x)) / Math.abs(norm.x);
+        double tMaxY = norm.y == 0 ? Double.MAX_VALUE : (stepY > 0 ? Math.ceil(start.y) - start.y : start.y - Math.floor(start.y)) / Math.abs(norm.y);
+        double tMaxZ = norm.z == 0 ? Double.MAX_VALUE : (stepZ > 0 ? Math.ceil(start.z) - start.z : start.z - Math.floor(start.z)) / Math.abs(norm.z);
+        for (int i = 0; i < length; i++) {
+            BlockPos pos = new BlockPos(x, y, z);
+            BlockState state = level.getBlockState(pos);
+            if (!state.isAir()) {
+                if (!state.isCollisionShapeFullBlock(level, pos)) {
+                    VoxelShape shape = state.getShape(level, pos);
+                    if (shape.isEmpty()) continue;
+                    BlockHitResult hit = shape.clip(start, end, pos);
+                    if (hit != null) {
+                        blockHits.add(pos);
+                    }
+
+                } else blockHits.add(pos);
+            }
+            if (x == endX && y == endY && z == endZ) break;
+
+            if (tMaxX < tMaxY && tMaxX < tMaxZ) {
+                x += stepX;
+                tMaxX += tDeltaX;
+            } else if (tMaxY < tMaxZ) {
+                y += stepY;
+                tMaxY += tDeltaY;
+            } else {
+                z += stepZ;
+                tMaxZ += tDeltaZ;
+            }
         }
-        return 0;
+        return blockHits;
     }
 
     public void getPlacedBlockRotation(){
