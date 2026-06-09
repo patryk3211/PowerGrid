@@ -12,9 +12,13 @@ import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollOptionBehaviour;
 import com.simibubi.create.foundation.utility.ServerSpeedProvider;
+import dev.ryanhcode.sable.Sable;
+import dev.ryanhcode.sable.companion.SableCompanion;
+import dev.ryanhcode.sable.sublevel.SubLevel;
 import net.createmod.catnip.math.AngleHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.tags.BlockTags;
@@ -29,10 +33,12 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.joml.Quaterniond;
+import org.joml.Vector3d;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedTags;
+import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
-import org.patryk3211.powergrid.electricity.febridge.IFEBridgeHandler;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
@@ -57,14 +63,12 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     private float cloudCover = 0;
     private boolean firstTick = true;
     private float AMBIENT_TEMP = -2000f;
-    private float panelTiltDeg = 0;
-    private float panelAzimuthDeg = 0;
-    private float blockAzimuthDeg = 0;
     private int rayCastDelay = 0;
     private float sunVisibility = 0;
     private float startAngle = 0;
     private int temp = 0;
     protected SolarPanelBearingBlockScrollBehaviour parallelNumbers;
+    private Vector3d panelNormal;
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
@@ -132,6 +136,11 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
 
     @Override
     public void electricalTick() {
+        if (SableCompanion.INSTANCE.isInPlotGrid(level, this.getBlockPos().getCenter())){
+            subWorldTick();
+            return;
+        }
+
         if (contraption == null) {
             if (movedContraption != null) {
                 contraption = (SolarPanelBearingContraption) movedContraption.getContraption();
@@ -149,7 +158,6 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
             AMBIENT_TEMP = ThermalBehaviour.getAmbientTemperature(world, this.getBlockPos());
             if (AMBIENT_TEMP <= ThermalBehaviour.ABSOLUTE_ZERO)
                 AMBIENT_TEMP = 22f;
-            getPlacedBlockRotation();
             firstTick = false;
         }
 
@@ -160,27 +168,20 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         } else {
             cloudCover = 0;
         }
-        var blockFacing = world.getBlockState(this.getBlockPosition()).getValue(SolarPanelBearingBlock.FACING);
 
-        if (blockFacing.getAxis() != Direction.Axis.Y) {
-            if (contraption.panelDirection == blockFacing) {
-                panelTiltDeg = blockFacing.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 90 : -90;
-            } else {
-                panelTiltDeg = ((-angle + startAngle) % 360f + 360f) % 360f;
-            }
-        } else if (contraption.panelDirection != Direction.DOWN) {
-            if (contraption.panelDirection == blockFacing) {
-                panelTiltDeg = 0;
-            } else {
-                panelTiltDeg = -90;
-                panelAzimuthDeg = ((angle - startAngle + blockAzimuthDeg) % 360f + 360f) % 360f;
-            }
-        } else {
-            panelTiltDeg = 180;
-        }
+
+        Direction bearingFacing = getBlockState().getValue(SolarPanelBearingBlock.FACING);
+        Vector3d rotAxis = new Vector3d(
+                bearingFacing.getNormal().getX(),
+                bearingFacing.getNormal().getY(),
+                bearingFacing.getNormal().getZ()
+        );
+        panelNormal = new Vector3d(contraption.panelNormal);
+        new Quaterniond().fromAxisAngleRad(rotAxis, Math.toRadians(-angle)).transform(panelNormal);
+        panelNormal.normalize();
 
         int stringsInParallel = parallelNumbers.getDivisor();
-        var irradiance = getIrradiance(getAM(world), cloudCover, this.getBlockPos().getY(), panelTiltDeg, panelAzimuthDeg, world);
+        var irradiance = getIrradiance(getAM(world), cloudCover, this.getBlockPos().getY(), world);
         var cellTemp = getCellTemp(irradiance);
         var Vt = 8.617e-5 * (cellTemp + 273.15);
         double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt);
@@ -205,12 +206,84 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
             System.out.println("Vt: " + Vt);
             System.out.println("Current irradiance: " + irradiance);
             System.out.println("AM: " + getAM(world));
-            System.out.println("azimuth: " + panelAzimuthDeg);
-            System.out.println("tilt: " + panelTiltDeg);
             System.out.println();
             temp = 0;
         }
 
+        super.electricalTick();
+    }
+
+    private void subWorldTick() {
+        var world = getLevel();
+        if (world == null || world.isClientSide()) return;
+        if (sourceCoupling == null) return;
+        if (contraption == null) {
+            if (movedContraption != null) {
+                contraption = (SolarPanelBearingContraption) movedContraption.getContraption();
+            } else return;
+        }
+        if (!running) {
+            sourceCoupling.setVoltage(0);
+            sourceCoupling.setResistance(10000);
+            return;
+        }
+
+        var d = SableCompanion.INSTANCE.projectOutOfSubLevel(world, new Vector3d(this.getBlockPos().getX(), this.getBlockPos().getY(), this.getBlockPos().getZ()));
+        var pos = new BlockPos((int)d.x, (int)d.y, (int)d.z);
+
+        AMBIENT_TEMP = ThermalBehaviour.getAmbientTemperature(world, pos);
+        if (AMBIENT_TEMP <= ThermalBehaviour.ABSOLUTE_ZERO)
+            AMBIENT_TEMP = 22f;
+
+        if (world.isRaining() && world.isThundering()) {
+            cloudCover = .925f;
+        } else if (world.isRaining()) {
+            cloudCover = .85f;
+        } else {
+            cloudCover = 0;
+        }
+
+        final SubLevel subLevel = Sable.HELPER.getContaining(this);
+        if (subLevel == null)
+            return;
+
+        Direction bearingFacing = getBlockState().getValue(SolarPanelBearingBlock.FACING);
+        Vector3d rotAxis = new Vector3d(bearingFacing.getNormal().getX(), bearingFacing.getNormal().getY(),
+                bearingFacing.getNormal().getZ());
+        panelNormal = new Vector3d(contraption.panelNormal);
+        new Quaterniond().fromAxisAngleRad(rotAxis, Math.toRadians(angle)).transform(panelNormal);
+        subLevel.logicalPose().orientation().transform(panelNormal);
+        panelNormal.normalize();
+
+        var irradiance = getIrradiance(getAM(world), cloudCover, pos.getY(), world);
+        var cellTemp = getCellTemp(irradiance);
+        var Vt = 8.617e-5 * (cellTemp + 273.15);
+        double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt);
+        double cellCurrent = adjusted[0];
+        double Voc_t = adjusted[1];
+        double Voc_panel = Voc_t * CELLS_IN_SERIES;
+
+        if (cellCurrent <= 0) {
+            sourceCoupling.setVoltage(0);
+            sourceCoupling.setResistance(1e6f);
+            return;
+        }
+
+        double panelResistance = (cellCurrent > 0) ? Voc_panel / cellCurrent : 1e6;
+        sourceCoupling.setVoltage((float) Voc_panel);
+        sourceCoupling.setResistance((float) panelResistance);
+
+        if (temp++ == 20){
+            System.out.println("Cell Temp: " + cellTemp);
+            System.out.println("Single cell voltage: " + Voc_t);
+            System.out.println("Single cell current: " + cellCurrent);
+            System.out.println("Vt: " + Vt);
+            System.out.println("Current irradiance: " + irradiance);
+            System.out.println("AM: " + getAM(world));
+
+            System.out.println();
+            temp = 0;
+        }
         super.electricalTick();
     }
 
@@ -227,32 +300,25 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         return AMBIENT_TEMP + (NOCT - 20) * (Irradiance / 800);
     }
 
-    public double getIrradiance(double AM, double cloudCover, int YPos, float panelTiltDeg, float panelAzimuthDeg, Level world) {
+    public double getIrradiance(double AM, double cloudCover, int YPos, Level world) {
         if (AM == Double.POSITIVE_INFINITY) return 0;
         var transmisttance = 1 - cloudCover;
         var irradiance = SOLAR_CONSTANT * Math.pow(0.7,Math.pow(AM, 0.678));
         irradiance = irradiance * ((((YPos - 70) / 250f) * 0.04f) + 1); //70 is around average world height, but it could also be put to sea level
 
-        double dayAngle = world.getSunAngle(0);
-        if (dayAngle > Math.PI) dayAngle -= 2 * Math.PI;
-        double sunAzimuthRad = Math.PI + dayAngle;
-
-        double sunElevationRad = Math.asin(Math.max(0, Math.cos(world.getSunAngle(0))));
         if (rayCastDelay-- == 0){
-            sunVisibility = sunRaycast(world, sunAzimuthRad, sunElevationRad);
+            sunVisibility = sunRaycast(world);
             rayCastDelay = world.random.nextInt(41) + 10;
         }
 
-        double tiltRad = Math.toRadians(panelTiltDeg);
-        double panelAzimuthRad = Math.toRadians((panelAzimuthDeg + 270) % 360);
+        double sunAngle = world.getSunAngle(0);
+        Vector3d sunDir = new Vector3d(-Math.sin(sunAngle), Math.cos(sunAngle), 0);
+        if (sunDir.y <= 0) return 0;
 
-        double cosIncidence = Math.sin(sunElevationRad) * Math.cos(tiltRad)
-                - Math.cos(sunElevationRad) * Math.sin(dayAngle) * Math.sin(tiltRad) * Math.cos(panelAzimuthRad);
-
+        double cosIncidence = Math.max(0, sunDir.dot(panelNormal));
         cosIncidence = Math.max(0, cosIncidence);
-
-        var diffuseLight = 0.1 * irradiance * (1 + cloudCover) * ((1 + Math.cos(tiltRad)) / 2);
-        var reflected = 0.15 * irradiance * ((1 - Math.cos(tiltRad)) / 2.0);
+        double diffuseLight = 0.1 * irradiance * (1 + cloudCover) * ((1 + panelNormal.y()) / 2);
+        double reflected = 0.15 * irradiance * ((1 - panelNormal.y()) / 2.0);
 
         return (irradiance * sunVisibility) * transmisttance * cosIncidence + diffuseLight +  reflected;
     }
@@ -270,16 +336,16 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         return Math.max(1, result);
     }
 
-    public float sunRaycast(Level world, double sunAzimuthRad, double sunElevationRad) {
+    public float sunRaycast(Level world) {
 
         var blockPos = getBlockPos();
         int castLength = 0;
         ChunkAccess chunk;
-        var sunDir = new Vec3(Math.cos(sunElevationRad) * Math.sin(sunAzimuthRad),
-                sunElevationRad, 0);
-        var sunX = Math.cos(sunElevationRad) * (sunAzimuthRad < Math.PI ? 1 : -1);
-        var sunY = Math.sin(sunElevationRad);
-        boolean positiveX = sunDir.x > 0;
+
+        double sunAngle = world.getSunAngle(0);
+        double sunX = -Math.sin(sunAngle);
+        double sunY = Math.cos(sunAngle);
+        boolean positiveX = -Math.sin(world.getSunAngle(0)) > 0;
         for (int i = 1; i <= 10; i++) {
             int xOffset = (positiveX ? i : -i) * 16;
             chunk = world.getChunkSource().getChunkNow(SectionPos.blockToSectionCoord(blockPos.getX() + xOffset),
@@ -376,45 +442,9 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     }
 
     public void getPlacedBlockRotation(){
-        var face = this.getBlockState().getValue(SolarPanelBearingBlock.FACING);
-        if (!(face == contraption.panelDirection)) {
-            if (face.getAxis() != Direction.Axis.Y) {
-                face = this.getBlockState().getValue(SolarPanelBearingBlock.FACING).getClockWise();
-            } else {
-                face = this.getBlockState().getValue(SolarPanelBearingBlock.FACING).getOpposite();
-            }
-        }
-
-        switch (face){
-            case NORTH:
-                panelAzimuthDeg = 0;
-                blockAzimuthDeg = 0;
-                break;
-            case SOUTH:
-                panelAzimuthDeg = 180;
-                blockAzimuthDeg = 180;
-                break;
-            case EAST:
-                panelAzimuthDeg = 90;
-                blockAzimuthDeg = 90;
-                break;
-            case WEST:
-                panelAzimuthDeg = 90;
-                blockAzimuthDeg = 90;
-                break;
-            case UP:
-                panelAzimuthDeg = 0;
-                panelAzimuthDeg = 0;
-                break;
-            case DOWN:
-                panelAzimuthDeg = 0;
-                panelAzimuthDeg = 0;
-                break;
-            default:
-                panelAzimuthDeg = 0;
-                blockAzimuthDeg = 0;
-                break;
-        }
+        var face = this.getBlockState().getValue(Rotation4ElectricBlock.FACING).getOpposite();
+        var n = face.getNormal();
+        panelNormal = new Vector3d(n.getX(), n.getY(), n.getZ());
     }
 
     private float calculateStartAngle(BearingContraption contraption) {
@@ -606,7 +636,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     }
 
     @Override
-    public void write(CompoundTag compound, boolean clientPacket) {
+    public void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
         compound.putFloat("startingAngle", startAngle);
         compound.putBoolean("Running", running);
         compound.putFloat("Angle", angle);
@@ -614,14 +644,14 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
             compound.putDouble("SequencedAngleLimit", sequencedAngleLimit);
         compound.putInt("StringsInParallel", parallelNumbers.getDivisor());
         compound.putInt("PanelCount", parallelNumbers.getPanelCount());
-        AssemblyException.write(compound, lastException);
-        super.write(compound, clientPacket);
+        AssemblyException.write(compound, registries, lastException);
+        super.write(compound, registries, clientPacket);
     }
 
     @Override
-    protected void read(CompoundTag compound, boolean clientPacket) {
+    protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
         if (wasMoved) {
-            super.read(compound, clientPacket);
+            super.read(compound, registries, clientPacket);
             return;
         }
 
@@ -630,10 +660,10 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         angle = compound.getFloat("Angle");
         sequencedAngleLimit = compound.contains("SequencedAngleLimit") ? compound.getDouble("SequencedAngleLimit") : -1;
         startAngle = compound.getFloat("startingAngle");
-        lastException = AssemblyException.read(compound);
+        lastException = AssemblyException.read(compound, registries);
         if (compound.contains("PanelCount"))
             parallelNumbers.refreshDivisors(compound.getInt("PanelCount"));
-        super.read(compound, clientPacket);
+        super.read(compound, registries, clientPacket);
         if (compound.contains("StringsInParallel"))
             parallelNumbers.setByDivisor(compound.getInt("StringsInParallel"));
         if (!clientPacket)
