@@ -414,7 +414,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
             BlockPos pos = new BlockPos(x, y, z);
             BlockState state = level.getBlockState(pos);
             if (!state.isAir()) {
-                if (!state.isCollisionShapeFullBlock(level, pos)) {
+                if (!state.isCollisionShapeFullBlock(level, pos) && state.getBlock() != Blocks.WATER) {
                     VoxelShape shape = state.getShape(level, pos);
                     if (shape.isEmpty()) continue;
                     BlockHitResult hit = shape.clip(start, end, pos);
