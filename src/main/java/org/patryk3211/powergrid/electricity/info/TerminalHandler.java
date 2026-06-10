@@ -24,12 +24,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.wire.IWire;
 import org.patryk3211.powergrid.electricity.wire.powercord.CordItem;
+import org.patryk3211.powergrid.utility.VSUtils;
 
 public class TerminalHandler {
     private static final Object outlineSlot = new Object();
@@ -71,7 +73,7 @@ public class TerminalHandler {
                 return;
             targetTerminal = decorated;
 
-            Outliner.getInstance().chaseAABB(outlineSlot, decorated.getOutline().move(blockPos))
+            Outliner.getInstance().chaseAABB(outlineSlot, decorated.getOutline().move(VSUtils.projectToWorld(world, Vec3.atLowerCornerOf(blockPos))))
                     .colored(decorated.getColor())
                     .withFaceTexture(AllSpecialTextures.CUTOUT_CHECKERED)
                     .lineWidth(0.020f);
