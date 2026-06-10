@@ -43,7 +43,7 @@ side = "BOTH"
 
 [[dependencies.powergrid]]
 modId = "valkyrienskies"
-type = "optional"
+mandatory = false
 versionRange = "[${vs2_version},)"
 ordering = "NONE"
 side = "BOTH"
