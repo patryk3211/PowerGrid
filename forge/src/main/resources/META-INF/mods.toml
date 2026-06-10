@@ -40,3 +40,10 @@ mandatory = true
 versionRange = "${create_forge_version}"
 ordering = "AFTER"
 side = "BOTH"
+
+[[dependencies.powergrid]]
+modId = "valkyrienskies"
+type = "optional"
+versionRange = "[${vs2_version},)"
+ordering = "NONE"
+side = "BOTH"
