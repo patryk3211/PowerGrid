@@ -568,7 +568,7 @@
   "powergrid.ponder.punch_card_reader.header": "Děrné štítky",
   "powergrid.ponder.punch_card_reader.text_1": "Snímač děrných štítků je zařízení, které lze použít ke zpětnému přehrání sekvence signálů.",
   "powergrid.ponder.punch_card_reader.text_2": "Propojí nulovou svorku s výstupními vývody, když je ze štítku snímána dírka.",
-  "powergrid.ponder.punch_card_reader.text_3": "K činnosti zařízení vyžaduje kinetický vstup. Rychlost otáček určuje rychlost snímání.",
+  "powergrid.ponder.punch_card_reader.text_3": "K činnosti zařízení vyžaduje kinetický příkon. Rychlost otáček určuje rychlost snímání.",
   "powergrid.ponder.punch_card_reader.text_4": "Děrné štítky mohou být vkládány manuálně, nebo automaticky",
   "powergrid.ponder.redstone_converter.header": "Snímání redstonu",
   "powergrid.ponder.redstone_converter.text_1": "Redstonový převodník je zařízení, které převádí redstonové signály na změny v odporu",
