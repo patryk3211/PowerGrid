@@ -10,7 +10,7 @@
   "block.powergrid.circuit_board": "电路板",
   "block.powergrid.circuit_design_table": "电路设计台",
   "block.powergrid.circuit_design_table.tooltip.behaviour1": "将当前设计写入电路图",
-  "block.powergrid.circuit_design_table.tooltip.condition1": "当给予一个空电路图时",
+  "block.powergrid.circuit_design_table.tooltip.condition1": "放入空电路图时",
   "block.powergrid.circuit_design_table.tooltip.summary": "设计并写入_电路图_。如果你想放置元件，它们必须放在你的物品栏中。",
   "block.powergrid.conductive_casing": "电气机壳",
   "block.powergrid.constant_speed_motor": "恒速电动机",
