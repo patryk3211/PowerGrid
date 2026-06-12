@@ -62,23 +62,19 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     private float sunVisablity = 0;
     private float startAngle = 0;
     private int temp = 0;
-    protected int STRINGS_IN_PARALLEL = 1;
+    protected SolarPanelBearingBlockScrollBehaviour parallelNumbers;
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         super.addBehaviours(behaviours);
-        //behaviours.add(movementMode);
+        parallelNumbers = new SolarPanelBearingBlockScrollBehaviour(this);
+        behaviours.add(parallelNumbers);
     }
 
     public SolarPanelBearingBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
         setLazyTickRate(3);
         sequencedAngleLimit = -1;
-    }
-
-    @Override
-    protected boolean syncSequenceContext() {
-        return true;
     }
 
     @Override
@@ -92,68 +88,6 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         super.lazyTick();
         if (movedContraption != null && !level.isClientSide)
             sendData();
-    }
-
-    public void assemble() {
-        if (!(level.getBlockState(worldPosition)
-                .getBlock() instanceof SolarPanelBearingBlock))
-            return;
-
-        Direction direction = getBlockState().getValue(SolarPanelBearingBlock.FACING);
-        contraption = new SolarPanelBearingContraption(direction);
-        try {
-            if (!contraption.assemble(level, worldPosition))
-                return;
-
-            lastException = null;
-        } catch (AssemblyException e) {
-            lastException = e;
-            sendData();
-            return;
-        }
-
-
-        contraption.removeBlocksFromWorld(level, BlockPos.ZERO);
-        movedContraption = ControlledContraptionEntity.create(level, this, contraption);
-        BlockPos anchor = worldPosition.relative(direction);
-        movedContraption.setPos(anchor.getX(), anchor.getY(), anchor.getZ());
-        movedContraption.setRotationAxis(direction.getAxis());
-        level.addFreshEntity(movedContraption);
-
-        AllSoundEvents.CONTRAPTION_ASSEMBLE.playOnServer(level, worldPosition);
-
-        if (contraption.containsBlockBreakers())
-            award(AllAdvancements.CONTRAPTION_ACTORS);
-
-        startAngle = calculateStartAngle(contraption);
-
-        running = true;
-        angle = 0;
-
-        if (contraption == null) {
-            if (movedContraption != null) {
-                contraption = (SolarPanelBearingContraption) movedContraption.getContraption();
-            }
-        }
-
-        sendData();
-        getPlacedBlockRotation();
-    }
-
-    public void disassemble() {
-        if (!running && movedContraption == null)
-            return;
-        angle = 0;
-        sequencedAngleLimit = -1;
-        if (movedContraption != null) {
-            movedContraption.disassemble();
-            AllSoundEvents.CONTRAPTION_DISASSEMBLE.playOnServer(level, worldPosition);
-        }
-
-        movedContraption = null;
-        running = false;
-        assembleNextTick = false;
-        sendData();
     }
 
     @Override
@@ -239,13 +173,14 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
             panelTiltDeg = 180;
         }
 
+        int stringsInParallel = parallelNumbers.getDivisor();
         var irradiance = getIrradiance(getAM(world), cloudCover, this.getBlockPos().getY(), panelTiltDeg, panelAzimuthDeg, world);
         var cellTemp = getCellTemp(irradiance);
         var Vt = 8.617e-5 * (cellTemp + 273.15);
         double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt);
         double cellCurrent = adjusted[0];
         double Voc_t = adjusted[1];
-        double Voc_panel = Voc_t * (CELLS_IN_SERIES * ((double) contraption.getPanelBlocks() / STRINGS_IN_PARALLEL));
+        double Voc_panel = Voc_t * (CELLS_IN_SERIES * ((double) contraption.getPanelBlocks() / stringsInParallel));
 
         if (cellCurrent <= 0) {
             sourceCoupling.setVoltage(0);
@@ -274,9 +209,10 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     }
 
     public double[] getTempAdjusted(double irradiance, double cellTemp, double Vt) {
-        var Isc_T = SolarPanelBlockEntity.SHORT_CURRENT * STRINGS_IN_PARALLEL * (irradiance / 1000) * (1 + ALPHAISC * (cellTemp - 25));
+        int stringsInParallel = parallelNumbers.getDivisor();
+        var Isc_T = SolarPanelBlockEntity.SHORT_CURRENT * stringsInParallel * (irradiance / 1000) * (1 + ALPHAISC * (cellTemp - 25));
         if (Isc_T <= 0) return new double[]{0, 0};
-        var Voc_base = IDEALITY * Vt * Math.log(Isc_T / (I_O * STRINGS_IN_PARALLEL) + 1);
+        var Voc_base = IDEALITY * Vt * Math.log(Isc_T / (I_O * stringsInParallel) + 1);
         var Voc_T = Voc_base + BETAVOC * (cellTemp - 25);
         return new double[]{Isc_T, Voc_T};
     }
@@ -525,6 +461,68 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         return entity.toGlobalVector(localCenter, 1.0f);
     }
 
+    public void assemble() {
+        if (!(level.getBlockState(worldPosition)
+                .getBlock() instanceof SolarPanelBearingBlock))
+            return;
+
+        Direction direction = getBlockState().getValue(SolarPanelBearingBlock.FACING);
+        contraption = new SolarPanelBearingContraption(direction);
+        try {
+            if (!contraption.assemble(level, worldPosition))
+                return;
+
+            lastException = null;
+        } catch (AssemblyException e) {
+            lastException = e;
+            sendData();
+            return;
+        }
+
+        contraption.removeBlocksFromWorld(level, BlockPos.ZERO);
+        movedContraption = ControlledContraptionEntity.create(level, this, contraption);
+        BlockPos anchor = worldPosition.relative(direction);
+        movedContraption.setPos(anchor.getX(), anchor.getY(), anchor.getZ());
+        movedContraption.setRotationAxis(direction.getAxis());
+        level.addFreshEntity(movedContraption);
+
+        AllSoundEvents.CONTRAPTION_ASSEMBLE.playOnServer(level, worldPosition);
+
+        if (contraption.containsBlockBreakers())
+            award(AllAdvancements.CONTRAPTION_ACTORS);
+
+        startAngle = calculateStartAngle(contraption);
+
+        running = true;
+        angle = 0;
+
+        if (contraption == null) {
+            if (movedContraption != null) {
+                contraption = (SolarPanelBearingContraption) movedContraption.getContraption();
+            }
+        }
+
+        parallelNumbers.refreshDivisors(contraption.getPanelBlocks());
+        sendData();
+        getPlacedBlockRotation();
+    }
+
+    public void disassemble() {
+        if (!running && movedContraption == null)
+            return;
+        angle = 0;
+        sequencedAngleLimit = -1;
+        if (movedContraption != null) {
+            movedContraption.disassemble();
+            AllSoundEvents.CONTRAPTION_DISASSEMBLE.playOnServer(level, worldPosition);
+        }
+
+        movedContraption = null;
+        running = false;
+        assembleNextTick = false;
+        sendData();
+    }
+
     @Override
     public AssemblyException getLastAssemblyException() {
         return lastException;
@@ -590,6 +588,8 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         compound.putFloat("Angle", angle);
         if (sequencedAngleLimit >= 0)
             compound.putDouble("SequencedAngleLimit", sequencedAngleLimit);
+        compound.putInt("StringsInParallel", parallelNumbers.getDivisor());
+        compound.putInt("PanelCount", parallelNumbers.getPanelCount());
         AssemblyException.write(compound, lastException);
         super.write(compound, clientPacket);
     }
@@ -607,7 +607,11 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         sequencedAngleLimit = compound.contains("SequencedAngleLimit") ? compound.getDouble("SequencedAngleLimit") : -1;
         startAngle = compound.getFloat("startingAngle");
         lastException = AssemblyException.read(compound);
+        if (compound.contains("PanelCount"))
+            parallelNumbers.refreshDivisors(compound.getInt("PanelCount"));
         super.read(compound, clientPacket);
+        if (compound.contains("StringsInParallel"))
+            parallelNumbers.setByDivisor(compound.getInt("StringsInParallel"));
         if (!clientPacket)
             return;
         if (running) {
@@ -617,25 +621,6 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
             }
         } else
             movedContraption = null;
-    }
-
-    public boolean isNearInitialAngle() {
-        return Math.abs(angle) < 22.5 || Math.abs(angle) > 360 - 22.5;
-    }
-
-    @Override
-    public boolean isWoodenTop() {
-        return false;
-    }
-
-    @Override
-    public void setAngle(float forcedAngle) {
-        angle = forcedAngle;
-    }
-
-    @Override
-    public boolean isAttachedTo(AbstractContraptionEntity contraption) {
-        return movedContraption == contraption;
     }
 
     @Override
@@ -654,6 +639,21 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
             this.running = true;
             sendData();
         }
+    }
+
+    @Override
+    public boolean isWoodenTop() {
+        return false;
+    }
+
+    @Override
+    public void setAngle(float forcedAngle) {
+        angle = forcedAngle;
+    }
+
+    @Override
+    public boolean isAttachedTo(AbstractContraptionEntity contraption) {
+        return movedContraption == contraption;
     }
 
     @Override
@@ -677,5 +677,10 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     @Override
     public BlockPos getBlockPosition() {
         return worldPosition;
+    }
+
+    @Override
+    protected boolean syncSequenceContext() {
+        return true;
     }
 }

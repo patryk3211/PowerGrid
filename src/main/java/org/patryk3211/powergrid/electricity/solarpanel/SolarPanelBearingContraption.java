@@ -48,9 +48,21 @@ public class SolarPanelBearingContraption extends BearingContraption {
                         "powergrid.contraption.assembly.mismatched_panel_facing"));
             }
         }
+        if (!hasValidDivisor(panelBlocks)){
+            throw new AssemblyException(Component.translatable("powergrid.contraption.assembly.invalid_panel_amount"));
+        }
+
         if (blocks.isEmpty())
             return false;
         return true;
+    }
+
+    private static boolean hasValidDivisor(int panelCount) {
+        for (int i = 1; i <= 9; i++) {
+            if (panelCount % i == 0 && (panelCount / i) <= 25)
+                return true;
+        }
+        return false;
     }
 
     @Override
