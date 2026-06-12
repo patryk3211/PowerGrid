@@ -380,6 +380,7 @@
   "powergrid.gui.transformer.secondary_stray": "Sekundärverluste",
   "powergrid.gui.transformer.turns": "Windungen",
   "powergrid.gui.voltage_meter.title": "Gemessene Spannung",
+  "powergrid.keyinfo.alternate_wire_placement": "Alternative Drahtplatzierung",
   "powergrid.keyinfo.delete_area": "Bereich löschen",
   "powergrid.keyinfo.pick_component": "Bauteil auswählen",
   "powergrid.keyinfo.place_trace": "Leiterbahn ziehen",
