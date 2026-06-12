@@ -41,18 +41,19 @@ public class ImaginaryWireEndpoint implements IWireEndpoint {
     public void read(CompoundTag nbt) {
         var tag = nbt.getCompound("Pos");
         pos = new Vec3(
-                tag.getFloat("X"),
-                tag.getFloat("Y"),
-                tag.getFloat("Z")
+                tag.getDouble("X"),
+                tag.getDouble("Y"),
+                tag.getDouble("Z")
         );
     }
 
     @Override
     public void write(CompoundTag nbt) {
         var tag = new CompoundTag();
-        tag.putFloat("X", (float) pos.x);
-        tag.putFloat("Y", (float) pos.y);
-        tag.putFloat("Z", (float) pos.z);
+        tag.putDouble("X", pos.x);
+        tag.putDouble("Y", pos.y);
+        tag.putDouble("Z", pos.z);
+        nbt.put("Pos", tag);
     }
 
     @Override

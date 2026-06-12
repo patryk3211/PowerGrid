@@ -52,9 +52,14 @@ public class BasinHeaterBlockEntity extends ElectricBlockEntity {
         return 256 * 64 * ModdedConfigs.server().kinetics.torqueForStress.getF() / CONVERSION_CONSTANT;
     }
 
+    public static float minPower() {
+        float factor = power() / (600 - ThermalBehaviour.STANDARD_TEMPERATURE);
+        return factor * (300 - ThermalBehaviour.STANDARD_TEMPERATURE);
+    }
+
     @Override
     public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        float factor = power() / (600 - 22);
+        float factor = power() / (600 - ThermalBehaviour.STANDARD_TEMPERATURE);
         return ThermalBehaviour.always(this, 2.0f, factor, 1600);
     }
 
@@ -68,7 +73,7 @@ public class BasinHeaterBlockEntity extends ElectricBlockEntity {
         var T = thermalBehaviour.getTemperature();
         if(T < 300) {
             setState(HeatLevel.NONE);
-        } if(T < 600) {
+        } else if(T < 600) {
             setState(HeatLevel.FADING);
         } else if(T < 1200) {
             setState(HeatLevel.KINDLED);

@@ -16,17 +16,12 @@
 package org.patryk3211.powergrid;
 
 import com.mojang.blaze3d.platform.Window;
-import dev.architectury.event.events.client.ClientGuiEvent;
-import dev.architectury.event.events.client.ClientPlayerEvent;
-import dev.architectury.event.events.client.ClientTickEvent;
-import dev.architectury.event.events.client.ClientTooltipEvent;
+import dev.architectury.event.EventResult;
+import dev.architectury.event.events.client.*;
 import net.createmod.ponder.foundation.PonderIndex;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
-import org.patryk3211.powergrid.collections.ModdedConfigs;
-import org.patryk3211.powergrid.collections.ModdedPackets;
-import org.patryk3211.powergrid.collections.ModdedPartialModels;
-import org.patryk3211.powergrid.collections.ModdedRenderLayers;
+import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.info.TerminalHandler;
 import org.patryk3211.powergrid.electricity.transformer.TransformerWindingScreen;
@@ -65,6 +60,28 @@ public class PowerGridClient {
 		ClientTickEvent.CLIENT_POST.register(PowerGridClient::clientTick);
 		ClientPlayerEvent.CLIENT_PLAYER_RESPAWN.register(PowerGridClient::clientRespawn);
 		ClientTooltipEvent.ITEM.register(WireItem::tooltip);
+		ClientRawInputEvent.KEY_PRESSED.register(PowerGridClient::keyPress);
+		ClientRawInputEvent.MOUSE_CLICKED_POST.register(PowerGridClient::mousePress);
+	}
+
+	private static EventResult keyPress(Minecraft client, int keyCode, int scanCode, int action, int modifiers) {
+		if(client.player == null || client.level == null)
+			return EventResult.pass();
+		if(ModdedKeys.ALTERNATE_WIRE_PLACEMENT.matchesKey(keyCode, scanCode))
+			ClientWireInteractions.alternatePlacementCheck(client, action);
+		if(client.options.keyUse.matches(keyCode, scanCode) && ClientWireInteractions.cutClearCheck(client))
+			return EventResult.interruptTrue();
+		return EventResult.pass();
+	}
+
+	private static EventResult mousePress(Minecraft client, int button, int action, int mods) {
+		if(client.player == null || client.level == null)
+			return EventResult.pass();
+		if(ModdedKeys.ALTERNATE_WIRE_PLACEMENT.matchesMouse(button))
+			ClientWireInteractions.alternatePlacementCheck(client, action);
+		if(client.options.keyUse.matchesMouse(button) && ClientWireInteractions.cutClearCheck(client))
+			return EventResult.interruptTrue();
+		return EventResult.pass();
 	}
 
 	private static void clientRespawn(LocalPlayer localPlayer, LocalPlayer localPlayer1) {
