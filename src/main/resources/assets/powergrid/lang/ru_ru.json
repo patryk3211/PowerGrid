@@ -380,6 +380,7 @@
   "powergrid.gui.transformer.secondary_stray": "Вторичные потери",
   "powergrid.gui.transformer.turns": "Витков",
   "powergrid.gui.voltage_meter.title": "Измеренное напряжение",
+  "powergrid.keyinfo.alternate_wire_placement": "Альтернативное размещение проводов",
   "powergrid.keyinfo.delete_area": "Удалить участок",
   "powergrid.keyinfo.pick_component": "Выбрать компонент",
   "powergrid.keyinfo.place_trace": "Проложить дорожку",
