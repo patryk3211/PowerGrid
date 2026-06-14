@@ -104,7 +104,9 @@ public class SolarPanelBearingBlockScrollBehaviour extends ScrollValueBehaviour 
 
     private String formatIndex(int idx) {
         if (divisors.isEmpty() || panelCount == 0) return "1 group";
-        return String.valueOf(divisors.get(Math.max(0, Math.min(idx, divisors.size() - 1))));
+        int divisor  = divisors.get(Math.max(0, Math.min(idx, divisors.size() - 1)));
+        int perString = panelCount / divisor;
+        return divisor + " × " + perString;
     }
 
     @Override
