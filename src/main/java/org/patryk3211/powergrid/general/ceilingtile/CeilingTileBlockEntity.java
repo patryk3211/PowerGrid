@@ -1,24 +1,35 @@
 package org.patryk3211.powergrid.general.ceilingtile;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.electricity.light.fixture.AbstractLightFixtureBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 
 public class CeilingTileBlockEntity extends AbstractLightFixtureBlockEntity {
+    private SwitchedWire filament;
+
     public CeilingTileBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state, false);
     }
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
+        builder.setTerminalCount(2);
+        filament = builder.connectSwitch(1, builder.terminalNode(0), builder.terminalNode(1), false);
+    }
 
+    @Override
+    public void electricalTick() {
+        super.electricalTick();
+        if(bulbState != null)
+            bulbState.runSpecialEffects(level, worldPosition, Direction.DOWN);
     }
 
     @Override
     public SwitchedWire getFilament() {
-        return null;
+        return filament;
     }
 
     @Override

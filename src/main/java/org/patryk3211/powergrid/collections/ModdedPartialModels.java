@@ -90,6 +90,8 @@ public class ModdedPartialModels {
     public static final PartialModel FL_RAYS_FRONT = block("factory_light/godraysedgefront");
     public static final PartialModel FL_RAYS_SINGLE = block("factory_light/godrayssingular");
 
+    public static final PartialModel CEILING_LIGHT = block("ceiling_tile/ceiling_tile_light_light");
+
     private static PartialModel block(String path) {
         return PartialModel.of(PowerGrid.asResource("block/" + path));
     }

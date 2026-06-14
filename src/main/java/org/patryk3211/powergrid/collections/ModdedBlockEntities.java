@@ -60,6 +60,7 @@ import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryBlockEn
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerBlockEntity;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerRenderer;
 import org.patryk3211.powergrid.general.ceilingtile.CeilingTileBlockEntity;
+import org.patryk3211.powergrid.general.ceilingtile.CeilingTileRenderer;
 import org.patryk3211.powergrid.kinetics.base.HalfShaftVisual;
 import org.patryk3211.powergrid.kinetics.base.TunedBlockRenderer;
 import org.patryk3211.powergrid.kinetics.base.TunedBlockVisual;
@@ -370,6 +371,7 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<CeilingTileBlockEntity> CEILING_TILE =
             REGISTRATE.blockEntity("ceiling_tile", CeilingTileBlockEntity::new)
                     .validBlock(ModdedBlocks.CEILING_TILE)
+                    .renderer(() -> CeilingTileRenderer::new)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

@@ -77,6 +77,13 @@ public class CeilingTileBlock extends ElectricBlock implements IBE<CeilingTileBl
                         SoundSource.BLOCKS, 1.0f, level.random.nextFloat() * 0.25f + 1.0f);
             }
             return InteractionResult.SUCCESS;
+        } else {
+            if(stack.isEmpty() || stack.getItem() instanceof ILightBulb) {
+                return onBlockEntityUse(level, pos, be ->
+                        be.replaceBulb(player, hand, stack)
+                                ? InteractionResult.SUCCESS
+                                : InteractionResult.FAIL);
+            }
         }
         return InteractionResult.PASS;
     }

@@ -515,7 +515,7 @@ public class ModdedBlocks {
             .blockstate(ceilingTile("block/ceiling_tile"))
             .initialProperties(SharedProperties::stone)
             .transform(axeOrPickaxe())
-            .addLayer(() -> RenderType::cutoutMipped)
+            .addLayer(() -> RenderType::cutout)
             .loot((tables, block) ->
                     tables.add(block, b -> LootTable.lootTable()
                             .withPool(LootPool.lootPool()
