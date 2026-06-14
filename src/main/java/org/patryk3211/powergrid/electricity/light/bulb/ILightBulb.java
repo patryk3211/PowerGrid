@@ -18,6 +18,9 @@ package org.patryk3211.powergrid.electricity.light.bulb;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 
 public interface ILightBulb {
+    int LIGHT_LEVEL_LOW_POWER = 10;
+    int LIGHT_LEVEL_FULL_POWER = 15;
+
     record Properties(float dissipationFactor, float thermalMass, float overheatTemperature) { }
 
     float resistanceFunction(float temperature);

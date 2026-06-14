@@ -32,12 +32,17 @@ import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightBlock
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
+import org.patryk3211.powergrid.general.ceilingtile.CeilingTileBlock;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.VerticalCommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 
 import java.util.function.Function;
 
+/**
+ * @see org.patryk3211.powergrid.utility.forge.DataProviderUtilityImpl
+ * @see org.patryk3211.powergrid.utility.fabric.DataProviderUtilityImpl
+ */
 public class DataProviderUtility {
     @ExpectPlatform
     public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> horizontalBlock(String model) {
@@ -83,6 +88,11 @@ public class DataProviderUtility {
 
     @ExpectPlatform
     public static NonNullBiConsumer<DataGenContext<Block, FactoryLightBlock>, RegistrateBlockstateProvider> factoryLight(String baseFolder) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static NonNullBiConsumer<DataGenContext<Block, CeilingTileBlock>, RegistrateBlockstateProvider> ceilingTile(String baseFolder) {
         throw new AssertionError();
     }
 

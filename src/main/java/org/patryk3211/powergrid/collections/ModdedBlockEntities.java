@@ -59,6 +59,7 @@ import org.patryk3211.powergrid.electricity.wireconnector.CordJunctionBlockEntit
 import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryBlockEntity;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerBlockEntity;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerRenderer;
+import org.patryk3211.powergrid.general.ceilingtile.CeilingTileBlockEntity;
 import org.patryk3211.powergrid.kinetics.base.HalfShaftVisual;
 import org.patryk3211.powergrid.kinetics.base.TunedBlockRenderer;
 import org.patryk3211.powergrid.kinetics.base.TunedBlockVisual;
@@ -364,6 +365,11 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("factory_light", FactoryLightBlockEntity::new)
                     .validBlock(ModdedBlocks.FACTORY_LIGHT)
                     .renderer(() -> FactoryLightRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<CeilingTileBlockEntity> CEILING_TILE =
+            REGISTRATE.blockEntity("ceiling_tile", CeilingTileBlockEntity::new)
+                    .validBlock(ModdedBlocks.CEILING_TILE)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

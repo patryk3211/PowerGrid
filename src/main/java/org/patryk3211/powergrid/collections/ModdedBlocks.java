@@ -512,9 +512,26 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<CeilingTileBlock> CEILING_TILE = REGISTRATE.block("ceiling_tile", CeilingTileBlock::new)
-            .blockstate(simple("block/ceiling_tile/ceiling_tile"))
+            .blockstate(ceilingTile("block/ceiling_tile"))
+            .initialProperties(SharedProperties::stone)
             .transform(axeOrPickaxe())
-            .simpleItem()
+            .addLayer(() -> RenderType::cutoutMipped)
+            .loot((tables, block) ->
+                    tables.add(block, b -> LootTable.lootTable()
+                            .withPool(LootPool.lootPool()
+                                    .when(ExplosionCondition.survivesExplosion())
+                                    .add(LootItem.lootTableItem(b)))
+                            .withPool(LootPool.lootPool()
+                                    .when(ExplosionCondition.survivesExplosion())
+                                    .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(b)
+                                            .setProperties(StatePropertiesPredicate.Builder.properties()
+                                                    .hasProperty(CeilingTileBlock.STATE, CeilingTileBlock.State.EMPTY))
+                                            .invert())
+                                    .add(LootItem.lootTableItem(FACTORY_LIGHT)))
+                    ))
+            .item()
+                .model(itemWithParent("block/ceiling_tile/ceiling_tile"))
+                .build()
             .register();
 
     public static final BlockEntry<TransformerCoreBlock> TRANSFORMER_CORE = REGISTRATE.block("transformer_core", TransformerCoreBlock::new)
