@@ -1,6 +1,7 @@
 package org.patryk3211.powergrid.electricity.solarpanel;
 
 import com.simibubi.create.foundation.block.IBE;
+import net.createmod.catnip.math.VoxelShaper;
 import net.createmod.catnip.placement.IPlacementHelper;
 import net.createmod.catnip.placement.PlacementHelpers;
 import net.createmod.catnip.placement.PlacementOffset;
@@ -25,8 +26,10 @@ import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.utility.ShaperUtils;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -44,7 +47,22 @@ public class SolarPanelBlock extends Rotation4ElectricBlock implements IBE<Multi
 
     public SolarPanelBlock(Properties settings) {
         super(settings);
-        setTerminalCollection(rotation4DownTerminals(this, NORTH_TERMINALS, SHAPE));
+        var shapers = new VoxelShaper[] {
+                VoxelShaper.forDirectional(SHAPE, Direction.DOWN),
+                VoxelShaper.forDirectional(ShaperUtils.rotate(SHAPE, Direction.NORTH, Direction.WEST), Direction.DOWN),
+                VoxelShaper.forDirectional(ShaperUtils.rotate(SHAPE, Direction.NORTH, Direction.WEST), Direction.DOWN),
+                VoxelShaper.forDirectional(ShaperUtils.rotate(SHAPE, Direction.NORTH, Direction.WEST), Direction.DOWN)
+        };
+        setTerminalCollection(BlockStateTerminalCollection.builder(this)
+                .forAllStates(state -> BlockStateTerminalCollection.each(NORTH_TERMINALS,
+                        terminal -> terminal)
+                )
+                .withShapeMapper(state -> {
+                    var facing = state.getValue(FACING);
+                    var rotation = state.getValue(ROTATION);
+                    return shapers[rotation].get(facing);
+                })
+                .build());
     }
 
     @Override
