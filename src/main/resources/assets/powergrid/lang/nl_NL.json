@@ -40,5 +40,7 @@
   "block.powergrid.socket": "Stopcontact",
   "block.powergrid.thermometer": "Temperatuurmeter",
   "item.powergrid.incomplete_circuit": "Onvolledige Circuit",
-  "item.powergrid.portable_battery.tooltip.behaviour1": "Levert _Forge Energy_ aan apparatuur die dit nodig heeft"
+  "item.powergrid.portable_battery.tooltip.behaviour1": "Levert _Forge Energy_ aan apparatuur die dit nodig heeft",
+  "item.powergrid.redstone_relay": "Redstone Relais",
+  "item.powergrid.resistor": "Weerstand"
 }
