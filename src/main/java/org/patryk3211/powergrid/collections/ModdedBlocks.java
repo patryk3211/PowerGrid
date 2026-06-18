@@ -454,14 +454,14 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<CreativeSourceBlock> CREATIVE_VOLTAGE_SOURCE = REGISTRATE.block("creative_voltage_source", CreativeSourceBlock::new)
-            .blockstate(horizontalAxisBlock("block/creative_voltage_source"))
+            .blockstate(horizontalBlock("block/creative_voltage_source"))
             .initialProperties(SharedProperties::stone)
             .transform(pickaxeOnly())
             .defaultLoot()
             .simpleItem()
             .register();
     public static final BlockEntry<CreativeSourceBlock> CREATIVE_CURRENT_SOURCE = REGISTRATE.block("creative_current_source", CreativeSourceBlock::new)
-            .blockstate(horizontalAxisBlock("block/creative_current_source"))
+            .blockstate(horizontalBlock("block/creative_current_source"))
             .initialProperties(SharedProperties::stone)
             .transform(pickaxeOnly())
             .defaultLoot()
