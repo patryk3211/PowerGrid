@@ -43,5 +43,6 @@
   "item.powergrid.portable_battery.tooltip.behaviour1": "Levert _Forge Energy_ aan apparatuur die dit nodig heeft",
   "item.powergrid.redstone_relay": "Redstone Relais",
   "item.powergrid.resistor": "Weerstand",
-  "item.powergrid.string_light_cord": "Kabel voor lichtslinger"
+  "item.powergrid.string_light_cord": "Kabel voor lichtslinger",
+  "item.powergrid.unetched_circuit": "Ongeëtst circuit"
 }
