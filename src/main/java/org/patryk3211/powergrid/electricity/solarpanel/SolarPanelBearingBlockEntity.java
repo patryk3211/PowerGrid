@@ -32,6 +32,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.febridge.IFEBridgeHandler;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
@@ -58,8 +59,9 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     private float AMBIENT_TEMP = -2000f;
     private float panelTiltDeg = 0;
     private float panelAzimuthDeg = 0;
+    private float blockAzimuthDeg = 0;
     private int rayCastDelay = 0;
-    private float sunVisablity = 0;
+    private float sunVisibility = 0;
     private float startAngle = 0;
     private int temp = 0;
     protected SolarPanelBearingBlockScrollBehaviour parallelNumbers;
@@ -167,8 +169,12 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
                 panelTiltDeg = ((-angle + startAngle) % 360f + 360f) % 360f;
             }
         } else if (contraption.panelDirection != Direction.DOWN) {
-            panelTiltDeg = contraption.panelDirection.getAxisDirection() == Direction.AxisDirection.POSITIVE ? -90 : 90;
-            panelAzimuthDeg = ((angle + -startAngle) % 360f + 360f) % 360f;
+            if (contraption.panelDirection == blockFacing) {
+                panelTiltDeg = 0;
+            } else {
+                panelTiltDeg = -90;
+                panelAzimuthDeg = ((angle - startAngle + blockAzimuthDeg) % 360f + 360f) % 360f;
+            }
         } else {
             panelTiltDeg = 180;
         }
@@ -233,7 +239,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
 
         double sunElevationRad = Math.asin(Math.max(0, Math.cos(world.getSunAngle(0))));
         if (rayCastDelay-- == 0){
-            sunVisablity = sunRaycast(world, sunAzimuthRad, sunElevationRad);
+            sunVisibility = sunRaycast(world, sunAzimuthRad, sunElevationRad);
             rayCastDelay = world.random.nextInt(41) + 10;
         }
 
@@ -248,7 +254,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         var diffuseLight = 0.1 * irradiance * (1 + cloudCover) * ((1 + Math.cos(tiltRad)) / 2);
         var reflected = 0.15 * irradiance * ((1 - Math.cos(tiltRad)) / 2.0);
 
-        return (irradiance * sunVisablity) * transmisttance * cosIncidence + diffuseLight +  reflected;
+        return (irradiance * sunVisibility) * transmisttance * cosIncidence + diffuseLight +  reflected;
     }
 
     public double getAM(Level world){
@@ -382,23 +388,31 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         switch (face){
             case NORTH:
                 panelAzimuthDeg = 0;
+                blockAzimuthDeg = 0;
                 break;
             case SOUTH:
                 panelAzimuthDeg = 180;
+                blockAzimuthDeg = 180;
                 break;
             case EAST:
                 panelAzimuthDeg = 90;
+                blockAzimuthDeg = 90;
                 break;
             case WEST:
-                panelAzimuthDeg = 270;
+                panelAzimuthDeg = 90;
+                blockAzimuthDeg = 90;
                 break;
             case UP:
+                panelAzimuthDeg = 0;
                 panelAzimuthDeg = 0;
                 break;
             case DOWN:
                 panelAzimuthDeg = 0;
+                panelAzimuthDeg = 0;
                 break;
             default:
+                panelAzimuthDeg = 0;
+                blockAzimuthDeg = 0;
                 break;
         }
     }
@@ -434,6 +448,15 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
             }
 
             if (state.getValue(SolarPanelBearingBlock.FACING).getAxis() == Direction.Axis.Z){
+                if (getBlockState().getValue(SolarPanelBearingBlock.FACING).getAxis() == Direction.Axis.Y) {
+                    return switch (facing) {
+                        case NORTH ->   0f;
+                        case SOUTH -> 180f;
+                        case UP    ->   0f;
+                        case DOWN  -> 180f;
+                        default    ->   0f;
+                    };
+                }
                 return switch (facing) {
                     case UP    ->   0f;
                     case DOWN  -> 180f;
@@ -462,6 +485,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     }
 
     public void assemble() {
+        if (level == null) return;
         if (!(level.getBlockState(worldPosition)
                 .getBlock() instanceof SolarPanelBearingBlock))
             return;

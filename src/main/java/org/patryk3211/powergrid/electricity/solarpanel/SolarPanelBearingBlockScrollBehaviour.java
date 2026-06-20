@@ -124,7 +124,11 @@ public class SolarPanelBearingBlockScrollBehaviour extends ScrollValueBehaviour 
         protected boolean isSideActive(BlockState state, Direction direction) {
             if (!state.hasProperty(SolarPanelBearingBlock.FACING))
                 return false;
-            return state.getValue(SolarPanelBearingBlock.FACING).getClockWise() == direction;
+            if (state.getValue(SolarPanelBearingBlock.FACING).getAxis() == Direction.Axis.Y) {
+                return Direction.NORTH.equals(direction);
+            } else {
+                return state.getValue(SolarPanelBearingBlock.FACING).getClockWise() == direction;
+            }
         }
     }
 }
