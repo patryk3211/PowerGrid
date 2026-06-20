@@ -67,7 +67,7 @@ public class SolarPanelBlock extends Rotation4ElectricBlock implements IBE<Multi
 
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
-
+        //todo once diode is implemented add Voc, Isc, Imp?, Vmp?, Pmax?
     }
 
     //todo fix failed implementation of IMultiBlockSolarPanel
