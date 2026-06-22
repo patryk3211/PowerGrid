@@ -11,12 +11,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import org.apache.commons.lang3.tuple.Pair;
+import org.joml.Vector3d;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedContraptions;
 
 public class SolarPanelBearingContraption extends BearingContraption {
     protected int panelBlocks;
-    protected Direction panelDirection = null;
+    protected Vector3d panelNormal;
 
 
     public SolarPanelBearingContraption() {
@@ -41,9 +42,10 @@ public class SolarPanelBearingContraption extends BearingContraption {
             if (!(info.state().getBlock() instanceof SolarPanelBlock))
                 continue;
             Direction panelFacing = info.state().getValue(SolarPanelBlock.FACING).getOpposite();
-            if (panelDirection == null) {
-                panelDirection = panelFacing;
-            } else if (panelFacing != panelDirection) {
+            var n = panelFacing.getNormal();
+            if (panelNormal == null) {
+                panelNormal = new Vector3d(n.getX(), n.getY(), n.getZ());
+            } else if (!panelNormal.equals(new Vector3d(n.getX(), n.getY(), n.getZ()))) {
                 throw new AssemblyException(Component.translatable(
                         "powergrid.contraption.assembly.mismatched_panel_facing"));
             }
@@ -78,8 +80,10 @@ public class SolarPanelBearingContraption extends BearingContraption {
     public CompoundTag writeNBT(boolean spawnPacket) {
         CompoundTag tag = super.writeNBT(spawnPacket);
         tag.putInt("Panels", panelBlocks);
-        tag.putInt("PanelDirection", panelDirection.get3DDataValue());
         tag.putInt("Facing", facing.get3DDataValue());
+        tag.putDouble("normalX", panelNormal.x);
+        tag.putDouble("normalY", panelNormal.y);
+        tag.putDouble("normalZ", panelNormal.z);
         return tag;
     }
 
@@ -87,7 +91,7 @@ public class SolarPanelBearingContraption extends BearingContraption {
     public void readNBT(Level world, CompoundTag tag, boolean spawnData) {
         panelBlocks = tag.getInt("Panels");
         facing = Direction.from3DDataValue(tag.getInt("Facing"));
-        panelDirection = Direction.from3DDataValue(tag.getInt("PanelDirection"));
+        panelNormal = new Vector3d(tag.getDouble(("normalX")), tag.getDouble("normalY"), tag.getDouble("normalZ"));
         super.readNBT(world, tag, spawnData);
     }
 

@@ -9,6 +9,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.phys.Vec3;
+import org.joml.Vector3d;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
@@ -34,11 +36,10 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
     private float cloudCover = 0;
     private boolean firstTick = true;
     private float AMBIENT_TEMP = -2000f;
-    private float panelTiltDeg = 0;
-    private float panelAzimuthDeg = 90;
     private int rayCastDelay = 0;
     private float sunVisablity = 0;
     protected int totalCells = CELLS_IN_SERIES;
+    private Vector3d panelNormal;
 
 
     public SolarPanelBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -74,7 +75,7 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
             cloudCover = 0;
         }
 
-        var irradiance = getIrradiance(getAM(world), cloudCover, this.getBlockPos().getY(), panelTiltDeg, panelAzimuthDeg, world);
+        var irradiance = getIrradiance(getAM(world), cloudCover, this.getBlockPos().getY(), world);
         var cellTemp = getCellTemp(irradiance);
         var Vt = 8.617e-5 * (cellTemp + 273.15);
         double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt);
@@ -93,15 +94,14 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
         sourceCoupling.setResistance((float) panelResistance);
 
         if (temp++ == 20){
-//            System.out.println("Cell Temp: " + cellTemp);
-//            System.out.println("Single cell voltage: " + Voc_t);
-//            System.out.println("Single cell current: " + cellCurrent);
-//            System.out.println("Vt: " + Vt);
-//            System.out.println("Current irradiance: " + irradiance);
-//            System.out.println("AM: " + getAM(world));
-//            System.out.println("azimuth: " + panelAzimuthDeg);
-//            System.out.println("tilt: " + panelTiltDeg);
-//            System.out.println();
+            System.out.println("Cell Temp: " + cellTemp);
+            System.out.println("Single cell voltage: " + Voc_t);
+            System.out.println("Single cell current: " + cellCurrent);
+            System.out.println("Vt: " + Vt);
+            System.out.println("Current irradiance: " + irradiance);
+            System.out.println("AM: " + getAM(world));
+
+            System.out.println();
             temp = 0;
         }
         super.electricalTick();
@@ -119,32 +119,27 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
         return AMBIENT_TEMP + (NOCT - 20) * (Irradiance / 800);
     }
 
-    public double getIrradiance(double AM, double cloudCover, int YPos, float panelTiltDeg, float panelAzimuthDeg, Level world) {
+    public double getIrradiance(double AM, double cloudCover, int YPos, Level world) {
         if (AM == Double.POSITIVE_INFINITY) return 0;
         var transmisttance = 1 - cloudCover;
         var irradiance = SOLAR_CONSTANT * Math.pow(0.7,Math.pow(AM, 0.678));
         irradiance = irradiance * ((((YPos - 70) / 250f) * 0.04f) + 1); //70 is around average world height, but it could also be put to sea level
 
-        double dayAngle = world.getSunAngle(0);
-        if (dayAngle > Math.PI) dayAngle -= 2 * Math.PI;
-        double sunAzimuthRad = Math.PI + dayAngle;
+        double sunAngle = world.getSunAngle(0);
+        Vector3d sunDir = new Vector3d(-Math.sin(sunAngle), Math.cos(sunAngle), 0);
+        if (sunDir.y <= 0) return 0;
 
-        double sunElevationRad = Math.asin(Math.max(0, Math.cos(world.getSunAngle(0))));
         if (rayCastDelay-- == 0){
-            sunVisablity = sunRaycast(world, sunAzimuthRad, sunElevationRad);
+            sunVisablity = sunRaycast(world);
             rayCastDelay = world.random.nextInt(41) + 10;
         }
 
-        double tiltRad = Math.toRadians(panelTiltDeg);
-        double panelAzimuthRad = Math.toRadians(panelAzimuthDeg);
-
-        double cosIncidence = Math.sin(sunElevationRad) * Math.cos(tiltRad) + Math.cos(sunElevationRad)
-                * Math.cos(sunAzimuthRad - panelAzimuthRad) * Math.sin(tiltRad);
+        double cosIncidence = Math.max(0, sunDir.dot(panelNormal));
 
         cosIncidence = Math.max(0, cosIncidence);
 
-        var diffuseLight = 0.1 * irradiance * (1 + cloudCover) * ((1 + Math.cos(tiltRad)) / 2);
-        var reflected = 0.15 * irradiance * ((1 - Math.cos(tiltRad)) / 2.0);
+        double diffuseLight = 0.1 * irradiance * (1 + cloudCover) * ((1 + panelNormal.y()) / 2);
+        double reflected = 0.15 * irradiance * ((1 - panelNormal.y()) / 2.0);
 
         return (irradiance * sunVisablity) * transmisttance * cosIncidence + diffuseLight +  reflected;
     }
@@ -162,15 +157,14 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
         return Math.max(1, result);
     }
 
-    public float sunRaycast(Level world, double sunAzimuthRad, double sunElevationRad){
+    public float sunRaycast(Level world){
         var blockPos = getBlockPos();
         int castLength = 0;
         ChunkAccess chunk;
-        var sunDir = new Vec3(Math.cos(sunElevationRad) * Math.sin(sunAzimuthRad),
-                sunElevationRad, 0);
-        var sunX = Math.cos(sunElevationRad) * (sunAzimuthRad < Math.PI ? 1 : -1);
-        var sunY = Math.sin(sunElevationRad);
-        boolean positiveX = sunDir.x > 0;
+        double sunAngle = world.getSunAngle(0);
+        double sunX = -Math.sin(sunAngle);
+        double sunY = Math.cos(sunAngle);
+        boolean positiveX = sunX > 0;
         for (int i = 1; i <= 10; i++) {
             int xOffset = (positiveX ? i : -i) * 16;
             chunk = world.getChunkSource().getChunkNow(SectionPos.blockToSectionCoord(blockPos.getX() + xOffset),
@@ -181,13 +175,21 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
                 break;
             }
         }
-        var centerBlockPos = getBlockPos().getCenter().add(0, 3f/16, 0);
+        var centerBlockPos = getBlockPos().getCenter().add(0, 0, 0);
         var end = centerBlockPos.add(new Vec3(sunX, sunY, 0).scale(castLength));
         var results = DDA(world, centerBlockPos, end);
         float returnValue = 1;
         for (BlockPos result : results) {
             var blockState = world.getBlockState(result);
 
+            if (blockState.is(ModdedBlocks.SOLAR_PANEL.get())) {
+                if (result.equals(this.getBlockPos())) {
+                    continue;
+                } else {
+                    returnValue = 0;
+                    break;
+                }
+            }
             if (blockState.is(ModdedTags.Block.GLASS_BLOCK.tag) || blockState.is(ModdedTags.Block.GLASS_PANE.tag)) {
                 returnValue *= .8f;
                 continue;
@@ -213,35 +215,8 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
 
     public void getPlacedBlockRotation(){
         var face = this.getBlockState().getValue(Rotation4ElectricBlock.FACING).getOpposite();
-
-        switch (face){
-            case NORTH:
-                panelAzimuthDeg = 0;
-                panelTiltDeg = 90;
-                break;
-            case SOUTH:
-                panelAzimuthDeg = 180;
-                panelTiltDeg = 90;
-                break;
-            case EAST:
-                panelAzimuthDeg = 90;
-                panelTiltDeg = 90;
-                break;
-            case WEST:
-                panelAzimuthDeg = 270;
-                panelTiltDeg = 90;
-                break;
-            case UP:
-                panelAzimuthDeg = 0;
-                panelTiltDeg = 0;
-                break;
-            case DOWN:
-                panelAzimuthDeg = 0;
-                panelTiltDeg = 180;
-                break;
-            default:
-                break;
-        }
+        var n = face.getNormal();
+        panelNormal = new Vector3d(n.getX(), n.getY(), n.getZ());
     }
 
 }
