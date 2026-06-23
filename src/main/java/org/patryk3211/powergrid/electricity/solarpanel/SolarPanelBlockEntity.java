@@ -4,7 +4,6 @@ import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.companion.SableCompanion;
 import dev.ryanhcode.sable.sublevel.SubLevel;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.Level;
@@ -40,8 +39,6 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
     private float cloudCover = 0;
     private boolean firstTick = true;
     private float AMBIENT_TEMP = -2000f;
-    private float panelTiltDeg = 0;
-    private float panelAzimuthDeg = 90;
     private int rayCastDelay = 0;
     private float sunVisablity = 0;
     protected int totalCells = CELLS_IN_SERIES;
@@ -60,20 +57,17 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void electricalTick() {
-        if (SableCompanion.INSTANCE.isInPlotGrid(level, this.getBlockPos().getCenter())){
-            subWorldTick();
-            return;
-        }
-
         var world = getLevel();
         if (world == null || world.isClientSide()) return;
         if (sourceCoupling == null) return;
 
+        var d = SableCompanion.INSTANCE.projectOutOfSubLevel(world, new Vector3d(this.getBlockPos().getX(), this.getBlockPos().getY(), this.getBlockPos().getZ()));
+        var pos = new BlockPos((int)d.x, (int)d.y, (int)d.z);
+
         if (firstTick) {
-            AMBIENT_TEMP = ThermalBehaviour.getAmbientTemperature(world, this.getBlockPos());
+            AMBIENT_TEMP = ThermalBehaviour.getAmbientTemperature(world, pos);
             if (AMBIENT_TEMP <= ThermalBehaviour.ABSOLUTE_ZERO)
                 AMBIENT_TEMP = 22f;
-            getPlacedBlockRotation();
             firstTick = false;
         }
 
@@ -85,7 +79,14 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
             cloudCover = 0;
         }
 
-        var irradiance = getIrradiance(getAM(world), cloudCover, this.getBlockPos().getY(), world);
+        getPlacedBlockRotation();
+        final SubLevel subLevel = Sable.HELPER.getContaining(this);
+        if (subLevel != null){
+            subLevel.logicalPose().orientation().transform(panelNormal);
+            panelNormal.normalize();
+        }
+
+        var irradiance = getIrradiance(getAM(world), cloudCover, pos.getY(), world);
         var cellTemp = getCellTemp(irradiance);
         var Vt = 8.617e-5 * (cellTemp + 273.15);
         double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt);
@@ -105,13 +106,13 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
 
         if (temp++ == 20){
             System.out.println("Cell Temp: " + cellTemp);
-            System.out.println("Single cell voltage: " + Voc_t);
-            System.out.println("Single cell current: " + cellCurrent);
-            System.out.println("Vt: " + Vt);
+            //System.out.println("Single cell voltage: " + Voc_t);
+            //System.out.println("Single cell current: " + cellCurrent);
+            //System.out.println("Vt: " + Vt);
             System.out.println("Current irradiance: " + irradiance);
             System.out.println("AM: " + getAM(world));
-            System.out.println("azimuth: " + panelAzimuthDeg);
-            System.out.println("tilt: " + panelTiltDeg);
+            System.out.println("normal: " + panelNormal);
+            //System.out.println("tilt: " + panelTiltDeg);
             System.out.println();
             temp = 0;
         }
@@ -167,13 +168,13 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
 
         if (temp++ == 20){
             System.out.println("Cell Temp: " + cellTemp);
-            System.out.println("Single cell voltage: " + Voc_t);
-            System.out.println("Single cell current: " + cellCurrent);
-            System.out.println("Vt: " + Vt);
+            //System.out.println("Single cell voltage: " + Voc_t);
+            //System.out.println("Single cell current: " + cellCurrent);
+            //System.out.println("Vt: " + Vt);
             System.out.println("Current irradiance: " + irradiance);
             System.out.println("AM: " + getAM(world));
-            System.out.println("azimuth: " + panelAzimuthDeg);
-            System.out.println("tilt: " + panelTiltDeg);
+            System.out.println("normal: " + panelNormal);
+            //System.out.println("tilt: " + panelTiltDeg);
 
             System.out.println();
             temp = 0;
@@ -232,7 +233,10 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
     }
 
     public float sunRaycast(Level world){
-        var blockPos = getBlockPos();
+        var d = SableCompanion.INSTANCE.projectOutOfSubLevel(world, new Vector3d(this.getBlockPos().getX() + .5,
+                this.getBlockPos().getY() + .5, this.getBlockPos().getZ() + .5));
+
+        var blockPos = BlockPos.containing(d.x, d.y, d.z);
         int castLength = 0;
         ChunkAccess chunk;
         double sunAngle = world.getSunAngle(0);
@@ -249,7 +253,8 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
                 break;
             }
         }
-        var centerBlockPos = getBlockPos().getCenter().add(0, 0, 0);
+
+        var centerBlockPos = blockPos.getCenter().add(0, 0, 0);
         var end = centerBlockPos.add(new Vec3(sunX, sunY, 0).scale(castLength));
         var results = DDA(world, centerBlockPos, end);
         float returnValue = 1;

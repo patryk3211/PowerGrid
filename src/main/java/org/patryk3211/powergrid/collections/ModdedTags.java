@@ -61,7 +61,7 @@ public class ModdedTags {
         SABLE_LIGHT(SABLE_NAMESPACE, "light"),
         SABLE_HEAVY(SABLE_NAMESPACE, "heavy"),
         SABLE_SUPER_HEAVY(SABLE_NAMESPACE, "super_heavy"),
-        GLASS_BLOCK(FORGE_NAMESPACE, "glass"),
+        GLASS_BLOCK(FORGE_NAMESPACE, "glass_blocks"),
         GLASS_PANE(FORGE_NAMESPACE, "glass_panes");
 
         public final TagKey<net.minecraft.world.level.block.Block> tag;

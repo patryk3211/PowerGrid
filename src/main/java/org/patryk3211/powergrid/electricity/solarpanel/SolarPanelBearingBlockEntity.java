@@ -10,11 +10,10 @@ import com.simibubi.create.content.contraptions.bearing.IBearingBlockEntity;
 import com.simibubi.create.content.kinetics.transmission.sequencer.SequencerInstructions;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollOptionBehaviour;
 import com.simibubi.create.foundation.utility.ServerSpeedProvider;
-import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.companion.SableCompanion;
-import dev.ryanhcode.sable.sublevel.SubLevel;
+import dev.ryanhcode.sable.companion.SubLevelAccess;
+import dev.ryanhcode.sable.companion.math.BoundingBox3d;
 import net.createmod.catnip.math.AngleHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -33,7 +32,6 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemp
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.joml.Quaterniond;
 import org.joml.Vector3d;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedTags;
@@ -49,7 +47,6 @@ import java.util.Map;
 import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.*;
 
 public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity implements IBearingBlockEntity, IDisplayAssemblyExceptions {
-    protected ScrollOptionBehaviour<RotationMode> movementMode;
     protected ControlledContraptionEntity movedContraption;
     protected float angle;
     protected boolean running;
@@ -136,26 +133,26 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
 
     @Override
     public void electricalTick() {
-        if (SableCompanion.INSTANCE.isInPlotGrid(level, this.getBlockPos().getCenter())){
-            subWorldTick();
-            return;
-        }
-
+        var world = getLevel();
+        if (world == null) return;
         if (contraption == null) {
             if (movedContraption != null) {
                 contraption = (SolarPanelBearingContraption) movedContraption.getContraption();
             } else return;
         }
+
         if (!running) {
             sourceCoupling.setVoltage(0);
             sourceCoupling.setResistance(10000);
             return;
         }
-        var world = getLevel();
-        if (world == null) return;
+
+        var d = SableCompanion.INSTANCE.projectOutOfSubLevel(world, new Vector3d(this.getBlockPos().getX(), this.getBlockPos().getY(), this.getBlockPos().getZ()));
+        var pos = new BlockPos((int)d.x, (int)d.y, (int)d.z);
+
         if (sourceCoupling == null) return;
         if (firstTick) {
-            AMBIENT_TEMP = ThermalBehaviour.getAmbientTemperature(world, this.getBlockPos());
+            AMBIENT_TEMP = ThermalBehaviour.getAmbientTemperature(world, pos);
             if (AMBIENT_TEMP <= ThermalBehaviour.ABSOLUTE_ZERO)
                 AMBIENT_TEMP = 22f;
             firstTick = false;
@@ -169,91 +166,11 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
             cloudCover = 0;
         }
 
-
-        Direction bearingFacing = getBlockState().getValue(SolarPanelBearingBlock.FACING);
-        Vector3d rotAxis = new Vector3d(
-                bearingFacing.getNormal().getX(),
-                bearingFacing.getNormal().getY(),
-                bearingFacing.getNormal().getZ()
-        );
-        panelNormal = new Vector3d(contraption.panelNormal);
-        new Quaterniond().fromAxisAngleRad(rotAxis, Math.toRadians(-angle)).transform(panelNormal);
-        panelNormal.normalize();
-
-        int stringsInParallel = parallelNumbers.getDivisor();
-        var irradiance = getIrradiance(getAM(world), cloudCover, this.getBlockPos().getY(), world);
-        var cellTemp = getCellTemp(irradiance);
-        var Vt = 8.617e-5 * (cellTemp + 273.15);
-        double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt);
-        double cellCurrent = adjusted[0];
-        double Voc_t = adjusted[1];
-        double Voc_panel = Voc_t * (CELLS_IN_SERIES * ((double) contraption.getPanelBlocks() / stringsInParallel));
-
-        if (cellCurrent <= 0) {
-            sourceCoupling.setVoltage(0);
-            sourceCoupling.setResistance(1e6f);
-            return;
-        }
-
-        double panelResistance = (cellCurrent > 0) ? Voc_panel / cellCurrent : 1e6;
-        sourceCoupling.setVoltage((float) Voc_panel);
-        sourceCoupling.setResistance((float) panelResistance);
-
-        if (temp++ == 20){
-            System.out.println("Cell Temp: " + cellTemp);
-            System.out.println("Single cell voltage: " + Voc_t);
-            System.out.println("Single cell current: " + cellCurrent);
-            System.out.println("Vt: " + Vt);
-            System.out.println("Current irradiance: " + irradiance);
-            System.out.println("AM: " + getAM(world));
-            System.out.println();
-            temp = 0;
-        }
-
-        super.electricalTick();
-    }
-
-    private void subWorldTick() {
-        var world = getLevel();
-        if (world == null || world.isClientSide()) return;
-        if (sourceCoupling == null) return;
-        if (contraption == null) {
-            if (movedContraption != null) {
-                contraption = (SolarPanelBearingContraption) movedContraption.getContraption();
-            } else return;
-        }
-        if (!running) {
-            sourceCoupling.setVoltage(0);
-            sourceCoupling.setResistance(10000);
-            return;
-        }
-
-        var d = SableCompanion.INSTANCE.projectOutOfSubLevel(world, new Vector3d(this.getBlockPos().getX(), this.getBlockPos().getY(), this.getBlockPos().getZ()));
-        var pos = new BlockPos((int)d.x, (int)d.y, (int)d.z);
-
-        AMBIENT_TEMP = ThermalBehaviour.getAmbientTemperature(world, pos);
-        if (AMBIENT_TEMP <= ThermalBehaviour.ABSOLUTE_ZERO)
-            AMBIENT_TEMP = 22f;
-
-        if (world.isRaining() && world.isThundering()) {
-            cloudCover = .925f;
-        } else if (world.isRaining()) {
-            cloudCover = .85f;
-        } else {
-            cloudCover = 0;
-        }
-
-        final SubLevel subLevel = Sable.HELPER.getContaining(this);
-        if (subLevel == null)
-            return;
-
-        Direction bearingFacing = getBlockState().getValue(SolarPanelBearingBlock.FACING);
-        Vector3d rotAxis = new Vector3d(bearingFacing.getNormal().getX(), bearingFacing.getNormal().getY(),
-                bearingFacing.getNormal().getZ());
-        panelNormal = new Vector3d(contraption.panelNormal);
-        new Quaterniond().fromAxisAngleRad(rotAxis, Math.toRadians(angle)).transform(panelNormal);
-        subLevel.logicalPose().orientation().transform(panelNormal);
-        panelNormal.normalize();
+        Vec3 localDir = new Vec3(contraption.panelNormal.x, contraption.panelNormal.y, contraption.panelNormal.z);
+        Vec3 worldTip = movedContraption.toGlobalVector(localDir, 1.0f);
+        Vec3 worldOrigin = movedContraption.toGlobalVector(Vec3.ZERO, 1.0f);
+        Vec3 worldDir = worldTip.subtract(worldOrigin).normalize();
+        panelNormal = new Vector3d(worldDir.x, worldDir.y, worldDir.z);
 
         var irradiance = getIrradiance(getAM(world), cloudCover, pos.getY(), world);
         var cellTemp = getCellTemp(irradiance);
@@ -261,7 +178,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt);
         double cellCurrent = adjusted[0];
         double Voc_t = adjusted[1];
-        double Voc_panel = Voc_t * CELLS_IN_SERIES;
+        double Voc_panel = Voc_t * (CELLS_IN_SERIES * ((double) contraption.getPanelBlocks() / parallelNumbers.getDivisor()));
 
         if (cellCurrent <= 0) {
             sourceCoupling.setVoltage(0);
@@ -275,15 +192,17 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
 
         if (temp++ == 20){
             System.out.println("Cell Temp: " + cellTemp);
-            System.out.println("Single cell voltage: " + Voc_t);
-            System.out.println("Single cell current: " + cellCurrent);
-            System.out.println("Vt: " + Vt);
+            //System.out.println("Single cell voltage: " + Voc_t);
+            //System.out.println("Single cell current: " + cellCurrent);
+            //System.out.println("Vt: " + Vt);
             System.out.println("Current irradiance: " + irradiance);
             System.out.println("AM: " + getAM(world));
-
+            System.out.println("normal: " + panelNormal);
+            //System.out.println("tilt: " + panelTiltDeg);
             System.out.println();
             temp = 0;
         }
+
         super.electricalTick();
     }
 
@@ -337,8 +256,10 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     }
 
     public float sunRaycast(Level world) {
+        var d = SableCompanion.INSTANCE.projectOutOfSubLevel(world, new Vector3d(this.getBlockPos().getX() + .5,
+                this.getBlockPos().getY() + .5, this.getBlockPos().getZ() + .5));
 
-        var blockPos = getBlockPos();
+        var blockPos = BlockPos.containing(d.x, d.y, d.z);
         int castLength = 0;
         ChunkAccess chunk;
 
@@ -356,7 +277,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
                 break;
             }
         }
-        var centerPanelPos = getContraptionCenter(movedContraption);
+        var centerPanelPos = SableCompanion.INSTANCE.projectOutOfSubLevel(world, getContraptionCenter(movedContraption));
         var end = centerPanelPos.add(new Vec3(sunX, sunY, 0).scale(castLength));
         var results = DDA(world, centerPanelPos, end);
         float returnValue = 1;
@@ -387,6 +308,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     }
 
     public static List<BlockPos> DDA(Level level, Vec3 start, Vec3 end) {
+        var subLevels = SableCompanion.INSTANCE.getAllIntersecting(level, new BoundingBox3d(start, end));
         List<BlockPos> blockHits = new ArrayList<>();
         Vec3 dir = end.subtract(start);
         double length = dir.length();
@@ -413,18 +335,43 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         double tMaxZ = norm.z == 0 ? Double.MAX_VALUE : (stepZ > 0 ? Math.ceil(start.z) - start.z : start.z - Math.floor(start.z)) / Math.abs(norm.z);
         for (int i = 0; i < length; i++) {
             BlockPos pos = new BlockPos(x, y, z);
-            BlockState state = level.getBlockState(pos);
-            if (!state.isAir()) {
-                if (!state.isCollisionShapeFullBlock(level, pos) && state.getBlock() != Blocks.WATER) {
-                    VoxelShape shape = state.getShape(level, pos);
-                    if (shape.isEmpty()) continue;
-                    BlockHitResult hit = shape.clip(start, end, pos);
-                    if (hit != null) {
-                        blockHits.add(pos);
-                    }
+            Vec3 worldPos = new Vec3(x + 0.5, y + 0.5, z + 0.5);
 
-                } else blockHits.add(pos);
+            boolean handledBySublevel = false;
+            for (SubLevelAccess subLevel : subLevels) {
+                if (subLevel.boundingBox().contains(worldPos.x, worldPos.y, worldPos.z)) {
+                    Vec3 local = subLevel.logicalPose().transformPositionInverse(worldPos);
+                    BlockPos localPos = BlockPos.containing(local);
+                    BlockState localState = level.getBlockState(localPos);
+                    if (!localState.isAir()) {
+                        if (!localState.isCollisionShapeFullBlock(level, localPos) && localState.getBlock() != Blocks.WATER) {
+                            VoxelShape shape = localState.getShape(level, localPos);
+                            if (shape.isEmpty()) continue;
+                            BlockHitResult hit = shape.clip(start, end, pos);
+                            if (hit != null) {
+                                blockHits.add(localPos);
+                            }
+                        } else blockHits.add(localPos);
+                    }
+                    handledBySublevel = true;
+                    break;
+                }
             }
+
+            if (!handledBySublevel) {
+                BlockState state = level.getBlockState(pos);
+                if (!state.isAir()) {
+                    if (!state.isCollisionShapeFullBlock(level, pos) && state.getBlock() != Blocks.WATER) {
+                        VoxelShape shape = state.getShape(level, pos);
+                        if (shape.isEmpty()) continue;
+                        BlockHitResult hit = shape.clip(start, end, pos);
+                        if (hit != null) {
+                            blockHits.add(pos);
+                        }
+                    } else blockHits.add(pos);
+                }
+            }
+
             if (x == endX && y == endY && z == endZ) break;
 
             if (tMaxX < tMaxY && tMaxX < tMaxZ) {
