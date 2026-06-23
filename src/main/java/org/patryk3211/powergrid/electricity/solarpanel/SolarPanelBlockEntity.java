@@ -75,6 +75,7 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
             cloudCover = 0;
         }
 
+        getPlacedBlockRotation();
         var irradiance = getIrradiance(getAM(world), cloudCover, this.getBlockPos().getY(), world);
         var cellTemp = getCellTemp(irradiance);
         var Vt = 8.617e-5 * (cellTemp + 273.15);

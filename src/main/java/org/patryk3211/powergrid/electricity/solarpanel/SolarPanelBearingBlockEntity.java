@@ -5,12 +5,10 @@ import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.AssemblyException;
 import com.simibubi.create.content.contraptions.ControlledContraptionEntity;
 import com.simibubi.create.content.contraptions.IDisplayAssemblyExceptions;
-import com.simibubi.create.content.contraptions.bearing.BearingContraption;
 import com.simibubi.create.content.contraptions.bearing.IBearingBlockEntity;
 import com.simibubi.create.content.kinetics.transmission.sequencer.SequencerInstructions;
 import com.simibubi.create.foundation.advancement.AllAdvancements;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollOptionBehaviour;
 import com.simibubi.create.foundation.utility.ServerSpeedProvider;
 import net.createmod.catnip.math.AngleHelper;
 import net.minecraft.core.BlockPos;
@@ -25,23 +23,18 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.joml.Quaterniond;
 import org.joml.Vector3d;
-import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
-import org.patryk3211.powergrid.electricity.febridge.IFEBridgeHandler;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.*;
 
@@ -159,16 +152,11 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
             cloudCover = 0;
         }
 
-
-        Direction bearingFacing = getBlockState().getValue(SolarPanelBearingBlock.FACING);
-        Vector3d rotAxis = new Vector3d(
-                bearingFacing.getNormal().getX(),
-                bearingFacing.getNormal().getY(),
-                bearingFacing.getNormal().getZ()
-        );
-        panelNormal = new Vector3d(contraption.panelNormal);
-        new Quaterniond().fromAxisAngleRad(rotAxis, Math.toRadians(angle)).transform(panelNormal);
-        panelNormal.normalize();
+        Vec3 localDir = new Vec3(contraption.panelNormal.x, contraption.panelNormal.y, contraption.panelNormal.z);
+        Vec3 worldTip = movedContraption.toGlobalVector(localDir, 1.0f);
+        Vec3 worldOrigin = movedContraption.toGlobalVector(Vec3.ZERO, 1.0f);
+        Vec3 worldDir = worldTip.subtract(worldOrigin).normalize();
+        panelNormal = new Vector3d(worldDir.x, worldDir.y, worldDir.z);
 
         int stringsInParallel = parallelNumbers.getDivisor();
         var irradiance = getIrradiance(getAM(world), cloudCover, this.getBlockPos().getY(), world);
@@ -190,12 +178,13 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         sourceCoupling.setResistance((float) panelResistance);
 
         if (temp++ == 20){
-            System.out.println("Cell Temp: " + cellTemp);
-            System.out.println("Single cell voltage: " + Voc_t);
-            System.out.println("Single cell current: " + cellCurrent);
-            System.out.println("Vt: " + Vt);
+            //System.out.println("Cell Temp: " + cellTemp);
+            //System.out.println("Single cell voltage: " + Voc_t);
+            //System.out.println("Single cell current: " + cellCurrent);
+            //System.out.println("Vt: " + Vt);
             System.out.println("Current irradiance: " + irradiance);
             System.out.println("AM: " + getAM(world));
+            System.out.println("panelNormal: " + panelNormal);
             System.out.println();
             temp = 0;
         }

@@ -166,6 +166,7 @@ public class SolarPanelBearingBlock extends ElectricKineticBlock implements IBE<
         }
         var be = context.getLevel().getBlockEntity(context.getClickedPos());
         if (be instanceof SolarPanelBearingBlockEntity blockEntity) {
+            blockEntity.disassemble();
             blockEntity.getPlacedBlockRotation();
         }
         return super.onWrenched(state, context);
