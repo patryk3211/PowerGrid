@@ -120,7 +120,8 @@ public class BlockTagProvider extends TagsProvider<Block> {
                 ModdedBlocks.THERMOMETER,
                 ModdedBlocks.FUSE_HOLDER,
                 ModdedBlocks.CIRCUIT_BOARD,
-                ModdedBlocks.SPARK_GAP
+                ModdedBlocks.SPARK_GAP,
+                ModdedBlocks.SOLAR_PANEL
         );
 
         var smallBlocks = List.of(

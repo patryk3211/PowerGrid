@@ -119,69 +119,6 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
         super.electricalTick();
     }
 
-    private void subWorldTick() {
-        var world = getLevel();
-        if (world == null || world.isClientSide()) return;
-        if (sourceCoupling == null) return;
-
-        var d = SableCompanion.INSTANCE.projectOutOfSubLevel(world, new Vector3d(this.getBlockPos().getX(), this.getBlockPos().getY(), this.getBlockPos().getZ()));
-        var pos = new BlockPos((int)d.x, (int)d.y, (int)d.z);
-        AMBIENT_TEMP = ThermalBehaviour.getAmbientTemperature(world, pos);
-        if (AMBIENT_TEMP <= ThermalBehaviour.ABSOLUTE_ZERO)
-            AMBIENT_TEMP = 22f;
-
-        if (world.isRaining() && world.isThundering()) {
-            cloudCover = .925f;
-        } else if (world.isRaining()) {
-            cloudCover = .85f;
-        } else {
-            cloudCover = 0;
-        }
-        if (panelNormal == null){
-            getPlacedBlockRotation();
-        }
-        final SubLevel subLevel = Sable.HELPER.getContaining(this);
-        if (subLevel == null)
-            return;
-
-        getPlacedBlockRotation();
-        subLevel.logicalPose().orientation().transform(panelNormal);
-        panelNormal.normalize();
-
-        var irradiance = getIrradiance(getAM(world), cloudCover, pos.getY(), world);
-        var cellTemp = getCellTemp(irradiance);
-        var Vt = 8.617e-5 * (cellTemp + 273.15);
-        double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt);
-        double cellCurrent = adjusted[0];
-        double Voc_t = adjusted[1];
-        double Voc_panel = Voc_t * totalCells;
-
-        if (cellCurrent <= 0) {
-            sourceCoupling.setVoltage(0);
-            sourceCoupling.setResistance(1e6f);
-            return;
-        }
-
-        double panelResistance = (cellCurrent > 0) ? Voc_panel / cellCurrent : 1e6;
-        sourceCoupling.setVoltage((float) Voc_panel);
-        sourceCoupling.setResistance((float) panelResistance);
-
-        if (temp++ == 20){
-            System.out.println("Cell Temp: " + cellTemp);
-            //System.out.println("Single cell voltage: " + Voc_t);
-            //System.out.println("Single cell current: " + cellCurrent);
-            //System.out.println("Vt: " + Vt);
-            System.out.println("Current irradiance: " + irradiance);
-            System.out.println("AM: " + getAM(world));
-            System.out.println("normal: " + panelNormal);
-            //System.out.println("tilt: " + panelTiltDeg);
-
-            System.out.println();
-            temp = 0;
-        }
-        super.electricalTick();
-    }
-
     public static double[] getTempAdjusted(double irradiance, double cellTemp, double Vt) {
         var Isc_T = SHORT_CURRENT * STRINGS_IN_PARALLEL * (irradiance / 1000) * (1 + ALPHAISC * (cellTemp - 25));
         if (Isc_T <= 0) return new double[]{0, 0};
@@ -239,6 +176,7 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
         var blockPos = BlockPos.containing(d.x, d.y, d.z);
         int castLength = 0;
         ChunkAccess chunk;
+
         double sunAngle = world.getSunAngle(0);
         double sunX = -Math.sin(sunAngle);
         double sunY = Math.cos(sunAngle);

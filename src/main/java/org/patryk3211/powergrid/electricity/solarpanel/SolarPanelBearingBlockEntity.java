@@ -14,6 +14,7 @@ import com.simibubi.create.foundation.utility.ServerSpeedProvider;
 import dev.ryanhcode.sable.companion.SableCompanion;
 import dev.ryanhcode.sable.companion.SubLevelAccess;
 import dev.ryanhcode.sable.companion.math.BoundingBox3d;
+import dev.ryanhcode.sable.companion.math.JOMLConversion;
 import net.createmod.catnip.math.AngleHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -172,6 +173,12 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         Vec3 worldDir = worldTip.subtract(worldOrigin).normalize();
         panelNormal = new Vector3d(worldDir.x, worldDir.y, worldDir.z);
 
+        var subLevel = SableCompanion.INSTANCE.getContaining(this);
+        if (subLevel != null) {
+            subLevel.logicalPose().orientation().transform(panelNormal);
+            panelNormal.normalize();
+        }
+
         var irradiance = getIrradiance(getAM(world), cloudCover, pos.getY(), world);
         var cellTemp = getCellTemp(irradiance);
         var Vt = 8.617e-5 * (cellTemp + 273.15);
@@ -277,7 +284,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
                 break;
             }
         }
-        var centerPanelPos = SableCompanion.INSTANCE.projectOutOfSubLevel(world, getContraptionCenter(movedContraption));
+        var centerPanelPos = JOMLConversion.toMojang(SableCompanion.INSTANCE.projectOutOfSubLevel(world, getContraptionCenter(movedContraption)));
         var end = centerPanelPos.add(new Vec3(sunX, sunY, 0).scale(castLength));
         var results = DDA(world, centerPanelPos, end);
         float returnValue = 1;
@@ -447,7 +454,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         return 0f;
     }
 
-    private Vec3 getContraptionCenter(AbstractContraptionEntity entity) {
+    private Vector3d getContraptionCenter(AbstractContraptionEntity entity) {
         double x = 0, y = 0, z = 0;
         int count = 0;
         for (BlockPos local : entity.getContraption().getBlocks().keySet()) {
@@ -456,9 +463,11 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
             z += local.getZ() + 0.5;
             count++;
         }
-        if (count == 0) return entity.position();
+        if (count == 0){
+            return JOMLConversion.toJOML(entity.position());
+        }
         Vec3 localCenter = new Vec3(x / count, y / count, z / count);
-        return entity.toGlobalVector(localCenter, 1.0f);
+        return JOMLConversion.toJOML(entity.toGlobalVector(localCenter, 1.0f));
     }
 
     public void assemble() {
