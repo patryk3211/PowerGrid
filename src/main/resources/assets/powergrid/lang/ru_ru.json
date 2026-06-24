@@ -181,7 +181,7 @@
   "item.powergrid.varistor": "Варистор",
   "item.powergrid.vfet": "Статический индукционный транзистор",
   "item.powergrid.wire": "Медный провод",
-  "item.powergrid.wire_cutter": "Бокорезы",
+  "item.powergrid.wire_cutter": "Кусачки",
   "item.powergrid.wire_cutter.tooltip.behaviour1": "Удаляет подвесной провод или выбранный сегмент провода",
   "item.powergrid.wire_cutter.tooltip.behaviour2": "Удаляет весь провод",
   "item.powergrid.wire_cutter.tooltip.condition1": "При нажатии ПКМ на провод",
