@@ -218,7 +218,7 @@ public class ModdedItems {
                     p -> SubstituteItemProvider.INSTANCE.invoke(PortableBatteryItem.class, ZincArmorMaterial.INSTANCE, p, PowerGrid.asResource("zinc"), PORTABLE_BATTERY_PLACEABLE))
             //p -> new PortableBatteryItem(ZincArmorMaterial.INSTANCE, p, PowerGrid.asResource("zinc"), PORTABLE_BATTERY_PLACEABLE))
             .model(itemWithParent("block/portable_battery/block"))
-            .properties(p -> p.durability(-1))
+            // .properties(p -> p.durability(-1))
 			.tag(forgeItemTag("chestplates"))
             .register();
 
