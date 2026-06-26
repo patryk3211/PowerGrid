@@ -91,6 +91,11 @@ public class ElectricPumpBlockEntity extends ElectricBlockEntity implements IHav
         }
     }
 
+    @Override
+    public void electricalTick() {
+        applyPower(pumpElement);
+    }
+
     public static int getRange() {
         return ModdedConfigs.server().electricity.electricPumpRange.get();
     }
