@@ -495,4 +495,24 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
         void writeToSync(FriendlyByteBuf buffer);
         void readFromSync(FriendlyByteBuf buffer);
     }
+
+    public record CompoundAppender(SyncAppender[] appenders) implements SyncAppender {
+        public static CompoundAppender of(SyncAppender... appenders) {
+            return new CompoundAppender(appenders);
+        }
+
+        @Override
+        public void writeToSync(FriendlyByteBuf buffer) {
+            for(var a : appenders) {
+                a.writeToSync(buffer);
+            }
+        }
+
+        @Override
+        public void readFromSync(FriendlyByteBuf buffer) {
+            for(var a : appenders) {
+                a.readFromSync(buffer);
+            }
+        }
+    }
 }

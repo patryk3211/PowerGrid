@@ -30,8 +30,8 @@ public class CSolver extends ConfigBase {
     public final ConfigBool splittingTransmissionLines = b(false, "splittingTransmissionLines", Comments.splittingTransmissionLines);
     public final ConfigBool splittingTransformers = b(false, "splittingsTransformers", Comments.splittingTransformers);
 
-    public final ConfigInt solverSimpleMaxIterations = i(250, "solverSimpleMaxIterations", Comments.solverSimpleMaxIterations);
-    public final ConfigInt solverComplexMaxIterations = i(250, "solverComplexMaxIterations", Comments.solverComplexMaxIterations);
+    public final ConfigInt solverSimpleMaxIterations = i(200, "solverSimpleMaxIterations", Comments.solverSimpleMaxIterations);
+    public final ConfigInt solverComplexMaxIterations = i(200, "solverComplexMaxIterations", Comments.solverComplexMaxIterations);
 
     public final ConfigFloat solverAbsolutePrecision = f(1e-7f, 0, "solverAbsolutePrecision", Comments.solverAbsolutePrecision);
     public final ConfigFloat solverRelativePrecision = f(1e-14f, 0, "solverRelativePrecision", Comments.solverRelativePrecision);

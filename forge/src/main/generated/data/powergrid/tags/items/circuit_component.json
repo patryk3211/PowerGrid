@@ -9,6 +9,7 @@
     "powergrid:relay",
     "powergrid:vfet",
     "powergrid:bjt_npn",
+    "minecraft:paper",
     "powergrid:varistor",
     "powergrid:bjt_pnp",
     "create:copper_nugget",
