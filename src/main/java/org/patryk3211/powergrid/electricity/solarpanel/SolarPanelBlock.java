@@ -34,7 +34,7 @@ import org.patryk3211.powergrid.utility.ShaperUtils;
 import java.util.List;
 import java.util.function.Predicate;
 
-public class SolarPanelBlock extends Rotation4ElectricBlock implements IBE<MultiBlockSolarPanelEntity>,IHaveElectricProperties, IAcceptConnector {
+public class SolarPanelBlock extends Rotation4ElectricBlock implements IBE<SolarPanelBlockEntity>,IHaveElectricProperties, IAcceptConnector {
 
     private static final VoxelShape SHAPE = Shapes.or(
             box(0, 6, 0, 16, 10, 16)
@@ -70,16 +70,6 @@ public class SolarPanelBlock extends Rotation4ElectricBlock implements IBE<Multi
         //todo once diode is implemented add Voc, Isc, Imp?, Vmp?, Pmax?
     }
 
-    //todo fix failed implementation of IMultiBlockSolarPanel
-//    @Override
-//    public void onPlace(BlockState state, Level world, BlockPos pos, BlockState oldState, boolean moved) {
-//        if(oldState.getBlock() == state.getBlock())
-//            return;
-//        if(moved)
-//            return;
-//        withBlockEntityDo(world, pos, MultiBlockSolarPanelEntity::queueConnectivityUpdate);
-//    }
-
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
 
@@ -97,12 +87,12 @@ public class SolarPanelBlock extends Rotation4ElectricBlock implements IBE<Multi
     }
 
     @Override
-    public Class<MultiBlockSolarPanelEntity> getBlockEntityClass() {
-        return MultiBlockSolarPanelEntity.class;
+    public Class<SolarPanelBlockEntity> getBlockEntityClass() {
+        return SolarPanelBlockEntity.class;
     }
 
     @Override
-    public BlockEntityType<? extends MultiBlockSolarPanelEntity> getBlockEntityType() {
+    public BlockEntityType<? extends SolarPanelBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.SOLAR_PANEL.get();
     }
 

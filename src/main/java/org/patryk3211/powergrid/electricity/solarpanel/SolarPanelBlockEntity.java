@@ -20,7 +20,7 @@ import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 
 import static org.patryk3211.powergrid.electricity.solarpanel.SolarHelper.*;
 
-public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
+public class SolarPanelBlockEntity extends ElectricBlockEntity {
     protected VoltageSourceCoupling sourceCoupling;
 
     protected static final int SOLAR_CONSTANT = 1361;
