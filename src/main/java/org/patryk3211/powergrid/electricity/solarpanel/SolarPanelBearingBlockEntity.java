@@ -18,10 +18,8 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -260,6 +258,10 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
             }
             if (blockState.is(ModdedTags.Block.SOLAR_3QUARTER_LIGHT.tag)) {
                 returnValue *= .75f;
+                continue;
+            }
+            if (blockState.is(ModdedTags.Block.SOLAR_FULL_LIGHT.tag)){
+                returnValue *= 1f;
                 continue;
             }
             returnValue = 0;

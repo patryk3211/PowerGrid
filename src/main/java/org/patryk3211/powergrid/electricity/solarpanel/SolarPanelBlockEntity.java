@@ -182,6 +182,10 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
                 returnValue *= .75f;
                 continue;
             }
+            if (blockState.is(ModdedTags.Block.SOLAR_FULL_LIGHT.tag)){
+                returnValue *= 1f;
+                continue;
+            }
             returnValue = 0;
             break;
         }
