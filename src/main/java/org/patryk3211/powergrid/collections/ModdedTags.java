@@ -52,7 +52,11 @@ public class ModdedTags {
         CONDUCTIVE_GROUND("conductive_ground"),
         CARBON_PILE_BLOCK("carbon_pile_block"),
         GLASS_BLOCK(FORGE_NAMESPACE, "glass"),
-        GLASS_PANE(FORGE_NAMESPACE, "glass_panes");
+        GLASS_PANE(FORGE_NAMESPACE, "glass_panes"),
+        SOLAR_QUARTER_LIGHT("solar_quarter_light"),
+        SOLAR_HALF_LIGHT("solar_half_light"),
+        SOLAR_3QUARTER_LIGHT("solar_three_quarters_light"),
+        SOLAR_FULL_LIGHT("solar_full_light");
 
         public final TagKey<net.minecraft.world.level.block.Block> tag;
 

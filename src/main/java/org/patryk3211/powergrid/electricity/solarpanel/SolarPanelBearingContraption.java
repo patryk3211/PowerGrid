@@ -19,7 +19,6 @@ public class SolarPanelBearingContraption extends BearingContraption {
     protected int panelBlocks;
     protected Vector3d panelNormal;
 
-
     public SolarPanelBearingContraption() {
         super();
     }

@@ -2,9 +2,7 @@ package org.patryk3211.powergrid.electricity.solarpanel;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -17,9 +15,9 @@ import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 
-import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBearingBlockEntity.DDA;
+import static org.patryk3211.powergrid.electricity.solarpanel.SolarHelper.*;
 
-public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
+public class SolarPanelBlockEntity extends ElectricBlockEntity {
     protected VoltageSourceCoupling sourceCoupling;
 
     protected static final int SOLAR_CONSTANT = 1361;
@@ -56,30 +54,21 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
     public void electricalTick() {
         var world = getLevel();
         if (world == null || world.isClientSide()) return;
-
         if (sourceCoupling == null) return;
 
         if (firstTick) {
             AMBIENT_TEMP = ThermalBehaviour.getAmbientTemperature(world, this.getBlockPos());
             if (AMBIENT_TEMP <= ThermalBehaviour.ABSOLUTE_ZERO)
                 AMBIENT_TEMP = 22f;
-            getPlacedBlockRotation();
             firstTick = false;
         }
-
-        if (world.isRaining() && world.isThundering()) {
-            cloudCover = .925f;
-        } else if (world.isRaining()) {
-            cloudCover = .85f;
-        } else {
-            cloudCover = 0;
-        }
+        cloudCover = getWeather(world);
 
         getPlacedBlockRotation();
         var irradiance = getIrradiance(getAM(world), cloudCover, this.getBlockPos().getY(), world);
-        var cellTemp = getCellTemp(irradiance);
+        var cellTemp = getCellTemp(irradiance, AMBIENT_TEMP);
         var Vt = 8.617e-5 * (cellTemp + 273.15);
-        double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt);
+        double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt, STRINGS_IN_PARALLEL);
         double cellCurrent = adjusted[0];
         double Voc_t = adjusted[1];
         double Voc_panel = Voc_t * totalCells;
@@ -96,28 +85,17 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
 
         if (temp++ == 20){
             System.out.println("Cell Temp: " + cellTemp);
-            System.out.println("Single cell voltage: " + Voc_t);
-            System.out.println("Single cell current: " + cellCurrent);
-            System.out.println("Vt: " + Vt);
+            //System.out.println("Single cell voltage: " + Voc_t);
+            //System.out.println("Single cell current: " + cellCurrent);
+            //System.out.println("Vt: " + Vt);
             System.out.println("Current irradiance: " + irradiance);
             System.out.println("AM: " + getAM(world));
-
+            System.out.println("normal: " + panelNormal);
+            //System.out.println("tilt: " + panelTiltDeg);
             System.out.println();
             temp = 0;
         }
         super.electricalTick();
-    }
-
-    public static double[] getTempAdjusted(double irradiance, double cellTemp, double Vt) {
-        var Isc_T = SHORT_CURRENT * STRINGS_IN_PARALLEL * (irradiance / 1000) * (1 + ALPHAISC * (cellTemp - 25));
-        if (Isc_T <= 0) return new double[]{0, 0};
-        var Voc_base = IDEALITY * Vt * Math.log(Isc_T / I_O + 1);
-        var Voc_T = Voc_base + BETAVOC * (cellTemp - 25);
-        return new double[]{Isc_T, Voc_T};
-    }
-
-    public double getCellTemp(double Irradiance){
-        return AMBIENT_TEMP + (NOCT - 20) * (Irradiance / 800);
     }
 
     public double getIrradiance(double AM, double cloudCover, int YPos, Level world) {
@@ -136,26 +114,11 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
         }
 
         double cosIncidence = Math.max(0, sunDir.dot(panelNormal));
-
         cosIncidence = Math.max(0, cosIncidence);
-
         double diffuseLight = 0.1 * irradiance * (1 + cloudCover) * ((1 + panelNormal.y()) / 2);
         double reflected = 0.15 * irradiance * ((1 - panelNormal.y()) / 2.0);
 
         return (irradiance * sunVisablity) * transmisttance * cosIncidence + diffuseLight +  reflected;
-    }
-
-    public double getAM(Level world){
-        var sunAngle = Math.max(0, Math.cos(world.getSunAngle(0)));
-        if (sunAngle <= 0) {
-            return Double.POSITIVE_INFINITY;
-        }
-        double elevationRad = Math.asin(sunAngle);
-        double elevationDeg = Math.toDegrees(elevationRad);
-
-        // Kasten-Young formula
-        var result = 1.0 / (sunAngle + 0.50572 * Math.pow(elevationDeg + 6.07995, -1.6364));
-        return Math.max(1, result);
     }
 
     public float sunRaycast(Level world){
@@ -191,23 +154,22 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
                     break;
                 }
             }
-            if (blockState.is(ModdedTags.Block.GLASS_BLOCK.tag) || blockState.is(ModdedTags.Block.GLASS_PANE.tag)) {
-                returnValue *= .8f;
+            if (blockState.is(ModdedTags.Block.SOLAR_QUARTER_LIGHT.tag)) {
+                returnValue *= .25f;
                 continue;
             }
-            if (blockState.is(Blocks.WATER)) {
+            if (blockState.is(ModdedTags.Block.SOLAR_HALF_LIGHT.tag)) {
                 returnValue *= .5f;
                 continue;
             }
-            if (blockState.is(BlockTags.LEAVES)) {
-                returnValue *= .2f;
+            if (blockState.is(ModdedTags.Block.SOLAR_3QUARTER_LIGHT.tag)) {
+                returnValue *= .75f;
                 continue;
             }
-            if (blockState.is(Blocks.IRON_BARS)) {
-                returnValue *= 9f / 16;
+            if (blockState.is(ModdedTags.Block.SOLAR_FULL_LIGHT.tag)){
+                returnValue *= 1f;
                 continue;
             }
-
             returnValue = 0;
             break;
         }
@@ -219,5 +181,4 @@ public abstract class SolarPanelBlockEntity extends ElectricBlockEntity {
         var n = face.getNormal();
         panelNormal = new Vector3d(n.getX(), n.getY(), n.getZ());
     }
-
 }

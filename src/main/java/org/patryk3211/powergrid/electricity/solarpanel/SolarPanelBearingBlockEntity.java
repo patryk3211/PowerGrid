@@ -15,17 +15,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.tags.BlockTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
-import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Vector3d;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
@@ -33,9 +29,9 @@ import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import static org.patryk3211.powergrid.electricity.solarpanel.SolarHelper.*;
 import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.*;
 
 public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity implements IBearingBlockEntity, IDisplayAssemblyExceptions {
@@ -49,6 +45,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     protected VoltageSourceCoupling sourceCoupling;
     SolarPanelBearingContraption contraption;
     private float prevAngle;
+    private float cloudCover = 0;
     private boolean firstTick = true;
     private float AMBIENT_TEMP = -2000f;
     private int rayCastDelay = 0;
@@ -123,18 +120,20 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
 
     @Override
     public void electricalTick() {
+        var world = getLevel();
+        if (world == null) return;
         if (contraption == null) {
             if (movedContraption != null) {
                 contraption = (SolarPanelBearingContraption) movedContraption.getContraption();
             } else return;
         }
+
         if (!running) {
             sourceCoupling.setVoltage(0);
             sourceCoupling.setResistance(10000);
             return;
         }
-        var world = getLevel();
-        if (world == null) return;
+
         if (sourceCoupling == null) return;
         if (firstTick) {
             AMBIENT_TEMP = ThermalBehaviour.getAmbientTemperature(world, this.getBlockPos());
@@ -142,15 +141,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
                 AMBIENT_TEMP = 22f;
             firstTick = false;
         }
-
-        float cloudCover = 0;
-        if (world.isRaining() && world.isThundering()) {
-            cloudCover = .925f;
-        } else if (world.isRaining()) {
-            cloudCover = .85f;
-        } else {
-            cloudCover = 0;
-        }
+        cloudCover = getWeather(world);
 
         Vec3 localDir = new Vec3(contraption.panelNormal.x, contraption.panelNormal.y, contraption.panelNormal.z);
         Vec3 worldTip = movedContraption.toGlobalVector(localDir, 1.0f);
@@ -158,14 +149,13 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         Vec3 worldDir = worldTip.subtract(worldOrigin).normalize();
         panelNormal = new Vector3d(worldDir.x, worldDir.y, worldDir.z);
 
-        int stringsInParallel = parallelNumbers.getDivisor();
         var irradiance = getIrradiance(getAM(world), cloudCover, this.getBlockPos().getY(), world);
-        var cellTemp = getCellTemp(irradiance);
+        var cellTemp = getCellTemp(irradiance, AMBIENT_TEMP);
         var Vt = 8.617e-5 * (cellTemp + 273.15);
-        double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt);
+        double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt, parallelNumbers.getDivisor());
         double cellCurrent = adjusted[0];
         double Voc_t = adjusted[1];
-        double Voc_panel = Voc_t * (CELLS_IN_SERIES * ((double) contraption.getPanelBlocks() / stringsInParallel));
+        double Voc_panel = Voc_t * (CELLS_IN_SERIES * ((double) contraption.getPanelBlocks() / parallelNumbers.getDivisor()));
 
         if (cellCurrent <= 0) {
             sourceCoupling.setVoltage(0);
@@ -192,24 +182,12 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         super.electricalTick();
     }
 
-    public double[] getTempAdjusted(double irradiance, double cellTemp, double Vt) {
-        int stringsInParallel = parallelNumbers.getDivisor();
-        var Isc_T = SolarPanelBlockEntity.SHORT_CURRENT * stringsInParallel * (irradiance / 1000) * (1 + ALPHAISC * (cellTemp - 25));
-        if (Isc_T <= 0) return new double[]{0, 0};
-        var Voc_base = IDEALITY * Vt * Math.log(Isc_T / (I_O * stringsInParallel) + 1);
-        var Voc_T = Voc_base + BETAVOC * (cellTemp - 25);
-        return new double[]{Isc_T, Voc_T};
-    }
-
-    public double getCellTemp(double Irradiance){
-        return AMBIENT_TEMP + (NOCT - 20) * (Irradiance / 800);
-    }
-
     public double getIrradiance(double AM, double cloudCover, int YPos, Level world) {
         if (AM == Double.POSITIVE_INFINITY) return 0;
         var transmisttance = 1 - cloudCover;
         var irradiance = SOLAR_CONSTANT * Math.pow(0.7,Math.pow(AM, 0.678));
         irradiance = irradiance * ((((YPos - 70) / 250f) * 0.04f) + 1); //70 is around average world height, but it could also be put to sea level
+
         if (rayCastDelay-- == 0){
             sunVisibility = sunRaycast(world);
             rayCastDelay = world.random.nextInt(41) + 10;
@@ -225,19 +203,6 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         double reflected = 0.15 * irradiance * ((1 - panelNormal.y()) / 2.0);
 
         return (irradiance * sunVisibility) * transmisttance * cosIncidence + diffuseLight +  reflected;
-    }
-
-    public double getAM(Level world){
-        var sunAngle = Math.max(0, Math.cos(world.getSunAngle(0)));
-        if (sunAngle <= 0) {
-            return Double.POSITIVE_INFINITY;
-        }
-        double elevationRad = Math.asin(sunAngle);
-        double elevationDeg = Math.toDegrees(elevationRad);
-
-        // Kasten-Young formula
-        var result = 1.0 / (sunAngle + 0.50572 * Math.pow(elevationDeg + 6.07995, -1.6364));
-        return Math.max(1, result);
     }
 
     public float sunRaycast(Level world) {
@@ -267,82 +232,26 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         for (BlockPos result : results) {
             var blockState = world.getBlockState(result);
 
-            if (blockState.is(ModdedTags.Block.GLASS_BLOCK.tag) || blockState.is(ModdedTags.Block.GLASS_PANE.tag)) {
-                returnValue *= .8f;
+            if (blockState.is(ModdedTags.Block.SOLAR_QUARTER_LIGHT.tag)) {
+                returnValue *= .25f;
                 continue;
             }
-            if (blockState.is(Blocks.WATER)) {
+            if (blockState.is(ModdedTags.Block.SOLAR_HALF_LIGHT.tag)) {
                 returnValue *= .5f;
                 continue;
             }
-            if (blockState.is(BlockTags.LEAVES)) {
-                returnValue *= .2f;
+            if (blockState.is(ModdedTags.Block.SOLAR_3QUARTER_LIGHT.tag)) {
+                returnValue *= .75f;
                 continue;
             }
-            if (blockState.is(Blocks.IRON_BARS)) {
-                returnValue *= 9f / 16;
+            if (blockState.is(ModdedTags.Block.SOLAR_FULL_LIGHT.tag)){
+                returnValue *= 1f;
                 continue;
             }
-
             returnValue = 0;
             break;
         }
         return returnValue;
-    }
-
-    public static List<BlockPos> DDA(Level level, Vec3 start, Vec3 end) {
-        List<BlockPos> blockHits = new ArrayList<>();
-        Vec3 dir = end.subtract(start);
-        double length = dir.length();
-        Vec3 norm = dir.normalize();
-
-        int x = (int) Math.floor(start.x);
-        int y = (int) Math.floor(start.y);
-        int z = (int) Math.floor(start.z);
-
-        int endX = (int) Math.floor(end.x);
-        int endY = (int) Math.floor(end.y);
-        int endZ = (int) Math.floor(end.z);
-
-        int stepX = norm.x >= 0 ? 1 : -1;
-        int stepY = norm.y >= 0 ? 1 : -1;
-        int stepZ = norm.z >= 0 ? 1 : -1;
-
-        double tDeltaX = norm.x == 0 ? Double.MAX_VALUE : Math.abs(1.0 / norm.x);
-        double tDeltaY = norm.y == 0 ? Double.MAX_VALUE : Math.abs(1.0 / norm.y);
-        double tDeltaZ = norm.z == 0 ? Double.MAX_VALUE : Math.abs(1.0 / norm.z);
-
-        double tMaxX = norm.x == 0 ? Double.MAX_VALUE : (stepX > 0 ? Math.ceil(start.x) - start.x : start.x - Math.floor(start.x)) / Math.abs(norm.x);
-        double tMaxY = norm.y == 0 ? Double.MAX_VALUE : (stepY > 0 ? Math.ceil(start.y) - start.y : start.y - Math.floor(start.y)) / Math.abs(norm.y);
-        double tMaxZ = norm.z == 0 ? Double.MAX_VALUE : (stepZ > 0 ? Math.ceil(start.z) - start.z : start.z - Math.floor(start.z)) / Math.abs(norm.z);
-        for (int i = 0; i < length; i++) {
-            BlockPos pos = new BlockPos(x, y, z);
-            BlockState state = level.getBlockState(pos);
-            if (!state.isAir()) {
-                if (!state.isCollisionShapeFullBlock(level, pos) && state.getBlock() != Blocks.WATER) {
-                    VoxelShape shape = state.getShape(level, pos);
-                    if (shape.isEmpty()) continue;
-                    BlockHitResult hit = shape.clip(start, end, pos);
-                    if (hit != null) {
-                        blockHits.add(pos);
-                    }
-
-                } else blockHits.add(pos);
-            }
-            if (x == endX && y == endY && z == endZ) break;
-
-            if (tMaxX < tMaxY && tMaxX < tMaxZ) {
-                x += stepX;
-                tMaxX += tDeltaX;
-            } else if (tMaxY < tMaxZ) {
-                y += stepY;
-                tMaxY += tDeltaY;
-            } else {
-                z += stepZ;
-                tMaxZ += tDeltaZ;
-            }
-        }
-        return blockHits;
     }
 
     public void getPlacedBlockRotation(){
