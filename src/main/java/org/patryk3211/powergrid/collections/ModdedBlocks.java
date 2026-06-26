@@ -81,6 +81,7 @@ import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightBlock
 import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightLightBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.light.string.StringLightBlock;
+import org.patryk3211.powergrid.electricity.pump.ElectricPumpBlock;
 import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterBlock;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlock;
 import org.patryk3211.powergrid.electricity.socket.SocketBlock;
@@ -639,6 +640,14 @@ public class ModdedBlocks {
             .item()
                 .model(itemWithParent("block/electric_fan/item"))
                 .build()
+            .register();
+
+    public static final BlockEntry<ElectricPumpBlock> ELECTRIC_PUMP = REGISTRATE.block("electric_pump", ElectricPumpBlock::new)
+            .blockstate(alternateDirectionalBlock("block/electric_pump"))
+            .initialProperties(SharedProperties::copperMetal)
+            .transform(pickaxeOnly())
+            .transform(CResistance.setResistance(480))
+            .simpleItem()
             .register();
 
     public static final BlockEntry<PortableBatteryBlock> PORTABLE_BATTERY = REGISTRATE.block("portable_battery", PortableBatteryBlock::new)

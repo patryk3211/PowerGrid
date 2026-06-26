@@ -41,6 +41,7 @@
     "powergrid:servo",
     "powergrid:electromagnet",
     "powergrid:electric_fan",
+    "powergrid:electric_pump",
     "powergrid:portable_battery",
     "powergrid:circuit_board",
     "powergrid:winding",

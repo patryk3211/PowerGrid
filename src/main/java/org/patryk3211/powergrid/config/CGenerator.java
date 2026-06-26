@@ -22,7 +22,7 @@ public class CGenerator extends ConfigBase {
 	public final ConfigFloat rotorKp = f(0.85f, 0f, "rotorKp", Comments.rotorKp);
 	public final ConfigFloat rotorKd = f(0.002f, 0f, "rotorKd", Comments.rotorKd);
 
-	public final ConfigInt rotorRPMMax = i(256, 0, "rotorRPMMax", Comments.rotorRPMMax);
+	public final ConfigInt rotorRPMMax = i(272, 0, "rotorRPMMax", Comments.rotorRPMMax);
 
 	public final ConfigInt rotorAssemblyMaxSize = i(8, 3, "rotorAssemblyMaxSize", Comments.rotorAssemblyMaxSize);
 	public final ConfigFloat rotorSegmentFriction = f(0.25f, 0, "rotorSegmentFriction", Comments.rotorSegmentFriction);
