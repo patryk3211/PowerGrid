@@ -161,6 +161,11 @@ public class BlockTagProvider extends TagsProvider<Block> {
         var lightBuilder = tag(ModdedTags.Block.SABLE_LIGHT.tag);
         var halfVolumeBuilder = tag(ModdedTags.Block.SABLE_HALF_VOLUME.tag);
         var heavyBuilder = tag(ModdedTags.Block.SABLE_HEAVY.tag);
+        var solarQuarterBuilder = tag(ModdedTags.Block.SOLAR_QUARTER_LIGHT.tag);
+        var solarHalfBuilder = tag(ModdedTags.Block.SOLAR_HALF_LIGHT.tag);
+        var solar3QuarterBuilder = tag(ModdedTags.Block.SOLAR_3QUARTER_LIGHT.tag);
+        var solarFullBuilder = tag(ModdedTags.Block.SOLAR_FULL_LIGHT.tag);
+
         for(var block : smallLightBlocks) {
             quarterBuilder.add(reverseLookup(block.get()));
             lightBuilder.add(reverseLookup(block.get()));
@@ -174,5 +179,18 @@ public class BlockTagProvider extends TagsProvider<Block> {
         for(var block : halfVolumeBlocks) {
             halfVolumeBuilder.add(reverseLookup(block.get()));
         }
+
+        solarQuarterBuilder
+                .addOptionalTag(BlockTags.LEAVES.location());
+
+        solarHalfBuilder
+                .add(reverseLookup(Blocks.TALL_GRASS))
+                .add(reverseLookup(Blocks.SHORT_GRASS))
+                .add(reverseLookup(Blocks.WATER))
+                .add(reverseLookup(Blocks.IRON_BARS));
+
+        solar3QuarterBuilder
+                .addOptionalTag(ModdedTags.Block.GLASS_BLOCK.tag.location())
+                .addOptionalTag(ModdedTags.Block.GLASS_PANE.tag.location());
     }
 }
