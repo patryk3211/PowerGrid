@@ -15,6 +15,7 @@
     "FanProcessingMixin",
     "KineticBlockEntityAccessor",
     "LightningAccessor",
+    "PlayerMixin",
     "RecipeApplierMixin",
     "SoundEntryBuilderMixin",
     "sable.SubLevelAssemblerMixin",

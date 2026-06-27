@@ -42,6 +42,7 @@ import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.gauge.GaugeValueBehaviour;
 import org.patryk3211.powergrid.electricity.info.customdisplay.CustomDisplayBehaviour;
+import org.patryk3211.powergrid.electricity.sim.special.SamplingWire;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 import org.patryk3211.powergrid.utility.ClientSideAccess;
 import org.patryk3211.powergrid.utility.Lang;
@@ -56,7 +57,7 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
     private CustomDisplayBehaviour displayBehaviour;
     private float maxValue = MAX_VALUES[0];
 
-    private PlotterWire wire;
+    private SamplingWire wire;
     protected float[] sampleBuffer = new float[40];
     protected int head;
 
@@ -89,7 +90,7 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
     public void buildCircuit(CircuitBuilder builder) {
         // 20 kilo-ohm "impedance".
         builder.setTerminalCount(2);
-        wire = new PlotterWire(20e3f, builder.terminalNode(0), builder.terminalNode(1));
+        wire = new SamplingWire(20e3f, builder.terminalNode(0), builder.terminalNode(1));
         builder.add(wire);
     }
 

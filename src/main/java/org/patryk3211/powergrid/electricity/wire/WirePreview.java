@@ -159,6 +159,19 @@ public class WirePreview {
         // Stop rendering the preview above a thousand blocks to stop the game from freezing
         if(length > 1000)
             return;
+
+        if(WireItem.alternateWirePlacement(player)) {
+            length = 0;
+            currentPos = BlockTrace.alignPosition(currentPos);
+            renderedPos1 = currentPos;
+            renderedTrace = Pair.of(null, BlockTrace.alternatePath(currentPos, hitPoint));
+            for(var p : renderedTrace.getSecond().points()) {
+                length += p.length();
+            }
+            renderPath = 2;
+            return;
+        }
+
         boolean isBlockWire = endpoint.type() != WireEndpointType.BLOCK;
         if(isBlockWire || hitTerminal == null) {
             if(!SableUtils.sameSubLevel(world, currentPos, hitPoint))

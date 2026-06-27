@@ -31,8 +31,11 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
+import org.lwjgl.glfw.GLFW;
+import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.collections.ModdedPackets;
+import org.patryk3211.powergrid.network.packets.AlternatePlacementStatusC2SPacket;
 import org.patryk3211.powergrid.network.packets.BlockWireAttachC2SPacket;
 import org.patryk3211.powergrid.network.packets.BlockWireCutC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
@@ -146,6 +149,20 @@ public class ClientWireInteractions {
         return InteractionResult.FAIL;
     }
 
+    public static boolean cutClearCheck(Minecraft client) {
+        var stack = client.player.getMainHandItem();
+        if(!stack.is(ModdedItems.WIRE_CUTTER.get()))
+            return false;
+        if(!client.player.isShiftKeyDown())
+            return false;
+        if(currentEntity != null) {
+            client.player.displayClientMessage(Lang.translateDirect("message.cut_reset"), true);
+            client.player.swing(InteractionHand.MAIN_HAND);
+            currentEntity = null;
+        }
+        return true;
+    }
+
     public static InteractionResult attachWire(BlockWireEntity entity) {
         var mc = Minecraft.getInstance();
         var target = mc.hitResult;
@@ -170,5 +187,18 @@ public class ClientWireInteractions {
 
         ModdedPackets.sendToServer(new BlockWireAttachC2SPacket(entity, segment.getA(), segment.getB()));
         return InteractionResult.SUCCESS;
+    }
+
+    public static void alternatePlacementCheck(Minecraft client, int action) {
+        var stack = client.player.getMainHandItem();
+        if(!IWire.isWire(client.level, stack.getItem()))
+            return;
+        var tag = stack.getTagElement("Connection");
+        if(tag == null)
+            return;
+        // Update alternate placement status
+        if(action == GLFW.GLFW_PRESS || action == GLFW.GLFW_RELEASE) {
+            ModdedPackets.sendToServer(new AlternatePlacementStatusC2SPacket(action == GLFW.GLFW_PRESS));
+        }
     }
 }
