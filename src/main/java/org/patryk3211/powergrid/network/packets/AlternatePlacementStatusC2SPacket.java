@@ -1,13 +1,11 @@
 package org.patryk3211.powergrid.network.packets;
 
-import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
 import org.patryk3211.powergrid.electricity.wire.IAlternatePlacementExtension;
-import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.network.C2SPacket;
 
-import java.util.function.Supplier;
-
-public class AlternatePlacementStatusC2SPacket implements SimplePacket {
+public class AlternatePlacementStatusC2SPacket implements C2SPacket {
     private final boolean status;
 
     public AlternatePlacementStatusC2SPacket(boolean status) {
@@ -19,17 +17,14 @@ public class AlternatePlacementStatusC2SPacket implements SimplePacket {
     }
 
     @Override
-    public void encode(FriendlyByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeBoolean(status);
     }
 
     @Override
-    public void handle(Supplier<NetworkManager.PacketContext> context) {
-        var ctx = context.get();
-        ctx.queue(() -> {
-            if(ctx.getPlayer() instanceof IAlternatePlacementExtension ext) {
-                ext.powerGrid$setAlternatePlacement(status);
-            }
-        });
+    public void handle(ServerPlayer player) {
+        if(player instanceof IAlternatePlacementExtension ext) {
+            ext.powerGrid$setAlternatePlacement(status);
+        }
     }
 }

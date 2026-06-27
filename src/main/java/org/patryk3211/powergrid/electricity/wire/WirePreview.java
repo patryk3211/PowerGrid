@@ -161,9 +161,12 @@ public class WirePreview {
             return;
 
         if(WireItem.alternateWirePlacement(player)) {
+            if(!SableUtils.sameSubLevel(world, currentPos, hitPoint))
+                return;
             length = 0;
             currentPos = BlockTrace.alignPosition(currentPos);
-            renderedPos1 = currentPos;
+            renderedPos1 = projCurrentPos;
+            renderedPos2 = currentPos;
             renderedTrace = Pair.of(null, BlockTrace.alternatePath(currentPos, hitPoint));
             for(var p : renderedTrace.getSecond().points()) {
                 length += p.length();

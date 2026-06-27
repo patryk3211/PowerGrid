@@ -193,8 +193,7 @@ public class ClientWireInteractions {
         var stack = client.player.getMainHandItem();
         if(!IWire.isWire(client.level, stack.getItem()))
             return;
-        var tag = stack.getTagElement("Connection");
-        if(tag == null)
+        if(!stack.has(ModdedDataComponents.CONNECTION_DATA.get()))
             return;
         // Update alternate placement status
         if(action == GLFW.GLFW_PRESS || action == GLFW.GLFW_RELEASE) {
