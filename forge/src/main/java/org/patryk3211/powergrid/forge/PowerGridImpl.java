@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.forge;
 
+import com.simibubi.create.api.registry.CreateRegistries;
 import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
@@ -305,5 +306,12 @@ public class PowerGridImpl {
 
     public static void finalizeRegistrate() {
         ((ForgePowerGridRegistrate) PowerGrid.REGISTRATE).registerEventListeners(bus);
+    }
+
+    @SubscribeEvent
+    public static void onRegister(RegisterEvent event) {
+        if (event.getRegistryKey().equals(CreateRegistries.CONTRAPTION_TYPE)) {
+            ModdedContraptions.register();
+        }
     }
 }
