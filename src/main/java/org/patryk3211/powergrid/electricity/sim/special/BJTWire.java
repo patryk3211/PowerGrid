@@ -93,8 +93,13 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         double Vb = node1.getVoltage();
         double Ve = node2.getVoltage();
         double Vbe = Vb - Ve, Vbc = Vb - Vc;
-        Vbc = prevCollector = pnp * pnLim(pnp * Vbc, pnp * prevCollector, Vcrit);
-        Vbe = prevEmitter = pnp * pnLim(pnp * Vbe, pnp * prevEmitter, Vcrit);
+        if(iteration % 4 == 0) {
+            prevCollector = Vbc;
+            prevEmitter = Vbe;
+        } else {
+            Vbc = prevCollector = pnp * pnLim(pnp * Vbc, pnp * prevCollector, Vcrit);
+            Vbe = prevEmitter = pnp * pnLim(pnp * Vbe, pnp * prevEmitter, Vcrit);
+        }
 
         double WbeTerm = WrightOmega(OmegaLogE + (saturationCurrent * emitterResistance + pnp * Vbe) / V_T);
         double WbcTerm = WrightOmega(OmegaLogC + (saturationCurrent * collectorResistance + pnp * Vbc) / V_T);
@@ -128,9 +133,9 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         // Emitter - Collector, VCCS
         emitterCollector.setConductance(Gec);
 
-        this.Ib = Ib - (G_add + Gcc + Gec) * Vbc - (G_add + Gee + Gce) * Vbe;
-        this.Ic = Ic + (Gcc + G_add) * Vbc + Gce * Vbe;
-        this.Ie = Ie + (Gee + G_add) * Vbe + Gec * Vbc;
+        this.Ib = Ib - (-G_add + Gcc + Gec) * Vbc - (-G_add + Gee + Gce) * Vbe;
+        this.Ic = Ic + (Gcc - G_add) * Vbc + Gce * Vbe;
+        this.Ie = Ie + (Gee - G_add) * Vbe + Gec * Vbc;
 
         power = 0;
         if(Vbe > 0) {
