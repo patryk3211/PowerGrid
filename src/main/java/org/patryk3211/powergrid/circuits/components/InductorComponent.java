@@ -43,8 +43,8 @@ public class InductorComponent extends OrientableComponent {
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
         var L = placed.get(INDUCTANCE) / 1000;
-        var R = L * 1.2; // 1.2 Ω/H
-        var wire = new LRSeriesWire(L, R, builder.terminalNode(0), builder.terminalNode(1));
+//        var R = L * 1.2; // 1.2 Ω/H
+        var wire = new LRSeriesWire(L, 0.01f, builder.terminalNode(0), builder.terminalNode(1));
         wire.setCurrent(placed.get(CURRENT));
         builder.add(wire);
         placed.add(wire);
