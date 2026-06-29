@@ -48,6 +48,8 @@ import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureRenderer;
 import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterBlockEntity;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlockEntity;
 import org.patryk3211.powergrid.electricity.socket.SocketBlockEntity;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBearingBlockEntity;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapRenderer;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlockEntity;
@@ -353,6 +355,16 @@ public class ModdedBlockEntities {
                     .visual(() -> ShaftVisual::new)
                     .validBlock(ModdedBlocks.PUNCH_CARD_READER)
                     .renderer(() -> PunchCardReaderRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<SolarPanelBlockEntity> SOLAR_PANEL =
+            REGISTRATE.blockEntity("solar_panel", SolarPanelBlockEntity::new)
+                    .validBlock(ModdedBlocks.SOLAR_PANEL)
+                    .register();
+
+    public static final BlockEntityEntry<SolarPanelBearingBlockEntity> SOLAR_PANEL_BEARING =
+            REGISTRATE.blockEntity("solar_panel_bearing", SolarPanelBearingBlockEntity::new)
+                    .validBlock(ModdedBlocks.SOLAR_PANEL_BEARING)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

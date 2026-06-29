@@ -222,5 +222,7 @@
   "powergrid.display_source.battery": "Battery",
   "powergrid.display_source.battery.bar": "Progress Bar",
   "powergrid.display_source.battery.value": "Value",
-  "powergrid.display_source.battery.mode": "Display mode"
+  "powergrid.display_source.battery.mode": "Display mode",
+
+  "powergrid.solar_panel_bearing.slider": "Strings in Parallel × Panels in String"
 }
