@@ -52,6 +52,7 @@ public class ResistorBlockEntity extends ElectricBlockEntity {
         value = makeScroll();
         value.withResistanceCallback(R -> wire.setResistance(R));
         behaviours.add(value);
+        wire.setResistance(value.getResistance());
     }
 
     @Override
