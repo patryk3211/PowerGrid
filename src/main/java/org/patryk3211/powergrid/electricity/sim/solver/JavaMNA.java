@@ -216,13 +216,11 @@ public class JavaMNA implements IMNA {
     }
 
     private void iterHooks(int i, int max) {
-        if(i < max - 10) {
-            network.countUpdates = false;
-            for(var hook : network.innerHooks) {
-                hook.startIteration(i);
-            }
-            network.countUpdates = true;
+        network.countUpdates = false;
+        for(var hook : network.innerHooks) {
+            hook.startIteration(i);
         }
+        network.countUpdates = true;
     }
 
     private void residualAdd(int row, double value) {
