@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.equipment.portablebattery;
 
 import com.simibubi.create.content.equipment.armor.BacktankItem;
 import com.simibubi.create.content.equipment.armor.BaseArmorItem;
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -90,5 +91,15 @@ public class PortableBatteryItem extends BaseArmorItem implements IHaveElectricP
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(ModdedBlocks.PORTABLE_BATTERY.get().resistance(), player, tooltip);
         Power.max(ModdedBlocks.PORTABLE_BATTERY.asStack(), player, tooltip);
+    }
+
+    public void onWornTick(ItemStack batteryStack, Player player) {
+        ItemStack heldStack = player.getMainHandItem();
+        if (heldStack.isEmpty()) return;
+        tryTransferPower(heldStack, batteryStack, player);
+    }
+    @ExpectPlatform
+    public static void tryTransferPower(ItemStack heldStack, ItemStack batteryStack, Player player) {
+        throw new AssertionError();
     }
 }

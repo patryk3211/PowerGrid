@@ -29,6 +29,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Blocks;
@@ -49,6 +52,7 @@ import org.patryk3211.powergrid.electricity.sim.solver.NativeMNA;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlock;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.equipment.thunder.LightningRodMovementBehaviour;
+import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryItem;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlockEntity;
 import org.patryk3211.powergrid.network.packets.NegotiateSyncC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
@@ -110,6 +114,7 @@ public class PowerGrid {
 
 	private static void setup() {
 		RedstoneConverterRegistry.init();
+		TickEvent.PLAYER_PRE.register(PowerGrid::playerPre);
 	}
 
 	private static void playerQuit(ServerPlayer player) {
@@ -130,6 +135,17 @@ public class PowerGrid {
 					)
 			);
 		}
+	}
+
+	private static void playerPre(Player player) {
+		if (player.level().isClientSide())
+		return;
+
+		ItemStack chestStack = player.getItemBySlot(EquipmentSlot.CHEST);
+		if (!(chestStack.getItem() instanceof PortableBatteryItem battery))
+		return;
+
+		battery.onWornTick(chestStack, player);
 	}
 
 	private static void register() {
