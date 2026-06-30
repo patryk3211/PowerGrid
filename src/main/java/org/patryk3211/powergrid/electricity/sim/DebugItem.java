@@ -16,14 +16,19 @@
 package org.patryk3211.powergrid.electricity.sim;
 
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import net.createmod.catnip.math.VecHelper;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.context.UseOnContext;
+import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
+import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
@@ -66,6 +71,22 @@ public class DebugItem extends Item {
         }
         if(be instanceof WindingBlockEntity windingBE) {
             windingBE.debugDump(user);
+        }
+        if(be instanceof CircuitBoardBlockEntity circuitBE && !context.getLevel().isClientSide) {
+            var pos = context.getClickedPos();
+            var hitLocalPos = context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ());
+            var state = context.getLevel().getBlockState(pos);
+            hitLocalPos = VecHelper.rotateCentered(hitLocalPos, -CircuitBoardBlock.getAngleY(state), Direction.Axis.Y);
+            hitLocalPos = VecHelper.rotateCentered(hitLocalPos, -CircuitBoardBlock.getAngleX(state), Direction.Axis.X);
+            int x = Mth.clamp((int) (hitLocalPos.x * 16), 0, 16);
+            int y = Mth.clamp((int) (hitLocalPos.z * 16), 0, 15);
+            var placed = circuitBE.getSchematic().getComponent(x, y);
+            if(placed != null) {
+                user.sendSystemMessage(Component.literal("Component wires:"));
+                for(var wire : placed.wires) {
+                    user.sendSystemMessage(Component.literal(" - " + wire));
+                }
+            }
         }
         return InteractionResult.SUCCESS;
     }

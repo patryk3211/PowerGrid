@@ -24,6 +24,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
@@ -91,7 +92,7 @@ public class VariacBlockEntity extends TunedBlockEntity implements IHaveGoggleIn
         float primaryStray = PRIMARY_INDUCTANCE - mutualInductance;
         float secondaryStray = secondaryInductance - ratio * ratio * mutualInductance;
         this.primaryStray.setResistance(primaryStray);
-        this.mutualInductance.setResistance(mutualInductance);
+        this.mutualInductance.setResistance(mutualInductance * ModdedConfigs.server().electricity.transformerMutualInductanceMultiplier.getF());
         this.coupling.setRatio(ratio);
         this.coupling.setResistance(secondaryStray * ratio * ratio);
     }

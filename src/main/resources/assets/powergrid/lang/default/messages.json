@@ -21,6 +21,8 @@
   "powergrid.message.coil_winding_secondary": "Winding secondary coil, turns: %1$s - %2$s ratio",
   "powergrid.message.coil_max_turns": "Cannot put any more turns on this transformer",
 
+  "powergrid.message.cut_reset": "Block wire cut discarded",
+
   "powergrid.message.multimeter_disconnected": "Multimeter disconnected",
 
   "powergrid.message.outdated_configs": "Power Grid has detected outdated server configuration files, consider resetting your configs if issues occur.",
@@ -33,5 +35,8 @@
   "death.attack.overloaded_machine.player": "%s was killed by an overloaded %s whilst trying to escape %s",
   "death.attack.zap": "%1$s was zapped by %2$s",
   "death.attack.zap.item": "%1$s was zapped by %2$s using %3$s",
-  "death.attack.zap.player": "%1$s was zapped by %2$s whilst trying to escape %3$s"
+  "death.attack.zap.player": "%1$s was zapped by %2$s whilst trying to escape %3$s",
+  "powergrid.contraption.assembly.mismatched_panel_facing": "All Solar Panels need to be facing the same direction",
+  "powergrid.contraption.assembly.not_enough_panels": "Attached structure does not include enough Solar Panels, a minimum of 1 is required",
+  "powergrid.contraption.assembly.invalid_panel_amount": "Sum of Solar Panels is not divisible by 1-9 with less than 26 remainder, add or remove Solar Panels"
 }

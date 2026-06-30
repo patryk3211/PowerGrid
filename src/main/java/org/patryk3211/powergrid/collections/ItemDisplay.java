@@ -70,6 +70,7 @@ public class ItemDisplay {
                     ModdedItems.INCOMPLETE_PUNCH_CARD,
                     ModdedItems.INCOMPLETE_BJT_NPN,
                     ModdedItems.INCOMPLETE_BJT_PNP,
+                    ModdedItems.INCOMPLETE_SOLAR_PANEL,
                     ModdedItems.PORTABLE_BATTERY_PLACEABLE,
                     ModdedItems.CIRCUIT_SCHEMATIC,
                     ModdedItems.UNETCHED_CIRCUIT,

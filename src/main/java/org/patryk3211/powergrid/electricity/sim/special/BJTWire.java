@@ -81,9 +81,9 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         if(V0 < Vcrit * 0.5f && V1 < Vcrit * 0.5f)
             return V1;
         var dV = V1 - V0;
-        if((V0 > Vcrit || V1 > Vcrit) && dV > V_T * 2 && dV / V_T > 0)
+        if(V1 > Vcrit && dV > V_T * 2)
             return V0 + V_T * Math.log1p(dV / V_T);
-        return V1;//V0 + dV * network.bjtSmoothAlpha;
+        return V1;
     }
 
     @Override
@@ -117,9 +117,6 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         double G_add = 1e-6;
         if(iteration > 100) {
             G_add = 1e-4;
-//            G_add = Math.min((iteration - 100) * 1e-3, 0.01);
-//            Gce -= G_add;
-//            Gec -= G_add;
         }
 
         // Base - Emitter, simple wire
@@ -169,7 +166,7 @@ public class BJTWire extends CompoundWire implements ISolverHook {
 
     @Override
     public String toString() {
-        return String.format("%s-BJT(Is=%g, beta=%g)", pnp == -1 ? "P" : "N", saturationCurrent, beta);
+        return String.format("%s-BJT(Is=%g, beta=%g)#%d", pnp == -1 ? "P" : "N", saturationCurrent, beta, System.identityHashCode(this));
     }
 
     private static class CrossWire extends ConductanceWire {

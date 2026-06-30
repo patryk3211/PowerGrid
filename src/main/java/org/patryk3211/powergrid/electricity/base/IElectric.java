@@ -148,7 +148,8 @@ public interface IElectric extends IWrenchable {
     }
 
     static InteractionResult makeConnection(Level world, IWireEndpoint endpoint1, IWireEndpoint endpoint2, UseOnContext context) {
-        if(endpoint1.type() == WireEndpointType.BLOCK && endpoint2.type() == WireEndpointType.BLOCK) {
+        boolean alternatePlacement = WireItem.alternateWirePlacement(context.getPlayer());
+        if(endpoint1.type() == WireEndpointType.BLOCK && endpoint2.type() == WireEndpointType.BLOCK && !alternatePlacement) {
             // Hanging wire connection.
             return makeHangingWireConnection(world, (BlockWireEndpoint) endpoint1, (BlockWireEndpoint) endpoint2, context);
         }
