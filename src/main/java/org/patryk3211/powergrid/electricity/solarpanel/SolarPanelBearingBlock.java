@@ -32,8 +32,6 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 
-
-
 public class SolarPanelBearingBlock extends ElectricKineticBlock implements IBE<SolarPanelBearingBlockEntity> {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final TerminalBoundingBox[] TERMINALS = new TerminalBoundingBox[] {

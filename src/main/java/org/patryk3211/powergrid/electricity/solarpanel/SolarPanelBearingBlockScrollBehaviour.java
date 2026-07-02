@@ -16,6 +16,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
+import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,7 @@ public class SolarPanelBearingBlockScrollBehaviour extends ScrollValueBehaviour 
     public int panelCount = 1;
 
     public SolarPanelBearingBlockScrollBehaviour(SmartBlockEntity be) {
-        super(Component.translatable("powergrid.solar_panel_bearing.slider"), be, new BearingFaceBox());
+        super(Lang.translateDirect("solar_panel_bearing.slider"), be, new BearingFaceBox());
         between(0, 0);
         value = 0;
         withFormatter(this::formatIndex);

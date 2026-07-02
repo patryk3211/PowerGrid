@@ -42,7 +42,7 @@ public class CapacitorWire extends AbstractElectricWire implements IStaticResidu
     @Override
     public double conductance() {
         // dt = 50ms (1 tick)
-        return 2 * capacitance / getDeltaTime();
+        return (TRAPEZOID_APPROX ? 2 : 1) * capacitance / getDeltaTime();
     }
 
     public void setVoltage(float voltage) {
@@ -68,7 +68,7 @@ public class CapacitorWire extends AbstractElectricWire implements IStaticResidu
     @Override
     public void postUpperSolve() {
         if(isConverged()) {
-            Iprev = (potentialDifference() - V) * capacitance / getDeltaTime();
+            Iprev = TRAPEZOID_APPROX ? (potentialDifference() - V) * capacitance / getDeltaTime() : 0;
             // Save voltage with a bit of leakage
             V = potentialDifference() * 0.99999;
         }

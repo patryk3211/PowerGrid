@@ -21,6 +21,7 @@ import com.simibubi.create.content.kinetics.deployer.DeployerApplicationRecipe;
 import com.simibubi.create.content.kinetics.press.PressingRecipe;
 import net.minecraft.core.HolderLookup;
 import com.simibubi.create.content.kinetics.saw.CuttingRecipe;
+import com.simibubi.create.content.kinetics.saw.CuttingRecipe;
 import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.Items;
 import org.patryk3211.powergrid.PowerGrid;

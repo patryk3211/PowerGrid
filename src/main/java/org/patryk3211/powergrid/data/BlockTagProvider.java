@@ -180,6 +180,11 @@ public class BlockTagProvider extends TagsProvider<Block> {
             halfVolumeBuilder.add(reverseLookup(block.get()));
         }
 
+        var solarQuarterBuilder = tag(ModdedTags.Block.SOLAR_QUARTER_LIGHT.tag);
+        var solarHalfBuilder = tag(ModdedTags.Block.SOLAR_HALF_LIGHT.tag);
+        var solar3QuarterBuilder = tag(ModdedTags.Block.SOLAR_3QUARTER_LIGHT.tag);
+        var solarFullBuilder = tag(ModdedTags.Block.SOLAR_FULL_LIGHT.tag);
+
         solarQuarterBuilder
                 .addOptionalTag(BlockTags.LEAVES.location());
 

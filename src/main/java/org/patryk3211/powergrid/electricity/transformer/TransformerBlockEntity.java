@@ -129,12 +129,14 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
 
         if(splittingTransformers() && couplingI1 != null && couplingI2 != null) {
             var avgData = tag.getList("TrAvgDat", CompoundTag.TAG_DOUBLE);
-            for(int i = 0; i < AVG_SAMPLE_COUNT; ++i) {
-                couplingI1.samples[i] = avgData.getDouble(i * 2);
-                couplingI2.samples[i] = avgData.getDouble(i * 2 + 1);
+            if(avgData.size() == AVG_SAMPLE_COUNT) {
+                for(int i = 0; i < AVG_SAMPLE_COUNT; ++i) {
+                    couplingI1.samples[i] = avgData.getDouble(i * 2);
+                    couplingI2.samples[i] = avgData.getDouble(i * 2 + 1);
+                }
+                couplingI1.avgHead = tag.getInt("PAvgHead");
+                couplingI2.avgHead = tag.getInt("SAvgHead");
             }
-            couplingI1.avgHead = tag.getInt("PAvgHead");
-            couplingI2.avgHead = tag.getInt("SAvgHead");
         }
 
         super.read(tag, registries, clientPacket);

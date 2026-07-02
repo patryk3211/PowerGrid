@@ -36,12 +36,11 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
     private int temp = 0;
     private float cloudCover = 0;
     private boolean firstTick = true;
-    private float AMBIENT_TEMP = -2000f;
+    private float ambientTemp = -2000f;
     private int rayCastDelay = 0;
     private float sunVisablity = 0;
     protected int totalCells = CELLS_IN_SERIES;
     private Vector3d panelNormal;
-
 
     public SolarPanelBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -63,12 +62,12 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
         var pos = new BlockPos((int)d.x, (int)d.y, (int)d.z);
 
         if (firstTick) {
-            AMBIENT_TEMP = ThermalBehaviour.getAmbientTemperature(world, pos);
-            if (AMBIENT_TEMP <= ThermalBehaviour.ABSOLUTE_ZERO)
-                AMBIENT_TEMP = 22f;
+            ambientTemp = ThermalBehaviour.getAmbientTemperature(world, this.getBlockPos());
+            if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
+                ambientTemp = 22f;
             firstTick = false;
         }
-        cloudCover = getWeather(world);
+        float cloudCover = getWeather(world);
 
         getPlacedBlockRotation();
         final SubLevel subLevel = Sable.HELPER.getContaining(this);
@@ -77,8 +76,8 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
             panelNormal.normalize();
         }
 
-        var irradiance = getIrradiance(getAM(world), cloudCover, pos.getY(), world);
-        var cellTemp = getCellTemp(irradiance, AMBIENT_TEMP);
+        var irradiance = getIrradiance(getAM(world), cloudCover, this.getBlockPos().getY(), world);
+        var cellTemp = getCellTemp(irradiance, ambientTemp);
         var Vt = 8.617e-5 * (cellTemp + 273.15);
         double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt, STRINGS_IN_PARALLEL);
         double cellCurrent = adjusted[0];
