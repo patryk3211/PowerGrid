@@ -48,7 +48,7 @@ public class VFETComponent extends MirrorableComponent {
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
         var wire = new VFETWire(
-                placed.get(GAIN), 1 / placed.get(K_G), 0.5f,
+                placed.get(GAIN), placed.get(K_G), 0.5f,
                 builder.terminalNode(1), // Source
                 builder.terminalNode(0), // Drain
                 builder.terminalNode(2)  // Gate
@@ -63,8 +63,8 @@ public class VFETComponent extends MirrorableComponent {
     }
 
     public static class VFETWire extends ElectronTubeWire {
-        public VFETWire(float gain, float perveance, float saturationCurrent, IElectricNode cathode, IElectricNode anode, IElectricNode grid) {
-            super(gain, perveance, saturationCurrent, cathode, anode, grid);
+        public VFETWire(float gain, float kg1, float saturationCurrent, IElectricNode cathode, IElectricNode anode, IElectricNode grid) {
+            super(gain, kg1, 600, 300, 1.5f, saturationCurrent, cathode, anode, grid);
         }
 
         @Override
