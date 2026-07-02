@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 patryk3211
+ * Copyright 2026 patryk3211
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,29 +29,35 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
 
     private final IElectricNode grid;
 
-    private final float gain;
-    private final float perveance;
+    private final float mu;
+    private final float kg1;
+    private final float kp;
+    private final float kvb;
+    private final float ex;
     private float saturationCurrent;
 
     private double prevGrid;
     private double prevCathode;
     private double prevAnode;
 
-    private double Ia;
-    private double Itube;
-    private double Ptube;
+    private double linearizedAnodeCurrent;
+    private double reportedCurrent;
+    private double reportedPower;
 
     private final ConductanceWire gridCathode;
     private final GMStamp gmStamp;
 
-    public ElectronTubeWire(float gain, float perveance, float saturationCurrent, IElectricNode cathode, IElectricNode anode, IElectricNode grid) {
+    public ElectronTubeWire(float mu, float kg1, float kp, float kvb, float ex, float saturationCurrent, IElectricNode cathode, IElectricNode anode, IElectricNode grid) {
         super(cathode, anode);
         this.grid = grid;
         gridCathode = addDynamicWire(grid, cathode);
         gmStamp = addInternalWire(new GMStamp(cathode, anode, grid));
 
-        this.gain = gain;
-        this.perveance = perveance;
+        this.mu = mu;
+        this.kg1 = kg1;
+        this.kp = kp;
+        this.kvb = kvb;
+        this.ex = ex;
         this.saturationCurrent = saturationCurrent;
     }
 
@@ -67,79 +73,120 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
 
     @Override
     public void startIteration(int iteration) {
-        // Implementation adapted from Falstad https://www.falstad.com/circuit-java/
+        // Norman Koren triode model, http://www.normankoren.com/Audio/Tubemodspice_article.html
         double vCathode = node1.getVoltage();
         double vGrid = grid.getVoltage();
         double vAnode = node2.getVoltage();
-        var dVc = vCathode - prevCathode;
-        var dVg = vGrid - prevGrid;
-        var dVa = vAnode - prevAnode;
-        vCathode = prevCathode + network.triodeLimCathode * dVc;
-        vGrid = prevGrid + network.triodeLimGrid * dVg;
-        vAnode = prevAnode + network.triodeLimAnode * dVa;
+        var cathodeStep = vCathode - prevCathode;
+        var gridStep = vGrid - prevGrid;
+        var anodeStep = vAnode - prevAnode;
+        vCathode = prevCathode + Math.min(0.5f, Math.abs(cathodeStep)) * network.triodeLimCathode * Math.signum(cathodeStep);
+        vGrid = prevGrid + Math.min(0.5f, Math.abs(gridStep)) * network.triodeLimGrid * Math.signum(gridStep);
+        vAnode = prevAnode + Math.min(0.5f, Math.abs(anodeStep)) * network.triodeLimAnode * Math.signum(anodeStep);
         prevAnode = vAnode;
         prevCathode = vCathode;
         prevGrid = vGrid;
         vGrid -= vCathode;
         vAnode -= vCathode;
 
-        double ids, Gds, gm = 0;
-        double ival;
-        if(vGrid > 0) {
-            ival = (vGrid * vAnode) / (vGrid + vAnode) + vAnode / gain;
-        } else {
-            ival = vGrid + vAnode / gain;
-        }
         gridCathode.setConductance(GRID_CONDUCTANCE);
 
-        if (ival < 0 || (vGrid > 0 && vGrid + vAnode <= 0) || saturationCurrent == 0) {
-            Gds = ElectricalNetwork.G_MIN;
-            ids = vAnode * Gds;
+        double anodeCurrent, anodeConductance, transconductance = 0;
+        if (vAnode <= 0 || saturationCurrent == 0) {
+            anodeConductance = ElectricalNetwork.G_MIN;
+            anodeCurrent = vAnode * anodeConductance;
         } else {
-            ids = Math.sqrt(ival * ival * ival) * perveance;
-            double q = 1.5 * Math.sqrt(ival) * perveance;
+            var kneeTerm = Math.sqrt(kvb + vAnode * vAnode);
+            var driveTerm = kp * (1 / mu + vGrid / kneeTerm);
+            var softplus = softplus(driveTerm);
+            var e1 = vAnode / kp * softplus;
 
-            var x = ids / saturationCurrent;
-            ids = ids / Math.sqrt(Math.sqrt(1 + x * x));
+            if (e1 <= 0) {
+                anodeConductance = ElectricalNetwork.G_MIN;
+                anodeCurrent = vAnode * anodeConductance;
+            } else {
+                anodeCurrent = Math.pow(e1, ex) / kg1;
 
-            Gds = q / gain;
-            gm = q;
+                if (saturationCurrent > 0) {
+                    var saturationRatio = anodeCurrent / saturationCurrent;
+                    anodeCurrent /= Math.sqrt(Math.sqrt(1 + saturationRatio * saturationRatio));
+                }
+
+                var sigmoid = 1 / (1 + Math.exp(-driveTerm));
+                var dE1_dAnode = softplus / kp + vAnode / kp * sigmoid * (-kp * vGrid * vAnode / Math.pow(kneeTerm, 3));
+                var dE1_dGrid = vAnode * sigmoid / kneeTerm;
+                var dAnodeCurrent_dE1 = ex * Math.pow(e1, ex - 1) / kg1;
+
+                anodeConductance = dAnodeCurrent_dE1 * dE1_dAnode;
+                transconductance = dAnodeCurrent_dE1 * dE1_dGrid;
+            }
         }
 
-        Ia = -ids + Gds * vAnode + gm * vGrid;
+        linearizedAnodeCurrent = -anodeCurrent + anodeConductance * vAnode + transconductance * vGrid;
 
-        var iGrid = GRID_CONDUCTANCE * vGrid;
-        Itube = ids + iGrid;
-        Ptube = ids * vAnode + iGrid * vGrid;
+        var actualVAnode = node2.getVoltage() - node1.getVoltage();
+        var actualVGrid = grid.getVoltage() - node1.getVoltage();
+        var actualAnodeCurrent = evaluatePlateCurrent(actualVAnode, actualVGrid);
+        var actualGridCurrent = GRID_CONDUCTANCE * actualVGrid;
+        reportedCurrent = actualAnodeCurrent + actualGridCurrent;
+        reportedPower = actualAnodeCurrent * actualVAnode + actualGridCurrent * actualVGrid;
 
         // Anode-Cathode "wire"
-        setConductance(Gds);
-        gmStamp.setConductance(gm);
+        setConductance(anodeConductance);
+        gmStamp.setConductance(transconductance);
+    }
+
+    private double evaluatePlateCurrent(double vAnode, double vGrid) {
+        if (vAnode <= 0 || saturationCurrent == 0)
+            return vAnode * ElectricalNetwork.G_MIN;
+
+        var kneeTerm = Math.sqrt(kvb + vAnode * vAnode);
+        var driveTerm = kp * (1 / mu + vGrid / kneeTerm);
+        var e1 = vAnode / kp * softplus(driveTerm);
+
+        if (e1 <= 0)
+            return vAnode * ElectricalNetwork.G_MIN;
+
+        var anodeCurrent = Math.pow(e1, ex) / kg1;
+        if (saturationCurrent > 0) {
+            var saturationRatio = anodeCurrent / saturationCurrent;
+            anodeCurrent /= Math.sqrt(Math.sqrt(1 + saturationRatio * saturationRatio));
+        }
+        return anodeCurrent;
+    }
+
+    private static double softplus(double x) {
+        if (x > 20)
+            return x;
+        if (x < -20)
+            return 0;
+        return Math.log1p(Math.exp(x));
     }
 
     @Override
     public void addResidual(IResidualAdder residual) {
-        residual.add(node1.getIndex(),  Ia);
-        residual.add(node2.getIndex(), -Ia);
+        residual.add(node1.getIndex(),  linearizedAnodeCurrent);
+        residual.add(node2.getIndex(), -linearizedAnodeCurrent);
     }
 
     @Override
     public double current() {
-        return Itube;
+        return reportedCurrent;
     }
 
     @Override
     public double internalPower() {
-        return Ptube;
+        return reportedPower;
     }
 
-    public static float calculatePerveance(float anodeVoltage, float gain, float anodeCurrent) {
-        return (float) (anodeCurrent / Math.pow(anodeVoltage / gain, 3 / 2f));
+    public static float calculateKg1(float anodeVoltage, float mu, float ex, float anodeCurrent) {
+        var e1 = anodeVoltage / mu;
+        return (float) (Math.pow(e1, ex) / anodeCurrent);
     }
 
     @Override
     public String toString() {
-        return String.format("ElectronTube(mu=%g G=%g Is=%g)", gain, perveance, saturationCurrent);
+        return String.format("ElectronTube(mu=%g Kg1=%g Kp=%g Kvb=%g Ex=%g Is=%g)", mu, kg1, kp, kvb, ex, saturationCurrent);
     }
 
     private static class GMStamp extends ConductanceWire {
