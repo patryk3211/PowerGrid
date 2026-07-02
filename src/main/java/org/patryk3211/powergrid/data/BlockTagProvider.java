@@ -161,10 +161,6 @@ public class BlockTagProvider extends TagsProvider<Block> {
         var lightBuilder = tag(ModdedTags.Block.SABLE_LIGHT.tag);
         var halfVolumeBuilder = tag(ModdedTags.Block.SABLE_HALF_VOLUME.tag);
         var heavyBuilder = tag(ModdedTags.Block.SABLE_HEAVY.tag);
-        var solarQuarterBuilder = tag(ModdedTags.Block.SOLAR_QUARTER_LIGHT.tag);
-        var solarHalfBuilder = tag(ModdedTags.Block.SOLAR_HALF_LIGHT.tag);
-        var solar3QuarterBuilder = tag(ModdedTags.Block.SOLAR_3QUARTER_LIGHT.tag);
-        var solarFullBuilder = tag(ModdedTags.Block.SOLAR_FULL_LIGHT.tag);
 
         for(var block : smallLightBlocks) {
             quarterBuilder.add(reverseLookup(block.get()));

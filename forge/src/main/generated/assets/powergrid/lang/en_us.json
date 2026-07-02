@@ -656,6 +656,7 @@
   "powergrid.recipe.magnetizing": "Magnetizing",
   "powergrid.redconv.inverting": "Inverting",
   "powergrid.redconv.noninverting": "Non-Inverting",
+  "powergrid.solar_panel_bearing.slider": "Strings in Parallel × Panels in String",
   "powergrid.subtitle.alarm_bell": "Alarm bell rings",
   "powergrid.subtitle.breaker_off": "Breaker disconnects",
   "powergrid.subtitle.breaker_on": "Breaker connects",
