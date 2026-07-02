@@ -1,6 +1,7 @@
 package org.patryk3211.powergrid.electricity.solarpanel;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -79,13 +80,13 @@ public class SolarHelper {
         double length = dir.length();
         Vec3 norm = dir.normalize();
 
-        int x = (int) Math.floor(start.x);
-        int y = (int) Math.floor(start.y);
-        int z = (int) Math.floor(start.z);
+        int x = Mth.floor(start.x);
+        int y = Mth.floor(start.y);
+        int z = Mth.floor(start.z);
 
-        int endX = (int) Math.floor(end.x);
-        int endY = (int) Math.floor(end.y);
-        int endZ = (int) Math.floor(end.z);
+        int endX = Mth.floor(end.x);
+        int endY = Mth.floor(end.y);
+        int endZ = Mth.floor(end.z);
 
         int stepX = norm.x >= 0 ? 1 : -1;
         int stepY = norm.y >= 0 ? 1 : -1;

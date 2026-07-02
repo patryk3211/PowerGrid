@@ -30,15 +30,12 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
     protected static final double I_O = 1.11e-4;
     protected static final double IDEALITY = 1.8;
 
-    private int temp = 0;
-    private float cloudCover = 0;
     private boolean firstTick = true;
-    private float AMBIENT_TEMP = -2000f;
+    private float ambientTemp = -2000f;
     private int rayCastDelay = 0;
     private float sunVisablity = 0;
     protected int totalCells = CELLS_IN_SERIES;
     private Vector3d panelNormal;
-
 
     public SolarPanelBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -57,16 +54,16 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
         if (sourceCoupling == null) return;
 
         if (firstTick) {
-            AMBIENT_TEMP = ThermalBehaviour.getAmbientTemperature(world, this.getBlockPos());
-            if (AMBIENT_TEMP <= ThermalBehaviour.ABSOLUTE_ZERO)
-                AMBIENT_TEMP = 22f;
+            ambientTemp = ThermalBehaviour.getAmbientTemperature(world, this.getBlockPos());
+            if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
+                ambientTemp = 22f;
             firstTick = false;
         }
-        cloudCover = getWeather(world);
+        float cloudCover = getWeather(world);
 
         getPlacedBlockRotation();
         var irradiance = getIrradiance(getAM(world), cloudCover, this.getBlockPos().getY(), world);
-        var cellTemp = getCellTemp(irradiance, AMBIENT_TEMP);
+        var cellTemp = getCellTemp(irradiance, ambientTemp);
         var Vt = 8.617e-5 * (cellTemp + 273.15);
         double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt, STRINGS_IN_PARALLEL);
         double cellCurrent = adjusted[0];
@@ -83,18 +80,6 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
         sourceCoupling.setVoltage((float) Voc_panel);
         sourceCoupling.setResistance((float) panelResistance);
 
-        if (temp++ == 20){
-            System.out.println("Cell Temp: " + cellTemp);
-            //System.out.println("Single cell voltage: " + Voc_t);
-            //System.out.println("Single cell current: " + cellCurrent);
-            //System.out.println("Vt: " + Vt);
-            System.out.println("Current irradiance: " + irradiance);
-            System.out.println("AM: " + getAM(world));
-            System.out.println("normal: " + panelNormal);
-            //System.out.println("tilt: " + panelTiltDeg);
-            System.out.println();
-            temp = 0;
-        }
         super.electricalTick();
     }
 

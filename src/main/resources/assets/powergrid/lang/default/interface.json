@@ -67,6 +67,8 @@
 
   "powergrid.gui.invalid_equation": "Invalid display equation",
 
+  "powergrid.gui.solar_panel_bearing.slider": "Strings in Parallel × Panels in String",
+
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",
   "powergrid.generic.unit.ohm": "Ω",
@@ -222,7 +224,5 @@
   "powergrid.display_source.battery": "Battery",
   "powergrid.display_source.battery.bar": "Progress Bar",
   "powergrid.display_source.battery.value": "Value",
-  "powergrid.display_source.battery.mode": "Display mode",
-
-  "powergrid.solar_panel_bearing.slider": "Strings in Parallel × Panels in String"
+  "powergrid.display_source.battery.mode": "Display mode"
 }

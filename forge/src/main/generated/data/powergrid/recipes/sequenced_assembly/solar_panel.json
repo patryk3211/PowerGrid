@@ -1,0 +1,120 @@
+{
+  "type": "create:sequenced_assembly",
+  "ingredient": {
+    "item": "minecraft:glass_pane"
+  },
+  "loops": 1,
+  "results": [
+    {
+      "chance": 100.0,
+      "item": "powergrid:solar_panel"
+    },
+    {
+      "chance": 3.0,
+      "item": "create:polished_rose_quartz"
+    },
+    {
+      "chance": 3.0,
+      "item": "powergrid:zinc_sheet"
+    },
+    {
+      "chance": 3.0,
+      "item": "minecraft:slime_ball"
+    }
+  ],
+  "sequence": [
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "powergrid:incomplete_solar_panel"
+        },
+        {
+          "item": "minecraft:slime_ball"
+        }
+      ],
+      "results": [
+        {
+          "item": "powergrid:incomplete_solar_panel"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "powergrid:incomplete_solar_panel"
+        },
+        {
+          "item": "create:polished_rose_quartz"
+        }
+      ],
+      "results": [
+        {
+          "item": "powergrid:incomplete_solar_panel"
+        }
+      ]
+    },
+    {
+      "type": "create:cutting",
+      "ingredients": [
+        {
+          "item": "powergrid:incomplete_solar_panel"
+        }
+      ],
+      "results": [
+        {
+          "item": "powergrid:incomplete_solar_panel"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "powergrid:incomplete_solar_panel"
+        },
+        {
+          "tag": "forge:ingots/copper"
+        }
+      ],
+      "results": [
+        {
+          "item": "powergrid:incomplete_solar_panel"
+        }
+      ]
+    },
+    {
+      "type": "create:pressing",
+      "ingredients": [
+        {
+          "item": "powergrid:incomplete_solar_panel"
+        }
+      ],
+      "results": [
+        {
+          "item": "powergrid:incomplete_solar_panel"
+        }
+      ]
+    },
+    {
+      "type": "create:deploying",
+      "ingredients": [
+        {
+          "item": "powergrid:incomplete_solar_panel"
+        },
+        {
+          "tag": "forge:plates/zinc"
+        }
+      ],
+      "results": [
+        {
+          "item": "powergrid:incomplete_solar_panel"
+        }
+      ]
+    }
+  ],
+  "transitionalItem": {
+    "item": "powergrid:incomplete_solar_panel"
+  }
+}
