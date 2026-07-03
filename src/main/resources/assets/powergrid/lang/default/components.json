@@ -11,7 +11,7 @@
   "powergrid.component.property.tube_gain": "Amplification factor (μ)",
   "powergrid.component.property.tube_gain.summary": "Amplification factor, controls how strongly grid voltage influences plate current. Represents the maximum theoretical voltage gain the tube can provide",
   "powergrid.component.property.tube_kg": "Kg",
-  "powergrid.component.property.tube_kg.summary": "Perveance (plate current scaling factor), higher values increase plate current for a given bias point",
+  "powergrid.component.property.tube_kg.summary": "Perveance (plate current scaling factor). Geometric constant that defines how effectively electrons are drawn from anode to cathode. Higher perveance values allow the tube to handle bigger currents.",
   "powergrid.component.property.tube_kp": "Kp",
   "powergrid.component.property.tube_kp.summary": "Plate influence on cutoff, controls how sharply plate current is reduced as the grid goes negative",
   "powergrid.component.property.tube_kvb": "Kvb",
