@@ -6,6 +6,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3d;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
@@ -100,10 +101,37 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
 
         double cosIncidence = Math.max(0, sunDir.dot(panelNormal));
         cosIncidence = Math.max(0, cosIncidence);
-        double diffuseLight = 0.1 * irradiance * (1 + cloudCover) * ((1 + panelNormal.y()) / 2);
-        double reflected = 0.15 * irradiance * ((1 - panelNormal.y()) / 2.0);
-
-        return (irradiance * sunVisablity) * transmisttance * cosIncidence + diffuseLight +  reflected;
+        double diffuseLight = 0.1 * (Math.max(0, sunDir.y) * irradiance * transmisttance)
+                * (1 + cloudCover) * ((1 + panelNormal.y()) / 2);
+        double reflected = 0.125 * (Math.max(0, sunDir.y) * irradiance * transmisttance) * ((1 - panelNormal.y()) / 2.0);
+        if (!world.canSeeSky(getBlockPos())){
+            var bp = getBlockPos();
+            var topY = world.getHeight(Heightmap.Types.MOTION_BLOCKING, bp.getX(), bp.getZ());
+            var list = DDA(world, bp.getCenter(), bp.getCenter().add(0, topY, 0));
+            boolean hit = false;
+            for (BlockPos result : list) {
+                var blockState = world.getBlockState(result);
+                if (blockState.is(ModdedBlocks.SOLAR_PANEL.get())) {
+                    if (result.equals(this.getBlockPos())) {
+                        continue;
+                    } else {
+                        hit = true;
+                        break;
+                    }
+                }
+                if (blockState.is(ModdedTags.Block.SOLAR_QUARTER_LIGHT.tag)) continue;
+                if (blockState.is(ModdedTags.Block.SOLAR_HALF_LIGHT.tag)) continue;
+                if (blockState.is(ModdedTags.Block.SOLAR_3QUARTER_LIGHT.tag)) continue;
+                if (blockState.is(ModdedTags.Block.SOLAR_FULL_LIGHT.tag)) continue;
+                hit = true;
+                break;
+            }
+            if (hit){
+                diffuseLight = 0;
+                reflected = 0;
+            }
+        }
+        return (irradiance * sunVisablity) * transmisttance * cosIncidence + diffuseLight + reflected;
     }
 
     public float sunRaycast(Level world){
