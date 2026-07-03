@@ -25,7 +25,8 @@ import java.util.Collection;
 import java.util.List;
 
 public class ElectronTubeWire extends CompoundWire implements ISolverHook {
-    private static final double GRID_CONDUCTANCE = 1e-6;
+    private static final double GRID_LEAK_CONDUCTANCE = 1e-6;
+    private static final double GRID_PERVEANCE = 5e-5;
 
     private final IElectricNode grid;
 
@@ -41,6 +42,7 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
     private double prevAnode;
 
     private double linearizedAnodeCurrent;
+    private double linearizedGridCurrent;
     private double reportedCurrent;
     private double reportedPower;
 
@@ -89,70 +91,117 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         vGrid -= vCathode;
         vAnode -= vCathode;
 
-        gridCathode.setConductance(GRID_CONDUCTANCE);
+        var plate = evaluatePlate(vAnode, vGrid);
+        var gridEval = evaluateGrid(vGrid);
 
-        double anodeCurrent, anodeConductance, transconductance = 0;
-        if (vAnode <= 0 || saturationCurrent == 0) {
-            anodeConductance = ElectricalNetwork.G_MIN;
-            anodeCurrent = vAnode * anodeConductance;
-        } else {
-            var kneeTerm = Math.sqrt(kvb + vAnode * vAnode);
-            var driveTerm = kp * (1 / mu + vGrid / kneeTerm);
-            var softplus = softplus(driveTerm);
-            var e1 = vAnode / kp * softplus;
-
-            if (e1 <= 0) {
-                anodeConductance = ElectricalNetwork.G_MIN;
-                anodeCurrent = vAnode * anodeConductance;
-            } else {
-                anodeCurrent = Math.pow(e1, ex) / kg1;
-
-                if (saturationCurrent > 0) {
-                    var saturationRatio = anodeCurrent / saturationCurrent;
-                    anodeCurrent /= Math.sqrt(Math.sqrt(1 + saturationRatio * saturationRatio));
-                }
-
-                var sigmoid = 1 / (1 + Math.exp(-driveTerm));
-                var dE1_dAnode = softplus / kp + vAnode / kp * sigmoid * (-kp * vGrid * vAnode / Math.pow(kneeTerm, 3));
-                var dE1_dGrid = vAnode * sigmoid / kneeTerm;
-                var dAnodeCurrent_dE1 = ex * Math.pow(e1, ex - 1) / kg1;
-
-                anodeConductance = dAnodeCurrent_dE1 * dE1_dAnode;
-                transconductance = dAnodeCurrent_dE1 * dE1_dGrid;
-            }
-        }
+        double anodeConductance = plate.dCurrent_dAnode;
+        double transconductance = plate.dCurrent_dGrid;
+        double anodeCurrent = plate.current;
 
         linearizedAnodeCurrent = -anodeCurrent + anodeConductance * vAnode + transconductance * vGrid;
+        linearizedGridCurrent = -gridEval.current + gridEval.conductance * vGrid;
 
         var actualVAnode = node2.getVoltage() - node1.getVoltage();
         var actualVGrid = grid.getVoltage() - node1.getVoltage();
         var actualAnodeCurrent = evaluatePlateCurrent(actualVAnode, actualVGrid);
-        var actualGridCurrent = GRID_CONDUCTANCE * actualVGrid;
+        var actualGridCurrent = evaluateGridCurrent(actualVGrid);
         reportedCurrent = actualAnodeCurrent + actualGridCurrent;
         reportedPower = actualAnodeCurrent * actualVAnode + actualGridCurrent * actualVGrid;
 
-        // Anode-Cathode "wire"
+        gridCathode.setConductance(gridEval.conductance);
         setConductance(anodeConductance);
         gmStamp.setConductance(transconductance);
     }
 
-    private double evaluatePlateCurrent(double vAnode, double vGrid) {
-        if (vAnode <= 0 || saturationCurrent == 0)
-            return vAnode * ElectricalNetwork.G_MIN;
+    private record PlateState(double current, double dCurrent_dAnode, double dCurrent_dGrid) {}
 
+    private PlateState evaluatePlate(double vAnode, double vGrid) {
+        if (vAnode <= 0 || saturationCurrent == 0)
+            return new PlateState(vAnode * ElectricalNetwork.G_MIN, ElectricalNetwork.G_MIN, 0);
+
+        var e1State = evaluateE1(vAnode, vGrid);
+        if (e1State.e1 < 0)
+            return new PlateState(0, 0, 0);
+
+        var rawCurrent = korenPlateFactor(e1State.e1) * Math.pow(e1State.e1, ex) / kg1;
+        var dRaw_dE1 = korenPlateFactor(e1State.e1) * ex * Math.pow(e1State.e1, ex - 1) / kg1;
+        var saturated = applySaturation(rawCurrent, dRaw_dE1);
+
+        return new PlateState(
+                saturated.current,
+                saturated.dCurrent_dRaw * e1State.dE1_dAnode,
+                saturated.dCurrent_dRaw * e1State.dE1_dGrid
+        );
+    }
+
+    private record E1State(double e1, double dE1_dAnode, double dE1_dGrid) {}
+
+    private E1State evaluateE1(double vAnode, double vGrid) {
         var kneeTerm = Math.sqrt(kvb + vAnode * vAnode);
         var driveTerm = kp * (1 / mu + vGrid / kneeTerm);
-        var e1 = vAnode / kp * softplus(driveTerm);
+        var sp = softplus(driveTerm);
+        var e1 = vAnode / kp * sp;
+        var sigmoid = 1 / (1 + Math.exp(-driveTerm));
+        var dE1_dAnode = sp / kp + vAnode / kp * sigmoid * (-kp * vGrid * vAnode / Math.pow(kneeTerm, 3));
+        var dE1_dGrid = vAnode * sigmoid / kneeTerm;
+        return new E1State(e1, dE1_dAnode, dE1_dGrid);
+    }
 
-        if (e1 <= 0)
-            return vAnode * ElectricalNetwork.G_MIN;
+    private record SaturatedCurrent(double current, double dCurrent_dRaw) {}
 
-        var anodeCurrent = Math.pow(e1, ex) / kg1;
-        if (saturationCurrent > 0) {
-            var saturationRatio = anodeCurrent / saturationCurrent;
-            anodeCurrent /= Math.sqrt(Math.sqrt(1 + saturationRatio * saturationRatio));
-        }
-        return anodeCurrent;
+    private SaturatedCurrent applySaturation(double rawCurrent, double dRaw_dE1) {
+        if (saturationCurrent <= 0)
+            return new SaturatedCurrent(rawCurrent, dRaw_dE1);
+
+        var ratio = rawCurrent / saturationCurrent;
+        var denom = Math.sqrt(Math.sqrt(1 + ratio * ratio));
+        var current = rawCurrent / denom;
+        var dDenom_dRaw = 0.25 * Math.pow(1 + ratio * ratio, -0.75) * 2 * ratio / saturationCurrent;
+        var dCurrent_dRaw = (dRaw_dE1 * denom - rawCurrent * dDenom_dRaw * dRaw_dE1) / (denom * denom);
+        return new SaturatedCurrent(current, dCurrent_dRaw);
+    }
+
+    private static double korenPlateFactor(double e1) {
+        return e1 >= 0 ? 2 : 0;
+    }
+
+    private record GridState(double current, double conductance) {}
+
+    private GridState evaluateGrid(double vGrid) {
+        var leak = GRID_LEAK_CONDUCTANCE * vGrid;
+        var vgPos = positiveGridVoltage(vGrid);
+        var forward = (2.0 / 3.0) * GRID_PERVEANCE * Math.pow(vgPos, 1.5);
+        var dForward = GRID_PERVEANCE * Math.sqrt(Math.max(vgPos, 1e-12)) * positiveGridDerivative(vGrid);
+        var conductance = Math.max(GRID_LEAK_CONDUCTANCE + dForward, ElectricalNetwork.G_MIN);
+        return new GridState(leak + forward, conductance);
+    }
+
+    private static double positiveGridVoltage(double vGrid) {
+        if (vGrid <= 0)
+            return softplus(vGrid * 10) / 10;
+        return vGrid;
+    }
+
+    private static double positiveGridDerivative(double vGrid) {
+        if (vGrid > 0)
+            return 1;
+        return sigmoid(vGrid * 10);
+    }
+
+    private static double sigmoid(double x) {
+        if (x > 20)
+            return 1;
+        if (x < -20)
+            return 0;
+        return 1 / (1 + Math.exp(-x));
+    }
+
+    private double evaluatePlateCurrent(double vAnode, double vGrid) {
+        return evaluatePlate(vAnode, vGrid).current;
+    }
+
+    private double evaluateGridCurrent(double vGrid) {
+        return evaluateGrid(vGrid).current;
     }
 
     private static double softplus(double x) {
@@ -165,8 +214,9 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
 
     @Override
     public void addResidual(IResidualAdder residual) {
-        residual.add(node1.getIndex(),  linearizedAnodeCurrent);
+        residual.add(node1.getIndex(), linearizedAnodeCurrent + linearizedGridCurrent);
         residual.add(node2.getIndex(), -linearizedAnodeCurrent);
+        residual.add(grid.getIndex(), -linearizedGridCurrent);
     }
 
     @Override
@@ -179,9 +229,18 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         return reportedPower;
     }
 
-    public static float calculateKg1(float anodeVoltage, float mu, float ex, float anodeCurrent) {
-        var e1 = anodeVoltage / mu;
-        return (float) (Math.pow(e1, ex) / anodeCurrent);
+    public static float calculateKg1(float anodeVoltage, float gridVoltage, float mu, float kp, float kvb, float ex, float anodeCurrent) {
+        if (anodeCurrent <= 0 || anodeVoltage <= 0)
+            return Float.POSITIVE_INFINITY;
+
+        var kneeTerm = Math.sqrt(kvb + anodeVoltage * anodeVoltage);
+        var driveTerm = kp * (1 / mu + gridVoltage / kneeTerm);
+        var e1 = anodeVoltage / kp * softplus(driveTerm);
+        if (e1 < 0)
+            return Float.POSITIVE_INFINITY;
+
+        var factor = korenPlateFactor(e1);
+        return (float) (factor * Math.pow(e1, ex) / anodeCurrent);
     }
 
     @Override
