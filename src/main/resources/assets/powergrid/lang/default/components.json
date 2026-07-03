@@ -11,7 +11,7 @@
   "powergrid.component.property.tube_gain": "Gain (μ)",
   "powergrid.component.property.tube_gain.summary": "Amplification factor, controls how strongly grid voltage influences plate current",
   "powergrid.component.property.tube_kg": "Kg",
-  "powergrid.component.property.tube_kg.summary": "Perveance (plate current scaling factor), higher values reduce plate current for a given bias point",
+  "powergrid.component.property.tube_kg.summary": "Perveance (plate current scaling factor), higher values increase plate current for a given bias point",
   "powergrid.component.property.tube_kp": "Kp",
   "powergrid.component.property.tube_kp.summary": "Plate influence on cutoff, controls how sharply plate current is reduced as the grid goes negative",
   "powergrid.component.property.tube_kvb": "Kvb",
