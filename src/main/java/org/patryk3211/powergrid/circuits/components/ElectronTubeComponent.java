@@ -38,8 +38,10 @@ import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.special.ElectronTubeWire;
 
 public class ElectronTubeComponent extends MirrorableComponent implements IRenderedComponent {
+    // Koren mu (amplification factor), not small-signal voltage gain
     public static final FloatProperty GAIN = new FloatProperty(PowerGrid.MOD_ID, "tube_gain", 5, 1, 100);
-    public static final FloatProperty K_G = new FloatProperty(PowerGrid.MOD_ID, "tube_kg", 6800, 200, 10_000);
+    // Doubled from 6800 to preserve operating point with the Koren (1 + sgn(E1)) factor
+    public static final FloatProperty K_G = new FloatProperty(PowerGrid.MOD_ID, "tube_kg", 13_600, 200, 20_000);
     public static final FloatProperty K_P = new FloatProperty(PowerGrid.MOD_ID, "tube_kp", 600, 50, 2000);
     public static final FloatProperty K_VB = new FloatProperty(PowerGrid.MOD_ID, "tube_kvb", 300, 10, 1000);
     public static final FloatProperty EX = new FloatProperty(PowerGrid.MOD_ID, "tube_ex", 1.5f, 1.2f, 1.6f);
@@ -103,8 +105,11 @@ public class ElectronTubeComponent extends MirrorableComponent implements IRende
         var props = tag.getCompound("Properties");
         if(props.contains("powergrid:tube_anode_resistance")) {
             var resistance = props.getFloat("powergrid:tube_anode_resistance");
-            var kg = ElectronTubeWire.calculateKg1(1,
+            var kg = ElectronTubeWire.calculateKg1(
+                    1, 0,
                     props.getFloat(GAIN.id().toString()),
+                    props.contains(K_P.id().toString()) ? props.getFloat(K_P.id().toString()) : K_P.defaultValue(),
+                    props.contains(K_VB.id().toString()) ? props.getFloat(K_VB.id().toString()) : K_VB.defaultValue(),
                     props.contains(EX.id().toString()) ? props.getFloat(EX.id().toString()) : EX.defaultValue(),
                     1 / resistance);
             PowerGrid.LOGGER.info("Fixing electron tube anode resistance ({}) into k_g ({})", resistance, kg);
