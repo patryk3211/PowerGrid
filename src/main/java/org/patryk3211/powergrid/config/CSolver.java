@@ -45,6 +45,8 @@ public class CSolver extends ConfigBase {
     public final ConfigFloat triodeLimCathode = f(0.5f, 0, 1, "triodeLimCathode", Comments.triodeLim);
     public final ConfigFloat triodeLimGrid = f(0.5f, 0, 1, "triodeLimGrid", Comments.triodeLim);
 
+    public final ConfigBool seriesWireOptimization = b(false, "seriesWireOptimization");
+
     public final ConfigInt multiTicks = i(1, 1, "multiTicks", Comments.multiTicks);
 
     public final ConfigEnum<SolverBackend> solverBackend = e(SolverBackend.NATIVE, "solverBackend", Comments.solverBackend);

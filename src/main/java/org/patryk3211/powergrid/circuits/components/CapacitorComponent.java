@@ -42,7 +42,7 @@ public class CapacitorComponent extends OrientableComponent {
 
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
-        var capacitorWire = new CRSeriesWire(placed.get(CAPACITANCE) / 1000, 0.1f, builder.terminalNode(0), builder.terminalNode(1));
+        var capacitorWire = new CRSeriesWire(placed.get(CAPACITANCE) / 1000, 0.01f, builder.terminalNode(0), builder.terminalNode(1));
         capacitorWire.setVoltage(placed.get(CHARGE));
         builder.add(capacitorWire);
         placed.add(capacitorWire);

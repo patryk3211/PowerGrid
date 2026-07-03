@@ -67,6 +67,8 @@
 
   "powergrid.gui.invalid_equation": "Invalid display equation",
 
+  "powergrid.gui.solar_panel_bearing.slider": "Strings in Parallel × Panels in String",
+
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",
   "powergrid.generic.unit.ohm": "Ω",

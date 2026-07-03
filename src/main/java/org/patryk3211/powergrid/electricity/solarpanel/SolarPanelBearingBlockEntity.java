@@ -51,7 +51,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     private float prevAngle;
     private float cloudCover = 0;
     private boolean firstTick = true;
-    private float AMBIENT_TEMP = -2000f;
+    private float ambientTemp = -2000f;
     private int rayCastDelay = 0;
     private float sunVisibility = 0;
     private int temp = 0;
@@ -116,7 +116,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
                 sequencedAngleLimit = Math.max(0, sequencedAngleLimit - Math.abs(angularSpeed));
             }
             float newAngle = angle + angularSpeed;
-            angle = (float) (newAngle % 360);
+            angle = newAngle % 360;
         }
 
         applyRotation();
@@ -143,12 +143,12 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
 
         if (sourceCoupling == null) return;
         if (firstTick) {
-            AMBIENT_TEMP = ThermalBehaviour.getAmbientTemperature(world, pos);
-            if (AMBIENT_TEMP <= ThermalBehaviour.ABSOLUTE_ZERO)
-                AMBIENT_TEMP = 22f;
+            ambientTemp = ThermalBehaviour.getAmbientTemperature(world, this.getBlockPos());
+            if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
+                ambientTemp = 22f;
             firstTick = false;
         }
-        cloudCover = getWeather(world);
+        float cloudCover = getWeather(world);
 
         Vec3 localDir = new Vec3(contraption.panelNormal.x, contraption.panelNormal.y, contraption.panelNormal.z);
         Vec3 worldTip = movedContraption.toGlobalVector(localDir, 1.0f);
@@ -162,8 +162,8 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
             panelNormal.normalize();
         }
 
-        var irradiance = getIrradiance(getAM(world), cloudCover, pos.getY(), world);
-        var cellTemp = getCellTemp(irradiance, AMBIENT_TEMP);
+        var irradiance = getIrradiance(getAM(world), cloudCover, this.getBlockPos().getY(), world);
+        var cellTemp = getCellTemp(irradiance, ambientTemp);
         var Vt = 8.617e-5 * (cellTemp + 273.15);
         double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt, parallelNumbers.getDivisor());
         double cellCurrent = adjusted[0];
@@ -177,28 +177,15 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         }
 
         double panelResistance = (cellCurrent > 0) ? Voc_panel / cellCurrent : 1e6;
-        sourceCoupling.setVoltage((float) Voc_panel);
+        sourceCoupling.setVoltage(Voc_panel);
         sourceCoupling.setResistance((float) panelResistance);
-
-        if (temp++ == 20){
-            System.out.println("Cell Temp: " + cellTemp);
-            //System.out.println("Single cell voltage: " + Voc_t);
-            //System.out.println("Single cell current: " + cellCurrent);
-            //System.out.println("Vt: " + Vt);
-            System.out.println("Current irradiance: " + irradiance);
-            System.out.println("AM: " + getAM(world));
-            System.out.println("normal: " + panelNormal);
-            //System.out.println("tilt: " + panelTiltDeg);
-            System.out.println();
-            temp = 0;
-        }
 
         super.electricalTick();
     }
 
     public double getIrradiance(double AM, double cloudCover, int YPos, Level world) {
         if (AM == Double.POSITIVE_INFINITY) return 0;
-        var transmisttance = 1 - cloudCover;
+        var transmittance = 1 - cloudCover;
         var irradiance = SOLAR_CONSTANT * Math.pow(0.7,Math.pow(AM, 0.678));
         irradiance = irradiance * ((((YPos - 70) / 250f) * 0.04f) + 1); //70 is around average world height, but it could also be put to sea level
 
@@ -216,7 +203,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         double diffuseLight = 0.1 * irradiance * (1 + cloudCover) * ((1 + panelNormal.y()) / 2);
         double reflected = 0.15 * irradiance * ((1 - panelNormal.y()) / 2.0);
 
-        return (irradiance * sunVisibility) * transmisttance * cosIncidence + diffuseLight +  reflected;
+        return (irradiance * sunVisibility) * transmittance * cosIncidence + diffuseLight +  reflected;
     }
 
     public float sunRaycast(Level world) {

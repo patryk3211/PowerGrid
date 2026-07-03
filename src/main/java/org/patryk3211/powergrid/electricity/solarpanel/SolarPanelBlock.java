@@ -16,11 +16,13 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
@@ -35,34 +37,25 @@ import java.util.List;
 import java.util.function.Predicate;
 
 public class SolarPanelBlock extends Rotation4ElectricBlock implements IBE<SolarPanelBlockEntity>,IHaveElectricProperties, IAcceptConnector {
-
-    private static final VoxelShape SHAPE = Shapes.or(
-            box(0, 6, 0, 16, 10, 16)
-    );
+    private static final VoxelShape SHAPE = box(0, 6, 0, 16, 10, 16);
+    private static final VoxelShaper[] SHAPERS = new VoxelShaper[] {
+            VoxelShaper.forDirectional(SHAPE, Direction.DOWN),
+            VoxelShaper.forDirectional(ShaperUtils.rotate(SHAPE, Direction.NORTH, Direction.WEST), Direction.DOWN),
+            VoxelShaper.forDirectional(ShaperUtils.rotate(SHAPE, Direction.NORTH, Direction.WEST), Direction.DOWN),
+            VoxelShaper.forDirectional(ShaperUtils.rotate(SHAPE, Direction.NORTH, Direction.WEST), Direction.DOWN)
+    };
 
     private static final int placementHelperId = PlacementHelpers.register(new SolarPanelBlock.PlacementHelper());
 
-    private static final TerminalBoundingBox[] NORTH_TERMINALS = new TerminalBoundingBox[] {
-    };
-
     public SolarPanelBlock(Properties settings) {
         super(settings);
-        var shapers = new VoxelShaper[] {
-                VoxelShaper.forDirectional(SHAPE, Direction.DOWN),
-                VoxelShaper.forDirectional(ShaperUtils.rotate(SHAPE, Direction.NORTH, Direction.WEST), Direction.DOWN),
-                VoxelShaper.forDirectional(ShaperUtils.rotate(SHAPE, Direction.NORTH, Direction.WEST), Direction.DOWN),
-                VoxelShaper.forDirectional(ShaperUtils.rotate(SHAPE, Direction.NORTH, Direction.WEST), Direction.DOWN)
-        };
-        setTerminalCollection(BlockStateTerminalCollection.builder(this)
-                .forAllStates(state -> BlockStateTerminalCollection.each(NORTH_TERMINALS,
-                        terminal -> terminal)
-                )
-                .withShapeMapper(state -> {
-                    var facing = state.getValue(FACING);
-                    var rotation = state.getValue(ROTATION);
-                    return shapers[rotation].get(facing);
-                })
-                .build());
+    }
+
+    @Override
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        var facing = state.getValue(FACING);
+        var rotation = state.getValue(ROTATION);
+        return SHAPERS[rotation].get(facing);
     }
 
     @Override

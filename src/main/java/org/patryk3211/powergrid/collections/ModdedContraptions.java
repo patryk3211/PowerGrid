@@ -1,9 +1,12 @@
 package org.patryk3211.powergrid.collections;
 
+
 import com.simibubi.create.api.contraption.ContraptionType;
 import com.simibubi.create.api.registry.CreateBuiltInRegistries;
+import net.minecraft.core.Holder;
 import net.minecraft.core.Registry;
 import org.patryk3211.powergrid.PowerGrid;
+import net.minecraft.resources.ResourceLocation;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBearingContraption;
 
 public class ModdedContraptions {
