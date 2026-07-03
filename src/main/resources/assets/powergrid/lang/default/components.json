@@ -30,7 +30,7 @@
   "powergrid.component.property.vfet_kg": "Kg",
   "powergrid.component.property.vfet_kg.summary": "Perveance, controls channel current for a given voltage",
   "powergrid.component.property.vfet_isat": "Saturation current",
-  "powergrid.component.property.vfet_isat.summary": "Maximum current that can pass through the transistor without distortion",
+  "powergrid.component.property.vfet_isat.summary": "Maximum current that can pass through the transistor before soft saturation clipping begins",
 
   "powergrid.component.property.bjt_gain": "Gain",
 
