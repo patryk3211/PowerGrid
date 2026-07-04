@@ -70,6 +70,7 @@ import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock
 import org.patryk3211.powergrid.electricity.electricswitch.*;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
+import org.patryk3211.powergrid.electricity.febridge.FEInverterBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.PowerGaugeBlock;
@@ -652,6 +653,16 @@ public class ModdedBlocks {
             .transform(CThermal.maxPower(50, 0.75f))
             .item()
                 .model(itemWithParent("block/redstone_converter/off_v"))
+                .build()
+            .register();
+
+    public static final BlockEntry<FEInverterBlock> FE_INVERTER = REGISTRATE.block("fe_inverter", FEInverterBlock::new)
+            .blockstate(surfaceBlock("block/fe_inverter/block"))
+            .transform(axeOrPickaxe())
+            .transform(CResistance.setResistance(0.5))
+            .lang("FE Inverter")
+            .item()
+                .model(itemWithParent("block/fe_inverter/block_v"))
                 .build()
             .register();
 

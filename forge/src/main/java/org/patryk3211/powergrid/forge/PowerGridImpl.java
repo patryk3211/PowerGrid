@@ -58,6 +58,8 @@ import org.patryk3211.powergrid.data.BlockTagProvider;
 import org.patryk3211.powergrid.data.ItemTagProvider;
 import org.patryk3211.powergrid.data.recipe.forge.MixingRecipes;
 import org.patryk3211.powergrid.data.recipes.*;
+import org.patryk3211.powergrid.electricity.febridge.FEInverterBlockEntity;
+import org.patryk3211.powergrid.electricity.febridge.forge.FEInverterBlockEntityImpl;
 import org.patryk3211.powergrid.electricity.wire.registry.WireItemEntry;
 import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardMenu;
@@ -96,6 +98,7 @@ public class PowerGridImpl {
         }
 
         SubstituteBlockEntityProvider.INSTANCE.register(PunchCardReaderBlockEntity.class, PunchCardReaderBlockEntityImpl::new);
+        SubstituteBlockEntityProvider.INSTANCE.register(FEInverterBlockEntity.class, FEInverterBlockEntityImpl::new);
         PunchCardMenu.CONSTRUCTORS = PunchCardMenuImpl.constructors();
         PowerGrid.init();
 
