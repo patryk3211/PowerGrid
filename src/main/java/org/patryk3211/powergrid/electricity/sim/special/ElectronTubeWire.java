@@ -26,7 +26,7 @@ import java.util.List;
 
 public class ElectronTubeWire extends CompoundWire implements ISolverHook {
     private static final double GRID_LEAK_CONDUCTANCE = 1e-6;
-    private static final double GRID_PERVEANCE = 5e-5;
+    private static final double GRID_PERVEANCE = 2e-4;
 
     private final IElectricNode grid;
 
