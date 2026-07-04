@@ -25,6 +25,7 @@
   "block.powergrid.electric_fan": "Электрический вентилятор",
   "block.powergrid.electric_motor": "Электрический двигатель",
   "block.powergrid.electromagnet": "Электромагнит",
+  "block.powergrid.fe_inverter": "FE инвертор",
   "block.powergrid.fuse_holder": "Держатель предохранителя",
   "block.powergrid.generator_clutch": "Муфта генератора",
   "block.powergrid.generator_commutator": "Коллектор генератора",
