@@ -75,7 +75,6 @@ public class SolarPanelBlock extends Rotation4ElectricBlock implements IBE<Solar
                 return InteractionResult.SUCCESS;
             }
         }
-
         return super.use(state, level, pos, player, hand, hit);
     }
 
@@ -112,7 +111,7 @@ public class SolarPanelBlock extends Rotation4ElectricBlock implements IBE<Solar
     private static class PlacementHelper implements IPlacementHelper {
         @Override
         public Predicate<ItemStack> getItemPredicate() {
-            return i -> ModdedBlocks.SOLAR_PANEL.isIn(i) || ModdedBlocks.SOLAR_PANEL.isIn(i);
+            return i -> ModdedBlocks.SOLAR_PANEL.isIn(i);
         }
 
         @Override

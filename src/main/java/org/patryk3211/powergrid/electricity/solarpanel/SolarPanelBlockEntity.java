@@ -10,7 +10,6 @@ import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3d;
 import org.joml.Vector3f;
@@ -35,14 +34,14 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
     protected static final float NOCT = 52;
     protected static final double I_O = 1.11e-4;
     protected static final double IDEALITY = 1.8;
+    protected static final double DIFFUSE_FRAC = .12;
+    protected static final double ALBEDO_FRAC = .08;
 
-    private int temp = 0;
-    private float cloudCover = 0;
     private boolean firstTick = true;
     private float ambientTemp = -2000f;
     private int rayCastDelay = 0;
-    private float sunVisablity = 0;
-    protected int totalCells = CELLS_IN_SERIES;
+    private float sunVisibility = 0;
+    private boolean skyVisible = false;
     private Vector3d panelNormal;
 
     public SolarPanelBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -85,7 +84,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
         double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt, STRINGS_IN_PARALLEL);
         double cellCurrent = adjusted[0];
         double Voc_t = adjusted[1];
-        double Voc_panel = Voc_t * totalCells;
+        double Voc_panel = Voc_t * CELLS_IN_SERIES;
 
         if (cellCurrent <= 0) {
             sourceCoupling.setVoltage(0);
@@ -97,24 +96,12 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
         sourceCoupling.setVoltage((float) Voc_panel);
         sourceCoupling.setResistance((float) panelResistance);
 
-        if (temp++ == 20){
-            System.out.println("Cell Temp: " + cellTemp);
-            //System.out.println("Single cell voltage: " + Voc_t);
-            //System.out.println("Single cell current: " + cellCurrent);
-            //System.out.println("Vt: " + Vt);
-            System.out.println("Current irradiance: " + irradiance);
-            System.out.println("AM: " + getAM(world));
-            System.out.println("normal: " + panelNormal);
-            //System.out.println("tilt: " + panelTiltDeg);
-            System.out.println();
-            temp = 0;
-        }
         super.electricalTick();
     }
 
     public double getIrradiance(double AM, double cloudCover, int YPos, Level world) {
         if (AM == Double.POSITIVE_INFINITY) return 0;
-        var transmisttance = 1 - cloudCover;
+        var transmittance = 1 - cloudCover;
         var irradiance = SOLAR_CONSTANT * Math.pow(0.7,Math.pow(AM, 0.678));
         irradiance = irradiance * ((((YPos - 70) / 250f) * 0.04f) + 1); //70 is around average world height, but it could also be put to sea level
 
@@ -123,43 +110,22 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
         if (sunDir.y <= 0) return 0;
 
         if (rayCastDelay-- == 0){
-            sunVisablity = sunRaycast(world);
+            sunVisibility = sunRaycast(world);
             rayCastDelay = world.random.nextInt(41) + 10;
+            skyVisible = skyCheck(world, this.getBlockPos());
         }
 
         double cosIncidence = Math.max(0, sunDir.dot(panelNormal));
         cosIncidence = Math.max(0, cosIncidence);
-        double diffuseLight = 0.1 * (Math.max(0, sunDir.y) * irradiance * transmisttance)
+        double diffuseLight = DIFFUSE_FRAC * (Math.max(0, sunDir.y) * irradiance * transmittance)
                 * (1 + cloudCover) * ((1 + panelNormal.y()) / 2);
-        double reflected = 0.125 * (Math.max(0, sunDir.y) * irradiance * transmisttance) * ((1 - panelNormal.y()) / 2.0);
-        if (!world.canSeeSky(getBlockPos())){
-            var bp = getBlockPos();
-            var topY = world.getHeight(Heightmap.Types.MOTION_BLOCKING, bp.getX(), bp.getZ());
-            var list = DDA(world, bp.getCenter(), bp.getCenter().add(0, topY, 0));
-            boolean hit = false;
-            for (BlockPos result : list) {
-                var blockState = world.getBlockState(result);
-                if (blockState.is(ModdedBlocks.SOLAR_PANEL.get())) {
-                    if (result.equals(this.getBlockPos())) {
-                        continue;
-                    } else {
-                        hit = true;
-                        break;
-                    }
-                }
-                if (blockState.is(ModdedTags.Block.SOLAR_QUARTER_LIGHT.tag)) continue;
-                if (blockState.is(ModdedTags.Block.SOLAR_HALF_LIGHT.tag)) continue;
-                if (blockState.is(ModdedTags.Block.SOLAR_3QUARTER_LIGHT.tag)) continue;
-                if (blockState.is(ModdedTags.Block.SOLAR_FULL_LIGHT.tag)) continue;
-                hit = true;
-                break;
-            }
-            if (hit){
-                diffuseLight = 0;
-                reflected = 0;
-            }
+        double reflected = ALBEDO_FRAC * (Math.max(0, sunDir.y) * irradiance * transmittance) * ((1 - panelNormal.y()) / 2.0);
+
+        if (!skyVisible){
+            diffuseLight = 0;
+            reflected = 0;
         }
-        return (irradiance * sunVisablity) * transmisttance * cosIncidence + diffuseLight + reflected;
+        return (irradiance * sunVisibility) * transmittance * cosIncidence + diffuseLight + reflected;
     }
 
     public float sunRaycast(Level world){
@@ -172,7 +138,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
         double sunAngle = world.getSunAngle(0);
         double sunX = -Math.sin(sunAngle);
         double sunY = Math.cos(sunAngle);
-        boolean positiveX = -Math.sin(world.getSunAngle(0)) > 0;
+        boolean positiveX = sunX > 0;
         for (int i = 1; i <= 10; i++) {
             int xOffset = (positiveX ? i : -i) * 16;
             chunk = world.getChunkSource().getChunkNow(SectionPos.blockToSectionCoord(blockPos.getX() + xOffset),
@@ -188,11 +154,16 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
         var end = centerBlockPos.add(new Vec3(sunX, sunY, 0).scale(castLength));
         var results = DDA(world, centerBlockPos, end);
         float returnValue = 1;
-        for (BlockPos result : results) {
-            var blockState = world.getBlockState(result);
+        for (DDAHit result : results) {
+            BlockState blockState;
+            if (result.contraption() != null) {
+                blockState = result.contraption().getContraption().getBlocks().get(result.worldOrLocalPos()).state();
+            } else {
+                blockState = world.getBlockState(result.worldOrLocalPos());
+            }
 
-            if (blockState.is(ModdedBlocks.SOLAR_PANEL)) {
-                if (result.equals(this.getBlockPos())) {
+            if (blockState.is(ModdedBlocks.SOLAR_PANEL.get())) {
+                if (result.worldOrLocalPos().equals(this.getBlockPos())) {
                     continue;
                 } else {
                     returnValue = 0;
