@@ -49,7 +49,7 @@ public class SolarPanelBearingBlock extends ElectricKineticBlock implements IBE<
     public SolarPanelBearingBlock(Properties properties) {
         super(properties);
         var shaper = VoxelShaper.forDirectional(SHAPE, Direction.NORTH);
-        if(SHAPE2 != null) shaper.withVerticalShapes(SHAPE2);
+        shaper.withVerticalShapes(SHAPE2);
         var terminalstate = BlockStateTerminalCollection.builder(this)
                 .forAllStates(state -> BlockStateTerminalCollection.each(TERMINALS, terminal -> switch(state.getValue(FACING)) {
                     case NORTH -> terminal;
@@ -117,7 +117,7 @@ public class SolarPanelBearingBlock extends ElectricKineticBlock implements IBE<
         for (Direction side : Iterate.directions) {
             BlockState blockState = context.getLevel()
                     .getBlockState(context.getClickedPos()
-                            .relative(side));
+                    .relative(side));
             if (blockState.getBlock() instanceof IRotate) {
                 if (((IRotate) blockState.getBlock()).hasShaftTowards(context.getLevel(), context.getClickedPos()
                         .relative(side), blockState, side.getOpposite()))
