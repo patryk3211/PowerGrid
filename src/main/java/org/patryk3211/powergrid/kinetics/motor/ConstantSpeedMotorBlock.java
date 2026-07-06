@@ -47,6 +47,7 @@ import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 
 import java.util.List;
 
+import static org.patryk3211.powergrid.PowerGrid.maxRPM;
 import static org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock.NORTH_SHAPE;
 import static org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlock.UP_SHAPE;
 import static org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity.CONVERSION_CONSTANT;
@@ -128,7 +129,7 @@ public class ConstantSpeedMotorBlock extends ElectricKineticBlock implements IBE
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(resistance(), player, tooltip);
         var torque = BlockStressValues.getCapacity(this) * ModdedConfigs.server().kinetics.torqueForStress.getF();
-        var maxPower = 256 * torque / CONVERSION_CONSTANT;
+        var maxPower = maxRPM() * torque / CONVERSION_CONSTANT;
         Voltage.max((int) Math.sqrt(maxPower * resistance()), player, tooltip);
     }
 

@@ -35,6 +35,8 @@ import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
+import static org.patryk3211.powergrid.PowerGrid.maxRPM;
+
 public class GeneratorClutchBlockEntity extends GeneratingKineticBlockEntity implements RotorBehaviour.IForceSource {
     protected RotorBehaviour rotorBehaviour;
 
@@ -124,10 +126,10 @@ public class GeneratorClutchBlockEntity extends GeneratingKineticBlockEntity imp
         if(mode.get() == ClutchMode.MOTOR && !level.isClientSide) {
             var newSpeed = (int) rotorBehaviour.getAngularVelocity();
             // Max speed constraints.
-            if(newSpeed > 256)
-                newSpeed = 256;
-            if(newSpeed < -256)
-                newSpeed = -256;
+            if(newSpeed > maxRPM())
+                newSpeed = maxRPM();
+            if(newSpeed < -maxRPM())
+                newSpeed = -maxRPM();
 
             // Update speed from average power.
             if(newSpeed != generatedSpeed) {
