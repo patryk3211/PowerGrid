@@ -2,21 +2,18 @@ package org.patryk3211.powergrid.collections;
 
 
 import com.simibubi.create.api.contraption.ContraptionType;
-import com.simibubi.create.api.registry.CreateBuiltInRegistries;
-import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
+import com.simibubi.create.api.registry.CreateRegistries;
+import dev.architectury.registry.registries.DeferredRegister;
+import dev.architectury.registry.registries.RegistrySupplier;
 import org.patryk3211.powergrid.PowerGrid;
-import net.minecraft.resources.ResourceLocation;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBearingContraption;
 
 public class ModdedContraptions {
-    public static ContraptionType SOLAR_PANEL;
+    public static final DeferredRegister<ContraptionType> REGISTER = DeferredRegister.create(PowerGrid.MOD_ID, CreateRegistries.CONTRAPTION_TYPE);
+
+    public static final RegistrySupplier<ContraptionType> SOLAR_PANEL = REGISTER.register("solar_panel", () -> new ContraptionType(SolarPanelBearingContraption::new));
 
     public static void register() {
-        SOLAR_PANEL = Registry.register(
-                CreateBuiltInRegistries.CONTRAPTION_TYPE,
-                PowerGrid.asResource("solar_panel"),
-                new ContraptionType(SolarPanelBearingContraption::new)
-        );
+        REGISTER.register();
     }
 }

@@ -7,7 +7,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
@@ -97,7 +96,7 @@ public class SolarPanelBearingContraption extends BearingContraption {
 
     @Override
     public ContraptionType getType() {
-        return ModdedContraptions.SOLAR_PANEL.holder.value();
+        return ModdedContraptions.SOLAR_PANEL.get();
     }
 
     public int getPanelBlocks(){
