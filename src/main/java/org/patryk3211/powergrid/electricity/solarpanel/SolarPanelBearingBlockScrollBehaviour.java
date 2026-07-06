@@ -27,7 +27,7 @@ public class SolarPanelBearingBlockScrollBehaviour extends ScrollValueBehaviour 
     public int panelCount = 1;
 
     public SolarPanelBearingBlockScrollBehaviour(SmartBlockEntity be) {
-        super(Lang.translateDirect("solar_panel_bearing.slider"), be, new BearingFaceBox());
+        super(Lang.translateDirect("gui.solar_panel_bearing.slider"), be, new BearingFaceBox());
         between(0, 0);
         value = 0;
         withFormatter(this::formatIndex);
