@@ -24,10 +24,7 @@ import org.apache.commons.lang3.mutable.MutableObject;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
-import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
-import org.patryk3211.powergrid.electricity.base.IElectricEntity;
-import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
-import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.calculation.Precalculated;
@@ -40,7 +37,7 @@ import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 import java.util.HashSet;
 import java.util.List;
 
-public class CommutatorBlockEntity extends RotorBlockEntity implements IElectricEntity {
+public class CommutatorBlockEntity extends RotorBlockEntity implements IElectricEntity, IElectric {
     protected ElectricBehaviour electricBehaviour;
     protected ThermalBehaviour thermalBehaviour;
     protected GeneratorCoupling source;
@@ -237,5 +234,19 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
                 chance -= 1;
             }
         }
+    }
+
+    @Override
+    public int terminalCount() {
+        return 2;
+    }
+
+    @Override
+    public ITerminalPlacement terminal(BlockState state, int index) {
+        if(!(state.getBlock() instanceof CommutatorBlock block))
+            return null;
+        if(rotorBehaviour.getAngularVelocity() >= 0)
+            return block.terminals.get(state, index);
+        return block.terminalsFlipped.get(state, index);
     }
 }

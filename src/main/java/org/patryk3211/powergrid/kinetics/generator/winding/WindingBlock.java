@@ -458,7 +458,7 @@ public class WindingBlock extends ElectricBlock implements IBE<WindingBlockEntit
 
     @Override
     public boolean isPolarized() {
-        return false;
+        return true;
     }
 
     @Override

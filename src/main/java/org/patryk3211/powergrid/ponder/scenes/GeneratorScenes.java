@@ -390,15 +390,26 @@ public class GeneratorScenes {
 
         scene.world().showSection(util.select().fromTo(5, 1, 3, 5, 3, 3), Direction.DOWN);
         scene.world().showSection(util.select().fromTo(1, 1, 1, 1, 2, 1), Direction.DOWN);
-        scene.idle(10);
+        scene.idle(20);
 
-        scene.electric().connect(commutator, 0, wireconn1, 0, DyeColor.GRAY);
-        scene.electric().connect(commutator, 1, conn, 0, DyeColor.GRAY);
-        scene.electric().connect(conn, 1, wireconn2, 0, DyeColor.GRAY);
-        scene.electric().connect(wireconn2, 0, rheo, 1, DyeColor.GRAY);
-        scene.electric().connect(rheo, 2, wireconn1, 0, DyeColor.GRAY);
+        scene.overlay().showText(60)
+                .text("Wire positive to positive...")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(40);
+        scene.electric().connect(commutator, 1, conn, 0, DyeColor.RED);
+        scene.idle(30);
+
+        scene.overlay().showText(60)
+                .text("...and negative to negative")
+                .placeNearTarget();
+        scene.idle(40);
+        scene.electric().connect(commutator, 0, wireconn1, 0, DyeColor.BLUE);
+        scene.electric().connect(conn, 1, wireconn2, 0, DyeColor.BLUE);
+        scene.electric().connect(wireconn2, 0, rheo, 1, DyeColor.BLUE);
+        scene.electric().connect(rheo, 2, wireconn1, 0, DyeColor.BLUE);
         scene.electric().tickForever();
-        scene.idle(50);
+        scene.idle(80);
 
         scene.effects().indicateSuccess(meter);
         scene.overlay().showText(60)
@@ -407,13 +418,19 @@ public class GeneratorScenes {
                 .attachKeyFrame();
         scene.idle(70);
         scene.overlay().showText(100)
-                .text("1.Resistance - The 'excitation loop resistance' must be low enough to allow for the field to build up, but not too low as to not overpower the coils.")
+                .text("1.Rotation direction - The generator will only work when spinning one way, stator wiring must be flipped for it to work the other way.")
+                .pointAt(util.vector().of(3.5, 2.75, 3.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(110);
+        scene.overlay().showText(100)
+                .text("2.Resistance - The 'excitation loop resistance' must be low enough to allow for the field to build up, but not too low as to not overpower the coils.")
                 .pointAt(util.vector().of(6.5, 2.75, 1.5))
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(110);
         scene.overlay().showText(100)
-                .text("2.Rotation speed - The generator must spin fast enough to generate enough of the initial starting current and build up the field.")
+                .text("3.Rotation speed - The generator must spin fast enough to generate enough of the initial starting current and build up the field.")
                 .pointAt(util.vector().of(3.5, 2.75, 4))
                 .placeNearTarget()
                 .attachKeyFrame();

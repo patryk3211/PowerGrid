@@ -49,10 +49,11 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class CommutatorBlock extends AbstractRotorBlock implements IBE<CommutatorBlockEntity>, IElectric, IBrushPlacement {
+public class CommutatorBlock extends AbstractRotorBlock implements IBE<CommutatorBlockEntity>, IBrushPlacement {
     public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
 
-    private final BlockStateTerminalCollection terminals;
+    final BlockStateTerminalCollection terminals;
+    final BlockStateTerminalCollection terminalsFlipped;
     private final ImmutableMap<BlockState, VoxelShape> outlines;
 
     private static final TerminalBoundingBox[] TERMINALS_HORIZONTAL = new TerminalBoundingBox[] {
@@ -60,6 +61,12 @@ public class CommutatorBlock extends AbstractRotorBlock implements IBE<Commutato
                     .withColor(IDecoratedTerminal.RED),
             new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 13, 14, 7, 16, 16, 10)
                     .withColor(IDecoratedTerminal.BLUE)
+    };
+    private static final TerminalBoundingBox[] TERMINALS_HORIZONTAL_FLIPPED = new TerminalBoundingBox[] {
+            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 0, 14, 6, 3, 16, 9)
+                    .withColor(IDecoratedTerminal.BLUE),
+            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 13, 14, 7, 16, 16, 10)
+                    .withColor(IDecoratedTerminal.RED)
     };
 
     public CommutatorBlock(Properties properties) {
@@ -78,6 +85,13 @@ public class CommutatorBlock extends AbstractRotorBlock implements IBE<Commutato
                 .withShapeMapper(state -> {
                     var axis = state.getValue(HORIZONTAL_FACING).getAxis();
                     return baseShaper.get(axis);
+                })
+                .build();
+        terminalsFlipped = BlockStateTerminalCollection.builder(this)
+                .forAllStatesExcept(state -> {
+                    var facing = state.getValue(HORIZONTAL_FACING);
+                    return BlockStateTerminalCollection.each(TERMINALS_HORIZONTAL_FLIPPED, terminal -> terminal
+                            .rotateAroundY((int) facing.toYRot() - 180));
                 })
                 .build();
         outlines = getShapeForEachState(terminals.shapeMapper());
@@ -101,16 +115,6 @@ public class CommutatorBlock extends AbstractRotorBlock implements IBE<Commutato
     @Override
     public BlockEntityType<? extends CommutatorBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.GENERATOR_COMMUTATOR.get();
-    }
-
-    @Override
-    public int terminalCount() {
-        return 2;
-    }
-
-    @Override
-    public ITerminalPlacement terminal(BlockState state, int index) {
-        return terminals.get(state, index);
     }
 
     @Override

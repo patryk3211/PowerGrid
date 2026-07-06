@@ -90,7 +90,6 @@ public class WindingBlockEntity extends ElectricBlockEntity {
     }
 
     private static double fieldStrength(double current) {
-        current = Math.abs(current);
         final float I_sat = ModdedConfigs.server().kinetics.generatorControls.fieldSaturationCurrent.getF();
         current = (I_sat * Math.tanh(1.5 * current / I_sat)) + current * 0.05;
         return current * coilConstant() + 0.001;
