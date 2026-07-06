@@ -526,7 +526,6 @@
   "powergrid.ponder.generator_2.text_3": "Zde přichází do hry koncept samobuzení.",
   "powergrid.ponder.generator_2.text_4": "Statorové cívky mají malé zbytkové magnetické pole, které lze použít k zahájení zpětné reakce.",
   "powergrid.ponder.generator_2.text_5": "Abychom měli nad výstupním napětím větší kontrolu, použijeme reostat.",
-  "powergrid.ponder.generator_2.text_6": "Samobuzené generátory jsou citlivé na několik faktorů.",
   "powergrid.ponder.generator_clutch.header": "Dávkování kinetické energie",
   "powergrid.ponder.generator_clutch.text_1": "Generátorová spojka je základem všech generátorových sestav",
   "powergrid.ponder.generator_clutch.text_2": "Poskytuje slabé spojení mezi vaší kinetickou sítí a hřídelí generátoru",
