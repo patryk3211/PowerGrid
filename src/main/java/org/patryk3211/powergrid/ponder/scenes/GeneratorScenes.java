@@ -407,19 +407,13 @@ public class GeneratorScenes {
                 .attachKeyFrame();
         scene.idle(70);
         scene.overlay().showText(100)
-                .text("1.Rotation direction - The generator will only work when spinning one way, stator wiring must be flipped for it to work the other way.")
-                .pointAt(util.vector().of(3.5, 2.75, 3.5))
-                .placeNearTarget()
-                .attachKeyFrame();
-        scene.idle(110);
-        scene.overlay().showText(100)
-                .text("2.Resistance - The 'excitation loop resistance' must be low enough to allow for the field to build up, but not too low as to not overpower the coils.")
+                .text("1.Resistance - The 'excitation loop resistance' must be low enough to allow for the field to build up, but not too low as to not overpower the coils.")
                 .pointAt(util.vector().of(6.5, 2.75, 1.5))
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(110);
         scene.overlay().showText(100)
-                .text("3.Rotation speed - The generator must spin fast enough to generate enough of the initial starting current and build up the field.")
+                .text("2.Rotation speed - The generator must spin fast enough to generate enough of the initial starting current and build up the field.")
                 .pointAt(util.vector().of(3.5, 2.75, 4))
                 .placeNearTarget()
                 .attachKeyFrame();
