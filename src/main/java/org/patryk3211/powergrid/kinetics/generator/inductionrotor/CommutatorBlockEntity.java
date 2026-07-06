@@ -45,9 +45,9 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     protected ThermalBehaviour thermalBehaviour;
     protected GeneratorCoupling source;
     private GeneratorCoupling oldSource;
-    private float resistance = 1e-6f;
+    private float resistance;
     private boolean updateBehaviour = true;
-    private float emf = 0;
+    private float emf;
 
     private final PrecalculatedN<Float, Precalculated<Float>> totalFieldStrength = new PrecalculatedN<>(CommutatorBlockEntity::fieldSum, 0.0f);
 
@@ -72,6 +72,8 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
+        if(resistance == 0)
+            resistance = 1e-6f;
         oldSource = source = builder.addInternalNode(GeneratorCoupling.class, builder.terminalNode(0), builder.terminalNode(1), resistance, rotorBehaviour);
         source.setFieldStrengthProvider(totalFieldStrength);
         source.setEmfValue(emf);
@@ -203,6 +205,7 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
                 wires.forEach(TransmissionLinePart::refreshEndpointNodes);
             }
             totalFieldStrength.updateDependency(rotors.toArray(Precalculated[]::new));
+            setChanged();
         }
         if(!level.isClientSide) {
             if(source != null) {
