@@ -520,7 +520,6 @@
   "powergrid.ponder.generator_2.text_3": "这时就得提到自励磁这个概念了。",
   "powergrid.ponder.generator_2.text_4": "定子的线圈绕组拥有一个小型剩磁磁场，可以用于启动一个具有反馈效应的过程。",
   "powergrid.ponder.generator_2.text_5": "要更好地控制输出电压，可以使用变阻器。",
-  "powergrid.ponder.generator_2.text_6": "自励发电机对一些因素比较敏感。",
   "powergrid.ponder.generator_3.header": "稳压发电机",
   "powergrid.ponder.generator_3.text_1": "连接用电负载时，发电机的电压会下降",
   "powergrid.ponder.generator_3.text_2": "这个效应可以通过利用碳堆稳压器缓解",
