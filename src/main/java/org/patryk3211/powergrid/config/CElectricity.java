@@ -63,6 +63,8 @@ public class CElectricity extends ConfigBase {
 
     public final ConfigBool plotterRecordNonconvergence = b(false, "plotterRecordNonconvergence", Comments.plotterRecordNonconvergence);
 
+    public final ConfigInt feInverterMaxVoltage = i(1000, 0, "feInverterMaxVoltage", Comments.feInverterMaxVoltage);
+
     public final CSolver solver = nested(1, CSolver::new, Comments.solver);
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
     public final CThermal thermal = nested(1, CThermal::new, Comments.thermal);
@@ -121,5 +123,7 @@ public class CElectricity extends ConfigBase {
         public static final String mediumCoreK = "K parameter of medium transformer core (affects stray resistance)";
 
         public static final String plotterRecordNonconvergence = "Control whether the plotter records voltage values when networks are not converged";
+
+        public static final String feInverterMaxVoltage = "Maximum voltage that the FE Inverter can generate";
     }
 }

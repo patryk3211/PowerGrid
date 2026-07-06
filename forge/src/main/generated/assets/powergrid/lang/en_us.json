@@ -25,6 +25,7 @@
   "block.powergrid.electric_fan": "Electric Fan",
   "block.powergrid.electric_motor": "Electric Motor",
   "block.powergrid.electromagnet": "Electromagnet",
+  "block.powergrid.fe_inverter": "FE Inverter",
   "block.powergrid.fuse_holder": "Fuse Holder",
   "block.powergrid.generator_clutch": "Generator Clutch",
   "block.powergrid.generator_commutator": "Generator Commutator",
