@@ -350,7 +350,7 @@ public class WireItem extends Item implements IWire {
         var entry = WireRegistry.forItem(stack.getItem());
         if(entry == null)
             return;
-        Resistance.series(entry.resistancePerItem(), player, tooltip);
+        Resistance.seriesPerMeter(entry.resistancePerItem() * entry.itemsPerMeter(), player, tooltip);
         Current.max(entry.maximumCurrent(), player, tooltip);
         Range.max((int) entry.maximumLength(), tooltip);
         if(stack.getItem() instanceof StringLightCordItem cord)

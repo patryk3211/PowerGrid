@@ -304,6 +304,7 @@
   "powergrid.generic.unit.energy": "ɥM",
   "powergrid.generic.unit.ohm": "Ω",
   "powergrid.generic.unit.ohm.name": "ɯɥO",
+  "powergrid.generic.unit.ohm_meter": "ɯ/Ω",
   "powergrid.generic.unit.temperature": "Ɔ°",
   "powergrid.generic.unit.temperature.name": "snısןǝƆ",
   "powergrid.generic.unit.volt": "Λ",

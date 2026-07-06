@@ -72,6 +72,7 @@
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",
   "powergrid.generic.unit.ohm": "Ω",
+  "powergrid.generic.unit.ohm_meter": "Ω/m",
   "powergrid.generic.unit.watt": "W",
   "powergrid.generic.unit.temperature": "°C",
   "powergrid.generic.unit.block": "blocks",

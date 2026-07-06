@@ -304,6 +304,7 @@
   "powergrid.generic.unit.energy": "Wh",
   "powergrid.generic.unit.ohm": "Ω",
   "powergrid.generic.unit.ohm.name": "Ohm",
+  "powergrid.generic.unit.ohm_meter": "Ω/m",
   "powergrid.generic.unit.temperature": "°C",
   "powergrid.generic.unit.temperature.name": "Celsius",
   "powergrid.generic.unit.volt": "V",
