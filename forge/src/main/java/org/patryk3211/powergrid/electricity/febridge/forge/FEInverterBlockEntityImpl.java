@@ -11,7 +11,6 @@ import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.IEnergyStorage;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.febridge.FEInverterBlock;
 import org.patryk3211.powergrid.electricity.febridge.FEInverterBlockEntity;
 
@@ -20,10 +19,6 @@ public class FEInverterBlockEntityImpl extends FEInverterBlockEntity {
 
     public FEInverterBlockEntityImpl(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
-    }
-
-    public static int energyBufferSize() {
-        return (int) (ModdedConfigs.server().electricity.forgeEnergyPerVolt.getF() * ModdedConfigs.server().electricity.feInverterMaxVoltage.get() * 10);
     }
 
     @Override
@@ -66,8 +61,6 @@ public class FEInverterBlockEntityImpl extends FEInverterBlockEntity {
         @Override
         public int receiveEnergy(int energy, boolean simulate) {
             int emptySpace = energyBufferSize() - this.energy;
-//            if(!simulate)
-                energy *= 1 - inputThrottling();
             int received = Math.min(energy, emptySpace);
             if(!simulate) {
                 this.energy += received;

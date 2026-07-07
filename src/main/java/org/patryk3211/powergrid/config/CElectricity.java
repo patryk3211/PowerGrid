@@ -63,7 +63,9 @@ public class CElectricity extends ConfigBase {
 
     public final ConfigBool plotterRecordNonconvergence = b(false, "plotterRecordNonconvergence", Comments.plotterRecordNonconvergence);
 
-    public final ConfigInt feInverterMaxVoltage = i(1000, 0, "feInverterMaxVoltage", Comments.feInverterMaxVoltage);
+    public final ConfigFloat feInverterControlVoltage = f(20, 0, "feInverterControlVoltage", Comments.feInverterControlVoltage);
+    public final ConfigFloat feInverterControlCapacitance = f(0.0001f, 0, 1, "feInverterControlCapacitance", Comments.feInverterControlCapacitance);
+    public final ConfigInt feInverterBufferSize = i(20000, 0, "feInverterBufferSize", Comments.feInverterBufferSize);
 
     public final CSolver solver = nested(1, CSolver::new, Comments.solver);
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
@@ -124,6 +126,8 @@ public class CElectricity extends ConfigBase {
 
         public static final String plotterRecordNonconvergence = "Control whether the plotter records voltage values when networks are not converged";
 
-        public static final String feInverterMaxVoltage = "Maximum voltage that the FE Inverter can generate";
+        public static final String feInverterControlVoltage = "Maximum value of the FE Inverter control pin voltage";
+        public static final String feInverterControlCapacitance = "Capacitance of the FE Inverter control pin";
+        public static final String feInverterBufferSize = "Controls the FE buffer size, and with it, the maximum generated voltage";
     }
 }

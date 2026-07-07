@@ -659,7 +659,6 @@ public class ModdedBlocks {
     public static final BlockEntry<FEInverterBlock> FE_INVERTER = REGISTRATE.block("fe_inverter", FEInverterBlock::new)
             .blockstate(surfaceBlock("block/fe_inverter/block"))
             .transform(axeOrPickaxe())
-            .transform(CResistance.setResistance(0.5))
             .lang("FE Inverter")
             .item()
                 .model(itemWithParent("block/fe_inverter/block_v"))
