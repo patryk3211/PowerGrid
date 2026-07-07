@@ -41,8 +41,8 @@ public class ThermometerBlock extends Block implements IBE<ThermometerBlockEntit
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
 
     private static final VoxelShaper SHAPER = VoxelShaper.forDirectional(
-            box(4, 4, 0, 12, 12, 3), Direction.NORTH
-    ).withVerticalShapes(box(4, 13, 4, 12, 16, 12));
+            box(1, 1, 0, 15, 15, 2), Direction.NORTH
+    ).withVerticalShapes(box(1, 14, 1, 15, 16, 15));
 
     public ThermometerBlock(Properties properties) {
         super(properties);

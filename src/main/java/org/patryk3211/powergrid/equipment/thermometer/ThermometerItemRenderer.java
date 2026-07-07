@@ -106,8 +106,8 @@ public class ThermometerItemRenderer extends CustomRenderedItemModelRenderer {
                     progress = 0;
                     prevProgress = 0;
                 }
-                var angle = (float) (Math.PI / 2 * -Mth.lerp(AnimationTickHolder.getPartialTicks(), prevProgress, progress));
-                ms.rotateAround(new Quaternionf().rotateZ(angle), 2 / 16f, -2.25f / 16f, 0);
+                var angle = ThermometerRenderer.NEEDLE_SPAN * -Mth.lerp(AnimationTickHolder.getPartialTicks(), prevProgress, progress);
+                ms.rotateAround(new Quaternionf().rotateZ(angle), 0, -2f / 16f, 0);
             }
         }
 

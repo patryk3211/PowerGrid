@@ -1,15 +1,15 @@
-package org.patryk3211.powergrid.kinetics.plotter;
+package org.patryk3211.powergrid.electricity.sim.special;
 
 import net.minecraft.network.FriendlyByteBuf;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 
-public class PlotterWire extends ElectricWire implements ElectricBehaviour.SyncAppender {
+public class SamplingWire extends ElectricWire implements ElectricBehaviour.SyncAppender {
     public double[] samples;
     private int currentTick;
 
-    public PlotterWire(double resistance, IElectricNode node1, IElectricNode node2) {
+    public SamplingWire(double resistance, IElectricNode node1, IElectricNode node2) {
         super(resistance, node1, node2);
     }
 

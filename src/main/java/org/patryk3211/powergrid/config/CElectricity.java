@@ -61,6 +61,10 @@ public class CElectricity extends ConfigBase {
     public final ConfigInt factoryLightProjectionRange = i(16, 0, "factoryLightProjectionRange", Comments.factoryLightProjectionRange);
     public final ConfigBool plotterRecordNonconvergence = b(false, "plotterRecordNonconvergence", Comments.plotterRecordNonconvergence);
 
+    public final ConfigInt electricPumpRange = i(24, 0, "electricPumpRange", Comments.electricPumpRange);
+    public final ConfigFloat electricPumpPower = f(2.135f, 0, "electricPumpPower", Comments.electricPumpPower);
+    public final ConfigFloat electricPumpMaxSpeed = f(256f, 0, "electricPumpMaxSpeed", Comments.electricPumpMaxSpeed);
+
     public final CSolver solver = nested(1, CSolver::new, Comments.solver);
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
     public final CThermal thermal = nested(1, CThermal::new, Comments.thermal);
@@ -119,5 +123,9 @@ public class CElectricity extends ConfigBase {
         public static final String entityWireInteractions = "Enables entities to form circuits when touching wires";
 
         public static final String plotterRecordNonconvergence = "Control whether the plotter records voltage values when networks are not converged";
+
+        public static final String electricPumpRange = "Block range of the electric pump";
+        public static final String electricPumpPower = "Controls how much power is needed to run the pump at a given speed";
+        public static final String electricPumpMaxSpeed = "Maximum speed the pump can run at (can be above the Create's speed limit)";
     }
 }

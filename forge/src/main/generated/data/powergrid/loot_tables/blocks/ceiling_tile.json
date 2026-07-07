@@ -15,6 +15,31 @@
         }
       ],
       "rolls": 1.0
+    },
+    {
+      "bonus_rolls": 0.0,
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        },
+        {
+          "condition": "minecraft:inverted",
+          "term": {
+            "block": "powergrid:ceiling_tile",
+            "condition": "minecraft:block_state_property",
+            "properties": {
+              "state": "empty"
+            }
+          }
+        }
+      ],
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "powergrid:factory_light"
+        }
+      ],
+      "rolls": 1.0
     }
   ],
   "random_sequence": "powergrid:blocks/ceiling_tile"

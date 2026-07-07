@@ -47,6 +47,7 @@ import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightBlock
 import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightRenderer;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureRenderer;
+import org.patryk3211.powergrid.electricity.pump.ElectricPumpBlockEntity;
 import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterBlockEntity;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlockEntity;
 import org.patryk3211.powergrid.electricity.socket.SocketBlockEntity;
@@ -59,6 +60,8 @@ import org.patryk3211.powergrid.electricity.wireconnector.CordJunctionBlockEntit
 import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryBlockEntity;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerBlockEntity;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerRenderer;
+import org.patryk3211.powergrid.general.ceilingtile.CeilingTileBlockEntity;
+import org.patryk3211.powergrid.general.ceilingtile.CeilingTileRenderer;
 import org.patryk3211.powergrid.kinetics.base.HalfShaftVisual;
 import org.patryk3211.powergrid.kinetics.base.TunedBlockRenderer;
 import org.patryk3211.powergrid.kinetics.base.TunedBlockVisual;
@@ -273,6 +276,11 @@ public class ModdedBlockEntities {
                     .renderer(() -> ElectricFanRenderer::new)
                     .register();
 
+    public static final BlockEntityEntry<ElectricPumpBlockEntity> ELECTRIC_PUMP =
+            REGISTRATE.blockEntity("electric_pump", ElectricPumpBlockEntity::new)
+                    .validBlock(ModdedBlocks.ELECTRIC_PUMP)
+                    .register();
+
     public static final BlockEntityEntry<PortableBatteryBlockEntity> PORTABLE_BATTERY =
             REGISTRATE.blockEntity("portable_battery", PortableBatteryBlockEntity::new)
                     .validBlock(ModdedBlocks.PORTABLE_BATTERY)
@@ -364,6 +372,12 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("factory_light", FactoryLightBlockEntity::new)
                     .validBlock(ModdedBlocks.FACTORY_LIGHT)
                     .renderer(() -> FactoryLightRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<CeilingTileBlockEntity> CEILING_TILE =
+            REGISTRATE.blockEntity("ceiling_tile", CeilingTileBlockEntity::new)
+                    .validBlock(ModdedBlocks.CEILING_TILE)
+                    .renderer(() -> CeilingTileRenderer::new)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

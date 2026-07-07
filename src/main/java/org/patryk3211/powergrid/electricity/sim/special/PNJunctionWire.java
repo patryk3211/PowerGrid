@@ -61,25 +61,22 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         double beta = 4.775931364975583e-2;
         double gamma = 3.631952663804445e-1;
         double zeta = 6.313183464296682e-1;
-        if (z <= x1)
-        {
+        if (z <= x1) {
             return 0;
-        }
-        else if (z < x2)
-        {
+        } else if (z < x2) {
             return alpha * z * z * z + beta * z * z + gamma * z + zeta;
-        }
-        else
-        {
+        } else {
             return z - Math.log(z);
         }
     }
 
-    public double pnLim(double V1, double V0, double Vcrit) {
+    public double pnLim(double V1, double V0, double Vcrit, double V_T) {
         if(V1 < Vcrit * 0.5f && V0 < Vcrit * 0.5f)
             return V1;
         var dV = V1 - V0;
-        return V0 + network.diodeSmoothAlpha * dV;
+        if(V1 > Vcrit && dV > V_T * 2)
+            return V0 + V_T * Math.log1p(dV / V_T);
+        return V1;
     }
 
     public void setTemperatureCelsius(double temperatureCelsius) {
@@ -104,7 +101,7 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         double n = idealityFactor;
         double V = potentialDifference();
         double Vcrit = n * V_T * Math.log(V_T / (reverseSaturationCurrent * Math.sqrt(2)));
-        prevV = V = pnLim(V, prevV, Vcrit);
+        prevV = V = pnLim(V, prevV, Vcrit, V_T);
         double I_s1 = reverseSaturationCurrent;
         double E_g = 1.12; // Silicon bandgap energy in eV
         double T_1 = 22 + 273.15; // Reference temperature in K
@@ -132,7 +129,7 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         // Adding a resistor across the diode helps with convergence in certain cases.
         double G_add = 1e-6;
         if(iteration > 100) {
-            G_add = Math.min((iteration - 100) * 1e-3, 0.01);
+            G_add = 1e-4;
         }
         G += G_add;
         network.updateConductance(this, G - this.G);
