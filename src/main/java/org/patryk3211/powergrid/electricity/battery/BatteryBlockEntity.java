@@ -16,16 +16,19 @@
 package org.patryk3211.powergrid.electricity.battery;
 
 import com.simibubi.create.content.redstone.displayLink.DisplayLinkBlock;
+import com.simibubi.create.content.redstone.thresholdSwitch.ThresholdSwitchObservable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
+import org.patryk3211.powergrid.utility.Lang;
 
-public class BatteryBlockEntity extends ElectricBlockEntity {
+public class BatteryBlockEntity extends ElectricBlockEntity implements ThresholdSwitchObservable {
     protected VoltageSourceCoupling sourceCoupling;
 
     protected final BatterySpec spec;
@@ -144,5 +147,26 @@ public class BatteryBlockEntity extends ElectricBlockEntity {
 
     public double getEnergy() {
         return energy;
+    }
+
+    @Override
+    public int getMaxValue() {
+        return 200;
+    }
+
+    @Override
+    public int getMinValue() {
+        return 0;
+    }
+
+    @Override
+    public int getCurrentValue() {
+        return (int) (energy / capacity * getMaxValue());
+    }
+
+    @Override
+    public MutableComponent format(int i) {
+        return Lang.numberConstant(i / 2.0)
+                .add(Lang.text("%")).component();
     }
 }

@@ -39,6 +39,7 @@ import org.patryk3211.powergrid.electricity.info.Voltage;
 import org.patryk3211.powergrid.electricity.redstoneconverter.IRedstoneConverterBehaviour;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.utility.Lang;
+import org.patryk3211.powergrid.utility.Unit;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
@@ -146,16 +147,28 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
         Voltage.max(spec.calculateVoltage(1), player, tooltip);
         Power.max(stack, player, tooltip);
         float charge;
+        float maxCharge = getSpec().getMaxCharge();
         if(!stack.hasTag() || !stack.getTag().contains("Energy")) {
-            charge = getSpec().getInitialCharge() / getSpec().getMaxCharge();
+            charge = getSpec().getInitialCharge() / maxCharge;
         } else {
-            charge = (float) (stack.getTag().getDouble("Energy") / getSpec().getMaxCharge());
+            charge = (float) (stack.getTag().getDouble("Energy") / maxCharge);
         }
         Lang.translate("tooltip.charge.current")
                 .style(ChatFormatting.GRAY).addTo(tooltip);
         Lang.builder()
-                .add(Component.literal(" ")).add(Lang.numberConstant(charge * 100))
+                .add(Component.literal(" "))
+                .add(Lang.numberConstant(charge * 100))
                 .add(Component.literal("%"))
                 .style(ChatFormatting.AQUA).addTo(tooltip);
+        Lang.translate("tooltip.capacity")
+                .style(ChatFormatting.GRAY)
+                .addTo(tooltip);
+        Lang.builder()
+                .add(Component.literal(" "))
+                .add(Lang.numberConstant(maxCharge / 3600))
+                .add(Component.literal(" "))
+                .add(Unit.ENERGY.get())
+                .style(ChatFormatting.GREEN)
+                .addTo(tooltip);
     }
 }
