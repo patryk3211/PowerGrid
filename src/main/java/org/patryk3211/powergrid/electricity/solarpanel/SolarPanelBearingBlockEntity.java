@@ -139,9 +139,6 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
             return;
         }
 
-        var d = SableCompanion.INSTANCE.projectOutOfSubLevel(world, new Vector3d(this.getBlockPos().getX(), this.getBlockPos().getY(), this.getBlockPos().getZ()));
-        var pos = new BlockPos((int)d.x, (int)d.y, (int)d.z);
-
         if (sourceCoupling == null) return;
         if (firstTick) {
             ambientTemp = ThermalBehaviour.getAmbientTemperature(world, this.getBlockPos());
@@ -238,7 +235,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         }
         var centerPanelPos = JOMLConversion.toMojang(SableCompanion.INSTANCE.projectOutOfSubLevel(world, getContraptionCenter(movedContraption)));
         var end = centerPanelPos.add(new Vec3(sunX, sunY, 0).scale(castLength));
-        var results = DDA(world, centerPanelPos.add(new Vec3(panelNormal.x, panelNormal.y, panelNormal.z)), end);
+        var results = DDA(world, centerPanelPos.add(JOMLConversion.toMojang(panelNormal)), end);
         float returnValue = 1;
         for (DDAHit result : results) {
             BlockState blockState;
