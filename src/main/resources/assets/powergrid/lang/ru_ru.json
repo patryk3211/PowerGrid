@@ -252,7 +252,6 @@
   "powergrid.component.property.voltage_gauge_max": "Максимальное напряжение",
   "powergrid.contactor.switch1": "Контакторный элемент 1",
   "powergrid.contactor.switch2": "Контакторный элемент 2",
-  "powergrid.contraption.assembly.invalid_panel_amount": "Если сумма Солнечных панелей не делится на числа от 1 до 9 с остатком меньше 26, добавьте или удалите Солнечные панели",
   "powergrid.contraption.assembly.mismatched_panel_facing": "Все Солнечные панели должны быть обращены в одну сторону",
   "powergrid.contraption.assembly.not_enough_panels": "В прилагаемой конструкции не хватает Солнечных панелей; требуется как минимум 1",
   "powergrid.crt.anode": "Анод",
