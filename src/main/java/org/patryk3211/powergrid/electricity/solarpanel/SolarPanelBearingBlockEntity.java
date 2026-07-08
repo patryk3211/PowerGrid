@@ -20,14 +20,12 @@ import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3d;
-import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
@@ -35,10 +33,12 @@ import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.patryk3211.powergrid.electricity.solarpanel.SolarHelper.*;
-import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.*;
+import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.CELLS_IN_SERIES;
+import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.SOLAR_CONSTANT;
+import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.ALBEDO_FRAC;
+import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.DIFFUSE_FRAC;
 
 public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity implements IBearingBlockEntity, IDisplayAssemblyExceptions {
     protected ControlledContraptionEntity movedContraption;
