@@ -25,6 +25,7 @@ import org.patryk3211.powergrid.PowerGrid;
 
 public class ModdedPartialModels {
     public static final PartialModel SHAFT_BIT = block("shaft_bit");
+    public static final PartialModel FAN_PROPELLER = block("electric_fan/propeller");
 
     public static final PartialModel CONDUCTIVE_VOLTAGE_HEAD = block("gauge/conductive/voltage_head");
     public static final PartialModel CONDUCTIVE_CURRENT_HEAD = block("gauge/conductive/current_head");
