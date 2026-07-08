@@ -38,7 +38,7 @@ public class LRSeriesWire extends AbstractElectricWire implements IStaticResidua
 
     @Override
     public double conductance() {
-        return 1 / (resistance + (2 * inductance) / getDeltaTime());
+        return 1 / (resistance + ((TRAPEZOID_APPROX ? 2 : 1) * inductance) / getDeltaTime());
     }
 
     @Override
@@ -73,7 +73,7 @@ public class LRSeriesWire extends AbstractElectricWire implements IStaticResidua
     @Override
     public void postUpperSolve() {
         if(isConverged()) {
-            Vprev = inductance * (current() - I) / getDeltaTime();
+            Vprev = TRAPEZOID_APPROX ? inductance * (current() - I) / getDeltaTime() : 0;
             I = current() * 0.99999;
         }
     }
@@ -84,7 +84,7 @@ public class LRSeriesWire extends AbstractElectricWire implements IStaticResidua
             Ieq = 0;
             return;
         }
-        var G_I = getDeltaTime() / (2 * inductance);
+        var G_I = getDeltaTime() / ((TRAPEZOID_APPROX ? 2 : 1) * inductance);
 
         double residualScale = 1 - G_I / (1 / resistance + G_I);
         Ieq = (Vprev * G_I + I) * residualScale;

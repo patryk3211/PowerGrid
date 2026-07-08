@@ -152,6 +152,10 @@ public class RecipeTags {
         return Items.GLASS;
     }
 
+    public static ItemLike glasspane() {
+        return Items.GLASS_PANE;
+    }
+
     public static ItemLike paper() {
         return Items.PAPER;
     }
@@ -178,5 +182,9 @@ public class RecipeTags {
 
     public static ItemLike diamond() {
         return Items.DIAMOND;
+    }
+
+    public static ItemLike slimeball() {
+        return Items.SLIME_BALL;
     }
 }

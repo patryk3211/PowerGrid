@@ -181,12 +181,14 @@ public class JunctionWireEndpoint implements IWireEndpoint {
                         segments.add(0, new BlockWireEntity.Point(segment.direction.getOpposite(), segment.gridLength));
                     }
                     source.dropWire();
-                    target.setEndpoint2(source.getEndpoint1());
                     target.extend(segments, source.getWireCount());
+                    target.setEndpoint2(source.getEndpoint1());
+                    target.sendExtraData();
                 } else {
                     source.dropWire();
-                    target.setEndpoint2(source.getEndpoint2());
                     target.extend(source.segments, source.getWireCount());
+                    target.setEndpoint2(source.getEndpoint2());
+                    target.sendExtraData();
                 }
                 source.discard();
             }

@@ -48,6 +48,7 @@
     "powergrid:device_connector",
     "powergrid:socket",
     "powergrid:redstone_converter",
+    "powergrid:fe_inverter",
     "powergrid:fuse_holder",
     "powergrid:alarm_bell",
     "powergrid:thermometer",

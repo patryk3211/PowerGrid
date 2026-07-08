@@ -16,6 +16,8 @@
 package org.patryk3211.powergrid.electricity.sim.node;
 
 public interface ITimeAwareWire extends INetworkElement {
+    boolean TRAPEZOID_APPROX = false;
+
     default double getDeltaTime() {
         if(getNetwork() == null)
             return 0.05f;

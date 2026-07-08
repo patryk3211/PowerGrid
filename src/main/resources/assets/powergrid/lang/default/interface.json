@@ -70,9 +70,12 @@
   "powergrid.gui.pump.info_header": "Pump Information:",
   "powergrid.gui.pump.speed_header": "Pump Speed:",
 
+  "powergrid.gui.solar_panel_bearing.slider": "Strings in Parallel × Panels in String",
+
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",
   "powergrid.generic.unit.ohm": "Ω",
+  "powergrid.generic.unit.ohm_meter": "Ω/m",
   "powergrid.generic.unit.watt": "W",
   "powergrid.generic.unit.temperature": "°C",
   "powergrid.generic.unit.block": "blocks",

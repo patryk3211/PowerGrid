@@ -74,9 +74,9 @@ public class ElectronTubeWire extends CompoundWire implements ISolverHook {
         var dVc = vCathode - prevCathode;
         var dVg = vGrid - prevGrid;
         var dVa = vAnode - prevAnode;
-        vCathode = prevCathode + Math.min(0.5f, Math.abs(dVc)) * network.triodeLimCathode * Math.signum(dVc);
-        vGrid = prevGrid + Math.min(0.5f, Math.abs(dVg)) * network.triodeLimGrid * Math.signum(dVg);
-        vAnode = prevAnode + Math.min(0.5f, Math.abs(dVa)) * network.triodeLimAnode * Math.signum(dVa);
+        vCathode = prevCathode + network.triodeLimCathode * dVc;
+        vGrid = prevGrid + network.triodeLimGrid * dVg;
+        vAnode = prevAnode + network.triodeLimAnode * dVa;
         prevAnode = vAnode;
         prevCathode = vCathode;
         prevGrid = vGrid;

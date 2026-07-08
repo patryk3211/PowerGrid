@@ -65,6 +65,10 @@ public class CElectricity extends ConfigBase {
     public final ConfigFloat electricPumpPower = f(2.135f, 0, "electricPumpPower", Comments.electricPumpPower);
     public final ConfigFloat electricPumpMaxSpeed = f(256f, 0, "electricPumpMaxSpeed", Comments.electricPumpMaxSpeed);
 
+    public final ConfigFloat feInverterControlVoltage = f(20, 0, "feInverterControlVoltage", Comments.feInverterControlVoltage);
+    public final ConfigFloat feInverterControlCapacitance = f(0.0001f, 0, 1, "feInverterControlCapacitance", Comments.feInverterControlCapacitance);
+    public final ConfigInt feInverterBufferSize = i(20000, 0, "feInverterBufferSize", Comments.feInverterBufferSize);
+
     public final CSolver solver = nested(1, CSolver::new, Comments.solver);
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
     public final CThermal thermal = nested(1, CThermal::new, Comments.thermal);
@@ -127,5 +131,9 @@ public class CElectricity extends ConfigBase {
         public static final String electricPumpRange = "Block range of the electric pump";
         public static final String electricPumpPower = "Controls how much power is needed to run the pump at a given speed";
         public static final String electricPumpMaxSpeed = "Maximum speed the pump can run at (can be above the Create's speed limit)";
+
+        public static final String feInverterControlVoltage = "Maximum value of the FE Inverter control pin voltage";
+        public static final String feInverterControlCapacitance = "Capacitance of the FE Inverter control pin";
+        public static final String feInverterBufferSize = "Controls the FE buffer size, and with it, the maximum generated voltage";
     }
 }

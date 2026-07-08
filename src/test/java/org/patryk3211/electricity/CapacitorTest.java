@@ -97,18 +97,18 @@ public class CapacitorTest extends TestHelper {
 
         var N1 = Net1.N();
 
-        Net1.W(2.0f, V1, N1);
-        var C = new CapacitorWire(0.1f, N1, GND1);
+        Net1.W(1.0f, V1, N1);
+        var C = new CapacitorWire(1.0f, N1, GND1);
         Net1.network.addWire(C);
 
         var Net2 = new TestHelper.Network();
         var V2 = Net2.V(3);
         var GND2 = Net2.V(0);
-        var CR = new CRSeriesWire(0.1f, 2.0f, V2, GND2);
+        var CR = new CRSeriesWire(1.0f, 1.0f, V2, GND2);
         Net2.network.addWire(CR);
 
         // Simulate for 1 second
-        for(int i = 0; i < 20; ++i) {
+        for(int i = 0; i < 21; ++i) {
             Net1.calculate();
             Net2.calculate();
         }

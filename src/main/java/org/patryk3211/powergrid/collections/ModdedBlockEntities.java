@@ -36,6 +36,7 @@ import org.patryk3211.powergrid.electricity.electricswitch.*;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanRenderer;
+import org.patryk3211.powergrid.electricity.febridge.FEInverterBlockEntity;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.GaugeRenderer;
@@ -51,6 +52,8 @@ import org.patryk3211.powergrid.electricity.pump.ElectricPumpBlockEntity;
 import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterBlockEntity;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlockEntity;
 import org.patryk3211.powergrid.electricity.socket.SocketBlockEntity;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBearingBlockEntity;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapRenderer;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlockEntity;
@@ -345,6 +348,11 @@ public class ModdedBlockEntities {
                     .validBlock(ModdedBlocks.REDSTONE_CONVERTER)
                     .register();
 
+    public static final BlockEntityEntry<FEInverterBlockEntity> FE_INVERTER =
+            REGISTRATE.blockEntity("fe_inverter", SubstituteBlockEntityProvider.INSTANCE.get(FEInverterBlockEntity.class))
+                    .validBlock(ModdedBlocks.FE_INVERTER)
+                    .register();
+
     public static final BlockEntityEntry<CarbonPileCoilBlockEntity> CARBON_PILE_COIL =
             REGISTRATE.blockEntity("carbon_pile_coil", CarbonPileCoilBlockEntity::new)
                     .validBlock(ModdedBlocks.CARBON_PILE_COIL)
@@ -378,6 +386,16 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("ceiling_tile", CeilingTileBlockEntity::new)
                     .validBlock(ModdedBlocks.CEILING_TILE)
                     .renderer(() -> CeilingTileRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<SolarPanelBlockEntity> SOLAR_PANEL =
+            REGISTRATE.blockEntity("solar_panel", SolarPanelBlockEntity::new)
+                    .validBlock(ModdedBlocks.SOLAR_PANEL)
+                    .register();
+
+    public static final BlockEntityEntry<SolarPanelBearingBlockEntity> SOLAR_PANEL_BEARING =
+            REGISTRATE.blockEntity("solar_panel_bearing", SolarPanelBearingBlockEntity::new)
+                    .validBlock(ModdedBlocks.SOLAR_PANEL_BEARING)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

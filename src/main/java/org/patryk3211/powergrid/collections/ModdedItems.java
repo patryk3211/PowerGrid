@@ -199,6 +199,7 @@ public class ModdedItems {
     public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_BJT_PNP = sequencedIngredientBuilder("incomplete_bjt_pnp")
             .lang("Incomplete PNP BJT")
             .register();
+    public static final ItemEntry<SequencedAssemblyItem> INCOMPLETE_SOLAR_PANEL = sequencedIngredient("incomplete_solar_panel");
 
     public static final ItemEntry<ElectroZapperItem> ELECTROZAPPER = REGISTRATE.item("electrozapper", ElectroZapperItem::new)
             .transform(customRenderer(() -> ElectroZapperItemRenderer::new))
