@@ -21,6 +21,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
@@ -219,4 +220,12 @@ public class GlobalElectricNetworks {
         }
     }
 
+    public static void dropTrackers(ServerPlayer player, ResourceKey<Level> dimension) {
+        for(var entry : worldNetworks.entrySet()) {
+            if(entry.getKey().dimension() == dimension) {
+                entry.getValue().dropTrackers(player);
+                break;
+            }
+        }
+    }
 }

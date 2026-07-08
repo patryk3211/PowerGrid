@@ -85,6 +85,7 @@ import org.patryk3211.powergrid.electricity.socket.SocketBlock;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBearingBlock;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlock;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlock;
+import org.patryk3211.powergrid.electricity.transformer.NetherTransformerBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerCoreBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
@@ -492,6 +493,13 @@ public class ModdedBlocks {
             .blockstate(transformerMedium())
             .loot((tables, block) -> tables.dropOther(block, TRANSFORMER_CORE.get()))
             .properties(properties -> properties.sound(SoundType.NETHERITE_BLOCK))
+            .transform(pickaxeOnly())
+            .transform(CThermal.maxPower(4000, 16.0f))
+            .register();
+    public static final BlockEntry<NetherTransformerBlock> NETHER_TRANSFORMER = REGISTRATE.block("nether_transformer", NetherTransformerBlock::new)
+            .initialProperties(TRANSFORMER_CORE)
+            .blockstate(transformerNether())
+            .loot((tables, block) -> tables.dropOther(block, TRANSFORMER_CORE.get()))
             .transform(pickaxeOnly())
             .transform(CThermal.maxPower(4000, 16.0f))
             .register();
