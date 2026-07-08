@@ -26,7 +26,7 @@ import org.patryk3211.powergrid.utility.Unit;
 import java.util.List;
 
 public class Resistance {
-    private static void resistance(LangBuilder tooltipText, float value, Player player, List<Component> tooltip) {
+    private static void resistance(LangBuilder tooltipText, float value, Player player, List<Component> tooltip, LangBuilder unit) {
         if(value == 0)
             return;
         boolean hasGoggles = GogglesItem.isWearingGoggles(player);
@@ -39,25 +39,33 @@ public class Resistance {
             // Millis
             valueText.add(Lang.number(value * 1000))
                     .add(Component.nullToEmpty(" m"))
-                    .add(Unit.RESISTANCE.get());
+                    .add(unit);
         } else if(value < 1000) {
             valueText.add(Lang.number(value))
                     .add(Component.nullToEmpty(" "))
-                    .add(Unit.RESISTANCE.get());
+                    .add(unit);
         } else if(value < 1000000) {
             valueText.add(Lang.number(value / 1000))
                     .add(Component.nullToEmpty(" k"))
-                    .add(Unit.RESISTANCE.get());
+                    .add(unit);
         } else {
             valueText.add(Lang.number(value / 1000000))
                     .add(Component.nullToEmpty(" M"))
-                    .add(Unit.RESISTANCE.get());
+                    .add(unit);
         }
         valueText.style(ChatFormatting.DARK_AQUA).addTo(tooltip);
     }
 
+    private static void resistance(LangBuilder tooltipText, float value, Player player, List<Component> tooltip) {
+        resistance(tooltipText, value, player, tooltip, Unit.RESISTANCE.get());
+    }
+
     public static void series(float value, Player player, List<Component> tooltip) {
         resistance(Lang.translate("tooltip.resistance.series").style(ChatFormatting.GRAY), value, player, tooltip);
+    }
+
+    public static void seriesPerMeter(float value, Player player, List<Component> tooltip) {
+        resistance(Lang.translate("tooltip.resistance.series").style(ChatFormatting.GRAY), value, player, tooltip, Lang.unit("ohm_meter"));
     }
 
     public static void minimum(float value, Player player, List<Component> tooltip) {

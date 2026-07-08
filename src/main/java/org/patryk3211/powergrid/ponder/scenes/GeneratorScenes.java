@@ -390,15 +390,26 @@ public class GeneratorScenes {
 
         scene.world().showSection(util.select().fromTo(5, 1, 3, 5, 3, 3), Direction.DOWN);
         scene.world().showSection(util.select().fromTo(1, 1, 1, 1, 2, 1), Direction.DOWN);
-        scene.idle(10);
+        scene.idle(20);
 
-        scene.electric().connect(commutator, 0, wireconn1, 0, DyeColor.GRAY);
-        scene.electric().connect(commutator, 1, conn, 0, DyeColor.GRAY);
-        scene.electric().connect(conn, 1, wireconn2, 0, DyeColor.GRAY);
-        scene.electric().connect(wireconn2, 0, rheo, 1, DyeColor.GRAY);
-        scene.electric().connect(rheo, 2, wireconn1, 0, DyeColor.GRAY);
+        scene.overlay().showText(60)
+                .text("Wire positive to positive...")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(40);
+        scene.electric().connect(commutator, 1, conn, 0, DyeColor.RED);
+        scene.idle(30);
+
+        scene.overlay().showText(60)
+                .text("...and negative to negative")
+                .placeNearTarget();
+        scene.idle(40);
+        scene.electric().connect(commutator, 0, wireconn1, 0, DyeColor.BLUE);
+        scene.electric().connect(conn, 1, wireconn2, 0, DyeColor.BLUE);
+        scene.electric().connect(wireconn2, 0, rheo, 1, DyeColor.BLUE);
+        scene.electric().connect(rheo, 2, wireconn1, 0, DyeColor.BLUE);
         scene.electric().tickForever();
-        scene.idle(50);
+        scene.idle(80);
 
         scene.effects().indicateSuccess(meter);
         scene.overlay().showText(60)

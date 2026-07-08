@@ -39,6 +39,7 @@ import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
+import static org.patryk3211.powergrid.PowerGrid.maxRPM;
 import static org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity.CONVERSION_CONSTANT;
 import static org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity.calculateSpeed;
 
@@ -72,7 +73,7 @@ public class ConstantSpeedMotorBlockEntity extends GeneratingKineticBlockEntity 
         electricBehaviour = new ElectricBehaviour(this);
         behaviours.add(electricBehaviour);
 
-        var maxPower = 256 * torque() / CONVERSION_CONSTANT;
+        var maxPower = maxRPM() * torque() / CONVERSION_CONSTANT;
         var baseFactor = ThermalBehaviour.dissipationFactor(maxPower, 150);
         thermalBehaviour = ThermalBehaviour.simple(this, 3.5f, baseFactor);
         if(thermalBehaviour != null)
@@ -120,10 +121,10 @@ public class ConstantSpeedMotorBlockEntity extends GeneratingKineticBlockEntity 
         avgSpeed = 0;
         if(!level.isClientSide || isVirtual()) {
             // Max speed constraints.
-            if(newSpeed > 256)
-                newSpeed = 256;
-            if(newSpeed < -256)
-                newSpeed = -256;
+            if(newSpeed > maxRPM())
+                newSpeed = maxRPM();
+            if(newSpeed < -maxRPM())
+                newSpeed = -maxRPM();
             newSpeed *= (int) BlockStressValues.getCapacity(getBlockState().getBlock());
 
             // Update speed from average power.

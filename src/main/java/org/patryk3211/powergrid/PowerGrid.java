@@ -19,6 +19,7 @@ import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
 import com.simibubi.create.api.contraption.BlockMovementChecks;
 import com.simibubi.create.api.registry.CreateRegistries;
 import com.simibubi.create.content.kinetics.fan.processing.FanProcessingType;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 import dev.architectury.event.events.common.*;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import dev.architectury.registry.registries.DeferredRegister;
@@ -218,5 +219,9 @@ public class PowerGrid {
 			case FABRIC -> fabric;
 			case FORGE -> forge;
 		};
+	}
+
+	public static int maxRPM() {
+		return AllConfigs.server().kinetics.maxRotationSpeed.get();
 	}
 }
