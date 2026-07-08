@@ -36,8 +36,6 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
     protected static final double I_O = 1.11e-4;
     protected static final double IDEALITY = 1.8;
 
-    private int temp = 0;
-    private float cloudCover = 0;
     private boolean firstTick = true;
     private float ambientTemp = -2000f;
     private int rayCastDelay = 0;
@@ -97,18 +95,6 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
         sourceCoupling.setVoltage((float) Voc_panel);
         sourceCoupling.setResistance((float) panelResistance);
 
-        if (temp++ == 20){
-            System.out.println("Cell Temp: " + cellTemp);
-            //System.out.println("Single cell voltage: " + Voc_t);
-            //System.out.println("Single cell current: " + cellCurrent);
-            //System.out.println("Vt: " + Vt);
-            System.out.println("Current irradiance: " + irradiance);
-            System.out.println("AM: " + getAM(world));
-            System.out.println("normal: " + panelNormal);
-            //System.out.println("tilt: " + panelTiltDeg);
-            System.out.println();
-            temp = 0;
-        }
         super.electricalTick();
     }
 

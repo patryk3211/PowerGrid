@@ -36,10 +36,10 @@ import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.patryk3211.powergrid.electricity.solarpanel.SolarHelper.*;
-import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.*;
+import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.CELLS_IN_SERIES;
+import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.SOLAR_CONSTANT;
 
 public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity implements IBearingBlockEntity, IDisplayAssemblyExceptions {
     protected ControlledContraptionEntity movedContraption;
@@ -52,12 +52,10 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     protected VoltageSourceCoupling sourceCoupling;
     SolarPanelBearingContraption contraption;
     private float prevAngle;
-    private float cloudCover = 0;
     private boolean firstTick = true;
     private float ambientTemp = -2000f;
     private int rayCastDelay = 0;
     private float sunVisibility = 0;
-    private int temp = 0;
     protected SolarPanelBearingBlockScrollBehaviour parallelNumbers;
     private Vector3d panelNormal;
 
