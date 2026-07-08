@@ -41,7 +41,7 @@ dependencies {
     modCompileOnly "maven.modrinth:create-tfmg:1.2.0"
 
     // TIS-3D
-    modCompileOnly("maven.modrinth:tis3d-renewed:1.8.1")
+    modCompileOnly("maven.modrinth:tis3d-renewed:${tis3d_version}")
 
     // Cold Sweat
     modCompileOnly "curse.maven:cold-sweat-506194:${cold_sweat_cursemaven_fileid}-sources-${cold_sweat_sources_cursemaven_fileid}"
@@ -80,7 +80,7 @@ dependencies {
 
 //    modLocalRuntime("maven.modrinth:create-tfmg:1.2.0")
 //    modLocalRuntime("me.shedaniel:RoughlyEnoughItems-forge:$rei_version")
-//    modLocalRuntime("maven.modrinth:tis3d-renewed:1.8.1")
+//    modLocalRuntime("maven.modrinth:tis3d-renewed:${tis3d_version}")
 //    modLocalRuntime("maven.modrinth:markdown-manual-renewed:1.3.1")
 }
 
