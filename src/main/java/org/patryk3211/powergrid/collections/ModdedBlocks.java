@@ -784,9 +784,10 @@ public class ModdedBlocks {
 
     public static BlockEntry<SolarPanelBearingBlock> SOLAR_PANEL_BEARING = REGISTRATE.block("solar_panel_bearing", SolarPanelBearingBlock::new)
             .initialProperties(SharedProperties::softMetal)
-            .blockstate(northFacing("block/solar_panel_bearing_block_v"))
+            .addLayer(() -> RenderType::cutoutMipped)
+            .blockstate(northFacing("block/solar_panel/solar_panel_bearing_base"))
             .item()
-                .model(itemWithParent("block/solar_panel_bearing_block_v"))
+                .model(itemWithParent("block/solar_panel/solar_panel_bearing_block"))
                 .build()
             .register();
 

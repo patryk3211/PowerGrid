@@ -1,26 +1,26 @@
 {
   "variants": {
     "facing=down": {
-      "model": "powergrid:block/solar_panel_bearing_block_v",
+      "model": "powergrid:block/solar_panel/solar_panel_bearing_base",
       "x": 90
     },
     "facing=east": {
-      "model": "powergrid:block/solar_panel_bearing_block_v",
+      "model": "powergrid:block/solar_panel/solar_panel_bearing_base",
       "y": 90
     },
     "facing=north": {
-      "model": "powergrid:block/solar_panel_bearing_block_v"
+      "model": "powergrid:block/solar_panel/solar_panel_bearing_base"
     },
     "facing=south": {
-      "model": "powergrid:block/solar_panel_bearing_block_v",
+      "model": "powergrid:block/solar_panel/solar_panel_bearing_base",
       "y": 180
     },
     "facing=up": {
-      "model": "powergrid:block/solar_panel_bearing_block_v",
+      "model": "powergrid:block/solar_panel/solar_panel_bearing_base",
       "x": -90
     },
     "facing=west": {
-      "model": "powergrid:block/solar_panel_bearing_block_v",
+      "model": "powergrid:block/solar_panel/solar_panel_bearing_base",
       "y": -90
     }
   }

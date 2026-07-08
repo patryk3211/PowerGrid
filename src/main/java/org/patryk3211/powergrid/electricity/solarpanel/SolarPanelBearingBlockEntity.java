@@ -49,6 +49,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     private float ambientTemp = -2000f;
     private int rayCastDelay = 0;
     private float sunVisibility = 0;
+    private boolean skyVisible = false;
     protected SolarPanelBearingBlockScrollBehaviour parallelNumbers;
     private Vector3d panelNormal;
 
@@ -177,6 +178,8 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         if (rayCastDelay-- == 0){
             sunVisibility = sunRaycast(world);
             rayCastDelay = world.random.nextInt(41) + 10;
+            skyVisible = skyCheck(world, BlockPos.containing(getContraptionCenter(movedContraption)
+                    .add(new Vec3(panelNormal.x, panelNormal.y, panelNormal.z))));
         }
 
         double sunAngle = world.getSunAngle(0);
@@ -185,8 +188,14 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
 
         double cosIncidence = Math.max(0, sunDir.dot(panelNormal));
         cosIncidence = Math.max(0, cosIncidence);
-        double diffuseLight = 0.1 * irradiance * (1 + cloudCover) * ((1 + panelNormal.y()) / 2);
-        double reflected = 0.15 * irradiance * ((1 - panelNormal.y()) / 2.0);
+        double diffuseLight = DIFFUSE_FRAC * (Math.max(0, sunDir.y) * irradiance * transmittance)
+                * (1 + cloudCover) * ((1 + panelNormal.y()) / 2);
+        double reflected = ALBEDO_FRAC * (Math.max(0, sunDir.y) * irradiance * transmittance) * ((1 - panelNormal.y()) / 2.0);
+
+        if (!skyVisible){
+            diffuseLight = 0;
+            reflected = 0;
+        }
 
         return (irradiance * sunVisibility) * transmittance * cosIncidence + diffuseLight +  reflected;
     }
@@ -212,10 +221,15 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         }
         var centerPanelPos = getContraptionCenter(movedContraption);
         var end = centerPanelPos.add(new Vec3(sunX, sunY, 0).scale(castLength));
-        var results = DDA(world, centerPanelPos, end);
+        var results = DDA(world, centerPanelPos.add(new Vec3(panelNormal.x, panelNormal.y, panelNormal.z)), end);
         float returnValue = 1;
-        for (BlockPos result : results) {
-            var blockState = world.getBlockState(result);
+        for (DDAHit result : results) {
+            BlockState blockState;
+            if (result.contraption() != null) {
+                blockState = result.contraption().getContraption().getBlocks().get(result.worldOrLocalPos()).state();
+            } else {
+                blockState = world.getBlockState(result.worldOrLocalPos());
+            }
 
             if (blockState.is(ModdedTags.Block.SOLAR_QUARTER_LIGHT.tag)) {
                 returnValue *= .25f;
