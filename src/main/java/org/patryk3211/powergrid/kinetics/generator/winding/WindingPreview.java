@@ -46,9 +46,9 @@ public class WindingPreview {
     public static ItemStack getUsedWireStack(Player player) {
         var stack1 = player.getMainHandItem();
         var stack2 = player.getOffhandItem();
-        if(stack1 != null && stack1.getItem() instanceof WindingItem && stack1.hasTag()) {
+        if(stack1 != null && stack1.getItem() instanceof WindingItem && stack1.getTagElement("Connection") != null) {
             return stack1;
-        } else if(stack2 != null && stack2.getItem() instanceof WindingItem && stack2.hasTag()) {
+        } else if(stack2 != null && stack2.getItem() instanceof WindingItem && stack2.getTagElement("Connection") != null) {
             return stack2;
         } else {
             return null;
@@ -64,7 +64,7 @@ public class WindingPreview {
         if(stack == null)
             return;
 
-        var tag = stack.getTag();
+        var tag = stack.getTagElement("Connection");
         var posArray = tag.getIntArray("Position");
         if(posArray.length < 3)
             return;
