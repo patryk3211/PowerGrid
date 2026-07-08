@@ -683,6 +683,7 @@
   "powergrid.subtitle.uswitch_on": "开关：咔嗒",
   "powergrid.subtitle.wire_burned": "导线：烧毁",
   "powergrid.subtitle.wire_cut": "导线：被剪断",
+  "powergrid.tooltip.capacity": "总容量：",
   "powergrid.tooltip.charge.current": "当前电量：",
   "powergrid.tooltip.circuit_assembly": "电路组装",
   "powergrid.tooltip.circuit_assembly.insert": "插入",
