@@ -71,6 +71,7 @@ import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock
 import org.patryk3211.powergrid.electricity.electricswitch.*;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlock;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
+import org.patryk3211.powergrid.electricity.febridge.FEInverterBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.PowerGaugeBlock;
@@ -84,6 +85,8 @@ import org.patryk3211.powergrid.electricity.light.string.StringLightBlock;
 import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterBlock;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlock;
 import org.patryk3211.powergrid.electricity.socket.SocketBlock;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBearingBlock;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlock;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerCoreBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
@@ -702,6 +705,15 @@ public class ModdedBlocks {
                 .build()
             .register();
 
+    public static final BlockEntry<FEInverterBlock> FE_INVERTER = REGISTRATE.block("fe_inverter", FEInverterBlock::new)
+            .blockstate(surfaceBlock("block/fe_inverter/block"))
+            .transform(axeOrPickaxe())
+            .lang("FE Inverter")
+            .item()
+                .model(itemWithParent("block/fe_inverter/block_v"))
+                .build()
+            .register();
+
     public static final BlockEntry<FuseHolderBlock> FUSE_HOLDER = REGISTRATE.block("fuse_holder", FuseHolderBlock::new)
             .blockstate(fuseHolder())
             .initialProperties(SharedProperties::wooden)
@@ -807,6 +819,23 @@ public class ModdedBlocks {
             .transform(CThermal.maxPower(10, 0.2f))
             .item()
                 .model(itemWithParent("block/punch_card_reader/item"))
+                .build()
+            .register();
+
+    public static BlockEntry<SolarPanelBlock> SOLAR_PANEL = REGISTRATE.block("solar_panel", SolarPanelBlock::new)
+            .initialProperties(SharedProperties::softMetal)
+            .addLayer(() -> RenderType::translucent)
+            .blockstate(surfaceBlock("block/solar_panel/inline_solar_panel"))
+            .item()
+                .model(itemWithParent("block/solar_panel/inline_solar_panel_v"))
+                .build()
+            .register();
+
+    public static BlockEntry<SolarPanelBearingBlock> SOLAR_PANEL_BEARING = REGISTRATE.block("solar_panel_bearing", SolarPanelBearingBlock::new)
+            .initialProperties(SharedProperties::softMetal)
+            .blockstate(northFacing("block/solar_panel_bearing_block_v"))
+            .item()
+                .model(itemWithParent("block/solar_panel_bearing_block_v"))
                 .build()
             .register();
 

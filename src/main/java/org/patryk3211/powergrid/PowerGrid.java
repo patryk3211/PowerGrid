@@ -16,8 +16,10 @@
 package org.patryk3211.powergrid;
 
 import com.simibubi.create.api.behaviour.movement.MovementBehaviour;
+import com.simibubi.create.api.contraption.BlockMovementChecks;
 import com.simibubi.create.api.registry.CreateRegistries;
 import com.simibubi.create.content.kinetics.fan.processing.FanProcessingType;
+import com.simibubi.create.infrastructure.config.AllConfigs;
 import dev.architectury.event.events.common.*;
 import dev.architectury.injectables.annotations.ExpectPlatform;
 import dev.architectury.registry.registries.DeferredRegister;
@@ -34,6 +36,7 @@ import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Blocks;
 import org.patryk3211.powergrid.advancements.PowerGridTriggers;
+import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.circuits.components.Components;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.compat.sable.SableUtils;
@@ -42,11 +45,13 @@ import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlockEntity;
 import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlockEntity;
+import org.patryk3211.powergrid.electricity.febridge.FEInverterBlockEntity;
 import org.patryk3211.powergrid.electricity.heater.HeaterFanProcessingTypes;
 import org.patryk3211.powergrid.electricity.light.string.StringLightCordRecipe;
 import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterRegistry;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.solver.NativeMNA;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlock;
 import org.patryk3211.powergrid.electricity.wire.EntityWireInteraction;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.equipment.BoostRecipe;
@@ -142,6 +147,7 @@ public class PowerGrid {
 		SubstituteBlockEntityProvider.INSTANCE.registerDefault(DeviceConnectorBlockEntity.class, DeviceConnectorBlockEntity::new);
 		SubstituteBlockEntityProvider.INSTANCE.registerDefault(PunchCardReaderBlockEntity.class, PunchCardReaderBlockEntity::new);
 		SubstituteBlockEntityProvider.INSTANCE.registerDefault(ElectricFanBlockEntity.class, ElectricFanBlockEntity::new);
+		SubstituteBlockEntityProvider.INSTANCE.registerDefault(FEInverterBlockEntity.class, FEInverterBlockEntity::new);
 		SubstituteBlockEntityProvider.INSTANCE.lock();
 
 		ModdedDisplaySources.register();
@@ -153,6 +159,7 @@ public class PowerGrid {
 		ModdedConfigs.register();
 		ModdedMenus.register();
 		Components.register();
+		ModdedContraptions.register();
 
 		ModdedParticles.register();
 
@@ -163,6 +170,7 @@ public class PowerGrid {
 		ModdedParticles.PARTICLE_TYPES.register();
 
 		MovementBehaviour.REGISTRY.register(Blocks.LIGHTNING_ROD, new LightningRodMovementBehaviour());
+		registerBlockMovementChecks();
 	}
 
 	public static void onRegister(Registry<?> registry) {
@@ -193,6 +201,18 @@ public class PowerGrid {
 		RECIPE_SERIALIZERS.register("crafting_special_string_light_cord", () -> StringLightCordRecipe.SERIALIZER);
 
 		RECIPE_SERIALIZERS.register("boost_recipe", () -> BoostRecipe.SERIALIZER);
+	}
+
+	public static void registerBlockMovementChecks(){
+		BlockMovementChecks.registerAttachedCheck((state, world, pos, direction) -> {
+			if (!(state.getBlock() instanceof SolarPanelBlock))
+				return BlockMovementChecks.CheckResult.PASS;
+			BlockState neighbor = world.getBlockState(pos.relative(direction));
+			if (neighbor.getBlock() instanceof SolarPanelBlock)
+				return BlockMovementChecks.CheckResult.SUCCESS;
+
+			return BlockMovementChecks.CheckResult.PASS;
+		});
 	}
 
 	@ExpectPlatform
@@ -230,5 +250,9 @@ public class PowerGrid {
 			case FABRIC -> fabric;
 			case NEOFORGE -> forge;
 		};
+	}
+
+	public static int maxRPM() {
+		return AllConfigs.server().kinetics.maxRotationSpeed.get();
 	}
 }

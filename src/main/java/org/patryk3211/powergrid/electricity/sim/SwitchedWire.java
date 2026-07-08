@@ -20,7 +20,7 @@ import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.G_MIN;
 
 public class SwitchedWire extends ElectricWire {
-    private static final double OFF_CONDUCTANCE = G_MIN * 0.5;
+    public static final double OFF_CONDUCTANCE = G_MIN * 0.5;
 
     private boolean state;
     private int stamp;

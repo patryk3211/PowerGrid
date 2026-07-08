@@ -32,6 +32,7 @@ public class HiddenItems {
             .add(ModdedItems.INCOMPLETE_BATTERY)
             .add(ModdedItems.INCOMPLETE_BJT_NPN)
             .add(ModdedItems.INCOMPLETE_BJT_PNP)
+            .add(ModdedItems.INCOMPLETE_SOLAR_PANEL)
             .add(ModdedItems.PORTABLE_BATTERY_PLACEABLE)
             .build();
 

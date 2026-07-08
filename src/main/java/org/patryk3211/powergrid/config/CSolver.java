@@ -30,8 +30,8 @@ public class CSolver extends ConfigBase {
     public final ConfigBool splittingTransmissionLines = b(false, "splittingTransmissionLines", Comments.splittingTransmissionLines);
     public final ConfigBool splittingTransformers = b(false, "splittingsTransformers", Comments.splittingTransformers);
 
-    public final ConfigInt solverSimpleMaxIterations = i(250, "solverSimpleMaxIterations", Comments.solverSimpleMaxIterations);
-    public final ConfigInt solverComplexMaxIterations = i(250, "solverComplexMaxIterations", Comments.solverComplexMaxIterations);
+    public final ConfigInt solverSimpleMaxIterations = i(200, "solverSimpleMaxIterations", Comments.solverSimpleMaxIterations);
+    public final ConfigInt solverComplexMaxIterations = i(200, "solverComplexMaxIterations", Comments.solverComplexMaxIterations);
 
     public final ConfigFloat solverAbsolutePrecision = f(1e-7f, 0, "solverAbsolutePrecision", Comments.solverAbsolutePrecision);
     public final ConfigFloat solverRelativePrecision = f(1e-14f, 0, "solverRelativePrecision", Comments.solverRelativePrecision);
@@ -44,6 +44,8 @@ public class CSolver extends ConfigBase {
     public final ConfigFloat triodeLimAnode = f(0.5f, 0, 1, "triodeLimAnode", Comments.triodeLim);
     public final ConfigFloat triodeLimCathode = f(0.5f, 0, 1, "triodeLimCathode", Comments.triodeLim);
     public final ConfigFloat triodeLimGrid = f(0.5f, 0, 1, "triodeLimGrid", Comments.triodeLim);
+
+    public final ConfigBool seriesWireOptimization = b(false, "seriesWireOptimization");
 
     public final ConfigInt multiTicks = i(1, 1, "multiTicks", Comments.multiTicks);
 

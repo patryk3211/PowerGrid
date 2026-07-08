@@ -5,9 +5,10 @@ import org.patryk3211.powergrid.network.PacketSet;
 import org.patryk3211.powergrid.network.packets.*;
 
 public class ModPackets {
-    public static final PacketSet PACKETS = PacketSet.builder(PowerGrid.MOD_ID, 14) // increment version on changes
+    public static final PacketSet PACKETS = PacketSet.builder(PowerGrid.MOD_ID, 15) // increment version on changes
 
             // Client to Server
+            .c2s(AlternatePlacementStatusC2SPacket.class, AlternatePlacementStatusC2SPacket::new)
             .c2s(BlockWireCutC2SPacket.class, BlockWireCutC2SPacket::new)
             .c2s(BlockWireAttachC2SPacket.class, BlockWireAttachC2SPacket::new)
             .c2s(SaveSchematicC2SPacket.class, SaveSchematicC2SPacket::new)

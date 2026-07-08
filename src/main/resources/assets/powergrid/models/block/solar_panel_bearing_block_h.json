@@ -1,0 +1,50 @@
+{
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"texture_size": [64, 64],
+	"textures": {
+		"0": "powergrid:block/solar_panel_bearing_block",
+		"particle": "powergrid:block/solar_panel_bearing_block"
+	},
+	"elements": [
+		{
+			"from": [0, 0, 0],
+			"to": [16, 16, 11],
+			"rotation": {"angle": 0, "axis": "x", "origin": [8, 8, 8]},
+			"faces": {
+				"north": {"uv": [0, 0, 4, 4], "texture": "#0"},
+				"east": {"uv": [4, 0, 6.75, 4], "texture": "#0"},
+				"south": {"uv": [0, 4, 4, 8], "texture": "#0"},
+				"west": {"uv": [4, 4, 6.75, 8], "texture": "#0"},
+				"up": {"uv": [10.75, 2.75, 6.75, 0], "texture": "#0"},
+				"down": {"uv": [10.75, 2.75, 6.75, 5.5], "texture": "#0"}
+			}
+		},
+		{
+			"from": [5, 0, 11],
+			"to": [7, 2, 13],
+			"rotation": {"angle": 0, "axis": "x", "origin": [8, 8, 8]},
+			"faces": {
+				"north": {"uv": [7.25, 6.5, 7.75, 7], "texture": "#0"},
+				"east": {"uv": [7.25, 7, 7.75, 7.5], "texture": "#0"},
+				"south": {"uv": [6.75, 7.5, 7.25, 8], "texture": "#0"},
+				"west": {"uv": [7.25, 7.5, 7.75, 8], "texture": "#0"},
+				"up": {"uv": [8.25, 6, 7.75, 5.5], "texture": "#0"},
+				"down": {"uv": [8.25, 6, 7.75, 6.5], "texture": "#0"}
+			}
+		},
+		{
+			"from": [9, 0, 11],
+			"to": [11, 2, 13],
+			"rotation": {"angle": 0, "axis": "x", "origin": [8, 8, 8]},
+			"faces": {
+				"north": {"uv": [6.75, 5.5, 7.25, 6], "texture": "#0"},
+				"east": {"uv": [6.75, 6, 7.25, 6.5], "texture": "#0"},
+				"south": {"uv": [6.75, 6.5, 7.25, 7], "texture": "#0"},
+				"west": {"uv": [6.75, 7, 7.25, 7.5], "texture": "#0"},
+				"up": {"uv": [7.75, 6, 7.25, 5.5], "texture": "#0"},
+				"down": {"uv": [7.75, 6, 7.25, 6.5], "texture": "#0"}
+			}
+		}
+	]
+}

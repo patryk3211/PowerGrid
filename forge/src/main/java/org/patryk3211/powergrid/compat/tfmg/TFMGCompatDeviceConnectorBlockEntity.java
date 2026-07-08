@@ -107,6 +107,11 @@ public class TFMGCompatDeviceConnectorBlockEntity extends DeviceConnectorBlockEn
     }
 
     @Override
+    public int getMaxVoltage() {
+        return 0;
+    }
+
+    @Override
     public int powerGeneration() {
         return ModdedConfigs.server().electricity.tfmgConnectorPower.get();
     }

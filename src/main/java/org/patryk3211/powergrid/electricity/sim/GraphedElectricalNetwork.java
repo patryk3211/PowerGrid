@@ -23,6 +23,7 @@ import net.createmod.catnip.data.Pair;
 import org.apache.commons.lang3.mutable.MutableObject;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.commands.DebugCommand;
 import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceNode;
 import org.patryk3211.powergrid.electricity.sim.node.ICouplingNode;
@@ -455,29 +456,31 @@ public class GraphedElectricalNetwork extends ElectricalNetwork {
     @Override
     public void prepare(int multiTicks) {
         preparing = true;
-        var cleanNodes = new HashSet<IElectricNode>();
-        var changed = true;
-        while(changed) {
-            if(deferredNodeCheck.isEmpty())
-                break;
-            var iter = deferredNodeCheck.iterator();
-            IElectricNode node;
-            boolean added;
-            do {
-                node = iter.next();
-            } while(!(added = cleanNodes.add(node)) && iter.hasNext());
-            if(!added)
-                break;
+        if(ModdedConfigs.server().electricity.solver.seriesWireOptimization.get()) {
+            var cleanNodes = new HashSet<IElectricNode>();
+            var changed = true;
+            while(changed) {
+                if(deferredNodeCheck.isEmpty())
+                    break;
+                var iter = deferredNodeCheck.iterator();
+                IElectricNode node;
+                boolean added;
+                do {
+                    node = iter.next();
+                } while(!(added = cleanNodes.add(node)) && iter.hasNext());
+                if(!added)
+                    break;
 
-            changed = false;
-            var affected = checkSeries(node);
-            if(affected != null) {
-                changed = true;
-                affected.forEach(node1 -> {
-                    if(node1.getIndex() == -1 && !isLeaf(node1))
-                        deferredNodeCheck.remove(node1);
-                    else deferredNodeCheck.add(node1);
-                });
+                changed = false;
+                var affected = checkSeries(node);
+                if(affected != null) {
+                    changed = true;
+                    affected.forEach(node1 -> {
+                        if(node1.getIndex() == -1 && !isLeaf(node1))
+                            deferredNodeCheck.remove(node1);
+                        else deferredNodeCheck.add(node1);
+                    });
+                }
             }
         }
         for(var node : deferredNodeCheck) {

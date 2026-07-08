@@ -7,6 +7,8 @@ import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
 import org.patryk3211.powergrid.electricity.sim.solver.IOuterHook;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
 
+import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.G_MIN;
+
 public class GeneratorCoupling extends VoltageSourceCoupling implements IOuterHook {
     private final IRotor rotor;
     private float field;
@@ -20,12 +22,18 @@ public class GeneratorCoupling extends VoltageSourceCoupling implements IOuterHo
         super(positive, negative, resistance);
         this.rotor = rotor;
         baseResistance = resistance.floatValue();
+        if(baseResistance <= 0)
+            baseResistance = (float) (1 / G_MIN);
     }
 
     public void setField(float field) {
         this.field = field;
         double dt = network == null ? 0.05 : network.getDeltaTime();
-        backEmf = field * field * dt / rotor.getInertia();
+        if(rotor.getInertia() != 0) {
+            backEmf = field * field * dt / rotor.getInertia();
+        } else {
+            backEmf = 0;
+        }
         super.setResistance((float) (baseResistance + backEmf));
     }
 
@@ -51,7 +59,9 @@ public class GeneratorCoupling extends VoltageSourceCoupling implements IOuterHo
 
     @Override
     public void setResistance(float resistance) {
-        this.baseResistance = resistance;
+        baseResistance = resistance;
+        if(baseResistance <= 0)
+            baseResistance = (float) (1 / G_MIN);
         super.setResistance((float) (resistance + backEmf));
     }
 

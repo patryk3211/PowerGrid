@@ -36,6 +36,8 @@ import org.patryk3211.powergrid.mixin.KineticBlockEntityAccessor;
 
 import java.util.List;
 
+import static org.patryk3211.powergrid.PowerGrid.maxRPM;
+
 public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity implements IElectricEntity {
     public static final int AVERAGING_TICKS = 5;
 
@@ -73,7 +75,7 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
         var awards = new PGAdvancementBehaviour(this, ModdedAdvancements.ELECTRIC_MOTOR);
         behaviours.add(awards);
 
-        var maxPower = 256 * torque() / CONVERSION_CONSTANT;
+        var maxPower = maxRPM() * torque() / CONVERSION_CONSTANT;
         var baseFactor = ThermalBehaviour.dissipationFactor(maxPower, 150);
         thermalBehaviour = ThermalBehaviour.simple(this, 3.5f, baseFactor);
         if(thermalBehaviour != null) {
@@ -116,10 +118,10 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
         avgSpeed = 0;
         if(!level.isClientSide || isVirtual()) {
             // Max speed constraints.
-            if(newSpeed > 256)
-                newSpeed = 256;
-            if(newSpeed < -256)
-                newSpeed = -256;
+            if(newSpeed > maxRPM())
+                newSpeed = maxRPM();
+            if(newSpeed < -maxRPM())
+                newSpeed = -maxRPM();
 
             // Update speed from average power.
             if(newSpeed != generatedSpeed) {

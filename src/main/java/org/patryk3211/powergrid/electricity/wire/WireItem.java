@@ -20,6 +20,8 @@ import com.tterrag.registrate.builders.ItemBuilder;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import dev.architectury.event.CompoundEventResult;
 import dev.architectury.event.EventResult;
+import dev.architectury.utils.Env;
+import dev.architectury.utils.EnvExecutor;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
@@ -42,6 +44,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedKeys;
 import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
@@ -118,7 +121,9 @@ public class WireItem extends Item implements IWire {
             terminal = wireEndpoint.getTerminalPlacement(world);
         }
 
-        var result = BlockTrace.findPath(world, lastPoint, targetPoint, terminal, continueDir);
+        var result = alternateWirePlacement(player)
+                ? BlockTrace.alternatePath(lastPoint, targetPoint)
+                : BlockTrace.findPath(world, lastPoint, targetPoint, terminal, continueDir);
         if(result != null && result.reachedTarget()) {
             float addedLength = 0;
             for(var point : result.points())
@@ -172,9 +177,10 @@ public class WireItem extends Item implements IWire {
                         PowerGrid.LOGGER.error("Cannot extend wire at start (must be flipped beforehand)");
                         return InteractionResultHolder.fail(null);
                     }
+                    wire.extend(result.points(), newItems);
                     if(endpoint2.type().isConnectable())
                         wire.setEndpoint2(endpoint2);
-                    wire.extend(result.points(), newItems);
+                    wire.sendExtraData();
                     PlayerUtilities.removeItems(player, stack, newItems);
                     return InteractionResultHolder.success(wire);
                 }
@@ -218,7 +224,9 @@ public class WireItem extends Item implements IWire {
             continueDir = first.direction.getOpposite();
         }
 
-        var result = BlockTrace.findPath(world, lastPoint, targetPoint, null, continueDir);
+        var result = alternateWirePlacement(player)
+                ? BlockTrace.alternatePath(lastPoint, targetPoint)
+                : BlockTrace.findPath(world, lastPoint, targetPoint, null, continueDir);
         if(result == null || !result.reachedTarget())
             return InteractionResultHolder.fail(null);
 
@@ -258,11 +266,13 @@ public class WireItem extends Item implements IWire {
             for(var segment : sourceEntity.segments) {
                 segments.add(0, new BlockWireEntity.Point(segment.direction.getOpposite(), segment.gridLength));
             }
-            targetEntity.setEndpoint2(sourceEntity.getEndpoint1());
             targetEntity.extend(segments, sourceEntity.getWireCount());
+            targetEntity.setEndpoint2(sourceEntity.getEndpoint1());
+            targetEntity.sendExtraData();
         } else {
-            targetEntity.setEndpoint2(sourceEntity.getEndpoint2());
             targetEntity.extend(sourceEntity.segments, sourceEntity.getWireCount());
+            targetEntity.setEndpoint2(sourceEntity.getEndpoint2());
+            targetEntity.sendExtraData();
         }
 
         sourceEntity.discard();
@@ -285,6 +295,12 @@ public class WireItem extends Item implements IWire {
             return CompoundEventResult.interruptTrue(stack);
         }
         return CompoundEventResult.pass();
+    }
+
+    public static boolean alternateWirePlacement(Player player) {
+        return EnvExecutor
+                .getInEnv(Env.CLIENT, () -> ModdedKeys.ALTERNATE_WIRE_PLACEMENT::isPressed)
+                .orElseGet(() -> player instanceof IAlternatePlacementExtension ext && ext.powerGrid$alternatePlacement());
     }
 
     public static EventResult useOn(Player player, InteractionHand hand, BlockPos blockPos, Direction direction) {
@@ -337,7 +353,7 @@ public class WireItem extends Item implements IWire {
         var entry = WireRegistry.forItem(stack.getItem());
         if(entry == null)
             return;
-        Resistance.series(entry.resistancePerItem(), player, tooltip);
+        Resistance.seriesPerMeter(entry.resistancePerItem() * entry.itemsPerMeter(), player, tooltip);
         Current.max(entry.maximumCurrent(), player, tooltip);
         Range.max((int) entry.maximumLength(), tooltip);
         if(stack.getItem() instanceof StringLightCordItem cord)
