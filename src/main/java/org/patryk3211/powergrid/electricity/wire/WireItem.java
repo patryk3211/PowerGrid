@@ -177,9 +177,10 @@ public class WireItem extends Item implements IWire {
                         PowerGrid.LOGGER.error("Cannot extend wire at start (must be flipped beforehand)");
                         return InteractionResultHolder.fail(null);
                     }
+                    wire.extend(result.points(), newItems);
                     if(endpoint2.type().isConnectable())
                         wire.setEndpoint2(endpoint2);
-                    wire.extend(result.points(), newItems);
+                    wire.sendExtraData();
                     PlayerUtilities.removeItems(player, stack, newItems);
                     return InteractionResultHolder.success(wire);
                 }
@@ -265,11 +266,13 @@ public class WireItem extends Item implements IWire {
             for(var segment : sourceEntity.segments) {
                 segments.add(0, new BlockWireEntity.Point(segment.direction.getOpposite(), segment.gridLength));
             }
-            targetEntity.setEndpoint2(sourceEntity.getEndpoint1());
             targetEntity.extend(segments, sourceEntity.getWireCount());
+            targetEntity.setEndpoint2(sourceEntity.getEndpoint1());
+            targetEntity.sendExtraData();
         } else {
-            targetEntity.setEndpoint2(sourceEntity.getEndpoint2());
             targetEntity.extend(sourceEntity.segments, sourceEntity.getWireCount());
+            targetEntity.setEndpoint2(sourceEntity.getEndpoint2());
+            targetEntity.sendExtraData();
         }
 
         sourceEntity.discard();
@@ -350,7 +353,7 @@ public class WireItem extends Item implements IWire {
         var entry = WireRegistry.forItem(stack.getItem());
         if(entry == null)
             return;
-        Resistance.series(entry.resistancePerItem(), player, tooltip);
+        Resistance.seriesPerMeter(entry.resistancePerItem() * entry.itemsPerMeter(), player, tooltip);
         Current.max(entry.maximumCurrent(), player, tooltip);
         Range.max((int) entry.maximumLength(), tooltip);
         if(stack.getItem() instanceof StringLightCordItem cord)

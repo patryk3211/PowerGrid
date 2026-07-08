@@ -67,6 +67,8 @@ import org.patryk3211.powergrid.data.EntityTagProvider;
 import org.patryk3211.powergrid.data.ItemTagProvider;
 import org.patryk3211.powergrid.data.recipe.forge.MixingRecipes;
 import org.patryk3211.powergrid.data.recipes.*;
+import org.patryk3211.powergrid.electricity.febridge.FEInverterBlockEntity;
+import org.patryk3211.powergrid.electricity.febridge.forge.FEInverterBlockEntityImpl;
 import org.patryk3211.powergrid.electricity.wire.registry.WireItemEntry;
 import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
 import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryItem;
@@ -111,6 +113,7 @@ public class PowerGridImpl {
 
         SubstituteItemProvider.INSTANCE.shadow(PortableBatteryItem.class, ForgePortableBatteryItem.class);
         SubstituteBlockEntityProvider.INSTANCE.register(PunchCardReaderBlockEntity.class, PunchCardReaderBlockEntityImpl::new);
+        SubstituteBlockEntityProvider.INSTANCE.register(FEInverterBlockEntity.class, FEInverterBlockEntityImpl::new);
         PunchCardMenu.CONSTRUCTORS = PunchCardMenuImpl.constructors();
         PowerGrid.init();
 
