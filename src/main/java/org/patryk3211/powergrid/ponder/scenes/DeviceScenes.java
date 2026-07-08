@@ -610,8 +610,11 @@ public class DeviceScenes {
         var magnetPos = util.grid().at(2, 3, 2);
         var depotPos = util.grid().at(2, 1, 1);
 
-        scene.world().modifyBlockEntity(magnetPos, ElectromagnetBlockEntity.class, be ->
-                be.getBehaviour(ThermalBehaviour.TYPE).behaviourFlags(0));
+        scene.world().modifyBlockEntity(magnetPos, ElectromagnetBlockEntity.class, be -> {
+                var behavior = be.getBehaviour(ThermalBehaviour.TYPE);
+                if(behavior != null)
+                    behavior.behaviourFlags(0);
+        });
         scene.electric().addSource(magnetPos, 0, 200);
         scene.electric().addSource(magnetPos, 1, 0);
         scene.electric().tickFor(5);

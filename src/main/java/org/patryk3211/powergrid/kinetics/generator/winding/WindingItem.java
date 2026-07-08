@@ -18,7 +18,6 @@ package org.patryk3211.powergrid.kinetics.generator.winding;
 import com.simibubi.create.AllBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -45,14 +44,14 @@ public class WindingItem extends Item {
 
     @Override
     public boolean isFoil(ItemStack stack) {
-        return super.isFoil(stack) || stack.hasTag();
+        return super.isFoil(stack) || stack.getTagElement("Connection") != null;
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         var stack = user.getItemInHand(hand);
         if(user.isShiftKeyDown()) {
-            stack.setTag(null);
+            stack.removeTagKey("Connection");
             return InteractionResultHolder.success(stack);
         }
         return super.use(world, user, hand);
@@ -64,7 +63,7 @@ public class WindingItem extends Item {
         var world = context.getLevel();
         var stack = context.getItemInHand();
         if(context.getPlayer() != null && context.getPlayer().isShiftKeyDown()) {
-            stack.setTag(null);
+            stack.removeTagKey("Connection");
             return InteractionResult.SUCCESS;
         }
 
@@ -87,10 +86,10 @@ public class WindingItem extends Item {
 
         if(!hitState.is(AllBlocks.SHAFT.get()))
             return InteractionResult.FAIL;
-        
-        if(stack.hasTag()) {
+
+        var tag = stack.getTagElement("Connection");
+        if(tag != null) {
             // Has first point
-            var tag = stack.getTag();
             var posArray = tag.getIntArray("Position");
             var firstPos = new BlockPos(posArray[0], posArray[1], posArray[2]);
             if(firstPos.equals(pos))
@@ -98,7 +97,7 @@ public class WindingItem extends Item {
 
             var firstState = world.getBlockState(firstPos);
             if(!firstState.is(AllBlocks.SHAFT.get())) {
-                stack.setTag(null);
+                stack.removeTagKey("Connection");
                 return InteractionResult.FAIL;
             }
 
@@ -150,15 +149,14 @@ public class WindingItem extends Item {
                     world.setBlockAndUpdate(start.relative(offsetDir, i), baseState);
                 }
             }
-            stack.setTag(null);
+            stack.removeTagKey("Connection");
             PlayerUtilities.removeItems(context.getPlayer(), stack, length + 1);
             world.playSound(null, pos, baseState.getSoundType().getPlaceSound(), SoundSource.BLOCKS, 1, 1);
         } else {
             if(world.isClientSide)
                 return InteractionResult.SUCCESS;
-            var tag = new CompoundTag();
+            tag = stack.getOrCreateTagElement("Connection");
             tag.putIntArray("Position", new int[] { pos.getX(), pos.getY(), pos.getZ() });
-            stack.setTag(tag);
         }
 
         return InteractionResult.SUCCESS;

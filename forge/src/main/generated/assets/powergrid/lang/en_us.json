@@ -683,6 +683,7 @@
   "powergrid.subtitle.uswitch_on": "Switch clicks",
   "powergrid.subtitle.wire_burned": "Wire burned",
   "powergrid.subtitle.wire_cut": "Wire cut",
+  "powergrid.tooltip.capacity": "Total capacity:",
   "powergrid.tooltip.charge.current": "Current charge:",
   "powergrid.tooltip.circuit_assembly": "Circuit Assembly",
   "powergrid.tooltip.circuit_assembly.insert": "Insert",

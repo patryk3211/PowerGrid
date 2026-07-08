@@ -23,7 +23,8 @@ public enum Unit {
     CURRENT("generic.unit.amp"),
     POWER("generic.unit.watt"),
     RESISTANCE("generic.unit.ohm"),
-    TEMPERATURE("generic.unit.temperature");
+    TEMPERATURE("generic.unit.temperature"),
+    ENERGY("generic.unit.energy");
 
     private final String translationKey;
 
