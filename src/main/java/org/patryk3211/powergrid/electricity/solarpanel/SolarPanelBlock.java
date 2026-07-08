@@ -21,29 +21,19 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
-import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
-import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
-import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
+import org.patryk3211.powergrid.electricity.base.DirectionalElectricBlock;
 import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
-import org.patryk3211.powergrid.utility.ShaperUtils;
 
 import java.util.List;
 import java.util.function.Predicate;
 
-public class SolarPanelBlock extends Rotation4ElectricBlock implements IBE<SolarPanelBlockEntity>,IHaveElectricProperties, IAcceptConnector {
+public class SolarPanelBlock extends DirectionalElectricBlock implements IBE<SolarPanelBlockEntity>,IHaveElectricProperties, IAcceptConnector {
     private static final VoxelShape SHAPE = box(0, 6, 0, 16, 10, 16);
-    private static final VoxelShaper[] SHAPERS = new VoxelShaper[] {
-            VoxelShaper.forDirectional(SHAPE, Direction.DOWN),
-            VoxelShaper.forDirectional(ShaperUtils.rotate(SHAPE, Direction.NORTH, Direction.WEST), Direction.DOWN),
-            VoxelShaper.forDirectional(ShaperUtils.rotate(SHAPE, Direction.NORTH, Direction.WEST), Direction.DOWN),
-            VoxelShaper.forDirectional(ShaperUtils.rotate(SHAPE, Direction.NORTH, Direction.WEST), Direction.DOWN)
-    };
 
     private static final int placementHelperId = PlacementHelpers.register(new SolarPanelBlock.PlacementHelper());
 
@@ -53,9 +43,8 @@ public class SolarPanelBlock extends Rotation4ElectricBlock implements IBE<Solar
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
-        var facing = state.getValue(FACING);
-        var rotation = state.getValue(ROTATION);
-        return SHAPERS[rotation].get(facing);
+        var shaper = VoxelShaper.forDirectional(SHAPE, Direction.UP);
+        return shaper.get(state.getValue(SolarPanelBlock.FACING));
     }
 
     @Override
