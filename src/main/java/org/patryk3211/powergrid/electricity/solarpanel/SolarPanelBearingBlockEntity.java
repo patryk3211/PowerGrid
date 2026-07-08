@@ -193,8 +193,8 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         if (rayCastDelay-- == 0){
             sunVisibility = sunRaycast(world);
             rayCastDelay = world.random.nextInt(41) + 10;
-            skyVisible = skyCheck(world, BlockPos.containing(getContraptionCenter(movedContraption)
-                    .add(new Vec3(panelNormal.x, panelNormal.y, panelNormal.z))));
+            skyVisible = skyCheck(world, BlockPos.containing(JOMLConversion.toMojang(getContraptionCenter(movedContraption)
+                    .add(panelNormal.x, panelNormal.y, panelNormal.z))));
         }
 
         double sunAngle = world.getSunAngle(0);

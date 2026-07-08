@@ -22,7 +22,6 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedTags;
-import org.joml.Vector3d;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,7 +71,7 @@ public class SolarHelper {
         ServerLevel serverWorld = (ServerLevel) level;
         var checkBox = new AABB(start, end);
         List<AbstractContraptionEntity> candidates = level.getEntitiesOfClass(AbstractContraptionEntity.class, checkBox);
-        var subLevels = SableCompanion.INSTANCE.getAllIntersecting(level, new BoundingBox3d(start, end));
+        var subLevels = SableCompanion.INSTANCE.getAllIntersecting(level, new BoundingBox3d(checkBox));
         List<DDAHit> hits = new ArrayList<>();
         Vec3 dir = end.subtract(start);
         double length = dir.length();
@@ -98,11 +97,13 @@ public class SolarHelper {
         double tMaxY = norm.y == 0 ? Double.MAX_VALUE : (stepY > 0 ? Math.ceil(start.y) - start.y : start.y - Math.floor(start.y)) / Math.abs(norm.y);
         double tMaxZ = norm.z == 0 ? Double.MAX_VALUE : (stepZ > 0 ? Math.ceil(start.z) - start.z : start.z - Math.floor(start.z)) / Math.abs(norm.z);
         for (int i = 0; i < length; i++) {
+
             BlockPos pos = new BlockPos(x, y, z);
             Vec3 worldPos = new Vec3(x + 0.5, y + 0.5, z + 0.5);
             BlockState state = level.getBlockState(pos);
-            var handledByContraption = false;
             if (showDebugLines) debugLines(serverWorld, pos, ParticleTypes.SOUL_FIRE_FLAME);
+
+            var handledByContraption = false;
             for (AbstractContraptionEntity candidate : candidates) {
                 Contraption contraption = candidate.getContraption();
                 if (contraption == null) continue;
@@ -110,7 +111,6 @@ public class SolarHelper {
                 Vec3 localStart = ContraptionCollider.worldToLocalPos(start, candidate);
                 Vec3 localEnd = ContraptionCollider.worldToLocalPos(end, candidate);
 
-                Vec3 worldPos = new Vec3(x + 0.5, y + 0.5, z + 0.5);
                 Vec3 local = ContraptionCollider.worldToLocalPos(worldPos, candidate.getAnchorVec(), candidate.getContraption().entity.getRotationState());
                 BlockPos localPos = BlockPos.containing(local);
 
@@ -129,7 +129,32 @@ public class SolarHelper {
                 }
             }
 
-            if (!handledByContraption){
+            boolean handledBySublevel = false;
+            for (SubLevelAccess subLevel : subLevels) {
+                if (subLevel.boundingBox().contains(worldPos.x, worldPos.y, worldPos.z)) {
+                    Vec3 local = subLevel.logicalPose().transformPositionInverse(worldPos);
+                    BlockPos localPos = BlockPos.containing(local);
+                    BlockState localState = level.getBlockState(localPos);
+                    if (!localState.isAir()) {
+                        if (!localState.isCollisionShapeFullBlock(level, localPos) && localState.getBlock() != Blocks.WATER) {
+                            VoxelShape shape = localState.getShape(level, localPos);
+                            if (shape.isEmpty()) continue;
+                            BlockHitResult hit = shape.clip(start, end, pos);
+                            if (hit != null) {
+                                hits.add(new DDAHit(localPos, null));
+                                if (showDebugLines) debugLines(serverWorld, worldPos, ParticleTypes.FLAME);
+                            }
+                        } else {
+                            hits.add(new DDAHit(localPos, null));
+                            if (showDebugLines) debugLines(serverWorld, worldPos, ParticleTypes.FLAME);
+                        }
+                    }
+                    handledBySublevel = true;
+                    break;
+                }
+            }
+
+            if (!handledBySublevel && !handledByContraption) {
                 if (!state.isAir()) {
                     if (!state.isCollisionShapeFullBlock(level, pos) && state.getBlock() != Blocks.WATER) {
                         VoxelShape shape = state.getShape(level, pos);
@@ -143,40 +168,6 @@ public class SolarHelper {
                         hits.add(new DDAHit(pos, null));
                         if (showDebugLines) debugLines(serverWorld, pos, ParticleTypes.FLAME);
                     }
-                }
-
-            boolean handledBySublevel = false;
-            for (SubLevelAccess subLevel : subLevels) {
-                if (subLevel.boundingBox().contains(worldPos.x, worldPos.y, worldPos.z)) {
-                    Vec3 local = subLevel.logicalPose().transformPositionInverse(worldPos);
-                    BlockPos localPos = BlockPos.containing(local);
-                    BlockState localState = level.getBlockState(localPos);
-                    if (!localState.isAir()) {
-                        if (!localState.isCollisionShapeFullBlock(level, localPos) && localState.getBlock() != Blocks.WATER) {
-                            VoxelShape shape = localState.getShape(level, localPos);
-                            if (shape.isEmpty()) continue;
-                            BlockHitResult hit = shape.clip(start, end, pos);
-                            if (hit != null) {
-                                blockHits.add(localPos);
-                            }
-                        } else blockHits.add(localPos);
-                    }
-                    handledBySublevel = true;
-                    break;
-                }
-            }
-
-            if (!handledBySublevel) {
-                BlockState state = level.getBlockState(pos);
-                if (!state.isAir()) {
-                    if (!state.isCollisionShapeFullBlock(level, pos) && state.getBlock() != Blocks.WATER) {
-                        VoxelShape shape = state.getShape(level, pos);
-                        if (shape.isEmpty()) continue;
-                        BlockHitResult hit = shape.clip(start, end, pos);
-                        if (hit != null) {
-                            blockHits.add(pos);
-                        }
-                    } else blockHits.add(pos);
                 }
             }
 

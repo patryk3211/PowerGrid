@@ -1257,7 +1257,7 @@ public class DeviceScenes {
                 .setValue(DoublePlantBlock.HALF, DoubleBlockHalf.LOWER), false);
         scene.world().setBlocks(util.select().position(3,3,3), Blocks.TALL_GRASS.defaultBlockState()
                 .setValue(DoublePlantBlock.HALF, DoubleBlockHalf.UPPER), false);
-        scene.world().replaceBlocks(util.select().position(3, 2, 1), Blocks.GRASS.defaultBlockState(), false);
+        scene.world().replaceBlocks(util.select().position(3, 2, 1), Blocks.SHORT_GRASS.defaultBlockState(), false);
 
         scene.overlay().showText(60)
                 .text("Placing one in a plains biome.")
