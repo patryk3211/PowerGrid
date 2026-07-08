@@ -36,6 +36,7 @@ import org.patryk3211.powergrid.electricity.electricswitch.*;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanRenderer;
+import org.patryk3211.powergrid.electricity.febridge.FEInverterBlockEntity;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.GaugeRenderer;
@@ -334,6 +335,11 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<RedstoneConverterBlockEntity> REDSTONE_CONVERTER =
             REGISTRATE.blockEntity("redstone_converter", RedstoneConverterBlockEntity::new)
                     .validBlock(ModdedBlocks.REDSTONE_CONVERTER)
+                    .register();
+
+    public static final BlockEntityEntry<FEInverterBlockEntity> FE_INVERTER =
+            REGISTRATE.blockEntity("fe_inverter", SubstituteBlockEntityProvider.INSTANCE.get(FEInverterBlockEntity.class))
+                    .validBlock(ModdedBlocks.FE_INVERTER)
                     .register();
 
     public static final BlockEntityEntry<CarbonPileCoilBlockEntity> CARBON_PILE_COIL =

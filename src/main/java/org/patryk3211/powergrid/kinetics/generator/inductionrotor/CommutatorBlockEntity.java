@@ -25,10 +25,7 @@ import org.apache.commons.lang3.mutable.MutableObject;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
-import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
-import org.patryk3211.powergrid.electricity.base.IElectricEntity;
-import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
-import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.electricity.sim.calculation.Precalculated;
@@ -41,14 +38,14 @@ import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBlockEntity;
 import java.util.HashSet;
 import java.util.List;
 
-public class CommutatorBlockEntity extends RotorBlockEntity implements IElectricEntity {
+public class CommutatorBlockEntity extends RotorBlockEntity implements IElectricEntity, IElectric {
     protected ElectricBehaviour electricBehaviour;
     protected ThermalBehaviour thermalBehaviour;
     protected GeneratorCoupling source;
     private GeneratorCoupling oldSource;
-    private float resistance = 1e-6f;
+    private float resistance;
     private boolean updateBehaviour = true;
-    private float emf = 0;
+    private float emf;
 
     private final PrecalculatedN<Float, Precalculated<Float>> totalFieldStrength = new PrecalculatedN<>(CommutatorBlockEntity::fieldSum, 0.0f);
 
@@ -73,6 +70,8 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
+        if(resistance == 0)
+            resistance = 1e-6f;
         oldSource = source = builder.addInternalNode(GeneratorCoupling.class, builder.terminalNode(0), builder.terminalNode(1), resistance, rotorBehaviour);
         source.setFieldStrengthProvider(totalFieldStrength);
         source.setEmfValue(emf);
@@ -204,6 +203,7 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
                 wires.forEach(TransmissionLinePart::refreshEndpointNodes);
             }
             totalFieldStrength.updateDependency(rotors.toArray(Precalculated[]::new));
+            setChanged();
         }
         if(!level.isClientSide) {
             if(source != null) {
@@ -235,5 +235,19 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
                 chance -= 1;
             }
         }
+    }
+
+    @Override
+    public int terminalCount() {
+        return 2;
+    }
+
+    @Override
+    public ITerminalPlacement terminal(BlockState state, int index) {
+        if(!(state.getBlock() instanceof CommutatorBlock block))
+            return null;
+        if(rotorBehaviour.getAngularVelocity() >= 0)
+            return block.terminals.get(state, index);
+        return block.terminalsFlipped.get(state, index);
     }
 }
