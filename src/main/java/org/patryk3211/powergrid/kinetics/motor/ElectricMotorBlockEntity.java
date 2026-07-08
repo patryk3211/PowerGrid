@@ -49,6 +49,7 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
     private float generatedSpeed = 0;
 
     private float avgSpeed;
+    private float load;
 
     public ElectricMotorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -61,6 +62,19 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
 
     public static double calculateSpeed(double power, double torque) {
         return power / torque * CONVERSION_CONSTANT;
+    }
+
+    @Override
+    public void updateFromNetwork(float maxStress, float currentStress, int networkSize) {
+        super.updateFromNetwork(maxStress, currentStress, networkSize);
+        if(ModdedConfigs.server().electricity.motorDynamicResistance.get()) {
+            if (maxStress != 0) {
+                load = Math.max(currentStress / maxStress, 0.05f);
+            } else {
+                load = 0.05f;
+            }
+            coil.setResistance(resistance() / load);
+        }
     }
 
     @Override
@@ -128,7 +142,8 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
         assert level != null;
         if(!level.isClientSide || isVirtual()) {
             applyPower(coil);
-            avgSpeed += (float) (calculateSpeed(coil.power(), torque()) * Math.signum(coil.current()));
+            var V = coil.potentialDifference();
+            avgSpeed += (float) (calculateSpeed(V * V / resistance(), torque()) * Math.signum(coil.current()));
         }
         super.tick();
     }

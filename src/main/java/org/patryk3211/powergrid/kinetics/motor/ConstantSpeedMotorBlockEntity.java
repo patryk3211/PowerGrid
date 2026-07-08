@@ -57,6 +57,7 @@ public class ConstantSpeedMotorBlockEntity extends GeneratingKineticBlockEntity 
     private float generatedSU = 0;
 
     private float avgSpeed;
+    private float load;
 
     public ConstantSpeedMotorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -65,6 +66,19 @@ public class ConstantSpeedMotorBlockEntity extends GeneratingKineticBlockEntity 
 
     public float torque() {
         return (float) (BlockStressValues.getCapacity(getBlockState().getBlock()) * ModdedConfigs.server().kinetics.torqueForStress.getF());
+    }
+
+    @Override
+    public void updateFromNetwork(float maxStress, float currentStress, int networkSize) {
+        super.updateFromNetwork(maxStress, currentStress, networkSize);
+        if(ModdedConfigs.server().electricity.motorDynamicResistance.get()) {
+            if (maxStress != 0) {
+                load = Math.max(currentStress / maxStress, 0.05f);
+            } else {
+                load = 0.05f;
+            }
+            coil.setResistance(resistance() / load);
+        }
     }
 
     @Override
@@ -141,7 +155,8 @@ public class ConstantSpeedMotorBlockEntity extends GeneratingKineticBlockEntity 
 
         if(!level.isClientSide || isVirtual()) {
             applyPower(coil);
-            avgSpeed += (float) (calculateSpeed(coil.power(), torque()) * Math.signum(coil.current()));
+            var V = coil.potentialDifference();
+            avgSpeed += (float) (calculateSpeed(V * V / resistance(), torque()) * Math.signum(coil.current()));
         }
         super.tick();
     }
