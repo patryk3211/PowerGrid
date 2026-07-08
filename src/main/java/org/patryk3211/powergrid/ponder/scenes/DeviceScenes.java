@@ -18,6 +18,9 @@ package org.patryk3211.powergrid.ponder.scenes;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import net.createmod.catnip.math.Pointing;
+import net.createmod.ponder.api.PonderPalette;
+import net.createmod.ponder.api.element.ElementLink;
+import net.createmod.ponder.api.element.WorldSectionElement;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.createmod.ponder.foundation.PonderScene;
@@ -33,11 +36,14 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
@@ -1124,6 +1130,387 @@ public class DeviceScenes {
                 be -> be.insertCard(card, Direction.UP));
 
         scene.idle(100);
+        scene.markAsFinished();
+    }
+
+    public static void solarPanel(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("solar_panel_conditions", "Solar Panel Basics");
+        scene.configureBasePlate(0, 0, 5);
+        scene.showBasePlate();
+
+        var panel1 = util.grid().at(1, 1, 2);
+        var panel2 = util.grid().at(3, 1, 2);
+        var panel3 =  util.grid().at(2, 2, 2);
+        var bearing = util.grid().at(0, 1, 2);
+        var leave1 = util.grid().at(3, 2, 2);
+        var glass = util.grid().at(3, 1, 2);
+        var water =  util.grid().at(2, 1, 2);
+        var leave2 = util.grid().at(1, 1, 2);
+
+        scene.idle(10);
+        var rotatedPanel = scene.world().showIndependentSection(util.select().position(panel1), Direction.DOWN);
+        scene.world().showSection(util.select().position(panel2), Direction.DOWN);
+
+        scene.idle(10);
+        scene.overlay().showText(80)
+                .text("The Solar Panel needs to point at the sun to make power.")
+                .pointAt(util.vector().centerOf(panel2))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.idle(10);
+        scene.overlay().showText(80)
+                .text("The closer to directly pointing at the sun you get, the more power the panel will make.")
+                .pointAt(util.vector().centerOf(panel1))
+                .placeNearTarget();
+        scene.idle(90);
+
+        scene.world().showSection(util.select().position(bearing), Direction.DOWN);
+
+        scene.overlay().showText(100)
+                .text("For pointing with more accuracy you can use the Solar Panel Bearing refer to that ponder for more information.")
+                .pointAt(util.vector().centerOf(bearing))
+                .placeNearTarget();
+        scene.idle(15);
+        scene.world().rotateSection(rotatedPanel, 360, 0, 0, 35 * 2);
+        scene.idle(95);
+        scene.world().hideSection(util.select().position(bearing), Direction.UP);
+
+        scene.overlay().showText(70)
+                .text("The Solar Panel needs direct sunlight.")
+                .pointAt(util.vector().centerOf(panel2))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(80);
+
+        scene.world().showSection(util.select().position(leave1), Direction.DOWN);
+        scene.overlay().showText(80)
+                .text("If there are any obstacles in the way it will make substantially less power.")
+                .pointAt(util.vector().centerOf(leave1))
+                .placeNearTarget();
+        scene.idle(90);
+        //scene.world().replaceBlocks(util.select().fromTo(0,1,0,4,1,4), Blocks.BARRIER.defaultBlockState(), false);
+        scene.world().hideSection(util.select().position(leave1), Direction.UP);
+        scene.world().hideSection(util.select().position(glass), Direction.UP);
+        scene.world().hideSection(util.select().position(leave2), Direction.UP);
+        scene.world().hideIndependentSection(rotatedPanel, Direction.UP);
+        scene.idle(15);
+
+        scene.world().replaceBlocks(util.select().position(glass), Blocks.GLASS.defaultBlockState(), false);
+        scene.world().replaceBlocks(util.select().position(water), Blocks.WATER.defaultBlockState(), false);
+        scene.world().replaceBlocks(util.select().position(leave2), Blocks.OAK_LEAVES.defaultBlockState(), false);
+        scene.world().showSection(util.select().fromTo(3, 1, 2, 1, 1, 2), Direction.DOWN);
+
+        scene.idle(10);
+        scene.overlay().showText(100)
+                .text("There are some blocks that let light through like glass, water, leaves and a few other blocks.")
+                .attachKeyFrame();
+        scene.idle(110);
+
+        scene.overlay().showText(30)
+                .text("25%%")
+                .pointAt(util.vector().topOf(leave2))
+                .placeNearTarget();
+        scene.idle(30);
+
+        scene.overlay().showText(30)
+                .text("50%%")
+                .pointAt(util.vector().topOf(water))
+                .placeNearTarget();
+        scene.idle(30);
+
+        scene.overlay().showText(30)
+                .text("75%%")
+                .pointAt(util.vector().topOf(glass))
+                .placeNearTarget();
+        scene.idle(30);
+
+        scene.world().hideSection(util.select().fromTo(3, 1, 2, 1, 1, 2), Direction.UP);
+        scene.idle(15);
+        scene.world().showSection(util.select().fromTo(1,1,1,3,1,3), Direction.DOWN);
+        scene.world().replaceBlocks(util.select().fromTo(1,1,1,3,1,3), Blocks.SAND.defaultBlockState(), false);
+        scene.world().showSection(util.select().position(3, 2, 1), Direction.DOWN);
+        scene.world().replaceBlocks(util.select().position(3, 2, 1), Blocks.DEAD_BUSH.defaultBlockState(), false);
+        scene.world().showSection(util.select().fromTo(3,2,3,3,3,3), Direction.DOWN);
+        scene.world().replaceBlocks(util.select().fromTo(3,2,3,3,3,3), Blocks.CACTUS.defaultBlockState(), false);
+
+        scene.idle(20);
+
+        scene.overlay().showText(80)
+                .text("Biome placement matters, the hotter the Solar Panel gets the less efficient it is.")
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.overlay().showText(90)
+                .text("Placing the Solar Panel in the desert will get you noticeably less overall power than...")
+                .pointAt(util.vector().centerOf(panel3));
+        scene.idle(10);
+        scene.world().showSection(util.select().position(panel3), Direction.DOWN);
+        scene.world().setBlock(panel3, ModdedBlocks.SOLAR_PANEL.getDefaultState()
+                .setValue(Rotation4ElectricBlock.FACING, Direction.DOWN), false);
+        scene.idle(90);
+
+        scene.world().replaceBlocks(util.select().fromTo(1,1,1,3,1,3), Blocks.GRASS_BLOCK.defaultBlockState(), false);
+        scene.world().setBlocks(util.select().position(3,2,3), Blocks.TALL_GRASS.defaultBlockState()
+                .setValue(DoublePlantBlock.HALF, DoubleBlockHalf.LOWER), false);
+        scene.world().setBlocks(util.select().position(3,3,3), Blocks.TALL_GRASS.defaultBlockState()
+                .setValue(DoublePlantBlock.HALF, DoubleBlockHalf.UPPER), false);
+        scene.world().replaceBlocks(util.select().position(3, 2, 1), Blocks.SHORT_GRASS.defaultBlockState(), false);
+
+        scene.overlay().showText(60)
+                .text("Placing one in a plains biome.")
+                .pointAt(util.vector().centerOf(panel3));
+        scene.idle(70);
+
+        scene.overlay().showText(80)
+                .text("Next scene will show you how to start making power with Solar Panels.");
+        scene.idle(80);
+        scene.setNextUpEnabled(true);
+        scene.markAsFinished();
+    }
+
+    public static void solarPanel2(SceneBuilder builder, SceneBuildingUtil util){
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("solar_panel_power_creation", "Solar Panel Power Generation");
+        scene.configureBasePlate(0, 0, 5);
+
+        var resistor = util.grid().at(2, 1, 1);
+        var deviceConnector = util.grid().at(2, 1, 2);
+        var panel1 = util.grid().at(2, 1, 3);
+        var powerGauge = util.grid().at(4, 1, 2);
+
+        scene.showBasePlate();
+        scene.idle(20);
+        scene.world().replaceBlocks(util.select().position(deviceConnector), ModdedBlocks.SOLAR_PANEL.getDefaultState()
+                .setValue(Rotation4ElectricBlock.FACING, Direction.DOWN), false);
+        scene.world().showSection(util.select().position(deviceConnector), Direction.DOWN);
+        scene.scaleSceneView(2f);
+
+        scene.overlay().showText(100)
+                .text("A Solar Panels output is based on an IV curve, Google \"Solar Panel IV curve\" for an image of a general IV curve.")
+                .attachKeyFrame();
+        scene.idle(110);
+
+        scene.overlay().showText(70)
+                .text("There are a few terms you need to know.")
+                .attachKeyFrame();
+        scene.idle(80);
+
+        scene.overlay().showText(80)
+                .text("Voc is the max voltage of the Solar Panel with no load on it.")
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.overlay().showText(100)
+                .text("Isc is the short current of the Solar Panel aka the current you would get placing a wire between the positive and negative.")
+                .attachKeyFrame();
+        scene.idle(110);
+
+        scene.overlay().showText(150)
+                .text("Vmp and Imp are the points along the IV curve where the Solar Panel makes the most power, these points shift around depending on the environmental conditions of the Solar Panel.")
+                .attachKeyFrame();
+        scene.idle(160);
+
+        scene.scaleSceneView(1f);
+        scene.world().hideSection(util.select().position(deviceConnector), Direction.UP);
+        scene.idle(15);
+        scene.world().restoreBlocks(util.select().position(deviceConnector));
+        scene.world().showSection(util.select().fromTo(0, 1, 0, 4, 1, 4), Direction.DOWN);
+        scene.idle(15);
+        scene.electric().addSource(deviceConnector, 0, 24);
+        scene.electric().connect(deviceConnector, 1, powerGauge, 1);
+        scene.electric().connectInvisible(deviceConnector, 0, powerGauge, 2);
+        scene.electric().connect(powerGauge, 0, resistor, 0, 30);
+        scene.electric().connect(resistor, 1, deviceConnector, 0);
+
+        scene.overlay().showText(90)
+                .text("A simple way to use a Solar Panel is by impedance matching it to your load.")
+                .attachKeyFrame();
+        scene.idle(80);
+
+        scene.overlay().showText(140)
+                .pointAt(util.select().position(resistor).getCenter())
+                .text("For example if a Solar Panels Vmp is 21.2V and Imp is 7.8A, Ohm's law dictates that the optimal load resistance would be 2.71 Ohms.")
+                .attachKeyFrame();
+        scene.idle(130);
+        scene.effects().indicateSuccess(resistor);
+        scene.electric().tickFor(20);
+        scene.idle(20);
+
+        scene.overlay().showText(90)
+                .text("The further you get from that resistance the less overall power the panel will make.")
+                .attachKeyFrame();
+        scene.idle(80);
+
+        scene.markAsFinished();
+    }
+
+    public static void solarPanelBearing(SceneBuilder builder, SceneBuildingUtil util){
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("solar_panel_bearing", "Solar Panel Bearing Basics");
+        scene.configureBasePlate(0, 0, 7);
+        scene.showBasePlate();
+
+        var bearing = util.grid().at(5, 2, 3);
+        var panelNBlock = util.grid().at(4, 2, 3);
+        var smallCog = util.grid().at(6, 1, 2);
+        var largeCog = util.grid().at(6, 2, 3);
+        var log = util.grid().at(5, 1, 3);
+
+
+        scene.world().showSection(util.select().position(log), Direction.DOWN);
+        scene.world().showSection(util.select().position(bearing), Direction.DOWN);
+        ElementLink<WorldSectionElement> panelNBlockContraption =
+                scene.world().showIndependentSection(util.select().position(panelNBlock), Direction.DOWN);
+        scene.world().showSection(util.select().position(smallCog), Direction.DOWN);
+        scene.world().showSection(util.select().position(largeCog), Direction.DOWN);
+        ElementLink<WorldSectionElement> panelNBlockContraption2 = null;
+
+        scene.overlay().showOutlineWithText(util.select().position(bearing.west()), 80)
+                .colored(PonderPalette.GREEN)
+                .pointAt(util.vector().blockSurface(panelNBlock, Direction.UP))
+                .placeNearTarget()
+                .attachKeyFrame()
+                .text("The Solar Panel Bearing attaches to Solar Panels placed in front of it.");
+        scene.idle(90);
+
+        scene.world().rotateBearing(bearing, 360, 37 * 2);
+        scene.world().rotateSection(panelNBlockContraption, 360, 0, 0, 37 * 2);
+        scene.world().setKineticSpeed(util.select().position(largeCog), 16);
+        scene.world().setKineticSpeed(util.select().position(smallCog), -32);
+        Vec3 blockSurface = util.vector().blockSurface(bearing, Direction.UP);
+        scene.overlay().showControls(blockSurface, Pointing.DOWN, 60).rightClick();
+
+        scene.overlay().showText(70)
+                .text("By clicking you can assemble the contraption.")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(74);
+        scene.world().setKineticSpeed(util.select().position(largeCog), 0);
+        scene.world().setKineticSpeed(util.select().position(smallCog), 0);
+        scene.idle(11);
+
+        scene.world().hideIndependentSection(panelNBlockContraption, Direction.UP);
+        scene.idle(15);
+        panelNBlockContraption = scene.world().showIndependentSection(util.select().fromTo(4, 2,2, 4, 2, 4), Direction.DOWN);
+
+        scene.overlay().showText(90)
+                .text("You do not need to glue Solar Panels together as long as they are touching.")
+                .pointAt(util.select().position(panelNBlock).getCenter())
+                .attachKeyFrame();
+        scene.idle(30);
+
+        scene.world().rotateBearing(bearing, 360, 37 * 2);
+        scene.world().rotateSection(panelNBlockContraption, 360, 0, 0, 37 * 2);
+        scene.world().setKineticSpeed(util.select().position(largeCog), 16);
+        scene.world().setKineticSpeed(util.select().position(smallCog), -32);
+        scene.idle(74);
+        scene.world().setKineticSpeed(util.select().position(largeCog), 0);
+        scene.world().setKineticSpeed(util.select().position(smallCog), 0);
+        scene.idle(11);
+        scene.world().hideIndependentSection(panelNBlockContraption, Direction.UP);
+        scene.idle(15);
+        scene.world().replaceBlocks(util.select().position(panelNBlock), ModdedBlocks.CONDUCTIVE_CASING.getDefaultState(), false);
+        panelNBlockContraption = scene.world().showIndependentSection(util.select().fromTo(4, 2, 3, 2, 2, 3), Direction.DOWN);
+        panelNBlockContraption2 = scene.world().showIndependentSection(util.select().fromTo(4, 2, 2, 2, 2, 2)
+                .add(util.select().fromTo(4 ,2, 4, 2, 2 ,4)), Direction.DOWN);
+
+        scene.overlay().showText(140)
+                .text("If you do not connect the Solar Panels directly to the face then you need to glue every block that isn't a Solar Panel and glue at least one Solar Panel.")
+                .pointAt(util.select().position(panelNBlock.west()).getCenter())
+                .attachKeyFrame();
+        scene.idle(120);
+
+        scene.overlay().showOutline(PonderPalette.GREEN, "glue", util.select().fromTo(4, 2, 3, 2, 2, 3), 70);
+        scene.overlay().showControls(util.vector().centerOf(util.grid().at(3, 2, 3)).add(0, .4f, 0), Pointing.DOWN, 60)
+                .withItem(AllItems.SUPER_GLUE.asStack());
+        scene.idle(50);
+
+        scene.overlay().showText(70)
+                .text("Gluing like this will only turn the center.")
+                .pointAt(util.select().position(panelNBlock.west()).getCenter())
+                .attachKeyFrame();
+        scene.idle(50);
+
+        scene.world().rotateBearing(bearing, 360, 37 * 2);
+        scene.world().rotateSection(panelNBlockContraption, 360, 0, 0, 37 * 2);
+        scene.world().setKineticSpeed(util.select().position(largeCog), 16);
+        scene.world().setKineticSpeed(util.select().position(smallCog), -32);
+        scene.idle(74);
+        scene.world().setKineticSpeed(util.select().position(largeCog), 0);
+        scene.world().setKineticSpeed(util.select().position(smallCog), 0);
+
+        scene.overlay().showOutline(PonderPalette.GREEN, "glue", util.select().fromTo(4, 2, 3, 2, 2, 3)
+                .add(util.select().fromTo(2, 2, 2, 2, 2, 4)
+                .add(util.select().fromTo(4, 2, 3, 2, 2, 3))), 60);
+        scene.overlay().showControls(util.vector().centerOf(util.grid().at(3, 2, 3)).add(0, .4f, 0), Pointing.DOWN, 60)
+                .withItem(AllItems.SUPER_GLUE.asStack());
+
+        scene.overlay().showText(70)
+                .text("Gluing like this will rotate the center and the Solar Panels.")
+                .pointAt(util.select().position(panelNBlock.west()).getCenter())
+                .attachKeyFrame();
+        scene.idle(60);
+
+        scene.world().rotateBearing(bearing, 360, 37 * 2);
+        scene.world().rotateSection(panelNBlockContraption, 360, 0, 0, 37 * 2);
+        scene.world().rotateSection(panelNBlockContraption2, 360, 0, 0, 37 * 2);
+        scene.world().setKineticSpeed(util.select().position(largeCog), 16);
+        scene.world().setKineticSpeed(util.select().position(smallCog), -32);
+        scene.idle(74);
+        scene.world().setKineticSpeed(util.select().position(largeCog), 0);
+        scene.world().setKineticSpeed(util.select().position(smallCog), 0);
+        scene.idle(20);
+
+        scene.overlay().showText(70)
+                .text("When assembled the output of all connected Solar Panels is combined on the terminals on the bearing.")
+                .attachKeyFrame();
+        scene.idle(80);
+
+        scene.overlay().showText(80)
+                .text("On the side of the block you can change how the power from the Solar Panels is output.")
+                .attachKeyFrame();
+        blockSurface = util.vector().blockSurface(bearing, Direction.NORTH);
+        scene.overlay().showControls(blockSurface, Pointing.RIGHT, 90);
+        scene.overlay().showFilterSlotInput(blockSurface, Direction.NORTH, 90);
+        scene.idle(95);
+
+        scene.overlay().showText(70)
+                .text("The output is in (Strings in parallel * Panels in String).")
+                .attachKeyFrame();
+        scene.idle(80);
+
+        scene.world().rotateSection(panelNBlockContraption, -35, 0, 0, 10);
+        scene.world().rotateSection(panelNBlockContraption2, -35, 0, 0, 10);
+
+        scene.overlay().showText(110)
+                .text("For example this contraption has 6 Solar Panels attached it would give you 4 options (1x6, 2x3, 3x2, 6x1).")
+                .pointAt(util.select().position(panelNBlock.west()).getCenter())
+                .attachKeyFrame();
+        scene.idle(120);
+
+        scene.overlay().showText(120)
+                .text("The first number shows how many strings you have in parallel, and the second number is how many Solar Panels you have in a string.")
+                .attachKeyFrame();
+        scene.idle(130);
+
+        scene.overlay().showText(130)
+                .text("In simplified terms the further the slider is to the left you get more voltage and less current and further to the right is more current less voltage.")
+                .attachKeyFrame();
+        scene.idle(140);
+
+        scene.overlay().showText(130)
+                .text("The max amount of panels in a string is 25, if your Solar Panel amount isn't divisible by 1-9 with a quotient of less than 26 it will not assemble.")
+                .attachKeyFrame();
+        scene.idle(140);
+
+        scene.overlay().showText(70)
+                .text("The fix is to add or remove Solar Panels.")
+                .attachKeyFrame();
+        scene.idle(80);
+
         scene.markAsFinished();
     }
 }

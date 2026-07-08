@@ -100,6 +100,10 @@ public class PowerGridPonderScenes {
 
         HELPER.addStoryBoard(ModdedBlocks.ELECTRIC_FAN, "electric_fan", DeviceScenes::electricFan, PowerGridPonderTags.ELECTRIC_DEVICES);
         HELPER.addStoryBoard(AllBlocks.ENCASED_FAN, "encased_fan", DeviceScenes::encasedFan);
+        HELPER.forComponents(ModdedBlocks.SOLAR_PANEL)
+                .addStoryBoard("solar_panel/solar_panel_conditions", DeviceScenes::solarPanel, PowerGridPonderTags.ELECTRIC_DEVICES)
+                .addStoryBoard("solar_panel/solar_panel_power_creation", DeviceScenes::solarPanel2, PowerGridPonderTags.ELECTRIC_DEVICES);
+        HELPER.addStoryBoard(ModdedBlocks.SOLAR_PANEL_BEARING, "solar_panel_bearing", DeviceScenes::solarPanelBearing, PowerGridPonderTags.ELECTRIC_DEVICES, AllCreatePonderTags.KINETIC_SOURCES);
 
         HELPER.forComponents(ModdedItems.MAGNET)
                 .addStoryBoard("magnet", MagnetScenes::magnet)
