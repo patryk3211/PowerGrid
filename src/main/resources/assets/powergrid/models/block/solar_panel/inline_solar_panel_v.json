@@ -1,12 +1,11 @@
 {
 	"format_version": "1.21.11",
 	"credit": "Made with Blockbench",
-	"texture_size": [32, 32],
+	"texture_size": [128, 128],
 	"textures": {
-		"0": "powergrid:block/conductive_casing_connected",
-		"2": "powergrid:block/solar_panel/solar_panel_side",
-		"3": "powergrid:block/solar_panel/solar_panel",
-		"particle": "powergrid:block/conductive_casing_connected"
+		"0": "powergrid:block/solar_panel/solar_panel_connected",
+		"1": "powergrid:block/solar_panel/copper_plating_connected",
+		"particle": "powergrid:block/solar_panel/solar_panel_connected"
 	},
 	"elements": [
 		{
@@ -15,12 +14,12 @@
 			"to": [16, 9, 16],
 			"rotation": {"angle": 0, "axis": "y", "origin": [0, 7, 0]},
 			"faces": {
-				"north": {"uv": [0, 0, 8, 0], "texture": "#2"},
-				"east": {"uv": [0, 0, 8, 0], "texture": "#2"},
-				"south": {"uv": [0, 0, 8, 0], "texture": "#2"},
-				"west": {"uv": [0, 0, 8, 0], "texture": "#2"},
-				"up": {"uv": [8, 8, 0, 0], "texture": "#2"},
-				"down": {"uv": [8, 8, 0, 16], "texture": "#2"}
+				"north": {"uv": [0, 0, 2, 0], "texture": "#0"},
+				"east": {"uv": [0, 0, 2, 0], "texture": "#0"},
+				"south": {"uv": [0, 0, 2, 0], "texture": "#0"},
+				"west": {"uv": [0, 0, 2, 0], "texture": "#0"},
+				"up": {"uv": [16, 2, 14, 0], "texture": "#0"},
+				"down": {"uv": [16, 0, 14, 2], "texture": "#0"}
 			}
 		},
 		{
@@ -29,16 +28,53 @@
 			"to": [16, 10, 16],
 			"rotation": {"angle": 0, "axis": "y", "origin": [0, 7, 0]},
 			"faces": {
-				"north": {"uv": [0, 8, 8, 10], "texture": "#2"},
-				"east": {"uv": [0, 8, 8, 10], "texture": "#2"},
-				"south": {"uv": [0, 8, 8, 10], "texture": "#2"},
-				"west": {"uv": [0, 8, 8, 10], "texture": "#2"},
-				"up": {"uv": [0, 0, 2, 2], "texture": "#3"},
-				"down": {"uv": [0, 0, 2, 2], "texture": "#0"}
+				"north": {"uv": [14, 15.5, 16, 16], "texture": "#0"},
+				"east": {"uv": [14, 15.5, 16, 16], "texture": "#0"},
+				"south": {"uv": [14, 15.5, 16, 16], "texture": "#0"},
+				"west": {"uv": [14, 15.5, 16, 16], "texture": "#0"},
+				"up": {"uv": [0, 0, 2, 2], "texture": "#0"},
+				"down": {"uv": [0, 0, 2, 2], "texture": "#1"}
 			}
 		}
 	],
-	"display": {},
+	"display": {
+		"thirdperson_righthand": {
+			"rotation": [75, 45, 0],
+			"translation": [0, 2.5, 0],
+			"scale": [0.375, 0.375, 0.375]
+		},
+		"thirdperson_lefthand": {
+			"rotation": [75, 45, 0],
+			"translation": [0, 2.5, 0],
+			"scale": [0.375, 0.375, 0.375]
+		},
+		"firstperson_righthand": {
+			"rotation": [0, 45, 0],
+			"scale": [0.4, 0.4, 0.4]
+		},
+		"firstperson_lefthand": {
+			"rotation": [0, -135, 0],
+			"scale": [0.4, 0.4, 0.4]
+		},
+		"ground": {
+			"translation": [0, 3, 0],
+			"scale": [0.25, 0.25, 0.25]
+		},
+		"gui": {
+			"rotation": [30, -135, 0],
+			"scale": [0.625, 0.625, 0.625]
+		},
+		"head": {
+			"translation": [0, 6, 0]
+		},
+		"fixed": {
+			"rotation": [-90, 0, 0],
+			"scale": [0.5, 0.5, 0.5]
+		},
+		"on_shelf": {
+			"rotation": [90, 0, 0]
+		}
+	},
 	"groups": [
 		{
 			"name": "solar_panel",

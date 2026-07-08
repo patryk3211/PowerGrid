@@ -1502,7 +1502,7 @@ public class DeviceScenes {
         scene.idle(140);
 
         scene.overlay().showText(130)
-                .text("The max amount of panels in a string is 25, if your Solar Panel amount isn't divisible by 1-9 with a remainder of less than 26 it will not assemble.")
+                .text("The max amount of panels in a string is 25, if your Solar Panel amount isn't divisible by 1-9 with a quotient of less than 26 it will not assemble.")
                 .attachKeyFrame();
         scene.idle(140);
 
