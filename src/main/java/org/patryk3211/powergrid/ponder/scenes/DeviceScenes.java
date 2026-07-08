@@ -1174,6 +1174,7 @@ public class DeviceScenes {
                 .pointAt(util.vector().centerOf(bearing))
                 .placeNearTarget();
         scene.idle(15);
+        scene.world().rotateBearing(bearing, 360, 35 * 2);
         scene.world().rotateSection(rotatedPanel, 360, 0, 0, 35 * 2);
         scene.idle(95);
         scene.world().hideSection(util.select().position(bearing), Direction.UP);
@@ -1191,7 +1192,6 @@ public class DeviceScenes {
                 .pointAt(util.vector().centerOf(leave1))
                 .placeNearTarget();
         scene.idle(90);
-        //scene.world().replaceBlocks(util.select().fromTo(0,1,0,4,1,4), Blocks.BARRIER.defaultBlockState(), false);
         scene.world().hideSection(util.select().position(leave1), Direction.UP);
         scene.world().hideSection(util.select().position(glass), Direction.UP);
         scene.world().hideSection(util.select().position(leave2), Direction.UP);
@@ -1278,7 +1278,6 @@ public class DeviceScenes {
 
         var resistor = util.grid().at(2, 1, 1);
         var deviceConnector = util.grid().at(2, 1, 2);
-        var panel1 = util.grid().at(2, 1, 3);
         var powerGauge = util.grid().at(4, 1, 2);
 
         scene.showBasePlate();
@@ -1336,7 +1335,7 @@ public class DeviceScenes {
                 .attachKeyFrame();
         scene.idle(130);
         scene.effects().indicateSuccess(resistor);
-        scene.electric().tickFor(20);
+        scene.electric().tickForever();
         scene.idle(20);
 
         scene.overlay().showText(90)
@@ -1358,7 +1357,6 @@ public class DeviceScenes {
         var smallCog = util.grid().at(6, 1, 2);
         var largeCog = util.grid().at(6, 2, 3);
         var log = util.grid().at(5, 1, 3);
-
 
         scene.world().showSection(util.select().position(log), Direction.DOWN);
         scene.world().showSection(util.select().position(bearing), Direction.DOWN);
