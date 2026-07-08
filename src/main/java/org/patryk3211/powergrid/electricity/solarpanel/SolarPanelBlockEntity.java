@@ -1,8 +1,6 @@
 package org.patryk3211.powergrid.electricity.solarpanel;
 
-import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.companion.SableCompanion;
-import dev.ryanhcode.sable.sublevel.SubLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.world.level.Level;
@@ -68,8 +66,8 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
         float cloudCover = getWeather(world);
 
         getPlacedBlockRotation();
-        final SubLevel subLevel = Sable.HELPER.getContaining(this);
-        if (subLevel != null){
+        var subLevel = SableCompanion.INSTANCE.getContaining(this);
+        if(subLevel != null) {
             subLevel.logicalPose().orientation().transform(panelNormal);
             panelNormal.normalize();
         }
