@@ -251,7 +251,6 @@
   "powergrid.component.property.voltage_gauge_max": "Maximální napětí",
   "powergrid.contactor.switch1": "Spínač 1",
   "powergrid.contactor.switch2": "Spínač 2",
-  "powergrid.contraption.assembly.invalid_panel_amount": "Součet solárních panelů není dělitelný číslem od 1 do 9 se zbytkem menším než 26, přidejte nebo odeberte solární panely",
   "powergrid.contraption.assembly.mismatched_panel_facing": "Všechny solární panely musí směřovat stejným směrem",
   "powergrid.contraption.assembly.not_enough_panels": "Připojená konstrukce neobsahuje dostatek solárních panelů, nejméně 1 je vyžadován",
   "powergrid.crt.anode": "Anoda",
