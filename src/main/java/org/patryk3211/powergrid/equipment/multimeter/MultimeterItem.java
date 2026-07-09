@@ -44,6 +44,7 @@ import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPackets;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.IElectric;
 import org.patryk3211.powergrid.electricity.info.Current;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
@@ -73,7 +74,10 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
             var pos = context.getClickedPos();
             var terminal = electric.terminalIndexAt(blockState, context.getClickLocation().subtract(pos.getX(), pos.getY(), pos.getZ()));
             if(terminal >= 0) {
-                return onTerminal(context.getLevel(), new BlockWireEndpoint(pos, terminal), context.getItemInHand());
+                var endpoint = new BlockWireEndpoint(pos, terminal);
+                GlobalElectricNetworks.getWorldNetworks(context.getLevel())
+                        .putInNetwork(endpoint);
+                return onTerminal(context.getLevel(), endpoint, context.getItemInHand());
             }
         }
         return context.getLevel().getBlockEntity(context.getClickedPos(), ModdedBlockEntities.CIRCUIT_BOARD.get())

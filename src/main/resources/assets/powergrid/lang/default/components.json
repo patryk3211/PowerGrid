@@ -8,12 +8,18 @@
   "powergrid.component.property.label": "Label",
   "powergrid.component.property.color": "Color",
 
-  "powergrid.component.property.tube_gain": "Gain",
-  "powergrid.component.property.tube_gain.summary": "Controls the effect of grid voltage on anode current",
+  "powergrid.component.property.tube_gain": "Amplification factor (μ)",
+  "powergrid.component.property.tube_gain.summary": "Amplification factor, controls how strongly grid voltage influences plate current. Represents the maximum theoretical voltage gain the tube can provide",
   "powergrid.component.property.tube_kg": "Kg",
-  "powergrid.component.property.tube_kg.summary": "Inverse perveance parameter, controls plate current for a given voltage",
+  "powergrid.component.property.tube_kg.summary": "Perveance (plate current scaling factor). Geometric constant that defines how effectively electrons are drawn from anode to cathode. Higher perveance values allow the tube to handle bigger currents.",
+  "powergrid.component.property.tube_kp": "Kp",
+  "powergrid.component.property.tube_kp.summary": "Plate influence on cutoff, controls how sharply plate current is reduced as the grid goes negative",
+  "powergrid.component.property.tube_kvb": "Kvb",
+  "powergrid.component.property.tube_kvb.summary": "Knee voltage; shapes the low plate-voltage bend in the plate curves",
+  "powergrid.component.property.tube_ex": "Ex",
+  "powergrid.component.property.tube_ex.summary": "Transfer exponent; controls the curvature of the plate curves (1.5 is close to the classic 3/2 power law)",
   "powergrid.component.property.tube_saturation_current": "Saturation Current",
-  "powergrid.component.property.tube_saturation_current.summary": "Maximum current that can pass through the tube without distortion",
+  "powergrid.component.property.tube_saturation_current.summary": "Maximum plate current that can pass through the tube before soft saturation clipping begins",
   "powergrid.component.property.tube_heater_voltage": "Heater Voltage",
   "powergrid.component.property.tube_heater_voltage.summary": "Voltage required to reach the rated heater power",
   "powergrid.component.property.tube_heater_power": "Heater Power",
@@ -22,9 +28,9 @@
   "powergrid.component.property.vfet_gain": "Gain",
   "powergrid.component.property.vfet_gain.summary": "Controls the effect of gate voltage on channel current",
   "powergrid.component.property.vfet_kg": "Kg",
-  "powergrid.component.property.vfet_kg.summary": "Inverse perveance parameter, controls channel current for a given voltage",
+  "powergrid.component.property.vfet_kg.summary": "Perveance, controls channel current for a given voltage",
   "powergrid.component.property.vfet_isat": "Saturation current",
-  "powergrid.component.property.vfet_isat.summary": "Maximum current that can pass through the transistor without distortion",
+  "powergrid.component.property.vfet_isat.summary": "Maximum current that can pass through the transistor before soft saturation clipping begins",
 
   "powergrid.component.property.bjt_gain": "Gain",
 
@@ -43,6 +49,7 @@
 
   "powergrid.component.property.orientation": "Orientation",
   "powergrid.component.property.vertical": "Vertical",
+  "powergrid.component.property.neon_tube_vertical": "Vertical",
 
   "powergrid.component.property.potentiometer_resistance": "Resistance",
   "powergrid.component.property.potentiometer_value": "Setting",

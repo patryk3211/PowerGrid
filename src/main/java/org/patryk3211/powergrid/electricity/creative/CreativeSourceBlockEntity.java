@@ -18,7 +18,6 @@ package org.patryk3211.powergrid.electricity.creative;
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.CenteredSideValueBoxTransform;
-import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollValueBehaviour;
 import net.createmod.catnip.math.VecHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -39,7 +38,7 @@ import org.patryk3211.powergrid.utility.Unit;
 import java.util.List;
 
 public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
-    private ScrollValueBehaviour value;
+    private CreativeSourceValueBehaviour value;
 
     private CurrentSourceNode currentSourceNode;
     private VoltageSourceCoupling voltageSourceNode;
@@ -68,9 +67,9 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
         }
 
         value = new CreativeSourceValueBehaviour(label, this, multiplier, new CreativeSourceBoxTransform());
-        value.withCallback(i -> {
+        value.withMultipliedCallback(f -> {
             if(!overwrite)
-                setValue(i * multiplier);
+                setValue(f);
         });
         behaviours.add(value);
     }
@@ -164,6 +163,10 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
                 .forGoggles(tooltip, 1);
 
         return true;
+    }
+
+    public boolean isCurrentSource() {
+        return !voltageSource;
     }
 
     public static class CreativeSourceBoxTransform extends CenteredSideValueBoxTransform {

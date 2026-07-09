@@ -108,6 +108,7 @@
   "powergrid.tooltip.voltage.rpm": "RPM per Volt:",
 
   "powergrid.tooltip.charge.current": "Current charge:",
+  "powergrid.tooltip.capacity": "Total capacity:",
 
   "powergrid.tooltip.circuit_assembly": "Circuit Assembly",
   "powergrid.tooltip.circuit_assembly.progress": "Progress",
