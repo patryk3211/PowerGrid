@@ -3,12 +3,19 @@ package org.patryk3211.powergrid.general.ceilingtile;
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
 import com.simibubi.create.foundation.block.IBE;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
+import net.createmod.catnip.placement.IPlacementHelper;
+import net.createmod.catnip.placement.PlacementHelpers;
+import net.createmod.catnip.placement.PlacementOffset;
+import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -28,8 +35,12 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.electricity.light.bulb.ILightBulb;
 
+import java.util.List;
+import java.util.function.Predicate;
+
 public class CeilingTileBlock extends ElectricBlock implements IBE<CeilingTileBlockEntity> {
     public static final EnumProperty<State> STATE = EnumProperty.create("state", State.class);
+    private static final int placementHelperId = PlacementHelpers.register(new CeilingTileBlock.PlacementHelper());
 
     private static final VoxelShape SHAPE_EMPTY = box(0, 0, 0, 16, 2, 16);
     private static final VoxelShape SHAPE_LAMP = Shapes.or(
@@ -65,6 +76,14 @@ public class CeilingTileBlock extends ElectricBlock implements IBE<CeilingTileBl
         if(hand != InteractionHand.MAIN_HAND)
             return InteractionResult.PASS;
         var stack = player.getMainHandItem();
+        IPlacementHelper placementHelper = PlacementHelpers.get(placementHelperId);
+        if (!player.isShiftKeyDown() && player.mayBuild()) {
+            if (placementHelper.matchesItem(stack)) {
+                placementHelper.getOffset(player, level, state, pos, hit)
+                        .placeInWorld(level, (BlockItem) stack.getItem(), player, hand, hit);
+                return InteractionResult.SUCCESS;
+            }
+        }
         if(state.getValue(STATE) == State.EMPTY) {
             if(!ModdedBlocks.FACTORY_LIGHT.is(stack.getItem()))
                 return InteractionResult.PASS;
@@ -155,6 +174,32 @@ public class CeilingTileBlock extends ElectricBlock implements IBE<CeilingTileBl
                 case LAMP_LOW_POWER -> "lamp_low_power";
                 case LAMP_ON -> "lamp_on";
             };
+        }
+    }
+
+    @MethodsReturnNonnullByDefault
+    private static class PlacementHelper implements IPlacementHelper {
+        @Override
+        public Predicate<ItemStack> getItemPredicate() {
+            return ModdedBlocks.CEILING_TILE::isIn;
+        }
+
+        @Override
+        public Predicate<BlockState> getStatePredicate() {
+            return s -> s.getBlock() instanceof CeilingTileBlock;
+        }
+
+        @Override
+        public PlacementOffset getOffset(Player player, Level world, BlockState state, BlockPos pos,
+                                         BlockHitResult ray) {
+            List<Direction> directions = IPlacementHelper.orderedByDistanceExceptAxis(pos, ray.getLocation(),
+                    ray.getDirection().getAxis(), dir -> world.getBlockState(pos.relative(dir)).canBeReplaced());
+
+            if (directions.isEmpty())
+                return PlacementOffset.fail();
+            else {
+                return PlacementOffset.success(pos.relative(directions.get(0)), s -> s.getBlock().defaultBlockState());
+            }
         }
     }
 }
