@@ -225,6 +225,12 @@ public class FactoryLightBlock extends HorizontalAxisElectricBlock implements IA
     }
 
     @Override
+    public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean moved) {
+        getBlockEntity(world, pos).removeLights();
+        super.onRemove(state, world, pos, newState, moved);
+    }
+
+    @Override
     public boolean renderPlug() {
         return true;
     }
