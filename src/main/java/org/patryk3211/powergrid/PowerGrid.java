@@ -104,7 +104,6 @@ public class PowerGrid {
 	private static void setup() {
 		RedstoneConverterRegistry.init();
 		ModdedAdvancements.register();
-		ModdedContraptions.register();
 	}
 
 	private static void playerQuit(ServerPlayer player) {
