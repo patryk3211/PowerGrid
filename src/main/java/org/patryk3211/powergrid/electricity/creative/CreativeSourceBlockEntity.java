@@ -164,6 +164,10 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
         return true;
     }
 
+    public boolean isCurrentSource() {
+        return !voltageSource;
+    }
+
     public static class CreativeSourceBoxTransform extends CenteredSideValueBoxTransform {
         public CreativeSourceBoxTransform() {
             super((state, dir) -> dir.getAxis() != Direction.Axis.Y);

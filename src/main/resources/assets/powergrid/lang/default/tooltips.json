@@ -47,5 +47,8 @@
   "item.powergrid.wire_cutter.tooltip.condition1": "When R-Clicked on a wire",
   "item.powergrid.wire_cutter.tooltip.behaviour1": "Removes a hanging wire, or selected segment of a block wire",
   "item.powergrid.wire_cutter.tooltip.condition2": "When Shift R-Clicked on a block wire",
-  "item.powergrid.wire_cutter.tooltip.behaviour2": "Removes the whole block wire"
+  "item.powergrid.wire_cutter.tooltip.behaviour2": "Removes the whole block wire",
+
+  "block.powergrid.creative_voltage_source.tooltip.summary": "An _almost perfect_ voltage source. Set the output voltage with the _slider_ or _/powergrid_ command.",
+  "block.powergrid.creative_current_source.tooltip.summary": "An _almost perfect_ current source. Set the output current with the _slider_ or _/powergrid_ command."
 }
