@@ -1,8 +1,12 @@
 package org.patryk3211.powergrid.electricity.transformer;
 
+import com.simibubi.create.content.trains.CubeParticleData;
 import com.simibubi.create.foundation.block.IBE;
 import net.createmod.catnip.math.VoxelShaper;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -11,6 +15,7 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
@@ -37,7 +42,7 @@ public class NetherTransformerBlock extends ElectricBlock implements IAcceptConn
     );
 
     public NetherTransformerBlock(Properties settings) {
-        super(settings);
+        super(settings.lightLevel(state -> 9));
         var shaperBot = VoxelShaper.forHorizontalAxis(SHAPE_BOTTOM, Direction.Axis.Z);
         var shaperTop = VoxelShaper.forHorizontalAxis(SHAPE_TOP, Direction.Axis.Z);
         setTerminalCollection(BlockStateTerminalCollection.builder(this)
@@ -73,6 +78,23 @@ public class NetherTransformerBlock extends ElectricBlock implements IAcceptConn
         if(state.getValue(PART) >= 2)
             return RenderShape.INVISIBLE;
         return RenderShape.MODEL;
+    }
+
+    @Override
+    public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+        super.animateTick(state, level, pos, random);
+        if(state.getValue(PART) >= 2)
+            return;
+        Vec3 v = Vec3.atLowerCornerOf(pos);
+        if(state.getValue(PART) == 1) {
+            v = v.relative(Direction.fromAxisAndDirection(state.getValue(HORIZONTAL_AXIS), Direction.AxisDirection.NEGATIVE), 1);
+        } else {
+            v = v.relative(Direction.fromAxisAndDirection(state.getValue(HORIZONTAL_AXIS), Direction.AxisDirection.POSITIVE), 1);
+        }
+        CubeParticleData data = new CubeParticleData(1.0F, random.nextFloat(), 1.0F, 0.0125F + 0.0625F * random.nextFloat(), 30, false);
+        level.addParticle(data,
+                v.x + random.nextFloat(), v.y + 0.5, v.z + random.nextFloat(),
+                0.0f, 0.04, 0.0f);
     }
 
     @Override
