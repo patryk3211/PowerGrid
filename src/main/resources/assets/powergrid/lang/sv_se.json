@@ -223,7 +223,7 @@
   "powergrid.component.property.relay_threshold.summary": "Spänning ovanför vilket reläet utlöser",
   "powergrid.component.property.resistor_value": "Resistans [Ω]",
   "powergrid.component.property.switch_state": "Läge",
-  "powergrid.component.property.tube_heater_voltage.summary": "Krävd spänning för att nå värmarens nominella effekt",
   "powergrid.component.property.tube_heater_power.summary": "Kraftkrav för den angivna mättnadsströmmen",
+  "powergrid.component.property.tube_heater_voltage.summary": "Krävd spänning för att nå värmarens nominella effekt",
   "powergrid.component.property.varistor_voltage": "Tröskelspänning"
 }
