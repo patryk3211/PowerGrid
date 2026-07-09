@@ -38,6 +38,7 @@ import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseState;
 import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
+import org.patryk3211.powergrid.electricity.transformer.NetherTransformerBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.general.ceilingtile.CeilingTileBlock;
@@ -329,6 +330,21 @@ public class DataProviderUtilityImpl {
                 .addModel()
                 .condition(TransformerMediumBlock.HORIZONTAL_AXIS, axis)
                 .condition(TransformerMediumBlock.PART, part);
+    }
+
+    public static NonNullBiConsumer<DataGenContext<Block, NetherTransformerBlock>, RegistrateBlockstateProvider> transformerNether() {
+        return (ctx, prov) ->
+                prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+                    int y = 0;
+                    if(state.getValue(HORIZONTAL_AXIS) == Direction.Axis.X)
+                        y += 90;
+                    var builder = ConfiguredModel.builder();
+                    builder.modelFile(modModel(prov, "block/transformer/nether"));
+                    if(state.getValue(NetherTransformerBlock.PART) % 2 == 1)
+                        y += 180;
+                    builder.rotationY(y);
+                    return builder.build();
+                });
     }
 
     public static <T extends WindingBlock> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> windingModel() {

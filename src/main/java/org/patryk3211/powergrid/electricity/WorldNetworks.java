@@ -1146,6 +1146,16 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         return set;
     }
 
+    public void dropTrackers(ServerPlayer player) {
+        var iter = trackers.entrySet().iterator();
+        while(iter.hasNext()) {
+            var entry = iter.next();
+            entry.getValue().remove(player);
+            if(entry.getValue().isEmpty())
+                iter.remove();
+        }
+    }
+
     public void chunkLoaded(ChunkPos chunkPos) {
         var set = expectedInChunks.remove(chunkPos);
         if(set != null) {

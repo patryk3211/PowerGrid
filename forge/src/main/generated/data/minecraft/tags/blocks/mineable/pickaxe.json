@@ -35,6 +35,7 @@
     "powergrid:transformer_core",
     "powergrid:transformer_small",
     "powergrid:transformer_medium",
+    "powergrid:nether_transformer",
     "powergrid:variac",
     "powergrid:electric_motor",
     "powergrid:constant_speed_motor",

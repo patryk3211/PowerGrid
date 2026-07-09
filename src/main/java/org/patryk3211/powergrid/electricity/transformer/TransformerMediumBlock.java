@@ -53,21 +53,21 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
     public static final EnumProperty<Direction.Axis> HORIZONTAL_AXIS = BlockStateProperties.HORIZONTAL_AXIS;
     public static final IntegerProperty PART = IntegerProperty.create("part", 0, 3);
 
-    private static final TerminalBoundingBox TERMINAL_Z_1 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 0, 9, 6, 5, 16, 10);
-    private static final TerminalBoundingBox TERMINAL_Z_2 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 11, 9, 6, 16, 16, 10);
+    public static final TerminalBoundingBox TERMINAL_Z_1 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 0, 9, 6, 5, 16, 10);
+    public static final TerminalBoundingBox TERMINAL_Z_2 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 11, 9, 6, 16, 16, 10);
 
-    private static final TerminalBoundingBox TERMINAL_X_1 = TERMINAL_Z_1.rotateAroundY(Rotation.CLOCKWISE_90);
-    private static final TerminalBoundingBox TERMINAL_X_2 = TERMINAL_Z_2.rotateAroundY(Rotation.CLOCKWISE_90);
+    public static final TerminalBoundingBox TERMINAL_X_1 = TERMINAL_Z_1.rotateAroundY(Rotation.CLOCKWISE_90);
+    public static final TerminalBoundingBox TERMINAL_X_2 = TERMINAL_Z_2.rotateAroundY(Rotation.CLOCKWISE_90);
 
-    private static final VoxelShape SHAPE_Z_BOTTOM = box(2, 0, 0, 14, 16, 16);
-    private static final VoxelShape SHAPE_X_BOTTOM = box(0, 0, 2, 16, 16, 14);
+    public static final VoxelShape SHAPE_Z_BOTTOM = box(2, 0, 0, 14, 16, 16);
+    public static final VoxelShape SHAPE_X_BOTTOM = box(0, 0, 2, 16, 16, 14);
 
-    private static final VoxelShape SHAPE_Z_TOP = Shapes.or(
+    public static final VoxelShape SHAPE_Z_TOP = Shapes.or(
             box(2, 0, 0, 14, 12, 16),
             TERMINAL_Z_1.getShape(),
             TERMINAL_Z_2.getShape()
     );
-    private static final VoxelShape SHAPE_X_TOP = Shapes.or(
+    public static final VoxelShape SHAPE_X_TOP = Shapes.or(
             box(0, 0, 2, 16, 12, 14),
             TERMINAL_X_1.getShape(),
             TERMINAL_X_2.getShape()

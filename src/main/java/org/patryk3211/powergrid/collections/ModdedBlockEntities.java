@@ -58,6 +58,7 @@ import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBearingVisual;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapRenderer;
+import org.patryk3211.powergrid.electricity.transformer.NetherTransformerBlockEntity;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlockEntity;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlockEntity;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlockEntity;
@@ -240,6 +241,11 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<TransformerMediumBlockEntity> TRANSFORMER_MEDIUM =
             REGISTRATE.blockEntity("transformer_medium", TransformerMediumBlockEntity::new)
                     .validBlock(ModdedBlocks.TRANSFORMER_MEDIUM)
+                    .register();
+
+    public static final BlockEntityEntry<NetherTransformerBlockEntity> NETHER_TRANSFORMER =
+            REGISTRATE.blockEntity("nether_transformer", NetherTransformerBlockEntity::new)
+                    .validBlock(ModdedBlocks.NETHER_TRANSFORMER)
                     .register();
 
     public static final BlockEntityEntry<VariacBlockEntity> VARIAC =
