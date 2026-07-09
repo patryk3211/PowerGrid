@@ -252,6 +252,7 @@
   "powergrid.component.property.voltage_gauge_max": "最大电压",
   "powergrid.contactor.switch1": "开关 1",
   "powergrid.contactor.switch2": "开关 2",
+  "powergrid.contraption.assembly.invalid_panel_amount": "太阳能板的总数无法被1-9中任意一个数整除且商小于26，请增加或减少太阳能板",
   "powergrid.contraption.assembly.mismatched_panel_facing": "所有太阳能板需要朝向同一方向",
   "powergrid.contraption.assembly.not_enough_panels": "附着的结构没有足够的太阳能板，至少需要1个",
   "powergrid.crt.anode": "阳极",
