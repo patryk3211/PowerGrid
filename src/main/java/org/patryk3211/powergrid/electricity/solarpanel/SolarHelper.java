@@ -3,15 +3,28 @@ package org.patryk3211.powergrid.electricity.solarpanel;
 import dev.ryanhcode.sable.companion.SableCompanion;
 import dev.ryanhcode.sable.companion.SubLevelAccess;
 import dev.ryanhcode.sable.companion.math.BoundingBox3d;
+import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
+import com.simibubi.create.content.contraptions.Contraption;
+import com.simibubi.create.content.contraptions.ContraptionCollider;
+import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
+import com.simibubi.create.content.contraptions.Contraption;
+import com.simibubi.create.content.contraptions.ContraptionCollider;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.Heightmap;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import org.joml.Vector3d;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.collections.ModdedTags;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,6 +32,8 @@ import java.util.List;
 import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.*;
 
 public class SolarHelper {
+    private static boolean showDebugLines = false;
+    public record DDAHit(BlockPos worldOrLocalPos, AbstractContraptionEntity contraption) {}
 
     public static double[] getTempAdjusted(double irradiance, double cellTemp, double Vt, int stringsInParallel) {
         var Isc_T = SHORT_CURRENT * stringsInParallel * (irradiance / 1000) * (1 + ALPHAISC * (cellTemp - 25));
@@ -27,29 +42,6 @@ public class SolarHelper {
         var Voc_T = Voc_base + BETAVOC * (cellTemp - 25);
         return new double[]{Isc_T, Voc_T};
     }
-
-//    public double getIrradiance(double AM, double cloudCover, int YPos, Level world) {
-//        if (AM == Double.POSITIVE_INFINITY) return 0;
-//        var transmisttance = 1 - cloudCover;
-//        var irradiance = SOLAR_CONSTANT * Math.pow(0.7,Math.pow(AM, 0.678));
-//        irradiance = irradiance * ((((YPos - 70) / 250f) * 0.04f) + 1); //70 is around average world height, but it could also be put to sea level
-//
-//        double sunAngle = world.getSunAngle(0);
-//        Vector3d sunDir = new Vector3d(-Math.sin(sunAngle), Math.cos(sunAngle), 0);
-//        if (sunDir.y <= 0) return 0;
-//
-//        if (rayCastDelay-- == 0){
-//            sunVisablity = sunRaycast(world);
-//            rayCastDelay = world.random.nextInt(41) + 10;
-//        }
-//
-//        double cosIncidence = Math.max(0, sunDir.dot(panelNormal));
-//        cosIncidence = Math.max(0, cosIncidence);
-//        double diffuseLight = 0.1 * irradiance * (1 + cloudCover) * ((1 + panelNormal.y()) / 2);
-//        double reflected = 0.15 * irradiance * ((1 - panelNormal.y()) / 2.0);
-//
-//        return (irradiance * sunVisablity) * transmisttance * cosIncidence + diffuseLight +  reflected;
-//    }
 
     public static double getCellTemp(double Irradiance, float AMBIENT_TEMP){
         return AMBIENT_TEMP + (NOCT - 20) * (Irradiance / 800);
@@ -78,9 +70,12 @@ public class SolarHelper {
         }
     }
 
-    public static List<BlockPos> DDA(Level level, Vec3 start, Vec3 end) {
-        var subLevels = SableCompanion.INSTANCE.getAllIntersecting(level, new BoundingBox3d(start, end));
-        List<BlockPos> blockHits = new ArrayList<>();
+    public static List<DDAHit> DDA(Level level, Vec3 start, Vec3 end) {
+        ServerLevel serverWorld = (ServerLevel) level;
+        var checkBox = new AABB(start, end);
+        List<AbstractContraptionEntity> candidates = level.getEntitiesOfClass(AbstractContraptionEntity.class, checkBox);
+        var subLevels = SableCompanion.INSTANCE.getAllIntersecting(level, new BoundingBox3d(checkBox));
+        List<DDAHit> hits = new ArrayList<>();
         Vec3 dir = end.subtract(start);
         double length = dir.length();
         Vec3 norm = dir.normalize();
@@ -105,8 +100,37 @@ public class SolarHelper {
         double tMaxY = norm.y == 0 ? Double.MAX_VALUE : (stepY > 0 ? Math.ceil(start.y) - start.y : start.y - Math.floor(start.y)) / Math.abs(norm.y);
         double tMaxZ = norm.z == 0 ? Double.MAX_VALUE : (stepZ > 0 ? Math.ceil(start.z) - start.z : start.z - Math.floor(start.z)) / Math.abs(norm.z);
         for (int i = 0; i < length; i++) {
+
             BlockPos pos = new BlockPos(x, y, z);
             Vec3 worldPos = new Vec3(x + 0.5, y + 0.5, z + 0.5);
+            BlockState state = level.getBlockState(pos);
+            if (showDebugLines) debugLines(serverWorld, pos, ParticleTypes.SOUL_FIRE_FLAME);
+
+            var handledByContraption = false;
+            for (AbstractContraptionEntity candidate : candidates) {
+                Contraption contraption = candidate.getContraption();
+                if (contraption == null) continue;
+
+                Vec3 localStart = ContraptionCollider.worldToLocalPos(start, candidate);
+                Vec3 localEnd = ContraptionCollider.worldToLocalPos(end, candidate);
+
+                Vec3 local = ContraptionCollider.worldToLocalPos(worldPos, candidate.getAnchorVec(), candidate.getContraption().entity.getRotationState());
+                BlockPos localPos = BlockPos.containing(local);
+
+                StructureTemplate.StructureBlockInfo info = contraption.getBlocks().get(localPos);
+                if (info != null && !info.state().isAir()) {
+                    VoxelShape shape = info.state().getShape(level, localPos);
+                    if (!shape.isEmpty()) {
+                        BlockHitResult localHit = shape.clip(localStart, localEnd, localPos);
+                        if (localHit != null) {
+                            hits.add(new DDAHit(localPos, candidate));
+                            handledByContraption = true;
+                            if (showDebugLines) debugLines(serverWorld, worldPos, ParticleTypes.FLAME);
+                            break;
+                        }
+                    }
+                }
+            }
 
             boolean handledBySublevel = false;
             for (SubLevelAccess subLevel : subLevels) {
@@ -120,26 +144,33 @@ public class SolarHelper {
                             if (shape.isEmpty()) continue;
                             BlockHitResult hit = shape.clip(start, end, pos);
                             if (hit != null) {
-                                blockHits.add(localPos);
+                                hits.add(new DDAHit(localPos, null));
+                                if (showDebugLines) debugLines(serverWorld, worldPos, ParticleTypes.FLAME);
                             }
-                        } else blockHits.add(localPos);
+                        } else {
+                            hits.add(new DDAHit(localPos, null));
+                            if (showDebugLines) debugLines(serverWorld, worldPos, ParticleTypes.FLAME);
+                        }
                     }
                     handledBySublevel = true;
                     break;
                 }
             }
 
-            if (!handledBySublevel) {
-                BlockState state = level.getBlockState(pos);
+            if (!handledBySublevel && !handledByContraption) {
                 if (!state.isAir()) {
                     if (!state.isCollisionShapeFullBlock(level, pos) && state.getBlock() != Blocks.WATER) {
                         VoxelShape shape = state.getShape(level, pos);
                         if (shape.isEmpty()) continue;
                         BlockHitResult hit = shape.clip(start, end, pos);
                         if (hit != null) {
-                            blockHits.add(pos);
+                            hits.add(new DDAHit(pos, null));
+                            if (showDebugLines) debugLines(serverWorld, pos, ParticleTypes.FLAME);
                         }
-                    } else blockHits.add(pos);
+                    } else {
+                        hits.add(new DDAHit(pos, null));
+                        if (showDebugLines) debugLines(serverWorld, pos, ParticleTypes.FLAME);
+                    }
                 }
             }
 
@@ -156,6 +187,50 @@ public class SolarHelper {
                 tMaxZ += tDeltaZ;
             }
         }
-        return blockHits;
+        return hits;
+    }
+
+    public static boolean skyCheck(Level world, BlockPos pos) {
+        if (!world.canSeeSky(pos)){
+            var topY = world.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX(), pos.getZ());
+            var list = DDA(world, pos.getCenter(), pos.getCenter().add(0, topY - pos.getY(), 0));
+            boolean hit = false;
+            for (DDAHit result : list) {
+                BlockState blockState;
+                if (result.contraption() != null) {
+                    blockState = result.contraption().getContraption().getBlocks().get(result.worldOrLocalPos()).state();
+                } else {
+                    blockState = world.getBlockState(result.worldOrLocalPos());
+                }
+
+                if (blockState.is(ModdedBlocks.SOLAR_PANEL.get())) {
+                    if (result.worldOrLocalPos().equals(pos)) {
+                        continue;
+                    } else {
+                        hit = true;
+                        break;
+                    }
+                }
+
+                if (blockState.is(ModdedTags.Block.SOLAR_QUARTER_LIGHT.tag)) continue;
+                if (blockState.is(ModdedTags.Block.SOLAR_HALF_LIGHT.tag)) continue;
+                if (blockState.is(ModdedTags.Block.SOLAR_3QUARTER_LIGHT.tag)) continue;
+                if (blockState.is(ModdedTags.Block.SOLAR_FULL_LIGHT.tag)) continue;
+                hit = true;
+                break;
+            }
+            if (hit){
+                return false;
+            } else return true;
+        }
+        return true;
+    }
+
+    private static void debugLines(ServerLevel serverLevel, Vec3 pos, SimpleParticleType particle) {
+        serverLevel.sendParticles(particle, pos.x, pos.y, pos.z, 0, 0, 0, 0, 0);
+    }
+
+    private static void debugLines(ServerLevel serverLevel, BlockPos pos, SimpleParticleType particle) {
+        debugLines(serverLevel, new Vec3(pos.getX() + .5, pos.getY() + .5, pos.getZ() + .5), particle);
     }
 }

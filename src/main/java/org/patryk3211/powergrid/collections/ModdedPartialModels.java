@@ -77,6 +77,8 @@ public class ModdedPartialModels {
 
     public static final PartialModel PUNCH_CARD = block("punch_card_reader/card");
 
+    public static final PartialModel SOLAR_PANEL_BEARING_ROTOR = block("solar_panel/solar_panel_bearing_rotor");
+
     public static final SpriteShiftEntry PAPER_SHIFT = SpriteShifter.get(
             PowerGrid.asResource("block/plotter_paper"),
             PowerGrid.asResource("block/plotter_paper_shift"));

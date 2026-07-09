@@ -23,6 +23,7 @@ import net.minecraft.commands.Commands;
 import org.patryk3211.powergrid.commands.ConfigCommand;
 import org.patryk3211.powergrid.commands.DebugCommand;
 import org.patryk3211.powergrid.commands.PerformanceCommand;
+import org.patryk3211.powergrid.commands.SourceCommand;
 
 public class ModdedCommands {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext context, Commands.CommandSelection selection) {
@@ -30,6 +31,7 @@ public class ModdedCommands {
                 .requires(cs -> cs.hasPermission(3))
                 .then(PerformanceCommand.register())
                 .then(DebugCommand.register())
+                .then(SourceCommand.register())
                 .then(ConfigCommand.reset())
                 .then(ConfigCommand.ignore());
 

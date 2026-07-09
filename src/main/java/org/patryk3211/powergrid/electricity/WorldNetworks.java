@@ -468,6 +468,16 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         return null;
     }
 
+    public void putInNetwork(@NotNull IWireEndpoint endpoint) {
+        var node = endpoint.getNode(world);
+        add(endpoint);
+        var line = findLineMiddle(node);
+        if(line != null)
+            return;
+        if(node.getNetwork() == null)
+            endpoint.joinNetwork(world, newNetwork());
+    }
+
     @Nullable
     public ElectricalNetwork prepareForConnection(IWireEndpoint endpoint1, IWireEndpoint endpoint2) {
         var node1 = endpoint1.getNode(world);

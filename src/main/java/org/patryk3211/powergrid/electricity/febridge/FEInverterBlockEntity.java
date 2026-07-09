@@ -1,6 +1,7 @@
 package org.patryk3211.powergrid.electricity.febridge;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -58,15 +59,15 @@ public class FEInverterBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
-        super.write(tag, clientPacket);
+    protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(tag, registries, clientPacket);
         tag.putFloat("ControlVoltage", (float) control.capacitorVoltage());
         tag.putFloat("PrevThrottle", prevThrottling);
     }
 
     @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
-        super.read(tag, clientPacket);
+    protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(tag, registries, clientPacket);
         control.setVoltage(tag.getFloat("ControlVoltage"));
         prevThrottling = tag.getFloat("PrevThrottle");
     }

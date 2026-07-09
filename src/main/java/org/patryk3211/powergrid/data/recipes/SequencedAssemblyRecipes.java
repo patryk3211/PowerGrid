@@ -111,7 +111,7 @@ public class SequencedAssemblyRecipes extends SequencedAssemblyRecipeGen {
             .addStep(CuttingRecipe::new, rb -> rb)
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.copperIngot()))
             .addStep(PressingRecipe::new, rb -> rb)
-            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.zincSheet())))
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.copperSheet())))
 
             ;
 
