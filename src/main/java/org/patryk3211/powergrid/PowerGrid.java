@@ -142,6 +142,7 @@ public class PowerGrid {
 		ModdedConfigs.register();
 		ModdedMenus.register();
 		Components.register();
+		ModdedContraptions.register();
 
 		ModdedParticles.register();
 

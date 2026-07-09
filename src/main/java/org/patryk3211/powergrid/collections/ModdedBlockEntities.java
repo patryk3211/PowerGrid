@@ -53,6 +53,8 @@ import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterB
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlockEntity;
 import org.patryk3211.powergrid.electricity.socket.SocketBlockEntity;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBearingBlockEntity;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBearingRenderer;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBearingVisual;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapRenderer;
@@ -395,7 +397,9 @@ public class ModdedBlockEntities {
 
     public static final BlockEntityEntry<SolarPanelBearingBlockEntity> SOLAR_PANEL_BEARING =
             REGISTRATE.blockEntity("solar_panel_bearing", SolarPanelBearingBlockEntity::new)
+                    .visual(() -> SolarPanelBearingVisual::new)
                     .validBlock(ModdedBlocks.SOLAR_PANEL_BEARING)
+                    .renderer(() -> SolarPanelBearingRenderer::new)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

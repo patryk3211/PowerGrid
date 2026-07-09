@@ -33,23 +33,25 @@ import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 public class SolarPanelBearingBlock extends ElectricKineticBlock implements IBE<SolarPanelBearingBlockEntity> {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final TerminalBoundingBox[] TERMINALS = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 5, 0, 11, 7, 2, 13)
+            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 9, 13, 10, 12, 16, 13)
                     .withColor(IDecoratedTerminal.RED),
-            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 9, 0, 11, 11, 2, 13)
+            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 4, 13, 10, 7, 16, 13)
                     .withColor(IDecoratedTerminal.BLUE)
     };
 
     public static final VoxelShape SHAPE = Shapes.or(
-            box(0, 0, 0, 16, 16, 11)
+            box(2, 2, 4, 14, 14, 16),
+            box(1, 1, 0, 15, 15, 4)
     );
     public static final VoxelShape SHAPE2 = Shapes.or(
-            box(0, 5, 0, 16, 16, 16)
+            box(2, 0, 2, 14, 12, 14),
+            box(1, 12, 1, 15, 16, 15)
     );
 
     public SolarPanelBearingBlock(Properties properties) {
         super(properties);
         var shaper = VoxelShaper.forDirectional(SHAPE, Direction.NORTH);
-        if(SHAPE2 != null) shaper.withVerticalShapes(SHAPE2);
+        shaper.withVerticalShapes(SHAPE2);
         var terminalstate = BlockStateTerminalCollection.builder(this)
                 .forAllStates(state -> BlockStateTerminalCollection.each(TERMINALS, terminal -> switch(state.getValue(FACING)) {
                     case NORTH -> terminal;
@@ -117,7 +119,7 @@ public class SolarPanelBearingBlock extends ElectricKineticBlock implements IBE<
         for (Direction side : Iterate.directions) {
             BlockState blockState = context.getLevel()
                     .getBlockState(context.getClickedPos()
-                            .relative(side));
+                    .relative(side));
             if (blockState.getBlock() instanceof IRotate) {
                 if (((IRotate) blockState.getBlock()).hasShaftTowards(context.getLevel(), context.getClickedPos()
                         .relative(side), blockState, side.getOpposite()))

@@ -94,7 +94,7 @@ public class SolarPanelBearingContraption extends BearingContraption {
 
     @Override
     public ContraptionType getType() {
-        return ModdedContraptions.SOLAR_PANEL.value();
+        return ModdedContraptions.SOLAR_PANEL.get();
     }
 
     public int getPanelBlocks(){
