@@ -10,13 +10,14 @@ import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.patryk3211.powergrid.electricity.light.bulb.ILightBulb;
 
 public class FactoryLightLightBlock extends Block {
     public static final IntegerProperty POWER = IntegerProperty.create("power", 0, 1);
 
     public FactoryLightLightBlock(Properties properties) {
         super(properties
-                .lightLevel(state -> state.getValue(POWER) == 1 ? 15 : 10)
+                .lightLevel(state -> state.getValue(POWER) == 1 ? ILightBulb.LIGHT_LEVEL_FULL_POWER : ILightBulb.LIGHT_LEVEL_LOW_POWER)
                 .noCollission()
                 .noLootTable()
                 .noOcclusion()

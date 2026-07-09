@@ -48,6 +48,7 @@ import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightBlock
 import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightRenderer;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureRenderer;
+import org.patryk3211.powergrid.electricity.pump.ElectricPumpBlockEntity;
 import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterBlockEntity;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlockEntity;
 import org.patryk3211.powergrid.electricity.socket.SocketBlockEntity;
@@ -57,6 +58,7 @@ import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBearingVisual;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapRenderer;
+import org.patryk3211.powergrid.electricity.transformer.NetherTransformerBlockEntity;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlockEntity;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlockEntity;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlockEntity;
@@ -64,6 +66,8 @@ import org.patryk3211.powergrid.electricity.wireconnector.CordJunctionBlockEntit
 import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryBlockEntity;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerBlockEntity;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerRenderer;
+import org.patryk3211.powergrid.general.ceilingtile.CeilingTileBlockEntity;
+import org.patryk3211.powergrid.general.ceilingtile.CeilingTileRenderer;
 import org.patryk3211.powergrid.kinetics.base.HalfShaftVisual;
 import org.patryk3211.powergrid.kinetics.base.TunedBlockRenderer;
 import org.patryk3211.powergrid.kinetics.base.TunedBlockVisual;
@@ -239,6 +243,11 @@ public class ModdedBlockEntities {
                     .validBlock(ModdedBlocks.TRANSFORMER_MEDIUM)
                     .register();
 
+    public static final BlockEntityEntry<NetherTransformerBlockEntity> NETHER_TRANSFORMER =
+            REGISTRATE.blockEntity("nether_transformer", NetherTransformerBlockEntity::new)
+                    .validBlock(ModdedBlocks.NETHER_TRANSFORMER)
+                    .register();
+
     public static final BlockEntityEntry<VariacBlockEntity> VARIAC =
             REGISTRATE.blockEntity("variac", VariacBlockEntity::new)
                     .visual(() -> TunedBlockVisual::new)
@@ -276,6 +285,11 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("electric_fan", SubstituteBlockEntityProvider.INSTANCE.get(ElectricFanBlockEntity.class))
                     .validBlock(ModdedBlocks.ELECTRIC_FAN)
                     .renderer(() -> ElectricFanRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<ElectricPumpBlockEntity> ELECTRIC_PUMP =
+            REGISTRATE.blockEntity("electric_pump", ElectricPumpBlockEntity::new)
+                    .validBlock(ModdedBlocks.ELECTRIC_PUMP)
                     .register();
 
     public static final BlockEntityEntry<PortableBatteryBlockEntity> PORTABLE_BATTERY =
@@ -374,6 +388,12 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("factory_light", FactoryLightBlockEntity::new)
                     .validBlock(ModdedBlocks.FACTORY_LIGHT)
                     .renderer(() -> FactoryLightRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<CeilingTileBlockEntity> CEILING_TILE =
+            REGISTRATE.blockEntity("ceiling_tile", CeilingTileBlockEntity::new)
+                    .validBlock(ModdedBlocks.CEILING_TILE)
+                    .renderer(() -> CeilingTileRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<SolarPanelBlockEntity> SOLAR_PANEL =

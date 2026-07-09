@@ -34,13 +34,13 @@ import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
 import org.patryk3211.powergrid.electricity.carbonpile.CarbonPileBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
-import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseState;
 import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
+import org.patryk3211.powergrid.general.ceilingtile.CeilingTileBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.VerticalCommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
@@ -522,6 +522,18 @@ public class DataProviderUtilityImpl {
                 case 6 -> "eastedge";
 
                 default -> throw new IllegalStateException();
+            }));
+            return builder.build();
+        });
+    }
+
+    public static NonNullBiConsumer<DataGenContext<Block, CeilingTileBlock>, RegistrateBlockstateProvider> ceilingTile(String baseFolder) {
+        return (ctx, prov) -> prov.getVariantBuilder(ctx.get()).forAllStates(state -> {
+            var builder = ConfiguredModel.builder();
+            var lampState = state.getValue(CeilingTileBlock.STATE);
+            builder.modelFile(modModel(prov, baseFolder + "/ceiling_tile" + switch(lampState) {
+                case EMPTY -> "";
+                case LAMP, LAMP_LOW_POWER, LAMP_ON -> "_light";
             }));
             return builder.build();
         });

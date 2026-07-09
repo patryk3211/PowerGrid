@@ -1,6 +1,7 @@
 {
 	"format_version": "1.21.11",
 	"credit": "Made with Blockbench",
+	"parent": "block/block",
 	"texture_size": [64, 64],
 	"textures": {
 		"0": "powergrid:block/ceiling_tile/ceiling_tile",
@@ -37,7 +38,6 @@
 		{
 			"name": "tile",
 			"origin": [0, 0, 16],
-			"scope": 0,
 			"color": 0,
 			"children": [0, 1]
 		}

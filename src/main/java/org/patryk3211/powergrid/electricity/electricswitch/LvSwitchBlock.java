@@ -15,16 +15,13 @@
  */
 package org.patryk3211.powergrid.electricity.electricswitch;
 
-import net.createmod.catnip.math.VoxelShaper;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
-import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 
 public class LvSwitchBlock extends SurfaceSwitchBlock {
     private static final TerminalBoundingBox[] DOWN_TERMINALS = new TerminalBoundingBox[] {
@@ -33,38 +30,11 @@ public class LvSwitchBlock extends SurfaceSwitchBlock {
     };
 
     private static final VoxelShape SHAPE_DOWN = box(4, 0, 3, 12, 3, 13);
-    private static final VoxelShape SHAPE_DOWN_2 = box(3, 0, 4, 13, 3, 12);
 
     public LvSwitchBlock(Properties settings) {
         super(settings);
         this.maxVoltage = 320;
-
-        var shaper = VoxelShaper.forDirectional(SHAPE_DOWN, Direction.DOWN);
-        var shaper2 = VoxelShaper.forDirectional(SHAPE_DOWN_2, Direction.DOWN);
-        setTerminalCollection(BlockStateTerminalCollection
-                .builder(this)
-                .forAllStatesExcept(state -> BlockStateTerminalCollection.each(DOWN_TERMINALS, terminal -> {
-                    var facing = state.getValue(FACING);
-                    terminal = switch(facing) {
-                        case DOWN -> terminal;
-                        case UP -> terminal.rotateAroundX(180);
-                        case EAST -> terminal.rotateAroundZ(-90);
-                        case WEST -> terminal.rotateAroundZ(90);
-                        case NORTH -> terminal.rotateAroundZ(90).rotateAroundY(90);
-                        case SOUTH -> terminal.rotateAroundZ(90).rotateAroundY(-90);
-                    };
-                    if(!state.getValue(ALONG_FIRST_AXIS)) {
-                        terminal = terminal.rotate(facing.getAxis(), 90);
-                    }
-                    return terminal;
-                }), OPEN)
-                .withShapeMapper(state -> {
-                    var facing = state.getValue(FACING);
-                    var axis_along = state.getValue(ALONG_FIRST_AXIS);
-                    var prov = (axis_along ^ facing.getAxis() == Direction.Axis.Y) ? shaper2 : shaper;
-                    return prov.get(facing);
-                })
-                .build());
+        setTerminalCollection(switchDownTerminals(this, DOWN_TERMINALS, SHAPE_DOWN));
     }
 
     @Override

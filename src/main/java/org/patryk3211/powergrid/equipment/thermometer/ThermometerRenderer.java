@@ -27,6 +27,8 @@ import net.minecraft.util.Mth;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 
 public class ThermometerRenderer extends SafeBlockEntityRenderer<ThermometerBlockEntity> {
+    public static final float NEEDLE_SPAN = (float) (135 * Math.PI / 180);
+
     public ThermometerRenderer(BlockEntityRendererProvider.Context context) { }
 
     @Override
@@ -44,9 +46,9 @@ public class ThermometerRenderer extends SafeBlockEntityRenderer<ThermometerBloc
     }
 
     private SuperByteBuffer prepareDial(SuperByteBuffer buffer, Direction facing, float progress, int light) {
-        float dialPivotY = 5.75f / 16, dialPivotX = 10 / 16f;
+        float dialPivotY = 6f / 16, dialPivotX = 8 / 16f;
         return rotateBuffer(buffer, facing).translate(dialPivotX, dialPivotY, 0)
-                .rotateZ((float) (Math.PI / 2 * -progress))
+                .rotateZ(NEEDLE_SPAN * -progress)
                 .translate(-dialPivotX, -dialPivotY, 0)
                 .light(light);
     }

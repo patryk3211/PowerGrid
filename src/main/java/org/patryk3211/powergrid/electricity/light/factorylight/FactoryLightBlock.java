@@ -37,8 +37,8 @@ public class FactoryLightBlock extends HorizontalAxisElectricBlock implements IA
 
     public FactoryLightBlock(Properties settings) {
         super(settings.noOcclusion().lightLevel(state -> switch(state.getValue(POWER)) {
-            case 2 -> 10;
-            case 3 -> 15;
+            case 2 -> ILightBulb.LIGHT_LEVEL_LOW_POWER;
+            case 3 -> ILightBulb.LIGHT_LEVEL_FULL_POWER;
             default -> 0;
         }));
     }
@@ -222,6 +222,12 @@ public class FactoryLightBlock extends HorizontalAxisElectricBlock implements IA
             // Holding something else.
             return InteractionResult.PASS;
         }
+    }
+
+    @Override
+    public void onRemove(BlockState state, Level world, BlockPos pos, BlockState newState, boolean moved) {
+        getBlockEntity(world, pos).removeLights();
+        super.onRemove(state, world, pos, newState, moved);
     }
 
     @Override

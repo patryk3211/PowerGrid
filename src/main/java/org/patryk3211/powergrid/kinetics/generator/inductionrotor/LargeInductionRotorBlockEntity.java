@@ -19,6 +19,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.calculation.Precalculated;
 import org.patryk3211.powergrid.electricity.sim.calculation.StampedSupplier;
@@ -53,19 +54,18 @@ public class LargeInductionRotorBlockEntity extends InductionRotorBlockEntity {
             for(int i = -1; i <= 1; ++i) {
                 var pos = worldPosition.relative(dir, 2).relative(axis2, i);
                 deps[index * 3 + i + 1] = new LazyWindingSupplier(pos, dir.getAxis());
-//                var otherState = level.getBlockState(pos);
-//                if (otherState.getBlock() instanceof WindingBlock winding) {
-//                    var magnetic = winding.getMagneticAxis(otherState);
-//                    if (magnetic != dir.getAxis())
-//                        continue;
-//                    var be = level.getBlockEntity(pos);
-//                    if (be instanceof WindingBlockEntity wbe) {
-//                        deps[index * 3 + i + 1] = wbe::fieldStrengthCalc;
-//                    }
-//                }
             }
         }
         totalField.updateDependency(deps);
+    }
+
+    @Override
+    protected AABB createRenderBoundingBox() {
+        var axis = getBlockState().getValue(LargeInductionRotorBlock.AXIS);
+        return new AABB(worldPosition)
+                .inflate(axis == Direction.Axis.X ? 0 : 1,
+                        axis == Direction.Axis.Y ? 0 : 1,
+                        axis == Direction.Axis.Z ? 0 : 1);
     }
 
     private class LazyWindingSupplier implements StampedSupplier<Precalculated<Float>> {

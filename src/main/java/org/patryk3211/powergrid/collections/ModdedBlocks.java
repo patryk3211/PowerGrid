@@ -82,12 +82,14 @@ import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightBlock
 import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightLightBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.light.string.StringLightBlock;
+import org.patryk3211.powergrid.electricity.pump.ElectricPumpBlock;
 import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterBlock;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlock;
 import org.patryk3211.powergrid.electricity.socket.SocketBlock;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBearingBlock;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlock;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlock;
+import org.patryk3211.powergrid.electricity.transformer.NetherTransformerBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerCoreBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
@@ -457,14 +459,14 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<CreativeSourceBlock> CREATIVE_VOLTAGE_SOURCE = REGISTRATE.block("creative_voltage_source", CreativeSourceBlock::new)
-            .blockstate(horizontalAxisBlock("block/creative_voltage_source"))
+            .blockstate(horizontalBlock("block/creative_voltage_source"))
             .initialProperties(SharedProperties::stone)
             .transform(pickaxeOnly())
             .defaultLoot()
             .simpleItem()
             .register();
     public static final BlockEntry<CreativeSourceBlock> CREATIVE_CURRENT_SOURCE = REGISTRATE.block("creative_current_source", CreativeSourceBlock::new)
-            .blockstate(horizontalAxisBlock("block/creative_current_source"))
+            .blockstate(horizontalBlock("block/creative_current_source"))
             .initialProperties(SharedProperties::stone)
             .transform(pickaxeOnly())
             .defaultLoot()
@@ -515,9 +517,26 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<CeilingTileBlock> CEILING_TILE = REGISTRATE.block("ceiling_tile", CeilingTileBlock::new)
-            .blockstate(simple("block/ceiling_tile/ceiling_tile"))
+            .blockstate(ceilingTile("block/ceiling_tile"))
+            .initialProperties(SharedProperties::stone)
             .transform(axeOrPickaxe())
-            .simpleItem()
+            .addLayer(() -> RenderType::cutout)
+            .loot((tables, block) ->
+                    tables.add(block, b -> LootTable.lootTable()
+                            .withPool(LootPool.lootPool()
+                                    .when(ExplosionCondition.survivesExplosion())
+                                    .add(LootItem.lootTableItem(b)))
+                            .withPool(LootPool.lootPool()
+                                    .when(ExplosionCondition.survivesExplosion())
+                                    .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(b)
+                                            .setProperties(StatePropertiesPredicate.Builder.properties()
+                                                    .hasProperty(CeilingTileBlock.STATE, CeilingTileBlock.State.EMPTY))
+                                            .invert())
+                                    .add(LootItem.lootTableItem(FACTORY_LIGHT)))
+                    ))
+            .item()
+                .model(itemWithParent("block/ceiling_tile/ceiling_tile"))
+                .build()
             .register();
 
     public static final BlockEntry<TransformerCoreBlock> TRANSFORMER_CORE = REGISTRATE.block("transformer_core", TransformerCoreBlock::new)
@@ -541,6 +560,13 @@ public class ModdedBlocks {
             .blockstate(transformerMedium())
             .loot((tables, block) -> tables.dropOther(block, TRANSFORMER_CORE.get()))
             .properties(properties -> properties.sound(SoundType.NETHERITE_BLOCK))
+            .transform(pickaxeOnly())
+            .transform(CThermal.maxPower(4000, 16.0f))
+            .register();
+    public static final BlockEntry<NetherTransformerBlock> NETHER_TRANSFORMER = REGISTRATE.block("nether_transformer", NetherTransformerBlock::new)
+            .initialProperties(TRANSFORMER_CORE)
+            .blockstate(transformerNether())
+            .loot((tables, block) -> tables.dropOther(block, TRANSFORMER_CORE.get()))
             .transform(pickaxeOnly())
             .transform(CThermal.maxPower(4000, 16.0f))
             .register();
@@ -625,6 +651,14 @@ public class ModdedBlocks {
             .item()
                 .model(itemWithParent("block/electric_fan/item"))
                 .build()
+            .register();
+
+    public static final BlockEntry<ElectricPumpBlock> ELECTRIC_PUMP = REGISTRATE.block("electric_pump", ElectricPumpBlock::new)
+            .blockstate(alternateDirectionalBlock("block/electric_pump"))
+            .initialProperties(SharedProperties::copperMetal)
+            .transform(pickaxeOnly())
+            .transform(CResistance.setResistance(480))
+            .simpleItem()
             .register();
 
     public static final BlockEntry<PortableBatteryBlock> PORTABLE_BATTERY = REGISTRATE.block("portable_battery", PortableBatteryBlock::new)

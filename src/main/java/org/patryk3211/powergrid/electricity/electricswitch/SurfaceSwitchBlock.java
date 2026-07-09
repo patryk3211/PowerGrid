@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.electricswitch;
 
+import net.createmod.catnip.math.VoxelShaper;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.Block;
@@ -23,42 +24,91 @@ import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.IntegerProperty;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.CustomProperties;
+import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
+import org.patryk3211.powergrid.utility.ShaperUtils;
 
 public class SurfaceSwitchBlock extends SwitchBlock {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
-    public static final BooleanProperty ALONG_FIRST_AXIS = CustomProperties.ALONG_FIRST_AXIS;
+    public static final IntegerProperty ROTATION = CustomProperties.ROTATION_4;
 
     public SurfaceSwitchBlock(Properties settings) {
         super(settings);
     }
 
+    public static BlockStateTerminalCollection switchDownTerminals(Block block, TerminalBoundingBox[] terminals, VoxelShape downShape) {
+        var shapers = new VoxelShaper[] {
+                VoxelShaper.forDirectional(downShape, Direction.DOWN),
+                VoxelShaper.forDirectional(ShaperUtils.rotate(downShape, Direction.NORTH, Direction.EAST), Direction.DOWN),
+                VoxelShaper.forDirectional(ShaperUtils.rotate(downShape, Direction.NORTH, Direction.SOUTH), Direction.DOWN),
+                VoxelShaper.forDirectional(ShaperUtils.rotate(downShape, Direction.NORTH, Direction.WEST), Direction.DOWN)
+        };
+        return BlockStateTerminalCollection.builder(block)
+                .forAllStates(state -> BlockStateTerminalCollection.each(terminals,
+                        terminal -> {
+                            var facing = state.getValue(FACING);
+                            terminal = switch(facing) {
+                                case DOWN -> terminal;
+                                case UP -> terminal.rotateAroundX(180);
+                                case EAST -> terminal.rotateAroundZ(-90);
+                                case WEST -> terminal.rotateAroundZ(90);
+                                case NORTH -> terminal.rotateAroundZ(90).rotateAroundY(90);
+                                case SOUTH -> terminal.rotateAroundZ(90).rotateAroundY(-90);
+                            };
+                            int rotation = state.getValue(ROTATION);
+                            if(facing == Direction.SOUTH) {
+                                terminal = terminal.rotate(facing.getAxis(), -(90 * rotation - 90));
+                            } else if(facing == Direction.EAST) {
+                                terminal = terminal.rotate(facing.getAxis(), 180 - (90 * rotation - 90));
+                            } else {
+                                terminal = terminal.rotate(facing.getAxis(), 90 * rotation - 90);
+                            }
+                            return terminal;
+                        })
+                )
+                .withShapeMapper(state -> {
+                    var facing = state.getValue(FACING);
+                    int rotation = state.getValue(ROTATION);
+                    if(facing.getAxis() == Direction.Axis.Y)
+                        rotation = (rotation + 1) % 4;
+                    return shapers[rotation].get(facing);
+                })
+                .build();
+    }
+
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
-        builder.add(FACING, ALONG_FIRST_AXIS);
+        builder.add(FACING, ROTATION);
     }
 
     @Override
     public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
         var facing = ctx.getClickedFace().getOpposite();
-        boolean along = true;
+        int rotation = 0;
         if(facing.getAxis() == Direction.Axis.Y) {
             var player = ctx.getHorizontalDirection();
-            if(player.getAxis() == Direction.Axis.X)
-                along = false;
-        } else {
-            along = false;
-            if(ctx.getNearestLookingDirection().getAxis() == facing.getClockWise().getAxis())
-                along = true;
+            rotation = player.get2DDataValue() + 3;
         }
 
+        if(ctx.getPlayer() != null && ctx.getPlayer().isShiftKeyDown())
+            rotation += 3;
         return defaultBlockState()
                 .setValue(FACING, facing)
-                .setValue(ALONG_FIRST_AXIS, along);
+                .setValue(ROTATION, rotation % 4);
+    }
+
+    @Override
+    public BlockState getRotatedBlockState(BlockState originalState, Direction targetedFace) {
+        if(targetedFace.getAxis() == originalState.getValue(FACING).getAxis()) {
+            return originalState.cycle(ROTATION);
+        }
+        return super.getRotatedBlockState(originalState, targetedFace);
     }
 
     public BlockState rotate(BlockState state, Rotation rot) {

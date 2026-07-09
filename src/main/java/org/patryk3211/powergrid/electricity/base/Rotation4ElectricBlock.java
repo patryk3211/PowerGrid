@@ -77,7 +77,7 @@ public abstract class Rotation4ElectricBlock extends DirectionalElectricBlock {
         }
 
         if(ctx.getPlayer() != null && ctx.getPlayer().isShiftKeyDown())
-            rotation = (rotation + 2) % 3;
+            rotation = (rotation + 2) % 4;
         return defaultBlockState()
                 .setValue(FACING, facing)
                 .setValue(ROTATION, rotation);

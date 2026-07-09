@@ -30,10 +30,12 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import org.patryk3211.powergrid.advancements.PowerGridTriggers;
 import net.minecraft.world.level.block.state.BlockState;
@@ -112,12 +114,15 @@ public class PowerGrid {
 		CommandRegistrationEvent.EVENT.register(ModdedCommands::register);
 		PlayerEvent.PLAYER_JOIN.register(PowerGrid::playerJoin);
 		PlayerEvent.PLAYER_QUIT.register(PowerGrid::playerQuit);
+		PlayerEvent.CHANGE_DIMENSION.register(PowerGrid::playerChangeDimension);
 		InteractionEvent.RIGHT_CLICK_BLOCK.register(WireItem::useOn);
 		InteractionEvent.RIGHT_CLICK_ITEM.register(WireItem::use);
 	}
 
 	private static void setup() {
 		RedstoneConverterRegistry.init();
+		ModdedAdvancements.register();
+		ModdedContraptions.register();
 	}
 
 	private static void playerQuit(ServerPlayer player) {
@@ -138,6 +143,10 @@ public class PowerGrid {
 					)
 			);
 		}
+	}
+
+	private static void playerChangeDimension(ServerPlayer player, ResourceKey<Level> oldDim, ResourceKey<Level> newDim) {
+		GlobalElectricNetworks.dropTrackers(player, oldDim);
 	}
 
 	private static void register() {

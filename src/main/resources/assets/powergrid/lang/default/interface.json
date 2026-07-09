@@ -67,6 +67,9 @@
 
   "powergrid.gui.invalid_equation": "Invalid display equation",
 
+  "powergrid.gui.pump.info_header": "Pump Information:",
+  "powergrid.gui.pump.speed_header": "Pump Speed:",
+
   "powergrid.gui.solar_panel_bearing.slider": "Strings in Parallel × Panels in String",
 
   "powergrid.generic.unit.volt": "V",

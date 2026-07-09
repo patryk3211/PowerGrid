@@ -76,8 +76,8 @@ public class LightFixtureBlock extends DirectionalElectricBlock implements IBE<L
 
     public LightFixtureBlock(Properties settings) {
         super(settings.lightLevel(state -> switch(state.getValue(POWER)) {
-            case 1 -> 10;
-            case 2 -> 15;
+            case 1 -> ILightBulb.LIGHT_LEVEL_LOW_POWER;
+            case 2 -> ILightBulb.LIGHT_LEVEL_FULL_POWER;
             default -> 0;
         }));
         modelOffset = Vec3.ZERO;

@@ -25,6 +25,7 @@ import org.patryk3211.powergrid.PowerGrid;
 
 public class ModdedPartialModels {
     public static final PartialModel SHAFT_BIT = block("shaft_bit");
+    public static final PartialModel FAN_PROPELLER = block("electric_fan/propeller");
 
     public static final PartialModel CONDUCTIVE_VOLTAGE_HEAD = block("gauge/conductive/voltage_head");
     public static final PartialModel CONDUCTIVE_CURRENT_HEAD = block("gauge/conductive/current_head");
@@ -91,6 +92,8 @@ public class ModdedPartialModels {
     public static final PartialModel FL_RAYS_BACK = block("factory_light/godraysedgeback");
     public static final PartialModel FL_RAYS_FRONT = block("factory_light/godraysedgefront");
     public static final PartialModel FL_RAYS_SINGLE = block("factory_light/godrayssingular");
+
+    public static final PartialModel CEILING_LIGHT = block("ceiling_tile/ceiling_tile_light_light");
 
     private static PartialModel block(String path) {
         return PartialModel.of(PowerGrid.asResource("block/" + path));
