@@ -49,6 +49,7 @@
 
   "powergrid.component.property.orientation": "Orientation",
   "powergrid.component.property.vertical": "Vertical",
+  "powergrid.component.property.neon_tube_vertical": "Vertical",
 
   "powergrid.component.property.potentiometer_resistance": "Resistance",
   "powergrid.component.property.potentiometer_value": "Setting",

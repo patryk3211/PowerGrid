@@ -214,6 +214,7 @@
   "powergrid.component.property.neon_tube_ih.summary": "Minimum current needed to keep the tube lit",
   "powergrid.component.property.neon_tube_vb": "Breakdown Voltage",
   "powergrid.component.property.neon_tube_vb.summary": "Voltage needed to light up the tube",
+  "powergrid.component.property.neon_tube_vertical": "Vertical",
   "powergrid.component.property.neon_tube_vh": "Holding Voltage",
   "powergrid.component.property.neon_tube_vh.summary": "Approximate voltage held by the tube once lit",
   "powergrid.component.property.orientation": "Orientation",
