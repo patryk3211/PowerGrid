@@ -427,6 +427,9 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         if(!correctTool) {
             itemCount = (int) (itemCount * 0.75f);
             threshold *= 0.5f;
+            if(!ModdedAdvancements.WIRE_CUT.isAlreadyAwardedTo(player)) {
+                ModdedAdvancements.WIRE_CUT.awardTo(player);
+            }
         }
         if(I >= threshold) {
             float damage = (float) (I / threshold);

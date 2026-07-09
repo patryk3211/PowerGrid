@@ -66,6 +66,12 @@ public class ModdedAdvancements implements DataProvider {
             .description("Make acid")
             .after(ROOT)
             .whenIconCollected()),
+    FE_INVERTER = create("fe_inverter", b -> b
+            .icon(ModdedBlocks.FE_INVERTER)
+            .title("How does this even work?")
+            .description("Create a FE Inverter")
+            .after(ELECTRICAL_AGE)
+            .whenIconCollected()),
 
     /* -------======= Custom Triggers =======------- */
     BLOW_UP = create("blow_up", b -> b
@@ -112,6 +118,12 @@ public class ModdedAdvancements implements DataProvider {
             .icon(Items.SHEARS)
             .title("Wrong tool for the job")
             .description("Use shears to cut a wire")
+            .special(SECRET)),
+    ELECTRIC_DAMAGE = create("electric_damage", b -> b
+            .icon(ModdedItems.WIRE)
+            .title("Yeouch")
+            .description("Become part of an electrical circuit")
+            .after(ELECTRICAL_AGE)
             .special(SECRET))
 
     ;
