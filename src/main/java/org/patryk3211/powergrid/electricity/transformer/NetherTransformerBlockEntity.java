@@ -116,6 +116,13 @@ public class NetherTransformerBlockEntity extends ElectricBlockEntity {
             if(otherLevel.getBlockState(otherPos).is(state.getBlock()) && otherLevel.getBlockState(otherPos.above(y)).is(state.getBlock())) {
                 otherLevel.setBlock(otherPos, Blocks.AIR.defaultBlockState(), NetherTransformerBlock.UPDATE_KNOWN_SHAPE);
                 otherLevel.setBlock(otherPos.above(y), Blocks.AIR.defaultBlockState(), NetherTransformerBlock.UPDATE_KNOWN_SHAPE);
+            } else {
+                // Try the opposite face
+                otherPos = otherPos.relative(otherSide.face().getFace(), 2);
+                if(otherLevel.getBlockState(otherPos).is(state.getBlock()) && otherLevel.getBlockState(otherPos.above(y)).is(state.getBlock())) {
+                    otherLevel.setBlock(otherPos, Blocks.AIR.defaultBlockState(), NetherTransformerBlock.UPDATE_KNOWN_SHAPE);
+                    otherLevel.setBlock(otherPos.above(y), Blocks.AIR.defaultBlockState(), NetherTransformerBlock.UPDATE_KNOWN_SHAPE);
+                }
             }
         }
     }
