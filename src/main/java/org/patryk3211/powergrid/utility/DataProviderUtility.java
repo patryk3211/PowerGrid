@@ -30,6 +30,7 @@ import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
+import org.patryk3211.powergrid.electricity.transformer.NetherTransformerBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.general.ceilingtile.CeilingTileBlock;
@@ -133,6 +134,11 @@ public class DataProviderUtility {
 
     @ExpectPlatform
     public static NonNullBiConsumer<DataGenContext<Block, TransformerMediumBlock>, RegistrateBlockstateProvider> transformerMedium() {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static NonNullBiConsumer<DataGenContext<Block, NetherTransformerBlock>, RegistrateBlockstateProvider> transformerNether() {
         throw new AssertionError();
     }
 

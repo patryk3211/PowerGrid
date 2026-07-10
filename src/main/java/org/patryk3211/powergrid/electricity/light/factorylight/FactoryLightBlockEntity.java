@@ -25,6 +25,7 @@ public class FactoryLightBlockEntity extends AbstractLightFixtureBlockEntity imp
     private final SharedFilamentWire filament = new SharedFilamentWire();
     private TopLevelSharedFilamentWire masterFilament;
     private BlockPos effectsPos;
+    private BlockPos lastHitBlock;
 
     public FactoryLightBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state, false);
@@ -198,6 +199,9 @@ public class FactoryLightBlockEntity extends AbstractLightFixtureBlockEntity imp
         assert level != null;
         var bulbPower = getPowerLevel();
         effectsPos = worldPosition;
+        if (lastHitBlock == null) {
+            lastHitBlock = worldPosition;
+        }
         if(bulbPower > 0) {
             for(int i = 1; i < projectionDistance(); ++i) {
                 var pos = worldPosition.below(i);
@@ -208,6 +212,10 @@ public class FactoryLightBlockEntity extends AbstractLightFixtureBlockEntity imp
                     level.setBlock(pos, ModdedBlocks.FACTORY_LIGHT_LIGHT.getDefaultState()
                             .setValue(FactoryLightLightBlock.POWER, bulbPower - 1), UPDATE_ALL);
                 } else {
+                    if (!lastHitBlock.equals(pos)){
+                        lastHitBlock = pos;
+                        removeLights();
+                    }
                     break;
                 }
                 effectsPos = pos;
@@ -221,6 +229,22 @@ public class FactoryLightBlockEntity extends AbstractLightFixtureBlockEntity imp
                 } else {
                     break;
                 }
+            }
+        }
+    }
+
+    public void removeLights() {
+        for(int i = 0; i < projectionDistance(); ++i) {
+            var pos = worldPosition.below(i);
+            var state = level.getBlockState(pos);
+            if(state.getBlock() instanceof FactoryLightLightBlock) {
+                level.setBlock(pos, Blocks.AIR.defaultBlockState(), UPDATE_ALL_IMMEDIATE);
+            }
+            if (state.getBlock() instanceof FactoryLightBlock) {
+                if (this.getBlockPos().equals(pos)) {
+                    continue;
+                }
+                break;
             }
         }
     }

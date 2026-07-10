@@ -1,0 +1,12 @@
+{
+  "values": [
+    {
+      "id": "#forge:glass",
+      "required": false
+    },
+    {
+      "id": "#forge:glass_panes",
+      "required": false
+    }
+  ]
+}

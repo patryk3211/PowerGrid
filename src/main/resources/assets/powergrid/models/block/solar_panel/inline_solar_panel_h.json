@@ -1,0 +1,49 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Made with Blockbench",
+	"texture_size": [128, 128],
+	"textures": {
+		"0": "powergrid:block/solar_panel/solar_panel_connected",
+		"1": "powergrid:block/solar_panel/copper_plating_connected",
+		"particle": "powergrid:block/solar_panel/solar_panel_connected"
+	},
+	"elements": [
+		{
+			"name": "grid",
+			"from": [7, 0, 0],
+			"to": [7, 16, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 7, 0]},
+			"faces": {
+				"north": {"uv": [14, 0, 16, 2], "texture": "#0"},
+				"east": {"uv": [14, 0, 16, 2], "texture": "#0"},
+				"south": {"uv": [14, 0, 16, 2], "texture": "#0"},
+				"west": {"uv": [14, 0, 16, 2], "texture": "#0"},
+				"up": {"uv": [14, 0, 16, 2], "texture": "#0"},
+				"down": {"uv": [14, 0, 16, 2], "texture": "#0"}
+			}
+		},
+		{
+			"name": "chassis",
+			"from": [6, 0, 0],
+			"to": [10, 16, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 7, 0]},
+			"faces": {
+				"north": {"uv": [14, 15.5, 16, 16], "rotation": 90, "texture": "#0"},
+				"east": {"uv": [0, 0, 2, 2], "texture": "#1"},
+				"south": {"uv": [14, 15.5, 16, 16], "rotation": 90, "texture": "#0"},
+				"west": {"uv": [0, 0, 2, 2], "texture": "#0"},
+				"up": {"uv": [14, 15.5, 16, 16], "rotation": 90, "texture": "#0"},
+				"down": {"uv": [14, 15.5, 16, 16], "rotation": 90, "texture": "#0"}
+			}
+		}
+	],
+	"groups": [
+		{
+			"name": "solar_panel",
+			"origin": [0, 7, 0],
+			"scope": 0,
+			"color": 0,
+			"children": [0, 1]
+		}
+	]
+}

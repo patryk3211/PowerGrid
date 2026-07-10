@@ -468,7 +468,7 @@ public class ElectricalNetwork implements IStamped {
 
         if(addGMin) {
             boolean shouldAnchor = true;
-            FloatingNode anchor = null;
+            FloatingNode anchor = null, anyNode = null;
             for (var node : nodes) {
                 if (node instanceof CurrentSourceNode) {
                     shouldAnchor = false;
@@ -478,14 +478,20 @@ public class ElectricalNetwork implements IStamped {
                     if (anchor == null && source.getNegative() instanceof FloatingNode floating) {
                         anchor = floating;
                     }
+                } else if(node instanceof FloatingNode floating && anyNode == null) {
+                    anyNode = floating;
                 }
             }
             if(groundReferenceCount == 0) {
                 // Add a shunt to ground to the first floating node.
                 // This ensures that the simulation is anchored to a 0V reference somewhere
                 // and should improve performance and stability when there are only 2 port sources.
-                if (shouldAnchor && anchor != null) {
-                    mna.jacobianAdd(anchor.getIndex(), anchor.getIndex(), 1000);
+                if (shouldAnchor) {
+                    if(anchor != null) {
+                        mna.jacobianAdd(anchor.getIndex(), anchor.getIndex(), 1000);
+                    } else if(anyNode != null) {
+                        mna.jacobianAdd(anyNode.getIndex(), anyNode.getIndex(), 1000);
+                    }
                 }
             }
         }

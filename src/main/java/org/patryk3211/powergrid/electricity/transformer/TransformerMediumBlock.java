@@ -47,27 +47,26 @@ import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import java.util.Optional;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 
 public class TransformerMediumBlock extends TransformerBlock implements IBE<TransformerMediumBlockEntity> {
     public static final EnumProperty<Direction.Axis> HORIZONTAL_AXIS = BlockStateProperties.HORIZONTAL_AXIS;
     public static final IntegerProperty PART = IntegerProperty.create("part", 0, 3);
 
-    private static final TerminalBoundingBox TERMINAL_Z_1 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 0, 9, 6, 5, 16, 10);
-    private static final TerminalBoundingBox TERMINAL_Z_2 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 11, 9, 6, 16, 16, 10);
+    public static final TerminalBoundingBox TERMINAL_Z_1 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 0, 9, 6, 5, 16, 10);
+    public static final TerminalBoundingBox TERMINAL_Z_2 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 11, 9, 6, 16, 16, 10);
 
-    private static final TerminalBoundingBox TERMINAL_X_1 = TERMINAL_Z_1.rotateAroundY(Rotation.CLOCKWISE_90);
-    private static final TerminalBoundingBox TERMINAL_X_2 = TERMINAL_Z_2.rotateAroundY(Rotation.CLOCKWISE_90);
+    public static final TerminalBoundingBox TERMINAL_X_1 = TERMINAL_Z_1.rotateAroundY(Rotation.CLOCKWISE_90);
+    public static final TerminalBoundingBox TERMINAL_X_2 = TERMINAL_Z_2.rotateAroundY(Rotation.CLOCKWISE_90);
 
-    private static final VoxelShape SHAPE_Z_BOTTOM = box(2, 0, 0, 14, 16, 16);
-    private static final VoxelShape SHAPE_X_BOTTOM = box(0, 0, 2, 16, 16, 14);
+    public static final VoxelShape SHAPE_Z_BOTTOM = box(2, 0, 0, 14, 16, 16);
+    public static final VoxelShape SHAPE_X_BOTTOM = box(0, 0, 2, 16, 16, 14);
 
-    private static final VoxelShape SHAPE_Z_TOP = Shapes.or(
+    public static final VoxelShape SHAPE_Z_TOP = Shapes.or(
             box(2, 0, 0, 14, 12, 16),
             TERMINAL_Z_1.getShape(),
             TERMINAL_Z_2.getShape()
     );
-    private static final VoxelShape SHAPE_X_TOP = Shapes.or(
+    public static final VoxelShape SHAPE_X_TOP = Shapes.or(
             box(0, 0, 2, 16, 12, 14),
             TERMINAL_X_1.getShape(),
             TERMINAL_X_2.getShape()
@@ -268,12 +267,31 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
         return initiator.equals(p1) || initiator.equals(p2);
     }
 
+    public static boolean updateShapeVerifyPart(int offsetX, int offsetY, BlockPos pos, BlockPos neighborPos, BlockState state, LevelAccessor level) {
+        var axis = state.getValue(HORIZONTAL_AXIS);
+        var offsetPos = pos.relative(axis, offsetX).relative(Direction.Axis.Y, offsetY);
+        if (!neighborPos.equals(offsetPos))
+            return true; // Ignore
+        var offsetState = level.getBlockState(offsetPos);
+        if (!offsetState.is(state.getBlock()))
+            return false;
+        int part = state.getValue(PART);
+        int expectPart = part;
+        if (offsetX > 0)
+            expectPart |= 1;
+        else if (offsetX < 0)
+            expectPart &= ~1;
+        if (offsetY > 0)
+            expectPart |= 2;
+        else if (offsetY < 0)
+            expectPart &= ~2;
+        return offsetState.getValue(HORIZONTAL_AXIS) == axis && offsetState.getValue(PART) == expectPart;
+    }
+
     @Override
     public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
-        var axis = state.getValue(HORIZONTAL_AXIS);
         int x = 0;
         int y = 0;
-        int part = state.getValue(PART);
         switch(state.getValue(PART)) {
             case 0:
                 x = 1;
@@ -292,25 +310,8 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
                 y = -1;
                 break;
         }
-        BiFunction<Integer, Integer, Boolean> processOffset = (offsetX, offsetY) -> {
-            var offsetPos = pos.relative(axis, offsetX).relative(Direction.Axis.Y, offsetY);
-            if(!neighborPos.equals(offsetPos))
-                return true; // Ignore
-            var offsetState = level.getBlockState(offsetPos);
-            if(!offsetState.is(this))
-                return false;
-            int expectPart = part;
-            if(offsetX > 0)
-                expectPart |= 1;
-            else if(offsetX < 0)
-                expectPart &= ~1;
-            if(offsetY > 0)
-                expectPart |= 2;
-            else if(offsetY < 0)
-                expectPart &= ~2;
-            return offsetState.getValue(HORIZONTAL_AXIS) == axis && offsetState.getValue(PART) == expectPart;
-        };
-        if(processOffset.apply(x, 0) && processOffset.apply(0, y))
+        if(updateShapeVerifyPart(x, 0, pos, neighborPos, state, level)
+           && updateShapeVerifyPart(0, y, pos, neighborPos, state, level))
             return state;
         // Destroy
         return Blocks.AIR.defaultBlockState();

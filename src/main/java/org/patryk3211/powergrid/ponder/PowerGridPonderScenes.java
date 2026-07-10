@@ -43,18 +43,24 @@ public class PowerGridPonderScenes {
         HELPER.forComponents(ModdedBlocks.WINDING, ModdedItems.COPPER_COIL)
                 .addStoryBoard("generator/winding", GeneratorScenes::winding, PowerGridPonderTags.GENERATOR_ASSEMBLY)
                 .addStoryBoard("generator/parallel_windings", GeneratorScenes::parallelWinding, PowerGridPonderTags.GENERATOR_ASSEMBLY)
-                .addStoryBoard("generator/shunt_generator", GeneratorScenes::shuntGenerator, PowerGridPonderTags.GENERATOR_ASSEMBLY);
+                .addStoryBoard("generator/generator_1", GeneratorScenes::generator1, PowerGridPonderTags.GENERATOR_ASSEMBLY)
+                .addStoryBoard("generator/generator_2", GeneratorScenes::generator2, PowerGridPonderTags.GENERATOR_ASSEMBLY)
+                .addStoryBoard("generator/generator_3", GeneratorScenes::generator3, PowerGridPonderTags.GENERATOR_ASSEMBLY);
 
         HELPER.forComponents(ModdedBlocks.GENERATOR_CLUTCH)
                 .addStoryBoard("generator/clutch", GeneratorScenes::clutch, PowerGridPonderTags.GENERATOR_ASSEMBLY, AllCreatePonderTags.KINETIC_APPLIANCES)
-                .addStoryBoard("generator/shunt_generator", GeneratorScenes::shuntGenerator, PowerGridPonderTags.GENERATOR_ASSEMBLY);
+                .addStoryBoard("generator/generator_1", GeneratorScenes::generator1, PowerGridPonderTags.GENERATOR_ASSEMBLY)
+                .addStoryBoard("generator/generator_2", GeneratorScenes::generator2, PowerGridPonderTags.GENERATOR_ASSEMBLY)
+                .addStoryBoard("generator/generator_3", GeneratorScenes::generator3, PowerGridPonderTags.GENERATOR_ASSEMBLY);
 
         HELPER.forComponents(ModdedBlocks.GENERATOR_HOUSING, ModdedBlocks.VERTICAL_GENERATOR_HOUSING)
                 .addStoryBoard("generator/housing", GeneratorScenes::housing, PowerGridPonderTags.GENERATOR_ASSEMBLY);
 
         HELPER.forComponents(ModdedBlocks.GENERATOR_INDUCTION_ROTOR, ModdedBlocks.GENERATOR_COMMUTATOR, ModdedBlocks.GENERATOR_VERTICAL_COMMUTATOR)
                 .addStoryBoard("generator/rotor", GeneratorScenes::rotor, PowerGridPonderTags.GENERATOR_ASSEMBLY)
-                .addStoryBoard("generator/shunt_generator", GeneratorScenes::shuntGenerator, PowerGridPonderTags.GENERATOR_ASSEMBLY);
+                .addStoryBoard("generator/generator_1", GeneratorScenes::generator1, PowerGridPonderTags.GENERATOR_ASSEMBLY)
+                .addStoryBoard("generator/generator_2", GeneratorScenes::generator2, PowerGridPonderTags.GENERATOR_ASSEMBLY)
+                .addStoryBoard("generator/generator_3", GeneratorScenes::generator3, PowerGridPonderTags.GENERATOR_ASSEMBLY);
 
         HELPER.addStoryBoard(ModdedItems.STRING_LIGHT_CORD, "wire/string_lights", WireScenes::stringLights);
         HELPER.addStoryBoard(ModdedItems.INSULATED_COPPER_WIRE, "wire/insulated_wire", WireScenes::insulatedWire);
@@ -75,7 +81,10 @@ public class PowerGridPonderScenes {
 
         HELPER.addStoryBoard(ModdedBlocks.RHEOSTAT, "rheostat", RelayScenes::rheostat, PowerGridPonderTags.ELECTRIC_RELAYS);
         HELPER.addStoryBoard(ModdedBlocks.RESISTOR, "power_resistor", RelayScenes::powerResistor, PowerGridPonderTags.ELECTRIC_RELAYS);
-        HELPER.addStoryBoard(ModdedBlocks.CARBON_PILE_COIL, "carbon_pile", RelayScenes::carbonPile, PowerGridPonderTags.ELECTRIC_RELAYS);
+
+        HELPER.forComponents(ModdedBlocks.CARBON_PILE_COIL)
+                .addStoryBoard("carbon_pile", RelayScenes::carbonPile, PowerGridPonderTags.ELECTRIC_RELAYS)
+                .addStoryBoard("generator/generator_3", GeneratorScenes::generator3, PowerGridPonderTags.GENERATOR_ASSEMBLY);
 
         HELPER.forComponents(ModdedBlocks.LIGHT_FIXTURE, ModdedItems.LIGHT_BULB, ModdedItems.LV_LIGHT_BULB)
                 .addStoryBoard("lightbulb", DeviceScenes::light, PowerGridPonderTags.ELECTRIC_DEVICES);
@@ -91,6 +100,10 @@ public class PowerGridPonderScenes {
 
         HELPER.addStoryBoard(ModdedBlocks.ELECTRIC_FAN, "electric_fan", DeviceScenes::electricFan, PowerGridPonderTags.ELECTRIC_DEVICES);
         HELPER.addStoryBoard(AllBlocks.ENCASED_FAN, "encased_fan", DeviceScenes::encasedFan);
+        HELPER.forComponents(ModdedBlocks.SOLAR_PANEL)
+                .addStoryBoard("solar_panel/solar_panel_conditions", DeviceScenes::solarPanel, PowerGridPonderTags.ELECTRIC_DEVICES)
+                .addStoryBoard("solar_panel/solar_panel_power_creation", DeviceScenes::solarPanel2, PowerGridPonderTags.ELECTRIC_DEVICES);
+        HELPER.addStoryBoard(ModdedBlocks.SOLAR_PANEL_BEARING, "solar_panel_bearing", DeviceScenes::solarPanelBearing, PowerGridPonderTags.ELECTRIC_DEVICES, AllCreatePonderTags.KINETIC_SOURCES);
 
         HELPER.forComponents(ModdedItems.MAGNET)
                 .addStoryBoard("magnet", MagnetScenes::magnet)

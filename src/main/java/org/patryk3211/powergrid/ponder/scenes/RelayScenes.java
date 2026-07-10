@@ -23,7 +23,6 @@ import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import org.patryk3211.powergrid.base.CustomProperties;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.carbonpile.CarbonPileBlock;
@@ -56,7 +55,7 @@ public class RelayScenes {
         var bulb = util.grid().at(3, 2, 2);
         scene.world().setBlock(target, block.defaultBlockState()
                 .setValue(BlockStateProperties.FACING, Direction.DOWN)
-                .setValue(CustomProperties.ALONG_FIRST_AXIS, false)
+                .setValue(SurfaceSwitchBlock.ROTATION, 0)
                 .setValue(BlockStateProperties.OPEN, true), false);
 
         scene.showBasePlate();

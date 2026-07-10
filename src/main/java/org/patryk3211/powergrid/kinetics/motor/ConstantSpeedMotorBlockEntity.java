@@ -41,6 +41,7 @@ import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
+import static org.patryk3211.powergrid.PowerGrid.maxRPM;
 import static org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity.CONVERSION_CONSTANT;
 import static org.patryk3211.powergrid.kinetics.motor.ElectricMotorBlockEntity.calculateSpeed;
 
@@ -58,6 +59,7 @@ public class ConstantSpeedMotorBlockEntity extends GeneratingKineticBlockEntity 
     private float generatedSU = 0;
 
     private float avgSpeed;
+    private float load;
 
     public ConstantSpeedMotorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -69,6 +71,19 @@ public class ConstantSpeedMotorBlockEntity extends GeneratingKineticBlockEntity 
     }
 
     @Override
+    public void updateFromNetwork(float maxStress, float currentStress, int networkSize) {
+        super.updateFromNetwork(maxStress, currentStress, networkSize);
+        if(ModdedConfigs.server().electricity.motorDynamicResistance.get()) {
+            if (maxStress != 0) {
+                load = Math.max(currentStress / maxStress, 0.05f);
+            } else {
+                load = 0.05f;
+            }
+            coil.setResistance(resistance() / load);
+        }
+    }
+
+    @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         super.addBehaviours(behaviours);
         electricBehaviour = new ElectricBehaviour(this);
@@ -76,7 +91,7 @@ public class ConstantSpeedMotorBlockEntity extends GeneratingKineticBlockEntity 
         var awards = new PGAdvancementBehaviour(this, ModdedAdvancements.ELECTRIC_MOTOR);
         behaviours.add(awards);
 
-        var maxPower = 256 * torque() / CONVERSION_CONSTANT;
+        var maxPower = maxRPM() * torque() / CONVERSION_CONSTANT;
         var baseFactor = ThermalBehaviour.dissipationFactor(maxPower, 150);
         thermalBehaviour = ThermalBehaviour.simple(this, 3.5f, baseFactor);
         if(thermalBehaviour != null) {
@@ -126,10 +141,10 @@ public class ConstantSpeedMotorBlockEntity extends GeneratingKineticBlockEntity 
         avgSpeed = 0;
         if(!level.isClientSide || isVirtual()) {
             // Max speed constraints.
-            if(newSpeed > 256)
-                newSpeed = 256;
-            if(newSpeed < -256)
-                newSpeed = -256;
+            if(newSpeed > maxRPM())
+                newSpeed = maxRPM();
+            if(newSpeed < -maxRPM())
+                newSpeed = -maxRPM();
             newSpeed *= (int) BlockStressValues.getCapacity(getBlockState().getBlock());
 
             // Update speed from average power.
@@ -151,7 +166,8 @@ public class ConstantSpeedMotorBlockEntity extends GeneratingKineticBlockEntity 
 
         if(!level.isClientSide || isVirtual()) {
             applyPower(coil);
-            avgSpeed += (float) (calculateSpeed(coil.power(), torque()) * Math.signum(coil.current()));
+            var V = coil.potentialDifference();
+            avgSpeed += (float) (calculateSpeed(V * V / resistance(), torque()) * Math.signum(coil.current()));
         }
         super.tick();
     }

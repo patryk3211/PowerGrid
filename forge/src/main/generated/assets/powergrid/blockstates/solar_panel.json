@@ -1,0 +1,32 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "powergrid:block/solar_panel/inline_solar_panel_v",
+      "y": -90
+    },
+    "facing=east": {
+      "model": "powergrid:block/solar_panel/inline_solar_panel_h",
+      "x": -90
+    },
+    "facing=north": {
+      "model": "powergrid:block/solar_panel/inline_solar_panel_h",
+      "x": -90,
+      "y": -90
+    },
+    "facing=south": {
+      "model": "powergrid:block/solar_panel/inline_solar_panel_h",
+      "x": -90,
+      "y": 90
+    },
+    "facing=up": {
+      "model": "powergrid:block/solar_panel/inline_solar_panel_v",
+      "x": 180,
+      "y": -90
+    },
+    "facing=west": {
+      "model": "powergrid:block/solar_panel/inline_solar_panel_h",
+      "x": -90,
+      "y": 180
+    }
+  }
+}

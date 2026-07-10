@@ -464,6 +464,16 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         return null;
     }
 
+    public void putInNetwork(@NotNull IWireEndpoint endpoint) {
+        var node = endpoint.getNode(world);
+        add(endpoint);
+        var line = findLineMiddle(node);
+        if(line != null)
+            return;
+        if(node.getNetwork() == null)
+            endpoint.joinNetwork(world, newNetwork());
+    }
+
     @Nullable
     public ElectricalNetwork prepareForConnection(IWireEndpoint endpoint1, IWireEndpoint endpoint2) {
         var node1 = endpoint1.getNode(world);
@@ -1134,6 +1144,16 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         if(set == null)
             return Set.of();
         return set;
+    }
+
+    public void dropTrackers(ServerPlayer player) {
+        var iter = trackers.entrySet().iterator();
+        while(iter.hasNext()) {
+            var entry = iter.next();
+            entry.getValue().remove(player);
+            if(entry.getValue().isEmpty())
+                iter.remove();
+        }
     }
 
     public void chunkLoaded(ChunkPos chunkPos) {

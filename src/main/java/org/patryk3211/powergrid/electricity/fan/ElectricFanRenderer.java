@@ -16,7 +16,6 @@
 package org.patryk3211.powergrid.electricity.fan;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.simibubi.create.AllPartialModels;
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
 import net.createmod.catnip.animation.AnimationTickHolder;
 import net.createmod.catnip.render.CachedBuffers;
@@ -25,6 +24,7 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
+import org.patryk3211.powergrid.collections.ModdedPartialModels;
 
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.FACING;
 
@@ -38,7 +38,7 @@ public class ElectricFanRenderer extends SafeBlockEntityRenderer<ElectricFanBloc
         var direction = be.getBlockState().getValue(FACING);
         var vb = buffer.getBuffer(RenderType.cutoutMipped());
 
-        var fan = CachedBuffers.partialFacing(AllPartialModels.ENCASED_FAN_INNER, be.getBlockState(), direction.getOpposite());
+        var fan = CachedBuffers.partialFacing(ModdedPartialModels.FAN_PROPELLER, be.getBlockState(), direction.getOpposite());
 
         float time = AnimationTickHolder.getRenderTime(be.getLevel());
         float speed = be.getSpeed() * 5;

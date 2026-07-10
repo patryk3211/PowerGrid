@@ -1,12 +1,13 @@
 package org.patryk3211.powergrid.electricity.sim.special;
 
+import net.minecraft.util.Mth;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.solver.IOuterHook;
 
 public class SplitTransformerControllerWire extends CurrentSourceWire implements IOuterHook {
-    public static final int AVG_SAMPLE_COUNT = 10;
+    public static final int AVG_SAMPLE_COUNT = 2;
 
     public SplitTransformerControllerWire secondary;
     private final double sinkConductance;
@@ -15,17 +16,22 @@ public class SplitTransformerControllerWire extends CurrentSourceWire implements
     public final double[] samples = new double[AVG_SAMPLE_COUNT];
     public int avgHead = 0;
     private boolean handled = false;
+    private int balance;
+    private boolean prevState;
 
     public SplitTransformerControllerWire(IElectricNode positive, @Nullable IElectricNode negative, double sinkConductance, double sourceConductance) {
-        super(positive, negative, sourceConductance);
+        super(positive, negative, sinkConductance);
         this.sinkConductance = sinkConductance;
         this.sourceConductance = sourceConductance;
     }
 
     @Override
     public void preSolve() {
-        if(secondary == null)
+        if(secondary == null) {
+            setConductance(sinkConductance);
+            setCurrent(0);
             return;
+        }
         if(handled) {
             secondary.handled = false;
             handled = false;
@@ -37,54 +43,81 @@ public class SplitTransformerControllerWire extends CurrentSourceWire implements
     }
 
     public static void handle(SplitTransformerControllerWire couplingI1, SplitTransformerControllerWire couplingI2, double sourceConductance, double sinkConductance) {
-        if(couplingI1 != null && couplingI1.isConverged() && couplingI2.isConverged()) {
-            assert couplingI1.getNode2() != null && couplingI2.getNode2() != null;
-            double V1 = couplingI1.getNetwork() != null
-                    ? couplingI1.potentialDifference()
-                    : couplingI1.getCurrent() / couplingI1.conductance();
-            double V2 = couplingI2.getNetwork() != null
-                    ? couplingI2.potentialDifference()
-                    : couplingI2.getCurrent() / couplingI2.conductance();
+        if(couplingI1 == null)
+            return;
+        var I1Ok = couplingI1.isConverged() || couplingI1.network == null;
+        var I2Ok = couplingI2.isConverged() || couplingI2.network == null;
+        if(!I1Ok || !I2Ok)
+            return;
+        assert couplingI1.getNode2() != null && couplingI2.getNode2() != null;
+        double V1 = couplingI1.getNetwork() != null
+                ? couplingI1.potentialDifference()
+                : couplingI1.getCurrent() / couplingI1.conductance();
+        double V2 = couplingI2.getNetwork() != null
+                ? couplingI2.potentialDifference()
+                : couplingI2.getCurrent() / couplingI2.conductance();
 
-            // No ratio multiplication since only 1:1 transformers are allowed here for now.
-            var I1S = V1 * couplingI1.conductance() - couplingI1.getCurrent();
-            var I2S = V2 * couplingI2.conductance() - couplingI2.getCurrent();
+        // No ratio multiplication since only 1:1 transformers are allowed here for now.
+        var I1S = V1 * couplingI1.conductance() - couplingI1.getCurrent();
+        var I2S = V2 * couplingI2.conductance() - couplingI2.getCurrent();
 
-            boolean s1 = Math.signum(I1S) != Math.signum(V1), s2 = Math.signum(I2S) != Math.signum(V2);
-            if(s1 && !s2) {
-                // Sourced current.
-                var Is = V1 * couplingI1.conductance() - couplingI1.getCurrent();
-                V1 = Is / couplingI2.conductance();
-                if(Math.abs(Is) > 1e-6) {
-                    couplingI1.setConductance(sourceConductance);
-                    couplingI2.setConductance(sinkConductance);
-                }
-            } else if(s2 && !s1) {
-                // Sourced current.
-                var Is = V2 * couplingI2.conductance() - couplingI2.getCurrent();
-                V2 = Is / couplingI1.conductance();
-                if(Math.abs(Is) > 1e-6) {
-                    couplingI1.setConductance(sinkConductance);
-                    couplingI2.setConductance(sourceConductance);
-                }
-            } else {
-                couplingI1.setConductance(sinkConductance);
+        boolean s1 = Math.signum(I1S) != Math.signum(V1), s2 = Math.signum(I2S) != Math.signum(V2);
+        boolean rs1 = s1, rs2 = s2;
+        if(Math.abs(I1S) < 1e-7 && s1) s1 = false;
+        if(Math.abs(I2S) < 1e-7 && s2) s2 = false;
+        couplingI1.balance = Mth.clamp(couplingI1.balance + (s1 ? 1 : -1), -5, 5);
+        couplingI2.balance = Mth.clamp(couplingI2.balance + (s2 ? 1 : -1), -5, 5);
+
+        s1 = couplingI1.prevState;
+        s2 = couplingI2.prevState;
+        if(couplingI1.balance <= -4) s1 = false;
+        else if(couplingI1.balance >= 4) s1 = true;
+        if(couplingI2.balance <= -4) s2 = false;
+        else if(couplingI2.balance >= 4) s2 = true;
+
+        if(s1 && !s2) {
+            // Sourced current.
+            var Is = V1 * couplingI1.conductance() - couplingI1.getCurrent();
+            V1 = Is / couplingI2.conductance();
+            if(Math.abs(Is) > 1e-6) {
+                couplingI1.setConductance(sourceConductance);
                 couplingI2.setConductance(sinkConductance);
             }
-
-            couplingI1.samples[couplingI1.avgHead] = V1;
-            couplingI2.samples[couplingI2.avgHead] = V2;
-
-            double V1a = 0, V2a = 0;
-            couplingI1.avgHead = (couplingI1.avgHead + 1) % AVG_SAMPLE_COUNT;
-            couplingI2.avgHead = (couplingI2.avgHead + 1) % AVG_SAMPLE_COUNT;
-            for(int i = 0; i < AVG_SAMPLE_COUNT; ++i) {
-                V1a += couplingI1.samples[i] * (1.0f / AVG_SAMPLE_COUNT);
-                V2a += couplingI2.samples[i] * (1.0f / AVG_SAMPLE_COUNT);
+        } else if(s2 && !s1) {
+            // Sourced current.
+            var Is = V2 * couplingI2.conductance() - couplingI2.getCurrent();
+            V2 = Is / couplingI1.conductance();
+            if(Math.abs(Is) > 1e-6) {
+                couplingI1.setConductance(sinkConductance);
+                couplingI2.setConductance(sourceConductance);
             }
-
-            couplingI1.setCurrent(V2a * couplingI1.conductance());
-            couplingI2.setCurrent(V1a * couplingI2.conductance());
+        } else {
+            couplingI1.setConductance(sinkConductance);
+            couplingI2.setConductance(sinkConductance);
         }
+
+        couplingI1.prevState = s1;
+        couplingI2.prevState = s2;
+
+        couplingI1.samples[couplingI1.avgHead] = V1;
+        couplingI2.samples[couplingI2.avgHead] = V2;
+
+        double V1a = 0, V2a = 0;
+        couplingI1.avgHead = (couplingI1.avgHead + 1) % AVG_SAMPLE_COUNT;
+        couplingI2.avgHead = (couplingI2.avgHead + 1) % AVG_SAMPLE_COUNT;
+        for(int i = 0; i < AVG_SAMPLE_COUNT; ++i) {
+            V1a += couplingI1.samples[i] * (1.0f / AVG_SAMPLE_COUNT);
+            V2a += couplingI2.samples[i] * (1.0f / AVG_SAMPLE_COUNT);
+        }
+
+        if(rs1 && !s1) {
+            V1a = V1;
+        }
+        if(rs2 && !s2) {
+            V2a = V2;
+        }
+
+        couplingI1.setCurrent(V2a * couplingI1.conductance());
+        couplingI2.setCurrent(V1a * couplingI2.conductance());
     }
 }

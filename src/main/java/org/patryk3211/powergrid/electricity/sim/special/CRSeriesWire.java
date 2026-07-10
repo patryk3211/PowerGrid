@@ -62,7 +62,7 @@ public class CRSeriesWire extends AbstractElectricWire implements IStaticResidua
 
     @Override
     public double conductance() {
-        return 1 / (resistance + getDeltaTime() / (2 * capacitance));
+        return 1 / (resistance + getDeltaTime() / ((TRAPEZOID_APPROX ? 2 : 1) * capacitance));
     }
 
     @Override
@@ -74,7 +74,7 @@ public class CRSeriesWire extends AbstractElectricWire implements IStaticResidua
     public void postUpperSolve() {
         if(isConverged()) {
             var Vcap = capacitorVoltage();
-            Iprev = (Vcap - V) * capacitance / getDeltaTime();
+            Iprev = TRAPEZOID_APPROX ? (Vcap - V) * capacitance / getDeltaTime() : 0;
             // Save voltage with a bit of leakage
             V = Vcap * 0.99999;
         }
@@ -86,7 +86,7 @@ public class CRSeriesWire extends AbstractElectricWire implements IStaticResidua
             Ieq = 0;
             return;
         }
-        var G_C = (2 * capacitance) / getDeltaTime();
+        var G_C = ((TRAPEZOID_APPROX ? 2 : 1) * capacitance) / getDeltaTime();
 
         double residualScale = 1 - G_C / (1 / resistance + G_C);
         Ieq = (-G_C * V - Iprev) * residualScale;

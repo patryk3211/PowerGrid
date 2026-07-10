@@ -5,10 +5,12 @@ import com.google.common.collect.Multimap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedAdvancements;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedDamageTypes;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
@@ -90,6 +92,11 @@ public class EntityWireInteraction {
             double threshold = ModdedConfigs.server().electricity.entityCurrentDamageThreshold.get();
             if(I >= threshold) {
                 entity.hurt(source, (float) (I / threshold));
+                if(entity instanceof ServerPlayer player) {
+                    if(!ModdedAdvancements.ELECTRIC_DAMAGE.isAlreadyAwardedTo(player)) {
+                        ModdedAdvancements.ELECTRIC_DAMAGE.awardTo(player);
+                    }
+                }
             }
             if(data.wires.isEmpty()) {
                 if(data.ground != null)

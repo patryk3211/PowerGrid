@@ -27,6 +27,8 @@ public class CElectricity extends ConfigBase {
     public final ConfigInt growthLampRadius = i(2, 1, "growthLampRadius", Comments.growthLampRadius);
     public final ConfigInt growthLampChance = i(50, 0, "growthLampChance", Comments.growthLampChance);
 
+    public final ConfigBool motorDynamicResistance = b(true, "motorDynamicResistance", Comments.motorDynamicResistance);
+
     public final ConfigFloat forgeEnergyPerVolt = f(2, 0, "forgeEnergyPerVolt", Comments.forgeEnergyPerVolt);
     public final ConfigFloat forgeEnergyPerWatt = f(10, 0, "forgeEnergyPerWatt", Comments.forgeEnergyPerWatt);
     public final ConfigInt tfmgConnectorPower = i(10000, 0, "TFMGConnectorPower", Comments.tfmgConnectorPower);
@@ -65,6 +67,10 @@ public class CElectricity extends ConfigBase {
     public final ConfigFloat electricPumpPower = f(2.135f, 0, "electricPumpPower", Comments.electricPumpPower);
     public final ConfigFloat electricPumpMaxSpeed = f(256f, 0, "electricPumpMaxSpeed", Comments.electricPumpMaxSpeed);
 
+    public final ConfigFloat feInverterControlVoltage = f(20, 0, "feInverterControlVoltage", Comments.feInverterControlVoltage);
+    public final ConfigFloat feInverterControlCapacitance = f(0.0001f, 0, 1, "feInverterControlCapacitance", Comments.feInverterControlCapacitance);
+    public final ConfigInt feInverterBufferSize = i(20000, 0, "feInverterBufferSize", Comments.feInverterBufferSize);
+
     public final CSolver solver = nested(1, CSolver::new, Comments.solver);
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
     public final CThermal thermal = nested(1, CThermal::new, Comments.thermal);
@@ -87,6 +93,8 @@ public class CElectricity extends ConfigBase {
 
         public static final String growthLampRadius = "Radius of the area affected by growth lamp effect";
         public static final String growthLampChance = "Chance value for the growth lamp to tick a random block in its area (lower value = higher chance), this value is divided by lamp's power level";
+
+        public static final String motorDynamicResistance = "Vary motor resistance based on stress consumption";
 
         public static final String forgeEnergyPerVolt = "Conversion rate of volts to Forge Energy (controls buffer size and max transfer rate)";
         public static final String forgeEnergyPerWatt = "Conversion rate of watts to Forge Energy (controls the actual energy cost of a unit of FE)";
@@ -127,5 +135,9 @@ public class CElectricity extends ConfigBase {
         public static final String electricPumpRange = "Block range of the electric pump";
         public static final String electricPumpPower = "Controls how much power is needed to run the pump at a given speed";
         public static final String electricPumpMaxSpeed = "Maximum speed the pump can run at (can be above the Create's speed limit)";
+
+        public static final String feInverterControlVoltage = "Maximum value of the FE Inverter control pin voltage";
+        public static final String feInverterControlCapacitance = "Capacitance of the FE Inverter control pin";
+        public static final String feInverterBufferSize = "Controls the FE buffer size, and with it, the maximum generated voltage";
     }
 }

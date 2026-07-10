@@ -25,6 +25,7 @@ import org.patryk3211.powergrid.PowerGrid;
 
 public class ModdedPartialModels {
     public static final PartialModel SHAFT_BIT = block("shaft_bit");
+    public static final PartialModel FAN_PROPELLER = block("electric_fan/propeller");
 
     public static final PartialModel CONDUCTIVE_VOLTAGE_HEAD = block("gauge/conductive/voltage_head");
     public static final PartialModel CONDUCTIVE_CURRENT_HEAD = block("gauge/conductive/current_head");
@@ -76,6 +77,8 @@ public class ModdedPartialModels {
     public static final PartialModel HV_BREAKER_SIGNAL2 = block("switches/hv_breaker_signal2");
 
     public static final PartialModel PUNCH_CARD = block("punch_card_reader/card");
+
+    public static final PartialModel SOLAR_PANEL_BEARING_ROTOR = block("solar_panel/solar_panel_bearing_rotor");
 
     public static final SpriteShiftEntry PAPER_SHIFT = SpriteShifter.get(
             PowerGrid.asResource("block/plotter_paper"),

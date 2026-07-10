@@ -19,6 +19,7 @@ import com.simibubi.create.AllItems;
 import com.simibubi.create.api.data.recipe.SequencedAssemblyRecipeGen;
 import com.simibubi.create.content.kinetics.deployer.DeployerApplicationRecipe;
 import com.simibubi.create.content.kinetics.press.PressingRecipe;
+import com.simibubi.create.content.kinetics.saw.CuttingRecipe;
 import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.Items;
 import org.patryk3211.powergrid.PowerGrid;
@@ -92,7 +93,21 @@ public class SequencedAssemblyRecipes extends SequencedAssemblyRecipeGen {
             .loops(1)
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.goldWire()))
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.polishedRoseQuartz()))
-            .addStep(PressingRecipe::new, rb -> rb))
+            .addStep(PressingRecipe::new, rb -> rb)),
+
+    SOLAR_PANEL = create("solar_panel",  b -> b.require(RecipeTags.glasspane())
+            .transitionTo(ModdedItems.INCOMPLETE_SOLAR_PANEL)
+            .addOutput(ModdedBlocks.SOLAR_PANEL, 100)
+            .addOutput(AllItems.POLISHED_ROSE_QUARTZ, 3)
+            .addOutput(ModdedItems.ZINC_SHEET, 3)
+            .addOutput(Items.SLIME_BALL, 3)
+            .loops(1)
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.slimeball()))
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.polishedRoseQuartz()))
+            .addStep(CuttingRecipe::new, rb -> rb)
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.copperIngot()))
+            .addStep(PressingRecipe::new, rb -> rb)
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.copperSheet())))
 
             ;
 

@@ -103,5 +103,22 @@ public class BlockTagProvider extends TagsProvider<Block> {
                 builder.add(reverseLookup(AllBlocks.COPPER_SHINGLES.get(variant, state, true).get()));
             }
         }
+        var solarQuarterBuilder = tag(ModdedTags.Block.SOLAR_QUARTER_LIGHT.tag);
+        var solarHalfBuilder = tag(ModdedTags.Block.SOLAR_HALF_LIGHT.tag);
+        var solar3QuarterBuilder = tag(ModdedTags.Block.SOLAR_3QUARTER_LIGHT.tag);
+        var solarFullBuilder = tag(ModdedTags.Block.SOLAR_FULL_LIGHT.tag);
+
+        solarQuarterBuilder
+                .addOptionalTag(BlockTags.LEAVES.location());
+
+        solarHalfBuilder
+                .add(reverseLookup(Blocks.TALL_GRASS))
+                .add(reverseLookup(Blocks.GRASS))
+                .add(reverseLookup(Blocks.WATER))
+                .add(reverseLookup(Blocks.IRON_BARS));
+
+        solar3QuarterBuilder
+                .addOptionalTag(ModdedTags.Block.GLASS_BLOCK.tag.location())
+                .addOptionalTag(ModdedTags.Block.GLASS_PANE.tag.location());
     }
 }
