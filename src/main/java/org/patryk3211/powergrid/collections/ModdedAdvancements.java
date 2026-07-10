@@ -105,6 +105,12 @@ public class ModdedAdvancements implements DataProvider {
             .title("Monitoring the electrons")
             .description("Use an electric gauge")
             .after(ELECTRICAL_AGE)),
+    NETHER_TRANSFORMER = create("nether_transformer", b -> b
+            .icon(ModdedBlocks.TRANSFORMER_CORE)
+            .title("Interdimensional electricity provider")
+            .description("Assemble a transformer inside of a portal")
+            .special(NOISY)
+            .after(TRANSFORMER)),
 
     /* -------======= Ooo, very ~secret~, don't look here =======------- */
     POTATO_BATTERY = create("potato_battery", b -> b

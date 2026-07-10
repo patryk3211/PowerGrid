@@ -31,6 +31,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import org.patryk3211.powergrid.collections.ModdedAdvancements;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -166,6 +167,9 @@ public class TransformerCoreBlock extends Block implements IWrenchable {
         } else {
             otherLevel.setBlockAndUpdate(otherPos, otherSetState.setValue(NetherTransformerBlock.PART, 1));
             otherLevel.setBlockAndUpdate(otherPos.above(), otherSetState.setValue(NetherTransformerBlock.PART, 3));
+        }
+        if(data.player != null && !ModdedAdvancements.NETHER_TRANSFORMER.isAlreadyAwardedTo(data.player)) {
+            ModdedAdvancements.NETHER_TRANSFORMER.awardTo(data.player);
         }
         var id = UUID.randomUUID();
         if(level.getBlockEntity(pos.above()) instanceof NetherTransformerBlockEntity be1 &&
