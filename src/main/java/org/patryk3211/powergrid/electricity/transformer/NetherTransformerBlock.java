@@ -7,7 +7,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -85,7 +87,7 @@ public class NetherTransformerBlock extends ElectricBlock implements IAcceptConn
         super.animateTick(state, level, pos, random);
         if(state.getValue(PART) >= 2)
             return;
-        Vec3 v = Vec3.atLowerCornerOf(pos);
+        Vec3 v = Vec3.atLowerCornerOf(pos).subtract(0.125, 0, 0.125);
         if(state.getValue(PART) == 1) {
             v = v.relative(Direction.fromAxisAndDirection(state.getValue(HORIZONTAL_AXIS), Direction.AxisDirection.NEGATIVE), 1);
         } else {
@@ -93,8 +95,20 @@ public class NetherTransformerBlock extends ElectricBlock implements IAcceptConn
         }
         CubeParticleData data = new CubeParticleData(1.0F, random.nextFloat(), 1.0F, 0.0125F + 0.0625F * random.nextFloat(), 30, false);
         level.addParticle(data,
-                v.x + random.nextFloat(), v.y + 0.5, v.z + random.nextFloat(),
+                v.x + random.nextFloat() * 1.25, v.y + 0.5, v.z + random.nextFloat() * 1.25,
                 0.0f, 0.04, 0.0f);
+    }
+
+    @Override
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
+        int y = switch(state.getValue(PART)) {
+            case 0, 1 -> 1;
+            case 2, 3 -> -1;
+            default -> throw new IllegalStateException();
+        };
+        if(TransformerMediumBlock.updateShapeVerifyPart(0, y, pos, neighborPos, state, level))
+            return state;
+        return Blocks.AIR.defaultBlockState();
     }
 
     @Override

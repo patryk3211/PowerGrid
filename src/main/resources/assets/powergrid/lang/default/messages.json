@@ -31,6 +31,10 @@
   "powergrid.message.config_reset_ok": "Configuration successfully reset",
   "powergrid.message.config_ignore_ok": "This message will not be shown again",
 
+  "powergrid.message.nether.transformer_fail": "<!> Cannot assemble portal transformer:",
+  "powergrid.message.nether.no_other_side": "Target portal not generated yet",
+  "powergrid.message.nether.blocked": "Target location blocked (%d,%d,%d)",
+
   "death.attack.overloaded_machine": "%s was killed by an overloaded %s",
   "death.attack.overloaded_machine.player": "%s was killed by an overloaded %s whilst trying to escape %s",
   "death.attack.zap": "%1$s was zapped by %2$s",

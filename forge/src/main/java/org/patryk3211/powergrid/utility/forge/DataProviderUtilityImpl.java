@@ -337,7 +337,7 @@ public class DataProviderUtilityImpl {
                 prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
                     int y = 0;
                     if(state.getValue(HORIZONTAL_AXIS) == Direction.Axis.X)
-                        y += 90;
+                        y -= 90;
                     var builder = ConfiguredModel.builder();
                     builder.modelFile(modModel(prov, "block/transformer/nether"));
                     if(state.getValue(NetherTransformerBlock.PART) % 2 == 1)
