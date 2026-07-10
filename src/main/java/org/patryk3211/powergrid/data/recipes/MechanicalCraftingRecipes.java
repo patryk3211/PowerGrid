@@ -81,7 +81,7 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
                     .key('L', Items.LAPIS_LAZULI)
                     .key('R', Items.REDSTONE)
                     .key('G', Items.GOLD_NUGGET)
-                    .key('Q', AllItems.ROSE_QUARTZ)
+                    .key('Q', AllItems.POLISHED_ROSE_QUARTZ)
                     .patternLine("  L  ")
                     .patternLine("RRQRR")
                     .patternLine(" GGG ")
