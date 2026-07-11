@@ -103,7 +103,7 @@ public class PowerGridImpl {
         PowerGrid.init();
 
         TABS.register("main", () -> CreativeModeTab.builder()
-                .icon(() -> new ItemStack(ModdedItems.WIRE))
+                .icon(() -> new ItemStack(ModdedBlocks.ELECTRIC_MOTOR))
                 .displayItems(new ItemDisplay.BaseItemDisplay(true))
                 .title(net.minecraft.network.chat.Component.translatable("itemGroup.powergrid.main"))
                 .build());
