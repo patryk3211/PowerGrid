@@ -233,6 +233,7 @@
   "powergrid.component.property.switch_state": "Стан",
   "powergrid.component.property.tube_ex": "Експ",
   "powergrid.component.property.tube_ex.summary": "Експонент передачі; керує виглядом кривих на аноді (1.5 близький до класичного закону 3/2)",
+  "powergrid.component.property.tube_gain": "Коефіцієнт посилення (μ)",
   "powergrid.component.property.tube_heater_power": "Потужність нагрівача",
   "powergrid.component.property.tube_heater_power.summary": "Потужність, необхідна для заданого струму насичення",
   "powergrid.component.property.tube_heater_voltage": "Напруга нагрівача",
