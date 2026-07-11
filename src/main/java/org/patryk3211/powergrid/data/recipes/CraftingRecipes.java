@@ -519,6 +519,7 @@ public class CraftingRecipes extends StandardRecipeProvider {
 
     CORD_JUNCTION = create(ModdedBlocks.CORD_JUNCTION)
             .unlockedBy(() -> ModdedItems.CORD)
+            .returns(3)
             .viaShapeless(b -> b
                     .requires(conductiveCasing())
                     .requires(ironNugget())
