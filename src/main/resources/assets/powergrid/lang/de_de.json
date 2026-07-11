@@ -498,6 +498,7 @@
   "powergrid.ponder.fuse.header": "Schütze deine Ausrüstung",
   "powergrid.ponder.fuse.text_1": "Eine Sicherung kann verwendet werden, um Geräte vor zu hohem Strom zu schützen",
   "powergrid.ponder.fuse.text_2": "Sie brennt durch, wenn der Strom den eingestellten Wert überschreitet",
+  "powergrid.ponder.generator_3.text_4": "Lass uns die Last erneut verbinden",
   "powergrid.ponder.generator_clutch.header": "Kinetische Energie regeln",
   "powergrid.ponder.generator_clutch.text_1": "Die Generator-Kupplung ist die Basis aller Generator-Baugruppen",
   "powergrid.ponder.generator_clutch.text_2": "Sie stellt eine schwache Kopplung zwischen deinem kinetischen Netzwerk und der Generatorwelle her",
