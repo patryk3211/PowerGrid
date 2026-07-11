@@ -66,25 +66,31 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
         assert controller != null;
         if(electricBehaviour instanceof ProxyElectricBehaviour)
             return;
-        var wires = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(electricBehaviour);
+        List<TransmissionLinePart> wires = null;
+        if(level != null)
+            wires = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(electricBehaviour);
         var old = electricBehaviour;
         electricBehaviour = new ProxyElectricBehaviour(this, () -> controller);
         electricBehaviour.inheritConnections(old);
         old.pause();
         attachBehaviourLate(electricBehaviour);
         sourceCoupling = null;
-        wires.forEach(TransmissionLinePart::refreshEndpointNodes);
+        if(wires != null)
+            wires.forEach(TransmissionLinePart::refreshEndpointNodes);
     }
 
     private void makeMain() {
         assert controller == null;
         if(!(electricBehaviour instanceof ProxyElectricBehaviour proxy))
             return;
-        var wires = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(electricBehaviour);
+        List<TransmissionLinePart> wires = null;
+        if(level != null)
+            wires = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(electricBehaviour);
         electricBehaviour = new ElectricBehaviour(this);
         electricBehaviour.inheritConnections(proxy);
         attachBehaviourLate(electricBehaviour);
-        wires.forEach(TransmissionLinePart::refreshEndpointNodes);
+        if(wires != null)
+            wires.forEach(TransmissionLinePart::refreshEndpointNodes);
     }
 
     private void electricalProperties(SolarPanelBlockEntity controller) {
@@ -131,7 +137,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
             } else {
                 connectedPanels.remove(panel.getBlockPos());
                 iter.remove();
-                setChanged();
+                notifyUpdate();
             }
         }
 
@@ -261,7 +267,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
             makeProxy();
         } else {
             controller = null;
-            if(tag.contains("Connected", ListTag.TAG_COMPOUND)) {
+            if(tag.contains("Connected", ListTag.TAG_LIST)) {
                 var list = tag.getList("Connected", ListTag.TAG_COMPOUND);
                 for(int i = 0; i < list.size(); ++i) {
                     connectedPanels.add(NbtUtils.readBlockPos(list.getCompound(i)));
@@ -318,6 +324,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
             // Put all panels into the pool
             var toCheck = new ArrayList<>(controller.connectedPanels);
             toCheck.add(controller.worldPosition);
+            toCheck.remove(worldPosition);
             while(!toCheck.isEmpty()) {
                 // Trace through blocks to find all connected panels.
                 var island = new ArrayList<BlockPos>(25);
@@ -361,10 +368,10 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
                         continue;
                     be.controller = newController.getBlockPos();
                     be.makeProxy();
-                    be.setChanged();
+                    be.notifyUpdate();
                 }
                 newController.discoverPanels();
-                newController.setChanged();
+                newController.notifyUpdate();
             }
         });
     }
@@ -410,8 +417,8 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
         connectedPanels.add(panel.getBlockPos());
         connectedPanelBEs.put(panel.getBlockPos(), panel);
         panel.controller = worldPosition;
-        panel.setChanged();
+        panel.notifyUpdate();
         panel.makeProxy();
-        setChanged();
+        notifyUpdate();
     }
 }
