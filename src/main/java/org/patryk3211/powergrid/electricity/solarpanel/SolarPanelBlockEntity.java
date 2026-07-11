@@ -14,10 +14,10 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3d;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedTags;
-import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
-import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
-import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
+import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 
 import java.util.*;
 
@@ -62,6 +62,31 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
         sourceCoupling = builder.addInternalNode(VoltageSourceCoupling.class, builder.terminalNode(0), builder.terminalNode(1), 0.01f);
     }
 
+    private void makeProxy() {
+        assert controller != null;
+        if(electricBehaviour instanceof ProxyElectricBehaviour)
+            return;
+        var wires = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(electricBehaviour);
+        var old = electricBehaviour;
+        electricBehaviour = new ProxyElectricBehaviour(this, () -> controller);
+        electricBehaviour.inheritConnections(old);
+        old.pause();
+        attachBehaviourLate(electricBehaviour);
+        sourceCoupling = null;
+        wires.forEach(TransmissionLinePart::refreshEndpointNodes);
+    }
+
+    private void makeMain() {
+        assert controller == null;
+        if(!(electricBehaviour instanceof ProxyElectricBehaviour proxy))
+            return;
+        var wires = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(electricBehaviour);
+        electricBehaviour = new ElectricBehaviour(this);
+        electricBehaviour.inheritConnections(proxy);
+        attachBehaviourLate(electricBehaviour);
+        wires.forEach(TransmissionLinePart::refreshEndpointNodes);
+    }
+
     private void electricalProperties(SolarPanelBlockEntity controller) {
         var world = getLevel();
         float cloudCover = getWeather(world);
@@ -87,15 +112,14 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
 
     @Override
     public void electricalTick() {
-        var world = getLevel();
-        if (sourceCoupling == null) return;
-
         if (firstTick) {
-            ambientTemp = ThermalBehaviour.getAmbientTemperature(world, this.getBlockPos());
+            ambientTemp = ThermalBehaviour.getAmbientTemperature(level, this.getBlockPos());
             if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
                 ambientTemp = 22f;
             firstTick = false;
         }
+
+        if (sourceCoupling == null) return;
 
         panelVoltage = 0; panelResistance = 0;
         electricalProperties(this);
@@ -234,6 +258,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
         connectedPanels.clear();
         if(tag.contains("Controller")) {
             controller = NbtUtils.readBlockPos(tag.getCompound("Controller"));
+            makeProxy();
         } else {
             controller = null;
             if(tag.contains("Connected", ListTag.TAG_COMPOUND)) {
@@ -244,6 +269,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
                 if(level != null)
                     discoverPanels();
             }
+            makeMain();
         }
     }
 
@@ -329,10 +355,12 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
                     continue;
                 }
                 newController.connectedPanels.addAll(island);
+                newController.makeMain();
                 for(var pos : island) {
                     if(!(level.getBlockEntity(pos) instanceof SolarPanelBlockEntity be))
                         continue;
                     be.controller = newController.getBlockPos();
+                    be.makeProxy();
                     be.setChanged();
                 }
                 newController.discoverPanels();
@@ -382,7 +410,8 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
         connectedPanels.add(panel.getBlockPos());
         connectedPanelBEs.put(panel.getBlockPos(), panel);
         panel.controller = worldPosition;
-        setChanged();
         panel.setChanged();
+        panel.makeProxy();
+        setChanged();
     }
 }
