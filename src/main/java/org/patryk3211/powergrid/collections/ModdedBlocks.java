@@ -168,6 +168,14 @@ public class ModdedBlocks {
             .onRegister(casingConnectivity((block, cc) -> cc.makeCasing(block, ModdedPartialModels.CONDUCTIVE_CASING)))
             .simpleItem()
             .register();
+    public static final BlockEntry<CasingBlock> COPPER_PLATING = REGISTRATE.block("copper_plating", CasingBlock::new)
+            .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry()))
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
+            .onRegister(connectedTextures(() -> new EncasedCTBehaviour(ModdedPartialModels.COPPER_PLATING)))
+            .onRegister(casingConnectivity((block, cc) -> cc.makeCasing(block, ModdedPartialModels.COPPER_PLATING)))
+            .simpleItem()
+            .register();
 
     public static final BlockEntry<ConnectorBlock> WIRE_CONNECTOR = REGISTRATE.block("wire_connector", ConnectorBlock::new)
             .blockstate(alternateDirectionalBlock("block/wire_connector"))

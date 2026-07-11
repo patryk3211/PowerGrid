@@ -2,6 +2,7 @@
   "values": [
     "powergrid:battery",
     "powergrid:conductive_casing",
+    "powergrid:copper_plating",
     "powergrid:wire_connector",
     "powergrid:heavy_wire_connector",
     "powergrid:cord_junction",

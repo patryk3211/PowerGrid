@@ -50,6 +50,7 @@
   "block.powergrid.conductive_casing": "Conductive Casing",
   "block.powergrid.constant_speed_motor": "Constant Speed Motor",
   "block.powergrid.contactor": "Contactor",
+  "block.powergrid.copper_plating": "Copper Plating",
   "block.powergrid.cord_junction": "Cord Junction",
   "block.powergrid.creative_current_source": "Creative Current Source",
   "block.powergrid.creative_current_source.tooltip.summary": "An _almost perfect_ current source. Set the output current with the _slider_ or _/powergrid_ command.",

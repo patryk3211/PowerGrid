@@ -87,6 +87,10 @@ public class ModdedPartialModels {
             AllCTTypes.OMNIDIRECTIONAL,
             PowerGrid.asResource("block/conductive_casing"),
             PowerGrid.asResource("block/conductive_casing_connected"));
+    public static final CTSpriteShiftEntry COPPER_PLATING = CTSpriteShifter.getCT(
+            AllCTTypes.OMNIDIRECTIONAL,
+            PowerGrid.asResource("block/copper_plating"),
+            PowerGrid.asResource("block/copper_plating_connected"));    
     
     public static final PartialModel FL_RAYS_CENTER = block("factory_light/godrayscenter");
     public static final PartialModel FL_RAYS_BACK = block("factory_light/godraysedgeback");
