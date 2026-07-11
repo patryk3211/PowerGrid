@@ -88,6 +88,7 @@ import org.patryk3211.powergrid.electricity.resistor.ResistorBlock;
 import org.patryk3211.powergrid.electricity.socket.SocketBlock;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBearingBlock;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlock;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelCTBehaviour;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlock;
 import org.patryk3211.powergrid.electricity.transformer.NetherTransformerBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerCoreBlock;
@@ -859,9 +860,10 @@ public class ModdedBlocks {
     public static BlockEntry<SolarPanelBlock> SOLAR_PANEL = REGISTRATE.block("solar_panel", SolarPanelBlock::new)
             .initialProperties(SharedProperties::softMetal)
             .addLayer(() -> RenderType::translucent)
-            .blockstate(surfaceBlock("block/solar_panel/inline_solar_panel"))
+            .blockstate(alternateDirectionalBlock("block/solar_panel/inline_solar_panel"))
+            .onRegister(CreateRegistrate.connectedTextures(SolarPanelCTBehaviour::new))
             .item()
-                .model(itemWithParent("block/solar_panel/inline_solar_panel_v"))
+                .model(itemWithParent("block/solar_panel/inline_solar_panel"))
                 .build()
             .register();
 
