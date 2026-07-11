@@ -211,6 +211,7 @@
   "item.powergrid.multimeter.tooltip.condition1": "When Held",
   "item.powergrid.multimeter.tooltip.summary": "A multi-purpose tool, handful to anyone who wants to play with electricity",
   "item.powergrid.neon_bulb": "Neon Bulb",
+  "item.powergrid.pins": "Pins",
   "item.powergrid.portable_battery": "Portable Battery",
   "item.powergrid.portable_battery.tooltip.behaviour1": "Provides _Energy_ to Equipment that requires it",
   "item.powergrid.portable_battery.tooltip.behaviour2": "Stores energy at a rate depending on the _Supplied Voltage_",

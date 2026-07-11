@@ -14,15 +14,15 @@
     "M": {
       "tag": "forge:plates/copper"
     },
-    "N": {
-      "tag": "forge:nuggets/copper"
+    "P": {
+      "item": "powergrid:pins"
     },
     "S": {
       "item": "create:shaft"
     }
   },
   "pattern": [
-    "N N",
+    " P ",
     "GMG",
     "ASA",
     " C "

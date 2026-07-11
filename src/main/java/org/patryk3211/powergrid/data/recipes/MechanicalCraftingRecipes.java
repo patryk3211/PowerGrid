@@ -42,16 +42,6 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
                     .patternLine("  E  ")
             ),
 
-//    GENERATOR_ROTOR = create(ModdedBlocks.GENERATOR_ROTOR::get)
-//            .recipe(b -> b
-//                    .key('A', AllItems.ANDESITE_ALLOY)
-//                    .key('M', ModdedItems.MAGNET)
-//                    .key('S', AllBlocks.SHAFT)
-//                    .patternLine("AMA")
-//                    .patternLine("MSM")
-//                    .patternLine("AMA")
-//            ),
-
     GENERATOR_INDUCTION_ROTOR = create(ModdedBlocks.GENERATOR_INDUCTION_ROTOR::get)
             .recipe(b -> b
                     .key('A', andesiteAlloy())
@@ -69,8 +59,8 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
                     .key('C', andesiteCasing())
                     .key('M', copperSheet())
                     .key('G', coal())
-                    .key('N', copperNugget())
-                    .patternLine("N N")
+                    .key('P', pins())
+                    .patternLine(" P ")
                     .patternLine("GMG")
                     .patternLine("ASA")
                     .patternLine(" C ")
@@ -158,14 +148,14 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
 
     PUNCH_CARD_READER = create(ModdedBlocks.PUNCH_CARD_READER::get)
             .recipe(b -> b
-                    .key('C', RecipeTags.conductiveCasing())
-                    .key('n', RecipeTags.copperNugget())
-                    .key('S', RecipeTags.shaft())
-                    .key('G', RecipeTags.smallCog())
-                    .key('Z', RecipeTags.zincSheet())
-                    .key('M', RecipeTags.precisionMechanism())
+                    .key('C', conductiveCasing())
+                    .key('P', pins())
+                    .key('S', shaft())
+                    .key('G', smallCog())
+                    .key('Z', zincSheet())
+                    .key('M', precisionMechanism())
                     .patternLine(" ZMZ ")
-                    .patternLine("nnCnn")
+                    .patternLine("PPCPP")
                     .patternLine(" GSG "))
         ;
 

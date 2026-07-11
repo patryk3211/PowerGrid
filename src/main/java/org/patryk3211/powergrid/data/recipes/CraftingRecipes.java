@@ -49,6 +49,12 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('T', Items.TERRACOTTA)
             ),
 
+    PINS = create(ModdedItems.PINS)
+            .unlockedBy(() -> AllItems.COPPER_NUGGET)
+            .viaShapeless(b -> b
+                    .requires(copperNugget())
+                    .requires(copperNugget())),
+
     GROUNDING_ROD = create(ModdedBlocks.GROUNDING_ROD)
             .unlockedBy(() -> AllItems.COPPER_SHEET)
             .viaShaped(b -> b
@@ -117,10 +123,10 @@ public class CraftingRecipes extends StandardRecipeProvider {
     HEATING_COIL = create(ModdedBlocks.HEATING_COIL)
             .unlockedBy(ModdedItems.RESISTIVE_COIL::get)
             .viaShaped(b -> b
-                    .pattern("C C")
+                    .pattern(" P ")
                     .pattern("IRI")
                     .pattern("IRI")
-                    .define('C', copperNugget())
+                    .define('P', pins())
                     .define('I', ironSheet())
                     .define('R', resistiveCoil())
             ),
@@ -166,10 +172,11 @@ public class CraftingRecipes extends StandardRecipeProvider {
     LIGHT_FIXTURE = create(ModdedBlocks.LIGHT_FIXTURE)
             .unlockedBy(() -> ModdedBlocks.CONDUCTIVE_CASING)
             .viaShaped(b -> b
-                    .pattern(" I ")
-                    .pattern("CZC")
+                    .pattern("I")
+                    .pattern("Z")
+                    .pattern("P")
                     .define('I', ironSheet())
-                    .define('C', copperNugget())
+                    .define('P', pins())
                     .define('Z', zincSheet())
             ),
 
@@ -238,30 +245,24 @@ public class CraftingRecipes extends StandardRecipeProvider {
 
     LV_SWITCH = create(ModdedBlocks.LV_SWITCH)
             .unlockedBy(() -> AllBlocks.ANDESITE_CASING)
-            .viaShaped(b -> b
-                    .pattern(" L ")
-                    .pattern("CAC")
-                    .define('L', Items.LEVER)
-                    .define('C', copperNugget())
-                    .define('A', andesiteCasing())),
+            .viaShapeless(b -> b
+                    .requires(Items.LEVER)
+                    .requires(pins())
+                    .requires(conductiveCasing())),
 
     LV_BUTTON = create(ModdedBlocks.LV_BUTTON)
             .unlockedBy(() -> AllBlocks.ANDESITE_CASING)
-            .viaShaped(b -> b
-                    .pattern(" B ")
-                    .pattern("CAC")
-                    .define('B', Items.STONE_BUTTON)
-                    .define('C', copperNugget())
-                    .define('A', andesiteCasing())),
+            .viaShapeless(b -> b
+                    .requires(Items.STONE_BUTTON)
+                    .requires(pins())
+                    .requires(conductiveCasing())),
 
     MV_SWITCH = create(ModdedBlocks.MV_SWITCH)
             .unlockedBy(() -> AllBlocks.ANDESITE_CASING)
-            .viaShaped(b -> b
-                    .pattern(" L ")
-                    .pattern("SAS")
-                    .define('L', Items.LEVER)
-                    .define('S', copperSheet())
-                    .define('A', andesiteCasing())),
+            .viaShapeless(b -> b
+                    .requires(Items.LEVER)
+                    .requires(copperSheet())
+                    .requires(conductiveCasing())),
 
     HV_SWITCH = create(ModdedBlocks.HV_SWITCH::get)
             .unlockedBy(() -> AllBlocks.ANDESITE_CASING)
@@ -299,10 +300,10 @@ public class CraftingRecipes extends StandardRecipeProvider {
     SPARK_GAP = create(ModdedBlocks.SPARK_GAP)
             .unlockedBy(() -> AllBlocks.ANDESITE_CASING)
             .viaShaped(b -> b
-                    .pattern("C C")
+                    .pattern(" P ")
                     .pattern("I I")
                     .pattern(" A ")
-                    .define('C', copperNugget())
+                    .define('P', pins())
                     .define('I', ironSheet())
                     .define('A', andesiteCasing())),
 

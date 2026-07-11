@@ -187,4 +187,8 @@ public class RecipeTags {
     public static ItemLike slimeball() {
         return Items.SLIME_BALL;
     }
+
+    public static ItemLike pins() {
+        return ModdedItems.PINS;
+    }
 }
