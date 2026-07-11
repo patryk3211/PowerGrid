@@ -36,18 +36,13 @@ public class SolarPanelCTBehaviour extends ConnectedTextureBehaviour.Base {
 
     @Override
     public boolean connectsTo(BlockState state, BlockState other, BlockAndTintGetter reader, BlockPos pos, BlockPos otherPos, Direction face) {
+        if(state != other)
+            return false;
+        var be1 = reader.getBlockEntity(pos);
+        var be2 = reader.getBlockEntity(otherPos);
+        if(be1 instanceof SolarPanelBlockEntity sbe1 && be2 instanceof SolarPanelBlockEntity sbe2) {
+            return SolarPanelBlockEntity.areConnected(sbe1, sbe2);
+        }
         return false;
-    }
-
-    @Override
-    protected Direction getRightDirection(BlockAndTintGetter reader, BlockPos pos, BlockState state, Direction face) {
-        Direction.Axis axis = face.getAxis();
-        return axis == Direction.Axis.X ? Direction.SOUTH : Direction.WEST;
-    }
-
-    @Override
-    protected Direction getUpDirection(BlockAndTintGetter reader, BlockPos pos, BlockState state, Direction face) {
-        Direction.Axis axis = face.getAxis();
-        return axis.isHorizontal() ? Direction.UP : Direction.NORTH;
     }
 }

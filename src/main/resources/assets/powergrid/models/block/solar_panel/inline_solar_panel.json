@@ -5,7 +5,7 @@
 		"0": "powergrid:block/solar_panel/solar_panel_connected",
 		"2": "powergrid:block/solar_panel/copper_plating",
 		"3": "powergrid:block/solar_panel/solar_panel",
-		"particle": "powergrid:block/solar_panel/solar_panel_connected"
+		"particle": "powergrid:block/solar_panel/solar_panel"
 	},
 	"elements": [
 		{

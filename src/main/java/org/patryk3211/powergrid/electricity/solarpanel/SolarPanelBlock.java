@@ -58,8 +58,15 @@ public class SolarPanelBlock extends DirectionalElectricBlock implements IBE<Sol
         IPlacementHelper placementHelper = PlacementHelpers.get(placementHelperId);
         if (!player.isShiftKeyDown() && player.mayBuild()) {
             if (placementHelper.matchesItem(heldItem)) {
-                placementHelper.getOffset(player, level, state, pos, hit)
-                        .placeInWorld(level, (BlockItem) heldItem.getItem(), player, hand, hit);
+                var offset = placementHelper.getOffset(player, level, state, pos, hit);
+                offset.placeInWorld(level, (BlockItem) heldItem.getItem(), player, hand, hit);
+                if(level.getBlockEntity(pos) instanceof SolarPanelBlockEntity be && be.canAccept()) {
+                    var newBE = level.getBlockEntity(offset.getBlockPos());
+                    if(newBE instanceof SolarPanelBlockEntity panel) {
+                        be.getController()
+                                .ifPresent(controller -> controller.connect(panel));
+                    }
+                }
                 return InteractionResult.SUCCESS;
             }
         }
