@@ -24,7 +24,7 @@
 			"to": [16, 16, 10],
 			"rotation": {"angle": 0, "axis": "y", "origin": [0, 7, 16]},
 			"faces": {
-				"north": {"uv": [0, 0, 16, 16], "texture": "#2"},
+				"north": {"uv": [16, 16, 0, 0], "texture": "#2"},
 				"east": {"uv": [14, 15.5, 16, 16], "rotation": 270, "texture": "#0"},
 				"south": {"uv": [0, 0, 16, 16], "texture": "#3"},
 				"west": {"uv": [14, 15.5, 16, 16], "rotation": 90, "texture": "#0"},
@@ -70,6 +70,7 @@
 		{
 			"name": "solar_panel",
 			"origin": [0, 7, 0],
+			"scope": 0,
 			"color": 0,
 			"children": [0, 1]
 		}
