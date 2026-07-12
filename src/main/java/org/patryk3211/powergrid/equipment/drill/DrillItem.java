@@ -30,7 +30,7 @@ public class DrillItem extends DiggerItem implements CustomUseEffectsItem {
     public static final int TICKS_PER_SPEED_LEVEL = 20;
 
     public DrillItem(Properties properties) {
-        super(1.0f, -3.0f, Tiers.DIAMOND, BlockTags.MINEABLE_WITH_PICKAXE, properties.stacksTo(1));
+        super(1.0f, -3.0f, Tiers.DIAMOND, BlockTags.MINEABLE_WITH_PICKAXE, properties.stacksTo(1).durability(250));
     }
 
     public static boolean canMine(BlockState state) {
