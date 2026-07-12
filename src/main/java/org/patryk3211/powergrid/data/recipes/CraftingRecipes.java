@@ -39,16 +39,26 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('A', andesiteAlloy())
             ),
 
-    FACTORY_LIGHT = create(ModdedBlocks.FACTORY_LIGHT)
+    SOLAR_PANEL_BEARING= create(ModdedBlocks.SOLAR_PANEL_BEARING)
             .unlockedBy(AllItems.ANDESITE_ALLOY::get)
             .viaShaped(b -> b
-                    .pattern(" I ")
-                    .pattern(" C ")
-                    .pattern(" G ")
-                    .define('I', ironSheet())
-                    .define('C', andesiteAlloy())
-                    .define('G', glasspane())
+                    .pattern("S")
+                    .pattern("P")
+                    .pattern("Z")
+                    .define('S', Items.OAK_SLAB)
+                    .define('P', ModdedBlocks.COPPER_PLATING)
+                    .define('Z', ModdedBlocks.CONDUCTIVE_CASING)
             ),
+            FACTORY_LIGHT = create(ModdedBlocks.FACTORY_LIGHT)
+                    .unlockedBy(AllItems.ANDESITE_ALLOY::get)
+                    .viaShaped(b -> b
+                            .pattern("I")
+                            .pattern("C")
+                            .pattern("G")
+                            .define('I', ironSheet())
+                            .define('C', andesiteAlloy())
+                            .define('G', glasspane())
+                    ),
 
     HEAVY_WIRE_CONNECTOR = create(ModdedBlocks.HEAVY_WIRE_CONNECTOR)
             .unlockedBy(() -> Items.TERRACOTTA)

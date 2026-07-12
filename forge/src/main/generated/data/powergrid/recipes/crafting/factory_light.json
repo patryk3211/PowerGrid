@@ -9,13 +9,13 @@
       "item": "minecraft:glass_pane"
     },
     "I": {
-      "tag": "forge:nuggets/copper"
+      "tag": "forge:plates/iron"
     }
   },
   "pattern": [
-    " I ",
-    " C ",
-    " G "
+    "I",
+    "C",
+    "G"
   ],
   "result": {
     "item": "powergrid:factory_light"

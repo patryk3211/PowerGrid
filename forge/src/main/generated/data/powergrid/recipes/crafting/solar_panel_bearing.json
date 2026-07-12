@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": {
+      "item": "powergrid:copper_plating"
+    },
+    "S": {
+      "item": "minecraft:oak_slab"
+    },
+    "Z": {
+      "item": "powergrid:conductive_casing"
+    }
+  },
+  "pattern": [
+    "S",
+    "P",
+    "Z"
+  ],
+  "result": {
+    "item": "powergrid:solar_panel_bearing"
+  },
+  "show_notification": true
+}
