@@ -432,6 +432,8 @@
   "powergrid.gui.hv_breaker.status": "Status:",
   "powergrid.gui.invalid_equation": "Invalid display equation",
   "powergrid.gui.plotter.header": "Voltage at T-",
+  "powergrid.gui.portable.battery.depleted": "Portable battery empty",
+  "powergrid.gui.portable.battery.low": "Portable battery low",
   "powergrid.gui.potentiometer.setting": "Setting",
   "powergrid.gui.power_meter.title": "Measured power",
   "powergrid.gui.pump.info_header": "Pump Information:",

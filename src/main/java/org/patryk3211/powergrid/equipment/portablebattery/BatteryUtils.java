@@ -18,14 +18,24 @@ package org.patryk3211.powergrid.equipment.portablebattery;
 import com.simibubi.create.AllEnchantments;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.CommonComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.protocol.game.ClientboundSetSubtitleTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTitleTextPacket;
+import net.minecraft.network.protocol.game.ClientboundSetTitlesAnimationPacket;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.equipment.ItemBoostUtils;
 import org.patryk3211.powergrid.utility.ClientSideAccess;
+import org.patryk3211.powergrid.utility.Lang;
 
 public class BatteryUtils {
     public static int getMaxCharge(ItemStack stack) {
@@ -64,6 +74,13 @@ public class BatteryUtils {
         tag.putInt("Charge", charge - energy);
         if(charge < energy * outputPercent)
             return 0.0f;
+        if(player instanceof ServerPlayer serverPlayer) {
+            float maxCharge = getMaxCharge(stack);
+            //todo fix values for sendWarning after rescaling battery
+            var threshold = 3000 * (maxCharge / 20000);
+            sendWarning(serverPlayer, charge, charge - energy,  threshold + (maxCharge / 10), maxCharge);
+            sendWarning(serverPlayer, charge, charge - energy, threshold, maxCharge);
+        }
         return outputPercent;
     }
 
@@ -89,6 +106,25 @@ public class BatteryUtils {
         if(charge < energy * outputPercent)
             return 0.0f;
         return outputPercent;
+    }
+
+    private static void sendWarning(ServerPlayer player, float charge, float newCharge, float threshold, float maxCharge) {
+        if (newCharge > threshold)
+            return;
+        if (charge <= threshold)
+            return;
+
+        boolean depleted = threshold <= 3000 * (maxCharge / 20000);
+        MutableComponent component = Lang.translateDirect(depleted ? "gui.portable.battery.depleted" : "gui.portable.battery.low");
+
+        ModdedSoundEvents.UI_FAIL.play(player.level(), null, player.blockPosition(), .75f, 1);
+        ModdedSoundEvents.WIRE_BURNED.play(player.level(), null, player.blockPosition(), 1, .5f);
+
+        player.connection.send(new ClientboundSetTitlesAnimationPacket(10, 40, 10));
+        player.connection.send(new ClientboundSetSubtitleTextPacket(
+                Component.literal("\u26A0 ").withStyle(depleted ? ChatFormatting.RED : ChatFormatting.GOLD)
+                        .append(component.withStyle(ChatFormatting.GRAY))));
+        player.connection.send(new ClientboundSetTitleTextPacket(CommonComponents.EMPTY));
     }
 
     public static boolean isBarVisible(ItemStack stack, int energyPerUse, float minPower) {
