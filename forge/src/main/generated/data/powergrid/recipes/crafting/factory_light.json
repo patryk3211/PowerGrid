@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "create:andesite_alloy"
+    },
+    "G": {
+      "item": "minecraft:glass_pane"
+    },
+    "I": {
+      "tag": "forge:nuggets/copper"
+    }
+  },
+  "pattern": [
+    " I ",
+    " C ",
+    " G "
+  ],
+  "result": {
+    "item": "powergrid:factory_light"
+  },
+  "show_notification": true
+}

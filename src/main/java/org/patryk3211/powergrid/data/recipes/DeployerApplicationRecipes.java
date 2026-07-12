@@ -15,12 +15,15 @@
  */
 package org.patryk3211.powergrid.data.recipes;
 
+import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.api.data.recipe.DeployingRecipeGen;
 import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.data.PackOutput;
+import net.minecraft.world.item.Items;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.equipment.BoostRecipe;
 
@@ -39,6 +42,18 @@ public class DeployerApplicationRecipes extends DeployingRecipeGen {
             .require(ModdedItems.CORD)
             .require(ModdedItems.LIGHT_BULB)
             .output(ModdedItems.STRING_LIGHT_CORD)
+    ),
+
+    COPPER_PLATING = create("copper_plating", b -> b
+            .require(Items.COPPER_BLOCK)
+            .require(AllItems.COPPER_SHEET)
+            .output(ModdedBlocks.COPPER_PLATING)
+    ),
+
+    CEILING_TILE = create("ceiling_tile", b -> b
+            .require(AllBlocks.COPYCAT_PANEL)
+            .require(AllItems.CARDBOARD)
+            .output(ModdedBlocks.CEILING_TILE)
     ),
 
     BOOST_DRILL = boost(ModdedItems.PORTABLE_DRILL),
