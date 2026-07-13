@@ -1,10 +1,13 @@
 package org.patryk3211.powergrid.equipment;
 
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
@@ -50,5 +53,10 @@ public class ItemBoostUtils {
             return false;
         ItemBoostUtils.damageBoost(stack, () -> entity.broadcastBreakEvent(EquipmentSlot.MAINHAND));
         return true;
+    }
+
+    @ExpectPlatform
+    public static Recipe<?> findRecipe(Level level, ItemStack chip, ItemStack toBoost) {
+        throw new AssertionError();
     }
 }
