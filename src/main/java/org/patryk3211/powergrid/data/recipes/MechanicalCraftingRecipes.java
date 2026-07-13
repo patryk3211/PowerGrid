@@ -52,6 +52,19 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
                     .patternLine("AMA")
             ),
 
+    GENERATOR_LARGE_INDUCTION_ROTOR = create(ModdedBlocks.GENERATOR_LARGE_INDUCTION_ROTOR::get)
+            .recipe(b -> b
+                    .key('I', ironSheet())
+                    .key('A', andesiteAlloy())
+                    .key('M', copperCoil())
+                    .key('R', ModdedBlocks.GENERATOR_INDUCTION_ROTOR)
+                    .patternLine("  I  ")
+                    .patternLine(" AMA ")
+                    .patternLine("IMRMI")
+                    .patternLine(" AMA ")
+                    .patternLine("  I  ")
+            ),
+
     GENERATOR_COMMUTATOR = create(ModdedBlocks.GENERATOR_COMMUTATOR::get)
             .recipe(b -> b
                     .key('A', andesiteAlloy())

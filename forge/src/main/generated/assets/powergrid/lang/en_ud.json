@@ -432,6 +432,8 @@
   "powergrid.gui.hv_breaker.status": ":snʇɐʇS",
   "powergrid.gui.invalid_equation": "uoıʇɐnbǝ ʎɐןdsıp pıןɐʌuI",
   "powergrid.gui.plotter.header": "-⟘ ʇɐ ǝbɐʇןoΛ",
+  "powergrid.gui.portable.battery.depleted": "ʎʇdɯǝ ʎɹǝʇʇɐq ǝןqɐʇɹoԀ",
+  "powergrid.gui.portable.battery.low": "ʍoן ʎɹǝʇʇɐq ǝןqɐʇɹoԀ",
   "powergrid.gui.potentiometer.setting": "buıʇʇǝS",
   "powergrid.gui.power_meter.title": "ɹǝʍod pǝɹnsɐǝW",
   "powergrid.gui.pump.info_header": ":uoıʇɐɯɹoɟuI dɯnԀ",
