@@ -3,6 +3,7 @@ package org.patryk3211.powergrid.electricity.solarpanel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -48,6 +49,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
     private final Map<BlockPos, SolarPanelBlockEntity> connectedPanelBEs = new HashMap<>();
     private final Set<BlockPos> connectedPanels = new HashSet<>();
     private BlockPos controller;
+    private BlockPos lastKnownPos;
 
     private double panelVoltage, panelResistance;
     private boolean valid = true;
@@ -263,21 +265,37 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
                 tag.put("Connected", list);
             }
         }
+        if(lastKnownPos != null)
+            tag.put("LastKnownPos", NbtUtils.writeBlockPos(lastKnownPos));
     }
 
     @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
+        Vec3i offset = null;
+        if(tag.contains("LastKnownPos")) {
+            lastKnownPos = NbtUtils.readBlockPos(tag.getCompound("LastKnownPos"));
+            if(!worldPosition.equals(lastKnownPos)) {
+                offset = worldPosition.subtract(lastKnownPos);
+            }
+        } else {
+            lastKnownPos = null;
+        }
         connectedPanels.clear();
         if(tag.contains("Controller")) {
             controller = NbtUtils.readBlockPos(tag.getCompound("Controller"));
+            if(offset != null)
+                controller = controller.offset(offset);
             makeProxy();
         } else {
             controller = null;
             if(tag.contains("Connected", ListTag.TAG_LIST)) {
                 var list = tag.getList("Connected", ListTag.TAG_COMPOUND);
                 for(int i = 0; i < list.size(); ++i) {
-                    connectedPanels.add(NbtUtils.readBlockPos(list.getCompound(i)));
+                    var pos = NbtUtils.readBlockPos(list.getCompound(i));
+                    if(offset != null)
+                        pos = pos.offset(offset);
+                    connectedPanels.add(pos);
                 }
                 if(level != null)
                     discoverPanels();
@@ -289,6 +307,8 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
     @Override
     public void initialize() {
         super.initialize();
+        if(lastKnownPos == null)
+            lastKnownPos = worldPosition;
         if(controller == null) {
             discoverPanels();
         } else {
