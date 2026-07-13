@@ -128,6 +128,19 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
                     .patternLine(" A   ")
             ),
 
+    PORTABLE_SAW = create(ModdedItems.PORTABLE_SAW::get)
+            .recipe(b -> b
+            .key('A', andesiteAlloy())
+            .key('I', ironSheet())
+            .key('P', precisionMechanism())
+            .key('G', electricalGizmo())
+            .key('Z', zincSheet())
+            .key('z', zincIngot())
+            .patternLine(" I  ZA")
+            .patternLine("IAIPGz")
+            .patternLine(" I    ")
+            ),
+
     BASIN_HEATER = create(ModdedBlocks.BASIN_HEATER::get)
             .recipe(b -> b
                     .key('R', resistiveCoil())
