@@ -52,8 +52,8 @@ public class TransformerMediumBlock extends TransformerBlock implements IBE<Tran
     public static final EnumProperty<Direction.Axis> HORIZONTAL_AXIS = BlockStateProperties.HORIZONTAL_AXIS;
     public static final IntegerProperty PART = IntegerProperty.create("part", 0, 3);
 
-    public static final TerminalBoundingBox TERMINAL_Z_1 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 0, 9, 6, 5, 16, 10);
-    public static final TerminalBoundingBox TERMINAL_Z_2 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 11, 9, 6, 16, 16, 10);
+    public static final TerminalBoundingBox TERMINAL_Z_1 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 1, 14, 6, 5, 16, 10);
+    public static final TerminalBoundingBox TERMINAL_Z_2 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 11, 14, 6, 15, 16, 10);
 
     public static final TerminalBoundingBox TERMINAL_X_1 = TERMINAL_Z_1.rotateAroundY(Rotation.CLOCKWISE_90);
     public static final TerminalBoundingBox TERMINAL_X_2 = TERMINAL_Z_2.rotateAroundY(Rotation.CLOCKWISE_90);
