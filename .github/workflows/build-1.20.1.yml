@@ -49,16 +49,20 @@ jobs:
       env:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
       run: |
-        curl -H "Content-Type: application/json" \
-           -X POST \
-           --data-binary '{
-           "content": "Power Grid 1.20.1 auto-build is ready",
-           "embeds": [
-              {
-                "title": "Auto-build has finished",
-                "description": "Make sure to backup your world, these builds are not guaranteed to work!",
-                "url": "https://github.com/patryk3211/PowerGrid/actions",
-                "color": 565479
-              }
-           ]}' \
-           $DISCORD_WEBHOOK
+        if [ $DISCORD_WEBHOOK ]; then
+          curl -H "Content-Type: application/json" \
+             -X POST \
+             --data-binary '{
+             "content": "Power Grid 1.20.1 auto-build is ready",
+             "embeds": [
+                {
+                  "title": "Auto-build has finished",
+                  "description": "Make sure to backup your world, these builds are not guaranteed to work!",
+                  "url": "https://github.com/patryk3211/PowerGrid/actions",
+                  "color": 565479
+                }
+             ]}' \
+             $DISCORD_WEBHOOK
+        else
+          echo "URL secret missing, no announcement sent."
+        fi
