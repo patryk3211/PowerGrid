@@ -125,10 +125,18 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> implement
 		oldAngVel = 0;
     }
 
+    @Override
+    protected void makePeripheral(RotorBehaviour controller) {
+        super.makePeripheral(controller);
+        hasSoundSource = false;
+    }
+
     @Environment(EnvType.CLIENT)
     public void tickAudio() {
-        if(!isController())
+        if(!isController()) {
+            hasSoundSource = false;
             return;
+        }
         if(!hasSoundSource && Math.abs(angularVelocity) > 32) {
             Minecraft.getInstance().getSoundManager().play(new RotorSoundInstance(this));
             hasSoundSource = true;
