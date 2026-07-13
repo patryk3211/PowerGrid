@@ -806,6 +806,8 @@
   "powergrid.tooltip.device_connector.header": "When converting to FE:",
   "powergrid.tooltip.device_connector.max_rate": "Max transfer rate:",
   "powergrid.tooltip.device_connector.rate": "Conversion rate:",
+  "powergrid.tooltip.fe_inverter.fe_v": "FE/V",
+  "powergrid.tooltip.fe_inverter.voltage": "Output voltage:",
   "powergrid.tooltip.holdForDescription": "Hold [%1$s] for Properties",
   "powergrid.tooltip.multimeter.current": "Current: ",
   "powergrid.tooltip.multimeter.mode": "Mode: ",

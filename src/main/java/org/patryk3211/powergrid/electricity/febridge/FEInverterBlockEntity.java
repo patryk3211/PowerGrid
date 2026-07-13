@@ -40,7 +40,7 @@ public class FEInverterBlockEntity extends ElectricBlockEntity {
         setUnsaved();
         if(power < 0)
             return;
-        int fe = (int) (ModdedConfigs.server().electricity.forgeEnergyPerWatt.getF() * power);
+        int fe = (int) Math.ceil(ModdedConfigs.server().electricity.forgeEnergyPerWatt.getF() * power);
         useEnergy(fe);
     }
 
@@ -81,6 +81,7 @@ public class FEInverterBlockEntity extends ElectricBlockEntity {
         control = new CRSeriesWire(
                 ModdedConfigs.server().electricity.feInverterControlCapacitance.get(),
                 10000, builder.terminalNode(2), builder.terminalNode(1));
+        builder.connect(100000, builder.terminalNode(2), builder.terminalNode(1));
         builder.add(control);
     }
 

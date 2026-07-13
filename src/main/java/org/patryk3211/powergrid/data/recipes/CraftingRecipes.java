@@ -552,7 +552,17 @@ public class CraftingRecipes extends StandardRecipeProvider {
             .viaShapeless(b -> b
                     .requires(copperSheet())
                     .requires(conductiveCasing())
-                    .requires(brassSheet()))
+                    .requires(brassSheet())),
+
+    FE_INVERTER = create(ModdedBlocks.FE_INVERTER)
+            .unlockedBy(() -> ModdedItems.ELECTRICAL_GIZMO)
+            .viaShaped(b -> b
+                    .pattern(" G ")
+                    .pattern("MCP")
+                    .define('G', electricalGizmo())
+                    .define('C', cardboard())
+                    .define('P', pins())
+                    .define('M', copperCoil()))
 
             ;
 

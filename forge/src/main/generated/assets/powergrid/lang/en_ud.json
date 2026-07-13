@@ -806,6 +806,8 @@
   "powergrid.tooltip.device_connector.header": ":ƎℲ oʇ buıʇɹǝʌuoɔ uǝɥM",
   "powergrid.tooltip.device_connector.max_rate": ":ǝʇɐɹ ɹǝɟsuɐɹʇ xɐW",
   "powergrid.tooltip.device_connector.rate": ":ǝʇɐɹ uoısɹǝʌuoƆ",
+  "powergrid.tooltip.fe_inverter.fe_v": "Λ/ƎℲ",
+  "powergrid.tooltip.fe_inverter.voltage": ":ǝbɐʇןoʌ ʇndʇnO",
   "powergrid.tooltip.holdForDescription": "sǝıʇɹǝdoɹԀ ɹoɟ ]%1$s[ pןoH",
   "powergrid.tooltip.multimeter.current": " :ʇuǝɹɹnƆ",
   "powergrid.tooltip.multimeter.mode": " :ǝpoW",
