@@ -49,6 +49,9 @@ public class DebugItem extends Item {
     public InteractionResult useOn(UseOnContext context) {
         if(context.getPlayer() == null)
             return InteractionResult.FAIL;
+        context.getPlayer().sendSystemMessage(context.getPlayer() instanceof ServerPlayer
+                ? Component.literal("Server:").withStyle(ChatFormatting.GOLD)
+                : Component.literal("Client:").withStyle(ChatFormatting.GREEN));
         var world = context.getLevel();
         var behaviour = BlockEntityBehaviour.get(world, context.getClickedPos(), ElectricBehaviour.TYPE);
         if(behaviour != null) {
