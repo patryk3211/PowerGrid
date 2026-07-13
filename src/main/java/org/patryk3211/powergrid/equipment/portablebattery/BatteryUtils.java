@@ -164,4 +164,16 @@ public class BatteryUtils {
                     return battery.getBarColor();
                 }).orElse(0);
     }
+
+    public static boolean isBarVisible(ItemStack stack, int energyPerUse) {
+        return isBarVisible(stack, energyPerUse, 0);
+    }
+
+    public static int getBarWidth(ItemStack stack, int energyPerUse) {
+        return getBarWidth(stack, energyPerUse, 0);
+    }
+
+    public static int getBarColor(ItemStack stack, int energyPerUse) {
+        return getBarColor(stack, energyPerUse, 0);
+    }
 }

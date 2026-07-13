@@ -59,17 +59,17 @@ public class ElectroBatonItem extends SwordItem {
 
     @Override
     public int getBarColor(ItemStack stack) {
-        return BatteryUtils.getBarColor(stack, energyPerUse(), 0.5f);
+        return BatteryUtils.getBarColor(stack, energyPerUse());
     }
 
     @Override
     public boolean isBarVisible(ItemStack stack) {
-        return BatteryUtils.isBarVisible(stack, energyPerUse(), 0.5f);
+        return BatteryUtils.isBarVisible(stack, energyPerUse());
     }
 
     @Override
     public int getBarWidth(ItemStack stack) {
-        return BatteryUtils.getBarWidth(stack, energyPerUse(), 0.5f);
+        return BatteryUtils.getBarWidth(stack, energyPerUse());
     }
 
     @Override
@@ -82,14 +82,14 @@ public class ElectroBatonItem extends SwordItem {
         if(attacker instanceof Player player) {
             boolean boosted = ItemBoostUtils.useBoost(stack, attacker);
             float power = BatteryUtils.drawEnergy(player, energyPerUse());
-            if(power > 0.5f) {
+            if(power > 0.3f) {
                 // Apply stun
                 var health = target.getMaxHealth();
                 var stunStrength = (int) Mth.clamp(Math.round((boosted ? 60 : 30) - health) * power, 0, 10);
                 if(stunStrength > 0)
                     target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, boosted ? 120 : 60, stunStrength, false, false));
-                return true;
             }
+            return true;
         }
         stack.hurtAndBreak(1, attacker, (e) -> e.broadcastBreakEvent(EquipmentSlot.MAINHAND));
         return true;

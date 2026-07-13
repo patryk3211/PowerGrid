@@ -39,17 +39,17 @@ public class DrillItem extends DiggerItem implements CustomUseEffectsItem {
 
     @Override
     public boolean isBarVisible(ItemStack stack) {
-        return BatteryUtils.isBarVisible(stack, energyPerUse(), 0.3f);
+        return BatteryUtils.isBarVisible(stack, energyPerUse());
     }
 
     @Override
     public int getBarWidth(ItemStack stack) {
-        return BatteryUtils.getBarWidth(stack, energyPerUse(), 0.3f);
+        return BatteryUtils.getBarWidth(stack, energyPerUse());
     }
 
     @Override
     public int getBarColor(ItemStack stack) {
-        return BatteryUtils.getBarColor(stack, energyPerUse(), 0.3f);
+        return BatteryUtils.getBarColor(stack, energyPerUse());
     }
 
     public static int energyPerUse() {
@@ -77,7 +77,7 @@ public class DrillItem extends DiggerItem implements CustomUseEffectsItem {
             if(miningEntity instanceof PlayerDrillExtensions ext) {
                 ext.powerGrid$blockDrilled(power);
             }
-            if(!level.isClientSide && state.getDestroySpeed(level, pos) != 0.0F && power < 0.3f) {
+            if(!level.isClientSide && state.getDestroySpeed(level, pos) != 0.0F && power == 0) {
                 stack.hurtAndBreak(1, miningEntity, (livingEntity) -> livingEntity.broadcastBreakEvent(EquipmentSlot.MAINHAND));
             }
             return true;

@@ -76,17 +76,17 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
 
     @Override
     public boolean isBarVisible(ItemStack stack) {
-        return BatteryUtils.isBarVisible(stack, energyPerUse(), 0.5f);
+        return BatteryUtils.isBarVisible(stack, energyPerUse());
     }
 
     @Override
     public int getBarWidth(ItemStack stack) {
-        return BatteryUtils.getBarWidth(stack, energyPerUse(), 0.5f);
+        return BatteryUtils.getBarWidth(stack, energyPerUse());
     }
 
     @Override
     public int getBarColor(ItemStack stack) {
-        return BatteryUtils.getBarColor(stack, energyPerUse(), 0.5f);
+        return BatteryUtils.getBarColor(stack, energyPerUse());
     }
 
     public static int energyPerUse() {
@@ -126,8 +126,8 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
         Function<Boolean, ElectroZapperS2CPacket> factory = b -> new ElectroZapperS2CPacket(barrelPos, lookVec.normalize(), stack, hand, 1, b);
         ModdedPackets.sendToClientsTracking(factory.apply(false), user);
         ModdedPackets.sendToClient(factory.apply(true), (ServerPlayer) user);
-        if(power < 0.5f)
-            stack.hurtAndBreak(1, user, $ -> {});
+        if(power == 0)
+            stack.hurtAndBreak(1, user, e -> e.broadcastBreakEvent(hand));
         return InteractionResultHolder.success(user.getItemInHand(hand));
     }
 
