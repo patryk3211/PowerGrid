@@ -49,6 +49,10 @@ public class TunedBlockRenderer<T extends TunedBlockEntity> extends KineticBlock
 
     @Override
     protected SuperByteBuffer getRotatedModel(T be, BlockState state) {
-        return CachedBuffers.partialFacing(AllPartialModels.SHAFT_HALF, state, Direction.UP);
+        if(state.getValue(TunedBlock.BASE)) {
+            return CachedBuffers.partialFacing(AllPartialModels.SHAFT_HALF, state, Direction.UP);
+        } else {
+            return CachedBuffers.partialFacing(AllPartialModels.SHAFT, state, Direction.NORTH);
+        }
     }
 }

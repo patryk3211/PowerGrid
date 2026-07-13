@@ -582,7 +582,7 @@ public class ModdedBlocks {
 
     public static final BlockEntry<VariacBlock> VARIAC = REGISTRATE.block("variac", VariacBlock::new)
             .initialProperties(TRANSFORMER_CORE)
-            .blockstate(horizontalBlock("block/variac/block"))
+            .blockstate(tunedBlock("block/variac/block", "block/variac/block_baseless"))
             .transform(pickaxeOnly())
             .transform(CStress.setNoImpact())
             .transform(CThermal.maxPower(1000, 4.0f))
@@ -786,7 +786,7 @@ public class ModdedBlocks {
 
     public static final BlockEntry<RheostatBlock> RHEOSTAT = REGISTRATE.block("rheostat", RheostatBlock::new)
             .initialProperties(CONDUCTIVE_CASING)
-            .blockstate(horizontalBlock("block/rheostat/block"))
+            .blockstate(tunedBlock("block/rheostat/block", "block/rheostat/block_baseless"))
             .transform(pickaxeOnly())
             .transform(CStress.setNoImpact())
             .transform(CThermal.maxPower(1000, 4.0f))

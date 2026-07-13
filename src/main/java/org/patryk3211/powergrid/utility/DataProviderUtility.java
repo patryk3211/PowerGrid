@@ -34,6 +34,7 @@ import org.patryk3211.powergrid.electricity.transformer.NetherTransformerBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.general.ceilingtile.CeilingTileBlock;
+import org.patryk3211.powergrid.kinetics.base.TunedBlock;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.VerticalCommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
@@ -80,6 +81,10 @@ public class DataProviderUtility {
     @ExpectPlatform
     public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> surfaceBlock(Function<BlockState, String> baseName) {
         throw new AssertionError();
+    }
+
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> tunedBlock(String based, String baseless) {
+        return horizontalBlock(state -> state.getValue(TunedBlock.BASE) ? based : baseless);
     }
 
     @ExpectPlatform
