@@ -65,6 +65,7 @@ public class SolarHelper {
     }
 
     public static List<DDAHit> DDA(Level level, Vec3 start, Vec3 end) {
+        if (level.isClientSide()) return new ArrayList<>();
         ServerLevel serverWorld = (ServerLevel) level;
         var checkBox = new AABB(start, end);
         List<AbstractContraptionEntity> candidates = level.getEntitiesOfClass(AbstractContraptionEntity.class, checkBox);

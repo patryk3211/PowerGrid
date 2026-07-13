@@ -209,6 +209,13 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
             if (blockState.is(ModdedBlocks.SOLAR_PANEL.get())) {
                 if (result.worldOrLocalPos().equals(this.getBlockPos())) {
                     continue;
+                } else if (world.getBlockEntity(result.worldOrLocalPos()) instanceof SolarPanelBlockEntity be) {
+                    if (SolarPanelBlockEntity.areConnected(this, be)){
+                        continue;
+                    } else {
+                        returnValue = 0;
+                        break;
+                    }
                 } else {
                     returnValue = 0;
                     break;
