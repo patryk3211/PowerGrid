@@ -1,5 +1,8 @@
 {
   "variants": {
+    "state=cord_junction": {
+      "model": "powergrid:block/ceiling_tile/ceiling_tile_cord_junction"
+    },
     "state=empty": {
       "model": "powergrid:block/ceiling_tile/ceiling_tile"
     },
@@ -11,6 +14,12 @@
     },
     "state=lamp_on": {
       "model": "powergrid:block/ceiling_tile/ceiling_tile_light"
+    },
+    "state=solar_panel": {
+      "model": "powergrid:block/ceiling_tile/ceiling_tile_solar_panel"
+    },
+    "state=wire_connector": {
+      "model": "powergrid:block/ceiling_tile/ceiling_tile_connector"
     }
   }
 }

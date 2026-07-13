@@ -40,18 +40,32 @@ import java.util.function.Predicate;
 
 public class CeilingTileBlock extends ElectricBlock implements IBE<CeilingTileBlockEntity> {
     public static final EnumProperty<State> STATE = EnumProperty.create("state", State.class);
-    private static final int placementHelperId = PlacementHelpers.register(new CeilingTileBlock.PlacementHelper());
+    private static final int placementHelperId = PlacementHelpers.register(new PlacementHelper());
 
     private static final VoxelShape SHAPE_EMPTY = box(0, 0, 0, 16, 2, 16);
+    private static final VoxelShape SHAPE_SOLAR_PANEL = box(0, 0, 0, 16, 4, 16);
     private static final VoxelShape SHAPE_LAMP = Shapes.or(
             box(0, 0, 0, 16, 2, 16),
             box(1, 2, 1, 15, 3, 15),
             box(2, 3, 2, 14, 9, 14)
     );
+    private static final VoxelShape SHAPE_WIRE_CONNECTOR = Shapes.or(
+            box(0, 0, 0, 16, 2, 16),
+            box(5, 2, 5, 11, 5, 11),
+            box(6, 5, 6, 10, 12,10)
+    );
+    private static final VoxelShape SHAPE_CORD_JUNCTION = Shapes.or(
+            box(0, 0, 0, 16, 2, 16),
+            box(4, 2, 4, 12, 5, 12)
+    );
 
-    private static final TerminalBoundingBox[] TERMINALS = new TerminalBoundingBox[] {
+    private static final TerminalBoundingBox[] LAMP_TERMINALS = new TerminalBoundingBox[] {
             new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 3, 9, 3, 6, 11, 6),
             new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 10, 9, 10, 13, 11, 13)
+    };
+    private static final TerminalBoundingBox[] WIRE_CONNECTOR_TERMINALS = new TerminalBoundingBox[] {
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6, 5, 6, 10, 12,10),
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 7, 6, 7, 8, 7, 8) //second one hidden
     };
 
     public CeilingTileBlock(Properties properties) {
@@ -63,12 +77,23 @@ public class CeilingTileBlock extends ElectricBlock implements IBE<CeilingTileBl
         registerDefaultState(defaultBlockState().setValue(STATE, State.EMPTY));
         setTerminalCollection(BlockStateTerminalCollection.builder(this)
                 .forAllStates(state -> {
-                    if(state.getValue(STATE) == State.EMPTY)
-                        return new TerminalBoundingBox[2];
-                    return TERMINALS;
+                    switch(state.getValue(STATE)) {
+                        case LAMP, LAMP_LOW_POWER, LAMP_ON -> {return LAMP_TERMINALS;}
+                        case WIRE_CONNECTOR -> {return WIRE_CONNECTOR_TERMINALS;}
+                        case CORD_JUNCTION -> {return new TerminalBoundingBox[2];}
+                        case SOLAR_PANEL -> {return new TerminalBoundingBox[2];}
+                        default -> {return new TerminalBoundingBox[2];}
+                    }
                 })
-                .withShapeMapper(state -> state.getValue(STATE) == State.EMPTY ? SHAPE_EMPTY : SHAPE_LAMP)
-                .build());
+                .withShapeMapper(state -> {
+                    switch(state.getValue(STATE)) {
+                        case LAMP, LAMP_LOW_POWER, LAMP_ON -> {return SHAPE_LAMP;}
+                        case WIRE_CONNECTOR -> {return SHAPE_WIRE_CONNECTOR;}
+                        case CORD_JUNCTION -> {return SHAPE_CORD_JUNCTION;}
+                        case SOLAR_PANEL -> {return SHAPE_SOLAR_PANEL;}
+                        default -> {return SHAPE_EMPTY;}
+                    }
+                }).build());
     }
 
     @Override
@@ -85,17 +110,51 @@ public class CeilingTileBlock extends ElectricBlock implements IBE<CeilingTileBl
             }
         }
         if(state.getValue(STATE) == State.EMPTY) {
-            if(!ModdedBlocks.FACTORY_LIGHT.is(stack.getItem()))
-                return InteractionResult.PASS;
-            if(!player.isCreative())
-                stack.shrink(1);
-            if(!level.isClientSide) {
-                level.setBlockAndUpdate(pos, state.setValue(STATE, State.LAMP));
-                level.playSound(null, pos,
-                        ModdedBlocks.FACTORY_LIGHT.getDefaultState().getSoundType().getPlaceSound(),
-                        SoundSource.BLOCKS, 1.0f, level.random.nextFloat() * 0.25f + 1.0f);
+            if (ModdedBlocks.FACTORY_LIGHT.is(stack.getItem())) {
+                if(!player.isCreative())
+                    stack.shrink(1);
+                if(!level.isClientSide) {
+                    level.setBlockAndUpdate(pos, state.setValue(STATE, State.LAMP));
+                    level.playSound(null, pos,
+                            ModdedBlocks.FACTORY_LIGHT.getDefaultState().getSoundType().getPlaceSound(),
+                            SoundSource.BLOCKS, 1.0f, level.random.nextFloat() * 0.25f + 1.0f);
+                }
+                return InteractionResult.SUCCESS;
             }
-            return InteractionResult.SUCCESS;
+            if (ModdedBlocks.WIRE_CONNECTOR.is(stack.getItem())) {
+                if(!player.isCreative())
+                    stack.shrink(1);
+                if(!level.isClientSide) {
+                    level.setBlockAndUpdate(pos, state.setValue(STATE, State.WIRE_CONNECTOR));
+                    level.playSound(null, pos,
+                            ModdedBlocks.WIRE_CONNECTOR.getDefaultState().getSoundType().getPlaceSound(),
+                            SoundSource.BLOCKS, 1.0f, level.random.nextFloat() * 0.25f + 1.0f);
+                }
+                return InteractionResult.SUCCESS;
+            }
+            if (ModdedBlocks.CORD_JUNCTION.is(stack.getItem())) {
+                if(!player.isCreative())
+                    stack.shrink(1);
+                if(!level.isClientSide) {
+                    level.setBlockAndUpdate(pos, state.setValue(STATE, State.CORD_JUNCTION));
+                    level.playSound(null, pos,
+                            ModdedBlocks.CORD_JUNCTION.getDefaultState().getSoundType().getPlaceSound(),
+                            SoundSource.BLOCKS, 1.0f, level.random.nextFloat() * 0.25f + 1.0f);
+                }
+                return InteractionResult.SUCCESS;
+            }
+            if (ModdedBlocks.SOLAR_PANEL.is(stack.getItem())) {
+                if(!player.isCreative())
+                    stack.shrink(1);
+                if(!level.isClientSide) {
+                    level.setBlockAndUpdate(pos, state.setValue(STATE, State.SOLAR_PANEL));
+                    level.playSound(null, pos,
+                            ModdedBlocks.SOLAR_PANEL.getDefaultState().getSoundType().getPlaceSound(),
+                            SoundSource.BLOCKS, 1.0f, level.random.nextFloat() * 0.25f + 1.0f);
+                }
+                return InteractionResult.SUCCESS;
+            }
+            return InteractionResult.PASS;
         } else {
             if(stack.isEmpty() || stack.getItem() instanceof ILightBulb) {
                 return onBlockEntityUse(level, pos, be ->
@@ -112,7 +171,13 @@ public class CeilingTileBlock extends ElectricBlock implements IBE<CeilingTileBl
         if(state.getValue(STATE) != State.EMPTY) {
             var player = context.getPlayer();
             if(player != null && !player.isCreative())
-                player.addItem(ModdedBlocks.FACTORY_LIGHT.asStack());
+                switch (state.getValue(STATE)) {
+                    case LAMP_LOW_POWER, LAMP_ON, LAMP -> player.addItem(ModdedBlocks.FACTORY_LIGHT.asStack());
+                    case SOLAR_PANEL ->  player.addItem(ModdedBlocks.SOLAR_PANEL.asStack());
+                    case WIRE_CONNECTOR ->  player.addItem(ModdedBlocks.WIRE_CONNECTOR.asStack());
+                    case CORD_JUNCTION ->  player.addItem(ModdedBlocks.CORD_JUNCTION.asStack());
+                }
+
             var level = context.getLevel();
             if(!level.isClientSide) {
                 level.setBlockAndUpdate(context.getClickedPos(), state.setValue(STATE, State.EMPTY));
@@ -164,7 +229,10 @@ public class CeilingTileBlock extends ElectricBlock implements IBE<CeilingTileBl
         EMPTY,
         LAMP,
         LAMP_LOW_POWER,
-        LAMP_ON;
+        LAMP_ON,
+        WIRE_CONNECTOR,
+        CORD_JUNCTION,
+        SOLAR_PANEL;
 
         @Override
         public String getSerializedName() {
@@ -173,6 +241,9 @@ public class CeilingTileBlock extends ElectricBlock implements IBE<CeilingTileBl
                 case LAMP -> "lamp";
                 case LAMP_LOW_POWER -> "lamp_low_power";
                 case LAMP_ON -> "lamp_on";
+                case WIRE_CONNECTOR -> "wire_connector";
+                case CORD_JUNCTION -> "cord_junction";
+                case SOLAR_PANEL -> "solar_panel";
             };
         }
     }

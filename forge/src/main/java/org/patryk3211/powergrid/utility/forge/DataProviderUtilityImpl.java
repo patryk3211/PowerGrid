@@ -556,6 +556,9 @@ public class DataProviderUtilityImpl {
             builder.modelFile(modModel(prov, baseFolder + "/ceiling_tile" + switch(lampState) {
                 case EMPTY -> "";
                 case LAMP, LAMP_LOW_POWER, LAMP_ON -> "_light";
+                case WIRE_CONNECTOR ->  "_connector";
+                case CORD_JUNCTION ->  "_cord_junction";
+                case SOLAR_PANEL ->   "_solar_panel";
             }));
             return builder.build();
         });
