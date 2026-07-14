@@ -175,6 +175,8 @@ public class ModdedItems {
             .register();
     public static final ItemEntry<Item> CAPACITOR = ingredient("capacitor");
     public static final ItemEntry<Item> POTENTIOMETER = ingredient("potentiometer");
+    public static final ItemEntry<Item> TRIODE = ingredient("triode");
+    public static final ItemEntry<Item> PENTODE = ingredient("pentode");
     public static final ItemEntry<Item> REGULATOR_TUBE = ingredient("regulator_tube");
     public static final ItemEntry<Item> NEON_BULB = ingredient("neon_bulb");
     public static final ItemEntry<Item> BARRETTER_TUBE = ingredient("barretter_tube");
