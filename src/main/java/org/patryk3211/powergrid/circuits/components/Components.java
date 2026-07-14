@@ -35,15 +35,27 @@ public class Components {
             .item(Items.PAPER)
             .register();
 
-    public static final RegistryEntry<ElectronTubeComponent> ELECTRON_TUBE = REGISTRATE.component("electron_tube", ElectronTubeComponent::new)
+    public static final RegistryEntry<ElectronTubeComponent> TRIODE = REGISTRATE.component("triode", ElectronTubeComponent::new)
             .footprint(3, 3, b -> b
                     .addPad(0, 0, 2, "Anode", "A")
                     .addPad(1, 1, 0, "Cathode", "C")
                     .addPad(2, 0, 1, "Grid", "G")
                     .addPad(0, 2, 3, "Heater", "H")
-                    .addPadSharedText(2, 2, 4, "electron_tube.3", "electron_tube.3.short")
+                    .addPadSharedText(2, 2, 4, "triode.3", "triode.3.short")
                     .withItem().withOutline())
-            .item(AllItems.ELECTRON_TUBE)
+            .item(ModdedItems.TRIODE)
+            .register();
+
+    public static final RegistryEntry<PentodeComponent> PENTODE = REGISTRATE.component("pentode", PentodeComponent::new)
+            .footprint(4, 3, b -> b
+                    .addPad(0, 0, 2, "Anode", "A")
+                    .addPad(1, 1, 0, "Cathode", "C")
+                    .addPad(2, 0, 1, "Grid", "G")
+                    .addPad(3, 0, 5, "Screen", "G2")
+                    .addPad(0, 2, 3, "Heater", "H")
+                    .addPadSharedText(3, 2, 4, "pentode.3", "pentode.3.short")
+                    .withItem().withOutline())
+            .item(ModdedItems.PENTODE)
             .register();
 
     public static final RegistryEntry<VFETComponent> VFET = REGISTRATE.component("vfet", VFETComponent::new)
