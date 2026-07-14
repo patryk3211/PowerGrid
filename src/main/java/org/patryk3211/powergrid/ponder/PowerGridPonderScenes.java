@@ -145,7 +145,7 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedItems.CAPACITOR, "circuit/capacitor", CircuitScenes::capacitor, PowerGridPonderTags.CIRCUIT_COMPONENTS);
         HELPER.forComponents(ModdedItems.RELAY, ModdedItems.RELAY_DPDT)
                 .addStoryBoard("circuit/relay", CircuitScenes::relay, PowerGridPonderTags.CIRCUIT_COMPONENTS);
-        HELPER.addStoryBoard(AllItems.ELECTRON_TUBE, "circuit/electron_tube", CircuitScenes::electronTube, PowerGridPonderTags.CIRCUIT_COMPONENTS);
+        HELPER.addStoryBoard(ModdedItems.TRIODE, "circuit/electron_tube", CircuitScenes::electronTube, PowerGridPonderTags.CIRCUIT_COMPONENTS);
         HELPER.addStoryBoard(ModdedItems.REDSTONE_RELAY, "circuit/redstone_relay", CircuitScenes::redstoneRelay, PowerGridPonderTags.CIRCUIT_COMPONENTS);
         HELPER.addStoryBoard(AllItems.COPPER_NUGGET, "circuit/via", CircuitScenes::via, PowerGridPonderTags.CIRCUIT_COMPONENTS);
         HELPER.addStoryBoard(ModdedItems.POTENTIOMETER, "circuit/potentiometer", CircuitScenes::potentiometer, PowerGridPonderTags.CIRCUIT_COMPONENTS);
