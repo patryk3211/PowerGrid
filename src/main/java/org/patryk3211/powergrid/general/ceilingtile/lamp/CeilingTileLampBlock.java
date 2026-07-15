@@ -3,14 +3,11 @@ package org.patryk3211.powergrid.general.ceilingtile.lamp;
 import com.simibubi.create.api.schematic.requirement.SpecialBlockItemRequirement;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import com.simibubi.create.foundation.block.IBE;
-import net.createmod.catnip.placement.IPlacementHelper;
-import net.createmod.catnip.placement.PlacementHelpers;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -31,7 +28,6 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.electricity.light.bulb.ILightBulb;
 import org.patryk3211.powergrid.general.ceilingtile.CeilingBlock;
-import org.patryk3211.powergrid.general.ceilingtile.CeilingTileBlock;
 
 import java.util.List;
 
@@ -64,17 +60,9 @@ public class CeilingTileLampBlock extends ElectricBlock implements IBE<CeilingTi
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if(hand != InteractionHand.MAIN_HAND)
-            return InteractionResult.PASS;
+        if(placementHelper(state, level, pos, player, hand, hit) == InteractionResult.SUCCESS)
+            return InteractionResult.SUCCESS;
         var stack = player.getMainHandItem();
-        IPlacementHelper placementHelper = PlacementHelpers.get(CeilingTileBlock.placementHelperId);
-        if (!player.isShiftKeyDown() && player.mayBuild()) {
-            if (placementHelper.matchesItem(stack)) {
-                placementHelper.getOffset(player, level, state, pos, hit)
-                        .placeInWorld(level, (BlockItem) stack.getItem(), player, hand, hit);
-                return InteractionResult.SUCCESS;
-            }
-        }
         if(stack.isEmpty() || stack.getItem() instanceof ILightBulb) {
             return onBlockEntityUse(level, pos, be ->
                     be.replaceBulb(player, hand, stack)

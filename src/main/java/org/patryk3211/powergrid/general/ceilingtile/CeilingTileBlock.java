@@ -10,7 +10,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -35,17 +34,9 @@ public class CeilingTileBlock extends Block implements CeilingBlock {
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if(hand != InteractionHand.MAIN_HAND)
-            return InteractionResult.PASS;
+        if(placementHelper(state, level, pos, player, hand, hit) == InteractionResult.SUCCESS)
+            return InteractionResult.SUCCESS;
         var stack = player.getMainHandItem();
-        IPlacementHelper placementHelper = PlacementHelpers.get(placementHelperId);
-        if (!player.isShiftKeyDown() && player.mayBuild()) {
-            if (placementHelper.matchesItem(stack)) {
-                placementHelper.getOffset(player, level, state, pos, hit)
-                        .placeInWorld(level, (BlockItem) stack.getItem(), player, hand, hit);
-                return InteractionResult.SUCCESS;
-            }
-        }
         if (ModdedBlocks.FACTORY_LIGHT.is(stack.getItem())) {
             if(!player.isCreative())
                 stack.shrink(1);
