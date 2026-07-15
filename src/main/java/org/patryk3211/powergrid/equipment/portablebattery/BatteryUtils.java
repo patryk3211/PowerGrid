@@ -77,10 +77,8 @@ public class BatteryUtils {
             return 0.0f;
         if(player instanceof ServerPlayer serverPlayer) {
             float maxCharge = getMaxCharge(stack);
-            //todo fix values for sendWarning after rescaling battery
-            var threshold = 3000 * (maxCharge / 20000);
-            sendWarning(serverPlayer, charge, charge - energy,  threshold + (maxCharge / 10), maxCharge);
-            sendWarning(serverPlayer, charge, charge - energy, threshold, maxCharge);
+            sendWarning(serverPlayer, charge, charge - energy, (maxCharge / 10));
+            sendWarning(serverPlayer, charge, charge - energy, 25);
         }
         return outputPercent;
     }
@@ -110,13 +108,13 @@ public class BatteryUtils {
         return outputPercent;
     }
 
-    private static void sendWarning(ServerPlayer player, float charge, float newCharge, float threshold, float maxCharge) {
+    private static void sendWarning(ServerPlayer player, float charge, float newCharge, float threshold) {
         if (newCharge > threshold)
             return;
         if (charge <= threshold)
             return;
 
-        boolean depleted = threshold <= 3000 * (maxCharge / 20000);
+        boolean depleted = threshold <= 25;
         MutableComponent component = Lang.translateDirect(depleted ? "gui.portable.battery.depleted" : "gui.portable.battery.low");
 
         ModdedSoundEvents.UI_FAIL.play(player.level(), null, player.blockPosition(), .75f, 1);
