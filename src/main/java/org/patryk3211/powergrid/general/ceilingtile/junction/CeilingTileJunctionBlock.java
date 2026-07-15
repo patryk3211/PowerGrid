@@ -7,9 +7,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -17,11 +20,18 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
+import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
+import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
+import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.electricity.wire.powercord.AutoCordEndpoint;
+import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 import org.patryk3211.powergrid.general.ceilingtile.CeilingBlock;
 
 import java.util.List;
 
-public class CeilingTileJunctionBlock extends ElectricBlock implements IBE<CeilingTileJunctionBlockEntity>, CeilingBlock, SpecialBlockItemRequirement {
+import static org.patryk3211.powergrid.electricity.wireconnector.CordJunctionBlock.pickPoint;
+
+public class CeilingTileJunctionBlock extends ElectricBlock implements IBE<CeilingTileJunctionBlockEntity>, CeilingBlock, SpecialBlockItemRequirement, IAcceptCord {
     private static final VoxelShape SHAPE = Shapes.or(
             box(0, 0, 0, 16, 2, 16),
             box(4, 2, 4, 12, 5, 12)
@@ -57,5 +67,46 @@ public class CeilingTileJunctionBlock extends ElectricBlock implements IBE<Ceili
                 ModdedBlocks.CEILING_TILE.asStack(),
                 ModdedBlocks.CORD_JUNCTION.asStack()
         ));
+    }
+
+    @Override
+    public @Nullable AutoCordEndpoint getEndpoint(UseOnContext context) {
+        var pos = context.getClickedPos();
+
+        var center = Vec3.atCenterOf(pos);
+        var point = center.add(0, -0.28125, 0);
+
+        var loc = context.getClickLocation();
+        var offset = new Vec3(
+                pickPoint(loc.x, center.x),
+                pickPoint(loc.y, center.y),
+                pickPoint(loc.z, center.z)
+        );
+        if(offset.x == 0 && offset.z == 0)
+            point = point.add(0, 0.0625, 0);
+        else
+            point = point.add(offset.x, 0, offset.z);
+        return new AutoCordEndpoint(pos, 0, 1, point, null);
+    }
+
+    @Override
+    public @Nullable ITerminalPlacement cordTerminal(BlockState state, Level level, BlockHitResult hit) {
+        var center = Vec3.atCenterOf(hit.getBlockPos());
+        var point = new Vec3(0, -0.28125, 0);
+
+        var loc = hit.getLocation();
+        var offset = new Vec3(
+                pickPoint(loc.x, center.x),
+                pickPoint(loc.y, center.y),
+                pickPoint(loc.z, center.z)
+        );
+        if(offset.x == 0 && offset.z == 0)
+            point = point.add(0, 0.0625, 0);
+        else
+            point = point.add(offset.x, 0, offset.z);
+        point = point.scale(16).add(8, 8, 8);
+        return new TerminalBoundingBox(IDecoratedTerminal.CORD,
+                point.x - 1.5, point.y - 1.5, point.z - 1.5,
+                point.x + 1.5, point.y + 1.5, point.z + 1.5);
     }
 }

@@ -70,7 +70,7 @@ public class CordJunctionBlock extends DirectionalElectricBlock implements IBE<C
         return SHAPER.get(state.getValue(FACING));
     }
 
-    private static double pickPoint(double location, double center) {
+    public static double pickPoint(double location, double center) {
         var diff = location - center;
         if(diff >= 0.125)
             return 0.1875;
