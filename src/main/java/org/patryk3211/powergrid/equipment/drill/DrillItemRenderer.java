@@ -24,7 +24,10 @@ import dev.engine_room.flywheel.lib.model.baked.PartialModel;
 import net.createmod.catnip.animation.AnimationTickHolder;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.HumanoidArm;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.patryk3211.powergrid.PowerGrid;
@@ -37,26 +40,38 @@ public class DrillItemRenderer extends CustomRenderedItemModelRenderer {
         Minecraft mc = Minecraft.getInstance();
         renderer.render(model.getOriginalModel(), light);
         LocalPlayer player = mc.player;
-        boolean mainHand = player.getMainHandItem() == stack;
 
-        float offset = -2.5f / 16;
-        float worldTime = AnimationTickHolder.getRenderTime() / 10;
-        float angle = 0; //worldTime * -25;
-        float speed = 0.0f;
+        float offset = -3f / 16;
+        float angle = 0;
         if(player instanceof PlayerDrillExtensions ext) {
             angle = -ext.powerGrid$animation(AnimationTickHolder.getPartialTicks());
-//            speed += ext.powerGrid$drillSpeedMultiplier() * 0.5f;
         }
-
-//        if (mainHand)
-//            angle += 360 * speed * 5; //Mth.clamp(speed * 5, 0, 1);
-//        angle %= 360;
 
         ms.pushPose();
         ms.translate(0, offset, 0);
         ms.mulPose(Axis.ZP.rotationDegrees(angle));
-        ms.translate(0, -offset, 0);
+        ms.translate(0, -offset, -0.5f / 16f);
         renderer.render(HEAD.get(), light);
         ms.popPose();
+    }
+
+    public static boolean renderPlayerHand(ItemStack heldItem, InteractionHand hand, PoseStack ms, MultiBufferSource buffer, int light, float pt, float swing, float equip) {
+        if(heldItem.getItem() instanceof DrillItem) {
+            Minecraft mc = Minecraft.getInstance();
+            ItemInHandRenderer firstPersonRenderer = mc.getEntityRenderDispatcher().getItemInHandRenderer();
+            boolean rightHand = hand == InteractionHand.MAIN_HAND ^ mc.player.getMainArm() == HumanoidArm.LEFT;
+
+            float flip = rightHand ? 1.0F : -1.0F;
+            ms.pushPose();
+            ms.translate(flip * (0.64f - 0.1f), -0.6f + equip * -0.6f, -0.72f - 0.1f);
+
+            var rand = mc.level.random;
+            ms.mulPose(Axis.YP.rotationDegrees(flip * (rand.nextFloat() * 2 - 1) * 5.0f * swing));
+            ms.mulPose(Axis.ZP.rotationDegrees(flip * (rand.nextFloat() * 2 - 1) * -2.0f * swing));
+            firstPersonRenderer.renderItem(mc.player, heldItem, rightHand ? ItemDisplayContext.FIRST_PERSON_RIGHT_HAND : ItemDisplayContext.FIRST_PERSON_LEFT_HAND, !rightHand, ms, buffer, light);
+            ms.popPose();
+            return true;
+        }
+        return false;
     }
 }

@@ -67,7 +67,7 @@ public abstract class PlayerDrillMixin extends LivingEntity implements PlayerDri
     @Inject(method = "tick", at = @At("TAIL"))
     private void powerGrid$tick(CallbackInfo ci) {
         if(level().isClientSide) {
-            var speed = 3f + 7f * powerGrid$drillSpeedMultiplier();
+            var speed = 3f + 15f * powerGrid$drillSpeedMultiplier();
             powerGrid$animationPrev = powerGrid$animation;
             powerGrid$animation += speed;
             if(powerGrid$animation > 360 && powerGrid$animationPrev > 360) {

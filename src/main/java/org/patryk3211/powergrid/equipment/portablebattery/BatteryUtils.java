@@ -66,13 +66,14 @@ public class BatteryUtils {
         if(chargePercent < 0.5f) {
             // High ESR causing lower energy output
             outputPercent = chargePercent / 0.5f;
+            if(outputPercent < 0.25f)
+                outputPercent = 0.25f;
         }
-        energy = (int) (energy * outputPercent);
         var tag = stack.getTag();
         if(energy == 0 || tag == null)
             return 0.0f;
-        tag.putInt("Charge", charge - energy);
-        if(charge < energy * outputPercent)
+        tag.putInt("Charge", Math.max(charge - energy, 0));
+        if(charge < energy)
             return 0.0f;
         if(player instanceof ServerPlayer serverPlayer) {
             float maxCharge = getMaxCharge(stack);
@@ -133,7 +134,7 @@ public class BatteryUtils {
         return EnvExecutor.getInEnv(Env.CLIENT, () -> ClientSideAccess::player)
                 .map(player -> {
                     var battery = getBattery(player);
-                    if(battery != null && tryDrawEnergy(battery, energyPerUse) >= minPower)
+                    if(battery != null && tryDrawEnergy(battery, energyPerUse) > minPower)
                         return true;
                     return stack.isDamaged();
                 }).orElse(false);
@@ -145,7 +146,7 @@ public class BatteryUtils {
         return EnvExecutor.getInEnv(Env.CLIENT, () -> ClientSideAccess::player)
                 .map(player -> {
                     var battery = getBattery(player);
-                    if(battery == null || tryDrawEnergy(battery, energyPerUse) < minPower)
+                    if(battery == null || tryDrawEnergy(battery, energyPerUse) <= minPower)
                         return Math.round(13.0F - (float) stack.getDamageValue() / stack.getMaxDamage() * 13.0F);
                     return battery.getBarWidth();
                 }).orElse(13);
@@ -157,7 +158,7 @@ public class BatteryUtils {
         return EnvExecutor.getInEnv(Env.CLIENT, () -> ClientSideAccess::player)
                 .map(player -> {
                     var battery = getBattery(player);
-                    if(battery == null || tryDrawEnergy(battery, energyPerUse) < minPower)
+                    if(battery == null || tryDrawEnergy(battery, energyPerUse) <= minPower)
                         return Mth.hsvToRgb(Math.max(0.0F, 1.0F - (float) stack.getDamageValue() / stack.getMaxDamage()) / 3.0F, 1.0F, 1.0F);
                     if(ItemBoostUtils.isBoosted(stack))
                         return 0x34a8eb;
