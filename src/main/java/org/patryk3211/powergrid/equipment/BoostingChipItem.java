@@ -1,8 +1,10 @@
 package org.patryk3211.powergrid.equipment;
 
 import com.simibubi.create.AllSoundEvents;
-import net.minecraft.nbt.CompoundTag;
+import com.simibubi.create.foundation.item.CustomUseEffectsItem;
+import net.createmod.catnip.data.TriState;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
@@ -14,7 +16,7 @@ import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.collections.ModdedAdvancements;
 
-public class BoostingChipItem extends Item {
+public class BoostingChipItem extends Item implements CustomUseEffectsItem {
     public BoostingChipItem(Properties properties) {
         super(properties);
     }
@@ -27,18 +29,10 @@ public class BoostingChipItem extends Item {
         if (recipe != null) {
             if (!ItemBoostUtils.isBoosted(stack)) {
                 player.startUsingItem(usedHand);
-                boostChip.getOrCreateTag().put("Polishing", stack.save(new CompoundTag()));
                 return new InteractionResultHolder<>(InteractionResult.PASS, boostChip);
             }
         }
         return super.use(level, player, usedHand);
-    }
-
-    @Override
-    public void releaseUsing(ItemStack stack, Level worldIn, LivingEntity entityLiving, int timeLeft) {
-        if (!(entityLiving instanceof Player player))
-            return;
-        stack.removeTagKey("Polishing");
     }
 
     @Override
@@ -50,7 +44,6 @@ public class BoostingChipItem extends Item {
         if(!ModdedAdvancements.BOOSTING_CHIP.isAlreadyAwardedTo(player)) {
             ModdedAdvancements.BOOSTING_CHIP.awardTo(player);
         }
-        stack.removeTagKey("Polishing");
         stack.hurtAndBreak(1, entityLiving, p -> p.broadcastBreakEvent(p.getUsedItemHand()));
         return stack;
     }
@@ -68,5 +61,15 @@ public class BoostingChipItem extends Item {
     @Override
     public int getUseDuration(ItemStack stack) {
         return 32;
+    }
+
+    @Override
+    public TriState shouldTriggerUseEffects(ItemStack stack, LivingEntity entity) {
+        return TriState.TRUE;
+    }
+
+    @Override
+    public boolean triggerUseEffects(ItemStack itemStack, LivingEntity livingEntity, int i, RandomSource randomSource) {
+        return true;
     }
 }

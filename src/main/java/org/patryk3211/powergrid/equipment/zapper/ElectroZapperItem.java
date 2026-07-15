@@ -40,6 +40,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGridClient;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPackets;
+import org.patryk3211.powergrid.equipment.BoostingChipItem;
 import org.patryk3211.powergrid.equipment.ItemBoostUtils;
 import org.patryk3211.powergrid.equipment.portablebattery.BatteryUtils;
 import org.patryk3211.powergrid.utility.Lang;
@@ -105,6 +106,11 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
         if(world.isClientSide) {
             clientUse(hand);
             return InteractionResultHolder.success(stack);
+        }
+        if(!boosted) {
+            var otherStack = user.getItemInHand(hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
+            if(otherStack.getItem() instanceof BoostingChipItem)
+                return InteractionResultHolder.pass(stack);
         }
 
         float power = BatteryUtils.drawEnergy(user, energyPerUse());

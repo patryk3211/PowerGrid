@@ -16,7 +16,6 @@
 package org.patryk3211.powergrid.collections;
 
 import com.simibubi.create.content.equipment.armor.BacktankItem;
-import com.simibubi.create.content.equipment.sandPaper.SandPaperItemRenderer;
 import com.simibubi.create.content.processing.sequenced.SequencedAssemblyItem;
 import com.simibubi.create.foundation.item.render.CustomRenderedItemModelRenderer;
 import com.tterrag.registrate.builders.ItemBuilder;
@@ -37,6 +36,7 @@ import org.patryk3211.powergrid.electricity.sim.DebugItem;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.powercord.CordItem;
 import org.patryk3211.powergrid.equipment.BoostingChipItem;
+import org.patryk3211.powergrid.equipment.BoostingChipRenderer;
 import org.patryk3211.powergrid.equipment.ZincArmorMaterial;
 import org.patryk3211.powergrid.equipment.baton.ElectroBatonItem;
 import org.patryk3211.powergrid.equipment.drill.DrillItem;
@@ -159,7 +159,7 @@ public class ModdedItems {
     public static final ItemEntry<Item> MAGNET = ingredient("magnet");
 
     public static final ItemEntry<BoostingChipItem> INTEGRATED_CIRCUIT = REGISTRATE.item("integrated_circuit", BoostingChipItem::new)
-            .transform(customRenderer(() -> SandPaperItemRenderer::new))
+            .transform(customRenderer(() -> BoostingChipRenderer::new))
             .register();
     public static final ItemEntry<Item> ELECTRICAL_GIZMO = ingredient("electrical_gizmo");
     public static final ItemEntry<Item> ZINC_SHEET = ingredient("zinc_sheet", ModdedTags.Item.PLATES.tag);
