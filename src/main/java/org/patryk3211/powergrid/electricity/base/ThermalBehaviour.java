@@ -22,7 +22,6 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -333,8 +332,7 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
 
     public static void explode(Level world, BlockPos pos, BlockState state, float power) {
         if(shouldExplode()) {
-            var registry = world.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE);
-            var source = new MachineOverloadDamageSource(registry.getHolder(ModdedDamageTypes.OVERLOADED_MACHINE).get(), state.getBlock());
+            var source = new MachineOverloadDamageSource(ModdedDamageTypes.OVERLOADED_MACHINE.holder(world), state.getBlock());
             // This block must be broken first to allow for damage to propagate.
             world.destroyBlock(pos, false);
             world.explode(null, source, null, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f, power, false, Level.ExplosionInteraction.BLOCK);

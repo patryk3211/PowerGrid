@@ -18,8 +18,6 @@ package org.patryk3211.powergrid.electricity.grounding;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
-import net.minecraft.core.Registry;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.damagesource.DamageSource;
@@ -129,8 +127,7 @@ public class GroundingRodBlockEntity extends ElectricBlockEntity {
             var center = worldPosition.getCenter();
             var entities = level.getEntitiesOfClass(LivingEntity.class, bb, e -> e.position().distanceToSqr(center) <= sqrDist && e.onGround());
 
-            Registry<DamageType> registry = level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE);
-            var source = new GroundingRodDamageSource(registry.getHolder(ModdedDamageTypes.ZAP).get(), this.getBlockState().getBlock());
+            var source = new GroundingRodDamageSource(ModdedDamageTypes.ZAP.holder(level), this.getBlockState().getBlock());
             for(var entity : entities) {
                 // TODO: Scale damage with potential.
                 entity.hurt(source, 1);

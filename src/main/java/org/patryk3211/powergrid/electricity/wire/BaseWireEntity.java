@@ -18,7 +18,6 @@ package org.patryk3211.powergrid.electricity.wire;
 import net.createmod.ponder.api.level.PonderLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.protocol.Packet;
@@ -433,8 +432,7 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         }
         if(I >= threshold) {
             float damage = (float) (I / threshold);
-            var registry = level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE);
-            var source = new DamageSource(registry.getHolder(ModdedDamageTypes.LIVE_WIRE_CUTTING).get());
+            var source = ModdedDamageTypes.LIVE_WIRE_CUTTING.simpleDamageSource(level());
             player.hurt(source, damage);
         }
         kill();

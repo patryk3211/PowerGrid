@@ -3,10 +3,8 @@ package org.patryk3211.powergrid.electricity.wire;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.LivingEntity;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
@@ -69,7 +67,7 @@ public class EntityWireInteraction {
     }
 
     public static void postTick(MinecraftServer server) {
-        final var source = new DamageSource(server.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE).getHolderOrThrow(ModdedDamageTypes.ELECTROCUTION));
+        final var source = ModdedDamageTypes.ELECTROCUTION.simpleDamageSource(server);
         var iter = DATA.entrySet().iterator();
         while(iter.hasNext()) {
             var entityEntry = iter.next();
