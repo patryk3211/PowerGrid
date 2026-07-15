@@ -7,7 +7,7 @@ public class CEquipment extends ConfigBase {
     public final ConfigInt electroZapperEnergyPerShot = i(500, 1, "electroZapperEnergyPerShot", Comments.electroZapperEnergyPerShot);
     public final ConfigInt electroBatonEnergyPerUse = i(250, 1, "electroBatonEnergyPerShot", Comments.electroBatonEnergyPerUSe);
 
-    public final ConfigInt drillEnergyPerUse = i(100, 1, "portableDrillEnergyPerUse", Comments.toolEnergyPerUse);
+    public final ConfigInt drillEnergyPerUse = i(25, 1, "portableDrillEnergyPerUse", Comments.toolEnergyPerUse);
     public final ConfigFloat drillMineSpeedBase = f(6.0f, 0, "drillMineSpeedBase", Comments.drillMineSpeedBase);
     public final ConfigFloat drillMineSpeedBulk = f(16.0f, 0, "drillMineSpeedBulk", Comments.drillMineSpeedBulk);
 

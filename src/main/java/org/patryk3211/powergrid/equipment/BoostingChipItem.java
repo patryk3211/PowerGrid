@@ -36,15 +36,16 @@ public class BoostingChipItem extends Item implements CustomUseEffectsItem {
     }
 
     @Override
-    public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entityLiving) {
-        if (!(entityLiving instanceof Player player))
+    public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
+        if (!(entity instanceof Player player))
             return stack;
         var boosted = player.getItemInHand(player.getUsedItemHand() == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
         ItemBoostUtils.setBoosted(boosted, true);
         if(!ModdedAdvancements.BOOSTING_CHIP.isAlreadyAwardedTo(player)) {
             ModdedAdvancements.BOOSTING_CHIP.awardTo(player);
         }
-        stack.hurtAndBreak(1, entityLiving, p -> p.broadcastBreakEvent(p.getUsedItemHand()));
+        stack.shrink(1);
+        entity.broadcastBreakEvent(entity.getUsedItemHand());
         return stack;
     }
 
@@ -69,7 +70,10 @@ public class BoostingChipItem extends Item implements CustomUseEffectsItem {
     }
 
     @Override
-    public boolean triggerUseEffects(ItemStack itemStack, LivingEntity livingEntity, int i, RandomSource randomSource) {
+    public boolean triggerUseEffects(ItemStack stack, LivingEntity entity, int i, RandomSource random) {
+        if((entity.getTicksUsingItem() - 6) % 7 == 0) {
+            entity.playSound(entity.getEatingSound(stack), 0.9F + 0.2F * random.nextFloat(), random.nextFloat() * 0.2F + 0.9F);
+        }
         return true;
     }
 }

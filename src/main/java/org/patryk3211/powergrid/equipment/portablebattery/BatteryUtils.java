@@ -99,12 +99,13 @@ public class BatteryUtils {
         if(chargePercent < 0.5f) {
             // High ESR causing lower energy output
             outputPercent = chargePercent / 0.5f;
+            if(outputPercent < 0.25f)
+                outputPercent = 0.25f;
         }
-        energy = (int) (energy * outputPercent);
         var tag = battery.getTag();
         if(energy == 0 || tag == null)
             return 0.0f;
-        if(charge < energy * outputPercent)
+        if(charge < energy)
             return 0.0f;
         return outputPercent;
     }
