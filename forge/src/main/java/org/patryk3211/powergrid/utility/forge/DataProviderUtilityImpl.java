@@ -534,7 +534,8 @@ public class DataProviderUtilityImpl {
         return (ctx, prov) -> prov.getVariantBuilder(ctx.get()).forAllStates(state -> {
             var builder = ConfiguredModel.builder();
             var part = state.getValue(FactoryLightBlock.PART);
-            builder.modelFile(modModel(prov, baseFolder + "/factorylight" + switch(part) {
+            var baseName = baseFolder + (state.getValue(FactoryLightBlock.POWER) == 0 ? "/empty" : "") + "/factorylight";
+            builder.modelFile(modModel(prov, baseName + switch(part) {
                 case 0 -> "";
                 case 1 -> "northedge";
                 case 2 -> "centerns";
@@ -554,7 +555,8 @@ public class DataProviderUtilityImpl {
             var builder = ConfiguredModel.builder();
             var lampState = state.getValue(CeilingTileLampBlock.STATE);
             builder.modelFile(modModel(prov, baseFolder + "/ceiling_tile" + switch(lampState) {
-                case EMPTY, LAMP, LAMP_LOW_POWER, LAMP_ON -> "_light";
+                case EMPTY -> "_light_empty";
+                case LAMP, LAMP_LOW_POWER, LAMP_ON -> "_light";
             }));
             return builder.build();
         });

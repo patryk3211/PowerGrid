@@ -38,6 +38,7 @@ public class CeilingTileLampBlockEntity extends AbstractLightFixtureBlockEntity 
     @Override
     public void setPowerLevel(int bulbPower) {
         var state = switch(bulbPower) {
+            case 0 -> bulbState == null ? CeilingTileLampBlock.State.EMPTY : CeilingTileLampBlock.State.LAMP;
             case 1 -> CeilingTileLampBlock.State.LAMP_LOW_POWER;
             case 2 -> CeilingTileLampBlock.State.LAMP_ON;
             default -> CeilingTileLampBlock.State.LAMP;

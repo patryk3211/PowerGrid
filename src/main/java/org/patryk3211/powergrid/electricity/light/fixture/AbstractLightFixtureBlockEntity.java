@@ -117,7 +117,7 @@ public abstract class AbstractLightFixtureBlockEntity extends ElectricBlockEntit
         boolean result = replaceBulbInternal(player, hand, usedStack);
         if(result) {
             lightBulbChanged();
-            if(!level.isClientSide && bulbState == null) {
+            if(!level.isClientSide) {
                 setPowerLevel(0);
             }
         }
