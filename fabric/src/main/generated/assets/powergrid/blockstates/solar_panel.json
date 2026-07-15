@@ -1,104 +1,27 @@
 {
   "variants": {
-    "facing=down,rotation=0": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_v",
+    "facing=down": {
+      "model": "powergrid:block/solar_panel/inline_solar_panel",
+      "x": 90
+    },
+    "facing=east": {
+      "model": "powergrid:block/solar_panel/inline_solar_panel",
       "y": 90
     },
-    "facing=down,rotation=1": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_v"
+    "facing=north": {
+      "model": "powergrid:block/solar_panel/inline_solar_panel"
     },
-    "facing=down,rotation=2": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_v",
-      "y": 90
+    "facing=south": {
+      "model": "powergrid:block/solar_panel/inline_solar_panel",
+      "y": 180
     },
-    "facing=down,rotation=3": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_v"
-    },
-    "facing=east,rotation=0": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_h",
+    "facing=up": {
+      "model": "powergrid:block/solar_panel/inline_solar_panel",
       "x": -90
     },
-    "facing=east,rotation=1": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_h"
-    },
-    "facing=east,rotation=2": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_h",
-      "x": -90
-    },
-    "facing=east,rotation=3": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_h"
-    },
-    "facing=north,rotation=0": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_h",
-      "x": -90,
+    "facing=west": {
+      "model": "powergrid:block/solar_panel/inline_solar_panel",
       "y": -90
-    },
-    "facing=north,rotation=1": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_h",
-      "y": -90
-    },
-    "facing=north,rotation=2": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_h",
-      "x": -90,
-      "y": -90
-    },
-    "facing=north,rotation=3": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_h",
-      "y": -90
-    },
-    "facing=south,rotation=0": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_h",
-      "x": -90,
-      "y": 90
-    },
-    "facing=south,rotation=1": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_h",
-      "y": 90
-    },
-    "facing=south,rotation=2": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_h",
-      "x": -90,
-      "y": 90
-    },
-    "facing=south,rotation=3": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_h",
-      "y": 90
-    },
-    "facing=up,rotation=0": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_v",
-      "x": 180,
-      "y": 90
-    },
-    "facing=up,rotation=1": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_v",
-      "x": 180
-    },
-    "facing=up,rotation=2": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_v",
-      "x": 180,
-      "y": 90
-    },
-    "facing=up,rotation=3": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_v",
-      "x": 180
-    },
-    "facing=west,rotation=0": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_h",
-      "x": -90,
-      "y": 180
-    },
-    "facing=west,rotation=1": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_h",
-      "y": 180
-    },
-    "facing=west,rotation=2": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_h",
-      "x": -90,
-      "y": 180
-    },
-    "facing=west,rotation=3": {
-      "model": "powergrid:block/solar_panel/inline_solar_panel_h",
-      "y": 180
     }
   }
 }

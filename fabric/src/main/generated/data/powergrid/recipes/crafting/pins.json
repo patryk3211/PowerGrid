@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "tag": "c:copper_nuggets"
+    },
+    {
+      "tag": "c:copper_nuggets"
+    }
+  ],
+  "result": {
+    "item": "powergrid:pins"
+  }
+}

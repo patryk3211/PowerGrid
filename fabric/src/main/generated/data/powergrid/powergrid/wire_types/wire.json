@@ -2,6 +2,7 @@
   "colorable": false,
   "cord": false,
   "horizontalCoefficient": 1.01,
+  "insulated": false,
   "itemsPerMeter": 0.5,
   "maximumCurrent": 80.0,
   "maximumLength": 24.0,

@@ -66,8 +66,10 @@ import org.patryk3211.powergrid.electricity.wireconnector.CordJunctionBlockEntit
 import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryBlockEntity;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerBlockEntity;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerRenderer;
-import org.patryk3211.powergrid.general.ceilingtile.CeilingTileBlockEntity;
-import org.patryk3211.powergrid.general.ceilingtile.CeilingTileRenderer;
+import org.patryk3211.powergrid.general.ceilingtile.junction.CeilingTileJunctionBlockEntity;
+import org.patryk3211.powergrid.general.ceilingtile.lamp.CeilingTileLampBlockEntity;
+import org.patryk3211.powergrid.general.ceilingtile.lamp.CeilingTileLampRenderer;
+import org.patryk3211.powergrid.general.ceilingtile.wire.CeilingTileConnectorBlockEntity;
 import org.patryk3211.powergrid.kinetics.base.HalfShaftVisual;
 import org.patryk3211.powergrid.kinetics.base.TunedBlockRenderer;
 import org.patryk3211.powergrid.kinetics.base.TunedBlockVisual;
@@ -390,10 +392,20 @@ public class ModdedBlockEntities {
                     .renderer(() -> FactoryLightRenderer::new)
                     .register();
 
-    public static final BlockEntityEntry<CeilingTileBlockEntity> CEILING_TILE =
-            REGISTRATE.blockEntity("ceiling_tile", CeilingTileBlockEntity::new)
-                    .validBlock(ModdedBlocks.CEILING_TILE)
-                    .renderer(() -> CeilingTileRenderer::new)
+    public static final BlockEntityEntry<CeilingTileLampBlockEntity> CEILING_TILE_LAMP =
+            REGISTRATE.blockEntity("ceiling_tile_lamp", CeilingTileLampBlockEntity::new)
+                    .validBlock(ModdedBlocks.CEILING_TILE_LAMP)
+                    .renderer(() -> CeilingTileLampRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<CeilingTileConnectorBlockEntity> CEILING_TILE_CONNECTOR =
+            REGISTRATE.blockEntity("ceiling_tile_connector", CeilingTileConnectorBlockEntity::new)
+                    .validBlock(ModdedBlocks.CEILING_TILE_CONNECTOR)
+                    .register();
+
+    public static final BlockEntityEntry<CeilingTileJunctionBlockEntity> CEILING_TILE_JUNCTION =
+            REGISTRATE.blockEntity("ceiling_tile_junction", CeilingTileJunctionBlockEntity::new)
+                    .validBlock(ModdedBlocks.CEILING_TILE_JUNCTION)
                     .register();
 
     public static final BlockEntityEntry<SolarPanelBlockEntity> SOLAR_PANEL =

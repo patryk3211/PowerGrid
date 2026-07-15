@@ -102,6 +102,10 @@ import org.patryk3211.powergrid.equipment.thermometer.ThermometerBlock;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerItem;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerItemRenderer;
 import org.patryk3211.powergrid.general.ceilingtile.CeilingTileBlock;
+import org.patryk3211.powergrid.general.ceilingtile.junction.CeilingTileJunctionBlock;
+import org.patryk3211.powergrid.general.ceilingtile.lamp.CeilingTileLampBlock;
+import org.patryk3211.powergrid.general.ceilingtile.solar.CeilingTileSolarBlock;
+import org.patryk3211.powergrid.general.ceilingtile.wire.CeilingTileConnectorBlock;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.housing.VerticalGeneratorHousing;
@@ -526,26 +530,43 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<CeilingTileBlock> CEILING_TILE = REGISTRATE.block("ceiling_tile", CeilingTileBlock::new)
-            .blockstate(ceilingTile("block/ceiling_tile"))
+            .blockstate(simple("block/ceiling_tile/ceiling_tile"))
             .initialProperties(SharedProperties::stone)
             .transform(axeOrPickaxe())
-            .addLayer(() -> RenderType::cutout)
-            .loot((tables, block) ->
-                    tables.add(block, b -> LootTable.lootTable()
-                            .withPool(LootPool.lootPool()
-                                    .when(ExplosionCondition.survivesExplosion())
-                                    .add(LootItem.lootTableItem(b)))
-                            .withPool(LootPool.lootPool()
-                                    .when(ExplosionCondition.survivesExplosion())
-                                    .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(b)
-                                            .setProperties(StatePropertiesPredicate.Builder.properties()
-                                                    .hasProperty(CeilingTileBlock.STATE, CeilingTileBlock.State.EMPTY))
-                                            .invert())
-                                    .add(LootItem.lootTableItem(FACTORY_LIGHT)))
-                    ))
             .item()
                 .model(itemWithParent("block/ceiling_tile/ceiling_tile"))
                 .build()
+            .register();
+
+    public static final BlockEntry<CeilingTileLampBlock> CEILING_TILE_LAMP = REGISTRATE.block("ceiling_tile_lamp", CeilingTileLampBlock::new)
+            .blockstate(ceilingTileLamp("block/ceiling_tile"))
+            .initialProperties(SharedProperties::stone)
+            .transform(axeOrPickaxe())
+            .addLayer(() -> RenderType::cutout)
+            .loot((tables, block) -> {
+                tables.dropOther(block, FACTORY_LIGHT);
+                tables.dropOther(block, CEILING_TILE);
+            })
+            .register();
+
+    public static final BlockEntry<CeilingTileConnectorBlock> CEILING_TILE_CONNECTOR = REGISTRATE.block("ceiling_tile_connector", CeilingTileConnectorBlock::new)
+            .blockstate(simple("block/ceiling_tile/ceiling_tile_connector"))
+            .initialProperties(SharedProperties::stone)
+            .transform(axeOrPickaxe())
+            .loot((tables, block) -> {
+                tables.dropOther(block, WIRE_CONNECTOR);
+                tables.dropOther(block, CEILING_TILE);
+            })
+            .register();
+
+    public static final BlockEntry<CeilingTileJunctionBlock> CEILING_TILE_JUNCTION = REGISTRATE.block("ceiling_tile_junction", CeilingTileJunctionBlock::new)
+            .blockstate(simple("block/ceiling_tile/ceiling_tile_cord_junction"))
+            .initialProperties(SharedProperties::stone)
+            .transform(axeOrPickaxe())
+            .loot((tables, block) -> {
+                tables.dropOther(block, CORD_JUNCTION);
+                tables.dropOther(block, CEILING_TILE);
+            })
             .register();
 
     public static final BlockEntry<TransformerCoreBlock> TRANSFORMER_CORE = REGISTRATE.block("transformer_core", TransformerCoreBlock::new)
@@ -882,6 +903,17 @@ public class ModdedBlocks {
             .item()
                 .model(itemWithParent("block/solar_panel/solar_panel_bearing_block"))
                 .build()
+            .register();
+
+    public static final BlockEntry<CeilingTileSolarBlock> CEILING_TILE_SOLAR = REGISTRATE.block("ceiling_tile_solar", CeilingTileSolarBlock::new)
+            .blockstate(simple("block/ceiling_tile/ceiling_tile_solar_panel"))
+            .initialProperties(SharedProperties::stone)
+            .addLayer(() -> RenderType::translucent)
+            .transform(axeOrPickaxe())
+            .loot((tables, block) -> {
+                tables.dropOther(block, SOLAR_PANEL);
+                tables.dropOther(block, CEILING_TILE);
+            })
             .register();
 
     public static BlockEntry<StringLightBlock> STRING_LIGHT_BLOCK = REGISTRATE.block("string_light_block", StringLightBlock::new)

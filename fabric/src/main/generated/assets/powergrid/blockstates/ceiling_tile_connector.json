@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "powergrid:block/ceiling_tile/ceiling_tile_connector"
+    }
+  }
+}

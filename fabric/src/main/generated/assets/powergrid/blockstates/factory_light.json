@@ -1,31 +1,172 @@
 {
   "variants": {
-    "axis=x,part=0": {
+    "axis=x,part=0,power=0": {
       "model": "powergrid:block/factory_light/factorylight"
     },
-    "axis=x,part=1": {
-      "model": "powergrid:block/factory_light/factorylightedgeback",
-      "y": 90
-    },
-    "axis=x,part=2": {
-      "model": "powergrid:block/factory_light/factorylightcenter",
-      "y": 90
-    },
-    "axis=x,part=3": {
-      "model": "powergrid:block/factory_light/factorylightedgefront",
-      "y": 90
-    },
-    "axis=z,part=0": {
+    "axis=x,part=0,power=1": {
       "model": "powergrid:block/factory_light/factorylight"
     },
-    "axis=z,part=1": {
-      "model": "powergrid:block/factory_light/factorylightedgeback"
+    "axis=x,part=0,power=2": {
+      "model": "powergrid:block/factory_light/factorylight"
     },
-    "axis=z,part=2": {
-      "model": "powergrid:block/factory_light/factorylightcenter"
+    "axis=x,part=0,power=3": {
+      "model": "powergrid:block/factory_light/factorylight"
     },
-    "axis=z,part=3": {
-      "model": "powergrid:block/factory_light/factorylightedgefront"
+    "axis=x,part=1,power=0": {
+      "model": "powergrid:block/factory_light/factorylightnorthedge"
+    },
+    "axis=x,part=1,power=1": {
+      "model": "powergrid:block/factory_light/factorylightnorthedge"
+    },
+    "axis=x,part=1,power=2": {
+      "model": "powergrid:block/factory_light/factorylightnorthedge"
+    },
+    "axis=x,part=1,power=3": {
+      "model": "powergrid:block/factory_light/factorylightnorthedge"
+    },
+    "axis=x,part=2,power=0": {
+      "model": "powergrid:block/factory_light/factorylightcenterns"
+    },
+    "axis=x,part=2,power=1": {
+      "model": "powergrid:block/factory_light/factorylightcenterns"
+    },
+    "axis=x,part=2,power=2": {
+      "model": "powergrid:block/factory_light/factorylightcenterns"
+    },
+    "axis=x,part=2,power=3": {
+      "model": "powergrid:block/factory_light/factorylightcenterns"
+    },
+    "axis=x,part=3,power=0": {
+      "model": "powergrid:block/factory_light/factorylightsouthedge"
+    },
+    "axis=x,part=3,power=1": {
+      "model": "powergrid:block/factory_light/factorylightsouthedge"
+    },
+    "axis=x,part=3,power=2": {
+      "model": "powergrid:block/factory_light/factorylightsouthedge"
+    },
+    "axis=x,part=3,power=3": {
+      "model": "powergrid:block/factory_light/factorylightsouthedge"
+    },
+    "axis=x,part=4,power=0": {
+      "model": "powergrid:block/factory_light/factorylightwestedge"
+    },
+    "axis=x,part=4,power=1": {
+      "model": "powergrid:block/factory_light/factorylightwestedge"
+    },
+    "axis=x,part=4,power=2": {
+      "model": "powergrid:block/factory_light/factorylightwestedge"
+    },
+    "axis=x,part=4,power=3": {
+      "model": "powergrid:block/factory_light/factorylightwestedge"
+    },
+    "axis=x,part=5,power=0": {
+      "model": "powergrid:block/factory_light/factorylightcenterew"
+    },
+    "axis=x,part=5,power=1": {
+      "model": "powergrid:block/factory_light/factorylightcenterew"
+    },
+    "axis=x,part=5,power=2": {
+      "model": "powergrid:block/factory_light/factorylightcenterew"
+    },
+    "axis=x,part=5,power=3": {
+      "model": "powergrid:block/factory_light/factorylightcenterew"
+    },
+    "axis=x,part=6,power=0": {
+      "model": "powergrid:block/factory_light/factorylighteastedge"
+    },
+    "axis=x,part=6,power=1": {
+      "model": "powergrid:block/factory_light/factorylighteastedge"
+    },
+    "axis=x,part=6,power=2": {
+      "model": "powergrid:block/factory_light/factorylighteastedge"
+    },
+    "axis=x,part=6,power=3": {
+      "model": "powergrid:block/factory_light/factorylighteastedge"
+    },
+    "axis=z,part=0,power=0": {
+      "model": "powergrid:block/factory_light/factorylight"
+    },
+    "axis=z,part=0,power=1": {
+      "model": "powergrid:block/factory_light/factorylight"
+    },
+    "axis=z,part=0,power=2": {
+      "model": "powergrid:block/factory_light/factorylight"
+    },
+    "axis=z,part=0,power=3": {
+      "model": "powergrid:block/factory_light/factorylight"
+    },
+    "axis=z,part=1,power=0": {
+      "model": "powergrid:block/factory_light/factorylightnorthedge"
+    },
+    "axis=z,part=1,power=1": {
+      "model": "powergrid:block/factory_light/factorylightnorthedge"
+    },
+    "axis=z,part=1,power=2": {
+      "model": "powergrid:block/factory_light/factorylightnorthedge"
+    },
+    "axis=z,part=1,power=3": {
+      "model": "powergrid:block/factory_light/factorylightnorthedge"
+    },
+    "axis=z,part=2,power=0": {
+      "model": "powergrid:block/factory_light/factorylightcenterns"
+    },
+    "axis=z,part=2,power=1": {
+      "model": "powergrid:block/factory_light/factorylightcenterns"
+    },
+    "axis=z,part=2,power=2": {
+      "model": "powergrid:block/factory_light/factorylightcenterns"
+    },
+    "axis=z,part=2,power=3": {
+      "model": "powergrid:block/factory_light/factorylightcenterns"
+    },
+    "axis=z,part=3,power=0": {
+      "model": "powergrid:block/factory_light/factorylightsouthedge"
+    },
+    "axis=z,part=3,power=1": {
+      "model": "powergrid:block/factory_light/factorylightsouthedge"
+    },
+    "axis=z,part=3,power=2": {
+      "model": "powergrid:block/factory_light/factorylightsouthedge"
+    },
+    "axis=z,part=3,power=3": {
+      "model": "powergrid:block/factory_light/factorylightsouthedge"
+    },
+    "axis=z,part=4,power=0": {
+      "model": "powergrid:block/factory_light/factorylightwestedge"
+    },
+    "axis=z,part=4,power=1": {
+      "model": "powergrid:block/factory_light/factorylightwestedge"
+    },
+    "axis=z,part=4,power=2": {
+      "model": "powergrid:block/factory_light/factorylightwestedge"
+    },
+    "axis=z,part=4,power=3": {
+      "model": "powergrid:block/factory_light/factorylightwestedge"
+    },
+    "axis=z,part=5,power=0": {
+      "model": "powergrid:block/factory_light/factorylightcenterew"
+    },
+    "axis=z,part=5,power=1": {
+      "model": "powergrid:block/factory_light/factorylightcenterew"
+    },
+    "axis=z,part=5,power=2": {
+      "model": "powergrid:block/factory_light/factorylightcenterew"
+    },
+    "axis=z,part=5,power=3": {
+      "model": "powergrid:block/factory_light/factorylightcenterew"
+    },
+    "axis=z,part=6,power=0": {
+      "model": "powergrid:block/factory_light/factorylighteastedge"
+    },
+    "axis=z,part=6,power=1": {
+      "model": "powergrid:block/factory_light/factorylighteastedge"
+    },
+    "axis=z,part=6,power=2": {
+      "model": "powergrid:block/factory_light/factorylighteastedge"
+    },
+    "axis=z,part=6,power=3": {
+      "model": "powergrid:block/factory_light/factorylighteastedge"
     }
   }
 }

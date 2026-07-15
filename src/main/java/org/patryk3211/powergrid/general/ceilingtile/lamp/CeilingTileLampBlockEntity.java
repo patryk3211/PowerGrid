@@ -1,4 +1,4 @@
-package org.patryk3211.powergrid.general.ceilingtile;
+package org.patryk3211.powergrid.general.ceilingtile.lamp;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -6,11 +6,14 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.electricity.light.fixture.AbstractLightFixtureBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
+import org.patryk3211.powergrid.general.ceilingtile.CeilingTileBlock;
 
-public class CeilingTileBlockEntity extends AbstractLightFixtureBlockEntity {
+import static org.patryk3211.powergrid.general.ceilingtile.lamp.CeilingTileLampBlock.STATE;
+
+public class CeilingTileLampBlockEntity extends AbstractLightFixtureBlockEntity {
     private SwitchedWire filament;
 
-    public CeilingTileBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+    public CeilingTileLampBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state, false);
     }
 
@@ -35,16 +38,16 @@ public class CeilingTileBlockEntity extends AbstractLightFixtureBlockEntity {
     @Override
     public void setPowerLevel(int bulbPower) {
         var state = switch(bulbPower) {
-            case 1 -> CeilingTileBlock.State.LAMP_LOW_POWER;
-            case 2 -> CeilingTileBlock.State.LAMP_ON;
-            default -> CeilingTileBlock.State.LAMP;
+            case 1 -> CeilingTileLampBlock.State.LAMP_LOW_POWER;
+            case 2 -> CeilingTileLampBlock.State.LAMP_ON;
+            default -> CeilingTileLampBlock.State.LAMP;
         };
-        level.setBlock(worldPosition, getBlockState().setValue(CeilingTileBlock.STATE, state), CeilingTileBlock.UPDATE_ALL_IMMEDIATE);
+        level.setBlock(worldPosition, getBlockState().setValue(STATE, state), CeilingTileBlock.UPDATE_ALL_IMMEDIATE);
     }
 
     @Override
     public int getPowerLevel() {
-        var state = getBlockState().getValue(CeilingTileBlock.STATE);
+        var state = getBlockState().getValue(STATE);
         return switch(state) {
             case LAMP_LOW_POWER -> 1;
             case LAMP_ON -> 2;

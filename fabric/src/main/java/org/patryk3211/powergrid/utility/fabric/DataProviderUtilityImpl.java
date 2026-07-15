@@ -38,9 +38,10 @@ import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseState;
 import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
+import org.patryk3211.powergrid.electricity.transformer.NetherTransformerBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
-import org.patryk3211.powergrid.general.ceilingtile.CeilingTileBlock;
+import org.patryk3211.powergrid.general.ceilingtile.lamp.CeilingTileLampBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.VerticalCommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
@@ -142,11 +143,11 @@ public class DataProviderUtilityImpl {
     // This function needs two models. One for Y axis and one for other axis.
     public static void surfaceFacingTransforms(BlockState state, TriConsumer<Integer, Integer, Boolean> transformer) {
         var facing = state.getValue(FACING);
-        boolean axis_along_first = false;
+        int axis_along = 0;
         if(state.hasProperty(ALONG_FIRST_AXIS)) {
-            axis_along_first = state.getValue(ALONG_FIRST_AXIS);
+            axis_along = state.getValue(ALONG_FIRST_AXIS) ? 1 : 2;
         } else if (state.hasProperty(ROTATION_4)) {
-            axis_along_first = state.getValue(ROTATION_4) % 2 == 1;
+            axis_along = state.getValue(ROTATION_4);
         }
 
         int x = 0, y = 0;
@@ -159,11 +160,17 @@ public class DataProviderUtilityImpl {
             case SOUTH -> y = 90;
         }
 
-        if(!axis_along_first) {
-            if(verticalModel) {
-                y = 90;
-            } else {
-                x = -90;
+        if(verticalModel) {
+            switch(axis_along) {
+                case 0 -> y = -90;
+                case 2 -> y = 90;
+                case 3 -> y = 180;
+            }
+        } else {
+            switch(axis_along) {
+                case 0 -> x = -90;
+                case 1 -> x = 180;
+                case 2 -> x = 90;
             }
         }
 
@@ -323,6 +330,21 @@ public class DataProviderUtilityImpl {
                 .addModel()
                 .condition(TransformerMediumBlock.HORIZONTAL_AXIS, axis)
                 .condition(TransformerMediumBlock.PART, part);
+    }
+
+    public static NonNullBiConsumer<DataGenContext<Block, NetherTransformerBlock>, RegistrateBlockstateProvider> transformerNether() {
+        return (ctx, prov) ->
+                prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+                    int y = 0;
+                    if(state.getValue(HORIZONTAL_AXIS) == Direction.Axis.X)
+                        y -= 90;
+                    var builder = ConfiguredModel.builder();
+                    builder.modelFile(modModel(prov, "block/transformer/nether"));
+                    if(state.getValue(NetherTransformerBlock.PART) % 2 == 1)
+                        y += 180;
+                    builder.rotationY(y);
+                    return builder.build();
+                });
     }
 
     public static <T extends WindingBlock> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> windingModel() {
@@ -527,13 +549,12 @@ public class DataProviderUtilityImpl {
         });
     }
 
-    public static NonNullBiConsumer<DataGenContext<Block, CeilingTileBlock>, RegistrateBlockstateProvider> ceilingTile(String baseFolder) {
+    public static NonNullBiConsumer<DataGenContext<Block, CeilingTileLampBlock>, RegistrateBlockstateProvider> ceilingTileLamp(String baseFolder) {
         return (ctx, prov) -> prov.getVariantBuilder(ctx.get()).forAllStates(state -> {
             var builder = ConfiguredModel.builder();
-            var lampState = state.getValue(CeilingTileBlock.STATE);
+            var lampState = state.getValue(CeilingTileLampBlock.STATE);
             builder.modelFile(modModel(prov, baseFolder + "/ceiling_tile" + switch(lampState) {
-                case EMPTY -> "";
-                case LAMP, LAMP_LOW_POWER, LAMP_ON -> "_light";
+                case EMPTY, LAMP, LAMP_LOW_POWER, LAMP_ON -> "_light";
             }));
             return builder.build();
         });

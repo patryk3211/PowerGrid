@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "axis=x,part=0": {
+      "model": "powergrid:block/transformer/nether",
+      "y": -90
+    },
+    "axis=x,part=1": {
+      "model": "powergrid:block/transformer/nether",
+      "y": 90
+    },
+    "axis=x,part=2": {
+      "model": "powergrid:block/transformer/nether",
+      "y": -90
+    },
+    "axis=x,part=3": {
+      "model": "powergrid:block/transformer/nether",
+      "y": 90
+    },
+    "axis=z,part=0": {
+      "model": "powergrid:block/transformer/nether"
+    },
+    "axis=z,part=1": {
+      "model": "powergrid:block/transformer/nether",
+      "y": 180
+    },
+    "axis=z,part=2": {
+      "model": "powergrid:block/transformer/nether"
+    },
+    "axis=z,part=3": {
+      "model": "powergrid:block/transformer/nether",
+      "y": 180
+    }
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "powergrid:block/electric_pump",
+      "x": 90
+    },
+    "facing=east": {
+      "model": "powergrid:block/electric_pump",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "powergrid:block/electric_pump"
+    },
+    "facing=south": {
+      "model": "powergrid:block/electric_pump",
+      "y": 180
+    },
+    "facing=up": {
+      "model": "powergrid:block/electric_pump",
+      "x": -90
+    },
+    "facing=west": {
+      "model": "powergrid:block/electric_pump",
+      "y": -90
+    }
+  }
+}

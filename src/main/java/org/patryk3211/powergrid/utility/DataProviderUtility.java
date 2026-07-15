@@ -33,7 +33,7 @@ import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.transformer.NetherTransformerBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
-import org.patryk3211.powergrid.general.ceilingtile.CeilingTileBlock;
+import org.patryk3211.powergrid.general.ceilingtile.lamp.CeilingTileLampBlock;
 import org.patryk3211.powergrid.kinetics.base.TunedBlock;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.VerticalCommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
@@ -98,7 +98,7 @@ public class DataProviderUtility {
     }
 
     @ExpectPlatform
-    public static NonNullBiConsumer<DataGenContext<Block, CeilingTileBlock>, RegistrateBlockstateProvider> ceilingTile(String baseFolder) {
+    public static NonNullBiConsumer<DataGenContext<Block, CeilingTileLampBlock>, RegistrateBlockstateProvider> ceilingTileLamp(String baseFolder) {
         throw new AssertionError();
     }
 

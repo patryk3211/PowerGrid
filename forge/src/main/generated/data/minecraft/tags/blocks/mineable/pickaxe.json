@@ -33,6 +33,9 @@
     "powergrid:light_fixture",
     "powergrid:factory_light",
     "powergrid:ceiling_tile",
+    "powergrid:ceiling_tile_lamp",
+    "powergrid:ceiling_tile_connector",
+    "powergrid:ceiling_tile_junction",
     "powergrid:transformer_core",
     "powergrid:transformer_small",
     "powergrid:transformer_medium",
@@ -61,6 +64,7 @@
     "powergrid:crt",
     "powergrid:andesite_encased_crt",
     "powergrid:brass_encased_crt",
-    "powergrid:punch_card_reader"
+    "powergrid:punch_card_reader",
+    "powergrid:ceiling_tile_solar"
   ]
 }

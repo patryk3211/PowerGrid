@@ -1,4 +1,4 @@
-package org.patryk3211.powergrid.general.ceilingtile;
+package org.patryk3211.powergrid.general.ceilingtile.lamp;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRenderer;
@@ -8,13 +8,13 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 
-public class CeilingTileRenderer extends SafeBlockEntityRenderer<CeilingTileBlockEntity> {
-    public CeilingTileRenderer(BlockEntityRendererProvider.Context context) {
+public class CeilingTileLampRenderer extends SafeBlockEntityRenderer<CeilingTileLampBlockEntity> {
+    public CeilingTileLampRenderer(BlockEntityRendererProvider.Context context) {
         super();
     }
 
     @Override
-    protected void renderSafe(CeilingTileBlockEntity be, float partialTicks, PoseStack matrices, MultiBufferSource consumer, int light, int overlay) {
+    protected void renderSafe(CeilingTileLampBlockEntity be, float partialTicks, PoseStack matrices, MultiBufferSource consumer, int light, int overlay) {
         var bulbState = be.getBulbState();
         if(bulbState == null)
             return;
