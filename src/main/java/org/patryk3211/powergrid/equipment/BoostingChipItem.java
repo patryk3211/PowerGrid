@@ -12,6 +12,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
+import org.patryk3211.powergrid.collections.ModdedAdvancements;
 
 public class BoostingChipItem extends Item {
     public BoostingChipItem(Properties properties) {
@@ -46,6 +47,9 @@ public class BoostingChipItem extends Item {
             return stack;
         var boosted = player.getItemInHand(player.getUsedItemHand() == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
         ItemBoostUtils.setBoosted(boosted, true);
+        if(!ModdedAdvancements.BOOSTING_CHIP.isAlreadyAwardedTo(player)) {
+            ModdedAdvancements.BOOSTING_CHIP.awardTo(player);
+        }
         stack.removeTagKey("Polishing");
         stack.hurtAndBreak(1, entityLiving, p -> p.broadcastBreakEvent(p.getUsedItemHand()));
         return stack;
