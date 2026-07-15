@@ -105,6 +105,9 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
         if(curveParams == null)
             return null;
         var box = new AABB(terminalPos1, terminalPos2);
+        if(curveParams.isVertical()) {
+            return box.inflate(getWireEntry().wireThickness());
+        }
         var minY = new MutableFloat(box.minY);
         final float eY = (float) position().y;
         curveParams.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
