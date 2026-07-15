@@ -57,6 +57,7 @@ public class DeployerApplicationRecipes extends DeployingRecipeGen {
     ),
 
     BOOST_DRILL = boost(ModdedItems.PORTABLE_DRILL),
+    BOOST_SAW = boost(ModdedItems.PORTABLE_SAW),
     BOOST_ZAPPER = boost(ModdedItems.ELECTROZAPPER),
     BOOST_BATON = boost(ModdedItems.ELECTROBATON);
 

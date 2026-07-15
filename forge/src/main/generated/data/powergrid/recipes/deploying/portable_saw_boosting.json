@@ -1,0 +1,19 @@
+{
+  "type": "powergrid:boost_recipe",
+  "ingredients": [
+    {
+      "item": "powergrid:portable_saw"
+    },
+    {
+      "item": "powergrid:integrated_circuit"
+    }
+  ],
+  "results": [
+    {
+      "item": "powergrid:portable_saw",
+      "nbt": {
+        "Damage": 0
+      }
+    }
+  ]
+}
