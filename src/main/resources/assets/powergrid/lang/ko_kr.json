@@ -496,6 +496,7 @@
   "powergrid.ponder.fuse.header": "장비 보호하기",
   "powergrid.ponder.fuse.text_1": "퓨즈는 과도한 전류로부터 장치를 보호하는 데 사용됩니다.",
   "powergrid.ponder.fuse.text_2": "만약 전류가 설정된 값보다 높다면 타버릴 것입니다.",
+  "powergrid.ponder.generator_2.text_8": "자여자 발전기는 두가지 요인에 민감합니다.",
   "powergrid.ponder.generator_clutch.header": "운동 에너지 제어",
   "powergrid.ponder.generator_clutch.text_1": "발전기 클러치는 모든 발전기 조립체의 기초적인 부품입니다.",
   "powergrid.ponder.generator_clutch.text_2": "이는 운동 에너지 네트워크와 발전기 축 사이에 약한 연결을 제공합니다.",
