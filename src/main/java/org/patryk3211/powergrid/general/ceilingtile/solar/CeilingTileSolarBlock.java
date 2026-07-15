@@ -13,11 +13,12 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
+import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
 import org.patryk3211.powergrid.general.ceilingtile.CeilingBlock;
 
 import java.util.List;
 
-public class CeilingTileSolarBlock extends ElectricBlock implements CeilingBlock, SpecialBlockItemRequirement {
+public class CeilingTileSolarBlock extends ElectricBlock implements CeilingBlock, SpecialBlockItemRequirement, IAcceptConnector {
     private static final VoxelShape SHAPE = box(0, 0, 0, 16, 4, 16);
 
     public CeilingTileSolarBlock(Properties settings) {
