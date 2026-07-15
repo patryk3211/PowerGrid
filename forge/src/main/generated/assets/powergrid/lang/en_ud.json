@@ -159,6 +159,8 @@
   "death.attack.live_wire_cutting": "sǝɹıʍ buıʇʇnɔ uǝɥʍ ןnɟǝɹɐɔ ʇ,usɐʍ %s",
   "death.attack.overloaded_machine": "%s pǝpɐoןɹǝʌo uɐ ʎq pǝןןıʞ sɐʍ %s",
   "death.attack.overloaded_machine.player": "%s ǝdɐɔsǝ oʇ buıʎɹʇ ʇsןıɥʍ %s pǝpɐoןɹǝʌo uɐ ʎq pǝןןıʞ sɐʍ %s",
+  "death.attack.spinning_rotor": "ʇuǝpıɔɔɐ ɹoʇɐɹǝuǝb ɐ uı pǝןןıʞ sɐʍ %s",
+  "death.attack.spinning_rotor.player": "%s ǝdɐɔsǝ oʇ buıʎɹʇ ʇsןıɥʍ ʇuǝpıɔɔɐ ɹoʇɐɹǝuǝb ɐ uı pǝןןıʞ sɐʍ %s",
   "death.attack.zap": "%2$s ʎq pǝddɐz sɐʍ %1$s",
   "death.attack.zap.item": "%3$s buısn %2$s ʎq pǝddɐz sɐʍ %1$s",
   "death.attack.zap.player": "%3$s ǝdɐɔsǝ oʇ buıʎɹʇ ʇsןıɥʍ %2$s ʎq pǝddɐz sɐʍ %1$s",

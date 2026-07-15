@@ -21,7 +21,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang3.mutable.MutableObject;
-import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.*;
@@ -59,6 +58,11 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     public CommutatorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
         source.setFieldStrengthProvider(totalFieldStrength);
+    }
+
+    @Override
+    protected float damageRadius() {
+        return 0;
     }
 
     @Override

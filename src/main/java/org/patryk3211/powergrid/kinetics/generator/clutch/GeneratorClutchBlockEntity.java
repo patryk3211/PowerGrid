@@ -71,7 +71,7 @@ public class GeneratorClutchBlockEntity extends GeneratingKineticBlockEntity imp
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         super.addBehaviours(behaviours);
-        rotorBehaviour = new RotorBehaviour(this, ((IRotorAssemblyPart) getBlockState().getBlock()).getInertia());
+        rotorBehaviour = new RotorBehaviour(this, ((IRotorAssemblyPart) getBlockState().getBlock()).getInertia(), 0);
         rotorBehaviour.forceSource(this);
         rotorBehaviour.setChangeCallback(this::assemblyChanged);
         behaviours.add(rotorBehaviour);

@@ -45,6 +45,9 @@
   "death.attack.electrocution": "%s was electrocuted",
   "death.attack.electrocution.player": "%s was electrocuted whilst trying to escape %s",
 
+  "death.attack.spinning_rotor": "%s was killed in a generator accident",
+  "death.attack.spinning_rotor.player": "%s was killed in a generator accident whilst trying to escape %s",
+
   "powergrid.contraption.assembly.mismatched_panel_facing": "All Solar Panels need to be facing the same direction",
   "powergrid.contraption.assembly.not_enough_panels": "Attached structure does not include enough Solar Panels, a minimum of 1 is required",
   "powergrid.contraption.assembly.invalid_panel_amount": "Sum of Solar Panels is not divisible by 1-9 with less than 26 quotient, add or remove Solar Panels"

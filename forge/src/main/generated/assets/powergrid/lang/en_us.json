@@ -159,6 +159,8 @@
   "death.attack.live_wire_cutting": "%s wasn't careful when cutting wires",
   "death.attack.overloaded_machine": "%s was killed by an overloaded %s",
   "death.attack.overloaded_machine.player": "%s was killed by an overloaded %s whilst trying to escape %s",
+  "death.attack.spinning_rotor": "%s was killed in a generator accident",
+  "death.attack.spinning_rotor.player": "%s was killed in a generator accident whilst trying to escape %s",
   "death.attack.zap": "%1$s was zapped by %2$s",
   "death.attack.zap.item": "%1$s was zapped by %2$s using %3$s",
   "death.attack.zap.player": "%1$s was zapped by %2$s whilst trying to escape %3$s",
