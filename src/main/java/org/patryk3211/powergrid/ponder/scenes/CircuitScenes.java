@@ -506,7 +506,7 @@ public class CircuitScenes {
         scene.idle(90);
 
         scene.overlay().showText(80)
-                .text("They can also come in different sizes, and their text color can be changed")
+                .text("They also come in different sizes, and their text color can be changed")
                 .pointAt(util.vector().of(1.5, 1.0625, 1.2))
                 .placeNearTarget()
                 .attachKeyFrame();
