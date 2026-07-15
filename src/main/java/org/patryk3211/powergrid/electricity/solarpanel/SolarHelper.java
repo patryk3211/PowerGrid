@@ -26,7 +26,20 @@ import java.util.List;
 import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.*;
 
 public class SolarHelper {
-    private static boolean showDebugLines = false;
+    public static final int SOLAR_CONSTANT = 1361;
+    protected static final float SHORT_CURRENT = 9.2f;
+    public static final int CELLS_IN_SERIES = 48;
+    public static final int STRINGS_IN_PARALLEL = 1;
+    protected static final float BETAVOC = -0.0023f;
+    protected static final float ALPHAISC = 0.0005f;
+    protected static final float NOCT = 52;
+    protected static final double I_O = 1.11e-4;
+    protected static final double IDEALITY = 1.8;
+    public static final double DIFFUSE_FRAC = .12;
+    public static final double ALBEDO_FRAC = .08;
+
+    private static boolean showDebugLines = true;
+
     public record DDAHit(BlockPos worldOrLocalPos, AbstractContraptionEntity contraption) {}
 
     public static double[] getTempAdjusted(double irradiance, double cellTemp, double Vt, int stringsInParallel) {

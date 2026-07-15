@@ -1,4 +1,4 @@
-package org.patryk3211.powergrid.electricity.solarpanel;
+package org.patryk3211.powergrid.general.ceilingtile.solar;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -24,7 +24,8 @@ import java.util.*;
 
 import static org.patryk3211.powergrid.electricity.solarpanel.SolarHelper.*;
 
-public class SolarPanelBlockEntity extends ElectricBlockEntity {
+
+public class CeilingTileSolarBlockEntity extends ElectricBlockEntity {
     protected VoltageSourceCoupling sourceCoupling;
     private boolean firstTick = true;
     private float ambientTemp = -2000f;
@@ -32,8 +33,9 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
     private float sunVisibility = 0;
     private boolean skyVisible = false;
     private Vector3d panelNormal;
+    protected Direction facing = Direction.DOWN; //imitate facing on normal horizontal panel
 
-    private final Map<BlockPos, SolarPanelBlockEntity> connectedPanelBEs = new HashMap<>();
+    private final Map<BlockPos, CeilingTileSolarBlockEntity> connectedPanelBEs = new HashMap<>();
     private final Set<BlockPos> connectedPanels = new HashSet<>();
     private BlockPos controller;
     private BlockPos lastKnownPos;
@@ -41,7 +43,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
     private double panelVoltage, panelResistance;
     private boolean valid = true;
 
-    public SolarPanelBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+    public CeilingTileSolarBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
 
@@ -82,7 +84,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
             wires.forEach(TransmissionLinePart::refreshEndpointNodes);
     }
 
-    private void electricalProperties(SolarPanelBlockEntity controller) {
+    private void electricalProperties(CeilingTileSolarBlockEntity controller) {
         var world = getLevel();
         float cloudCover = getWeather(world);
 
@@ -198,8 +200,8 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
             if (blockState.is(ModdedBlocks.SOLAR_PANEL.get())) {
                 if (result.worldOrLocalPos().equals(this.getBlockPos())) {
                     continue;
-                } else if (world.getBlockEntity(result.worldOrLocalPos()) instanceof SolarPanelBlockEntity be) {
-                    if (SolarPanelBlockEntity.areConnected(this, be)){
+                } else if (world.getBlockEntity(result.worldOrLocalPos()) instanceof CeilingTileSolarBlockEntity be) {
+                    if (CeilingTileSolarBlockEntity.areConnected(this, be)){
                         continue;
                     } else {
                         returnValue = 0;
@@ -233,7 +235,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
     }
 
     public void getPlacedBlockRotation() {
-        var face = this.getBlockState().getValue(Rotation4ElectricBlock.FACING).getOpposite();
+        var face = facing.getOpposite();
         var n = face.getNormal();
         panelNormal = new Vector3d(n.getX(), n.getY(), n.getZ());
     }
@@ -302,7 +304,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
             if(!level.isLoaded(controller))
                 return;
             var controllerBE = level.getBlockEntity(controller);
-            if(controllerBE instanceof SolarPanelBlockEntity solar) {
+            if(controllerBE instanceof CeilingTileSolarBlockEntity solar) {
                 solar.connectedPanelBEs.put(worldPosition, this);
             } else {
                 // Controller is gone.
@@ -318,7 +320,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
             if(!level.isLoaded(pos))
                 continue;
             var be = level.getBlockEntity(pos);
-            if(be instanceof SolarPanelBlockEntity solarBE) {
+            if(be instanceof CeilingTileSolarBlockEntity solarBE) {
                 connectedPanelBEs.put(pos, solarBE);
             }
         }
@@ -333,7 +335,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
     @Override
     public void destroy() {
         super.destroy();
-        var axis = getBlockState().getValue(SolarPanelBlock.FACING).getAxis();
+        var axis = facing.getAxis();
         getController().ifPresent(controller -> {
             // Put all panels into the pool
             var toCheck = new ArrayList<>(controller.connectedPanels);
@@ -361,9 +363,9 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
                     }
                 }
                 // Connect the discovered panels together.
-                SolarPanelBlockEntity newController = null;
+                CeilingTileSolarBlockEntity newController = null;
                 for(var pos : island) {
-                    if(!(level.getBlockEntity(pos) instanceof SolarPanelBlockEntity be))
+                    if(!(level.getBlockEntity(pos) instanceof CeilingTileSolarBlockEntity be))
                         continue;
                     newController = be;
                     newController.connectedPanels.clear();
@@ -378,7 +380,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
                 newController.connectedPanels.addAll(island);
                 newController.makeMain();
                 for(var pos : island) {
-                    if(!(level.getBlockEntity(pos) instanceof SolarPanelBlockEntity be))
+                    if(!(level.getBlockEntity(pos) instanceof CeilingTileSolarBlockEntity be))
                         continue;
                     be.controller = newController.getBlockPos();
                     be.makeProxy();
@@ -390,7 +392,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
         });
     }
 
-    public static boolean areConnected(SolarPanelBlockEntity be1, SolarPanelBlockEntity be2) {
+    public static boolean areConnected(CeilingTileSolarBlockEntity be1, CeilingTileSolarBlockEntity be2) {
         if(be1.controller == null && be2.controller == null) {
             // Two separate controllers, they cannot be connected.
             return false;
@@ -410,12 +412,12 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
         return false;
     }
 
-    public Optional<SolarPanelBlockEntity> getController() {
+    public Optional<CeilingTileSolarBlockEntity> getController() {
         if(controller == null)
             return Optional.of(this);
         if(!level.isLoaded(controller))
             return Optional.empty();
-        if(level.getBlockEntity(controller) instanceof SolarPanelBlockEntity be)
+        if(level.getBlockEntity(controller) instanceof CeilingTileSolarBlockEntity be)
             return Optional.of(be);
         return Optional.empty();
     }
@@ -426,7 +428,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
                 .orElse(false);
     }
 
-    public void connect(SolarPanelBlockEntity panel) {
+    public void connect(CeilingTileSolarBlockEntity panel) {
         assert controller == null;
         connectedPanels.add(panel.getBlockPos());
         connectedPanelBEs.put(panel.getBlockPos(), panel);

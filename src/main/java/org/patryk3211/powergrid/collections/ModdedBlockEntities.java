@@ -69,6 +69,7 @@ import org.patryk3211.powergrid.equipment.thermometer.ThermometerRenderer;
 import org.patryk3211.powergrid.general.ceilingtile.junction.CeilingTileJunctionBlockEntity;
 import org.patryk3211.powergrid.general.ceilingtile.lamp.CeilingTileLampBlockEntity;
 import org.patryk3211.powergrid.general.ceilingtile.lamp.CeilingTileLampRenderer;
+import org.patryk3211.powergrid.general.ceilingtile.solar.CeilingTileSolarBlockEntity;
 import org.patryk3211.powergrid.general.ceilingtile.wire.CeilingTileConnectorBlockEntity;
 import org.patryk3211.powergrid.kinetics.base.HalfShaftVisual;
 import org.patryk3211.powergrid.kinetics.base.TunedBlockRenderer;
@@ -406,6 +407,11 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<CeilingTileJunctionBlockEntity> CEILING_TILE_JUNCTION =
             REGISTRATE.blockEntity("ceiling_tile_junction", CeilingTileJunctionBlockEntity::new)
                     .validBlock(ModdedBlocks.CEILING_TILE_JUNCTION)
+                    .register();
+
+    public static final BlockEntityEntry<CeilingTileSolarBlockEntity> CEILING_TILE_SOLAR =
+            REGISTRATE.blockEntity("ceiling_tile_solar", CeilingTileSolarBlockEntity::new)
+                    .validBlock(ModdedBlocks.CEILING_TILE_SOLAR)
                     .register();
 
     public static final BlockEntityEntry<SolarPanelBlockEntity> SOLAR_PANEL =

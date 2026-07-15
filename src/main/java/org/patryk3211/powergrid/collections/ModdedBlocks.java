@@ -105,6 +105,7 @@ import org.patryk3211.powergrid.general.ceilingtile.CeilingTileBlock;
 import org.patryk3211.powergrid.general.ceilingtile.junction.CeilingTileJunctionBlock;
 import org.patryk3211.powergrid.general.ceilingtile.lamp.CeilingTileLampBlock;
 import org.patryk3211.powergrid.general.ceilingtile.solar.CeilingTileSolarBlock;
+import org.patryk3211.powergrid.general.ceilingtile.solar.CeilingTileSolarBlockCTBehaviour;
 import org.patryk3211.powergrid.general.ceilingtile.wire.CeilingTileConnectorBlock;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
@@ -910,6 +911,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::stone)
             .addLayer(() -> RenderType::translucent)
             .transform(axeOrPickaxe())
+            .onRegister(CreateRegistrate.connectedTextures(CeilingTileSolarBlockCTBehaviour::new))
             .loot((tables, block) -> {
                 tables.dropOther(block, SOLAR_PANEL);
                 tables.dropOther(block, CEILING_TILE);
