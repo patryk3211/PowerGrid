@@ -208,6 +208,7 @@
   "powergrid.component.property.neon_tube_ih.summary": "튜브가 점등 상태를 유지하는 데 필요한 최소 전류",
   "powergrid.component.property.neon_tube_vb": "점등 전압",
   "powergrid.component.property.neon_tube_vb.summary": "튜브를 점등시키는 데 필요한 전압",
+  "powergrid.component.property.neon_tube_vertical": "수직",
   "powergrid.component.property.neon_tube_vh": "유지 전압",
   "powergrid.component.property.neon_tube_vh.summary": "점등 후 유지 전압",
   "powergrid.component.property.orientation": "방향",
