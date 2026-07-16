@@ -33,6 +33,8 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
     private double Ieq = 0;
     private double prevV;
 
+    public int iterationLimit = -1;
+
     public PNJunctionWire(double reverseSaturationCurrent, double seriesResistance, double temperatureCelsius, double idealityFactor, IElectricNode node1, IElectricNode node2) {
         super(node1, node2);
         this.reverseSaturationCurrent = reverseSaturationCurrent;
@@ -95,6 +97,8 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
 
     @Override
     public void startIteration(int iteration) {
+        if(iterationLimit > 0 && iteration > iterationLimit)
+            return;
         double k = 1.380649e-23; // Boltzmann constant in J/K
         double q = 1.602176634e-19; // Elementary charge in C
         double V_T = (k * (temperatureCelsius + 273.15)) / q; // Thermal voltage in V
