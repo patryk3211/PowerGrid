@@ -45,4 +45,24 @@ public class SolarPanelCTBehaviour extends ConnectedTextureBehaviour.Base {
         }
         return false;
     }
+
+    @Override
+    protected Direction getUpDirection(BlockAndTintGetter reader, BlockPos pos, BlockState state, Direction face) {
+        if(face != state.getValue(SolarPanelBlock.FACING))
+            return super.getUpDirection(reader, pos, state, face);
+        Direction.Axis axis = face.getAxis();
+        return axis.isHorizontal() ? Direction.DOWN : Direction.NORTH;
+    }
+
+    @Override
+    protected Direction getRightDirection(BlockAndTintGetter reader, BlockPos pos, BlockState state, Direction face) {
+        if(face != state.getValue(SolarPanelBlock.FACING))
+            return super.getRightDirection(reader, pos, state, face);
+        Direction.Axis axis = face.getAxis();
+        return switch(axis) {
+            case X -> Direction.NORTH;
+            case Y -> Direction.WEST;
+            case Z -> Direction.EAST;
+        };
+    }
 }
