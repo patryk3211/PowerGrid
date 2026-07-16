@@ -58,7 +58,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
         seriesResistor = builder.connect((float) 1, node, builder.terminalNode(0));
         junction = new PNJunctionWire(
                 I_O, 0.075f,
-                22, IDEALITY * CELLS_IN_SERIES,
+                ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO ? 22 : ambientTemp, IDEALITY * CELLS_IN_SERIES,
                 node, builder.terminalNode(1)
         );
         junction.iterationLimit = 10;
@@ -122,7 +122,8 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
             ambientTemp = ThermalBehaviour.getAmbientTemperature(level, this.getBlockPos());
             if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
                 ambientTemp = 22f;
-            junction.setTemperatureCelsius(ambientTemp);
+            if(junction != null)
+                junction.setTemperatureCelsius(ambientTemp);
             firstTick = false;
         }
 
