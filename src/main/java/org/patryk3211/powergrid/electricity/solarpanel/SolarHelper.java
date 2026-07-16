@@ -23,17 +23,19 @@ import org.patryk3211.powergrid.collections.ModdedTags;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.*;
-
 public class SolarHelper {
     public static final int SOLAR_CONSTANT = 1361;
+    // I_sc
     protected static final float SHORT_CURRENT = 9.2f;
     public static final int CELLS_IN_SERIES = 48;
     public static final int STRINGS_IN_PARALLEL = 1;
+    // V_oc temperature adjustment factor
     protected static final float BETAVOC = -0.0023f;
+    // I_sc temperature adjustment factor
     protected static final float ALPHAISC = 0.0005f;
     protected static final float NOCT = 52;
     protected static final double I_O = 1.11e-4;
+    // Diode ideality factor
     protected static final double IDEALITY = 1.8;
     public static final double DIFFUSE_FRAC = .12;
     public static final double ALBEDO_FRAC = .08;
@@ -204,6 +206,23 @@ public class SolarHelper {
             } else return true;
         }
         return true;
+    }
+
+    public static void electricalProperties(double irradiance, float ambientTemp, ISolarPropertyConsumer controller) {
+        var cellTemp = getCellTemp(irradiance, ambientTemp);
+        var Vt = 8.617e-5 * (cellTemp + 273.15);
+        double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt, STRINGS_IN_PARALLEL);
+        double Isc_t = adjusted[0];
+        double Voc_t = adjusted[1] * CELLS_IN_SERIES;
+
+        double Vmp = Voc_t * 0.75;
+        double Imp = Isc_t * 0.9;
+
+        double Rs = (Voc_t - Vmp) / (16 * Imp);
+        double Rsh = 5 * Vmp / (Isc_t - Imp);
+        double Ipv = Isc_t * (Rsh + Rs) / Rsh;
+
+        controller.accept(Rs, Rsh, Ipv);
     }
 
     private static void debugLines(ServerLevel serverLevel, Vec3 pos, SimpleParticleType particle) {

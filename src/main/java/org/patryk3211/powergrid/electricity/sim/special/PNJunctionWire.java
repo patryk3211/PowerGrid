@@ -148,4 +148,9 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         residual.add(node1.getIndex(), Ieq);
         residual.add(node2.getIndex(), -Ieq);
     }
+
+    @Override
+    public String toString() {
+        return String.format("PNJunction(Is=%g)#%d", reverseSaturationCurrent, System.identityHashCode(this));
+    }
 }

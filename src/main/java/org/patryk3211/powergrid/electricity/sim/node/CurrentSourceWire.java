@@ -69,4 +69,9 @@ public class CurrentSourceWire extends AbstractElectricWire implements IStaticRe
     public double getCurrent() {
         return current;
     }
+
+    @Override
+    public String toString() {
+        return String.format("CurrentSourceWire(I=%g,G=%g)", current, conductance);
+    }
 }
