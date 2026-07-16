@@ -25,7 +25,7 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
     private double temperatureCelsius;
     private final double reverseSaturationCurrent;
     private final double seriesResistance;
-    private final double idealityFactor;
+    private double idealityFactor;
     private final double breakdownVoltage;
     private final double breakdownSaturationCurrent;
 
@@ -76,8 +76,8 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         if(V1 < Vcrit * 0.5f && V0 < Vcrit * 0.5f)
             return V1;
         var dV = V1 - V0;
-        if(V1 > Vcrit && dV > V_T * 2)
-            return V0 + V_T * Math.log1p(dV / V_T);
+        if(V1 > Vcrit && dV > idealityFactor * V_T * 2)
+            return V0 + idealityFactor * V_T * Math.log1p(dV / idealityFactor * V_T);
         return V1;
     }
 
@@ -147,6 +147,10 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
     public void addResidual(IResidualAdder residual) {
         residual.add(node1.getIndex(), Ieq);
         residual.add(node2.getIndex(), -Ieq);
+    }
+
+    public void setIdealityFactor(double idealityFactor) {
+        this.idealityFactor = idealityFactor;
     }
 
     @Override

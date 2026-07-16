@@ -44,6 +44,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
     private BlockPos lastKnownPos;
 
     private double Rs, Rsh, I;
+    private int panelCount;
     private boolean valid = true;
 
     public SolarPanelBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -61,7 +62,6 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
                 ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO ? 22 : ambientTemp, IDEALITY * CELLS_IN_SERIES,
                 node, builder.terminalNode(1)
         );
-        junction.iterationLimit = 10;
         builder.add(currentSource);
         builder.add(seriesResistor);
         builder.add(junction);
@@ -114,6 +114,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
         this.Rsh += Rsh;
         if(I > this.I)
             this.I = I;
+        ++panelCount;
     }
 
     @Override
@@ -129,7 +130,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
 
         if (currentSource == null) return;
 
-        I = 0; Rs = 0; Rsh = 0;
+        I = 0; Rs = 0; Rsh = 0; panelCount = 0;
         electricalProperties(this);
         var iter = connectedPanelBEs.values().iterator();
         while(iter.hasNext()) {
@@ -150,6 +151,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
             Rsh = 10000;
         if(!Double.isFinite(I))
             I = 0;
+        junction.setIdealityFactor(IDEALITY * CELLS_IN_SERIES * panelCount);
 
         seriesResistor.setResistance(Rs);
         currentSource.setConductance(1 / Rsh);
