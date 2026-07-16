@@ -457,4 +457,66 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
         panel.makeProxy();
         notifyUpdate();
     }
+
+    private static boolean isPast(BlockPos pos, int splittingCord, Direction splittingPlane) {
+        var cord = pos.get(splittingPlane.getAxis());
+        if(splittingPlane.getAxisDirection() == Direction.AxisDirection.POSITIVE) {
+            return cord > splittingCord;
+        } else {
+            return cord < splittingCord;
+        }
+    }
+
+    public static void splitMultiblock(SolarPanelBlockEntity controller, int splittingCoordinate, Direction splittingPlane) {
+        if(isPast(controller.worldPosition, splittingCoordinate, splittingPlane)) {
+            splittingCoordinate += splittingPlane.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 1 : -1;
+            splittingPlane = splittingPlane.getOpposite();
+        }
+        var level = controller.level;
+        assert level != null;
+        var wires = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(controller.electricBehaviour);
+
+        var iter = controller.connectedPanels.iterator();
+        SolarPanelBlockEntity secondController = null;
+        while(iter.hasNext()) {
+            var pos = iter.next();
+            if(isPast(pos, splittingCoordinate, splittingPlane)) {
+                var be = level.getBlockEntity(pos);
+                if(!(be instanceof SolarPanelBlockEntity solar))
+                    continue;
+                if(secondController == null) {
+                    secondController = solar;
+                    secondController.controller = null;
+                    secondController.connectedPanels.clear();
+                    secondController.connectedPanelBEs.clear();
+                    secondController.makeMain();
+                } else {
+                    secondController.connect(solar);
+                }
+                iter.remove();
+            }
+        }
+        controller.notifyUpdate();
+        wires.forEach(TransmissionLinePart::refreshEndpointNodes);
+    }
+
+    public static void mergeMultiblock(SolarPanelBlockEntity controller1, SolarPanelBlockEntity controller2) {
+        assert controller1.level != null && controller1.level == controller2.level;
+        var level = controller1.level;
+        var wires1 = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(controller1.electricBehaviour);
+        var wires2 = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(controller2.electricBehaviour);
+
+        for(var pos : controller2.connectedPanels) {
+            var be = level.getBlockEntity(pos);
+            if(!(be instanceof SolarPanelBlockEntity solar))
+                continue;
+            controller1.connect(solar);
+        }
+        controller2.connectedPanels.clear();
+        controller2.connectedPanelBEs.clear();
+        controller1.connect(controller2);
+
+        wires1.forEach(TransmissionLinePart::refreshEndpointNodes);
+        wires2.forEach(TransmissionLinePart::refreshEndpointNodes);
+    }
 }
