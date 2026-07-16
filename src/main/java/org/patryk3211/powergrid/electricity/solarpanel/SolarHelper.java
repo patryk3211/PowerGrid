@@ -26,7 +26,7 @@ import java.util.List;
 public class SolarHelper {
     public static final int SOLAR_CONSTANT = 1361;
     // I_sc
-    protected static final float SHORT_CURRENT = 9.2f;
+    protected static final float SHORT_CURRENT = 2.95f;
     public static final int CELLS_IN_SERIES = 48;
     public static final int STRINGS_IN_PARALLEL = 1;
     // V_oc temperature adjustment factor
@@ -34,9 +34,11 @@ public class SolarHelper {
     // I_sc temperature adjustment factor
     protected static final float ALPHAISC = 0.0005f;
     protected static final float NOCT = 52;
-    protected static final double I_O = 1.11e-4;
+    protected static final double I_O = 4.07e-6;
     // Diode ideality factor
-    protected static final double IDEALITY = 1.8;
+    protected static final double IDEALITY = 1.5;
+    protected static final double Vmp = 20.34;
+    protected static final double Imp = 2.7;
     public static final double DIFFUSE_FRAC = .12;
     public static final double ALBEDO_FRAC = .08;
 
@@ -215,11 +217,11 @@ public class SolarHelper {
         double Isc_t = adjusted[0];
         double Voc_t = adjusted[1] * CELLS_IN_SERIES;
 
-        double Vmp = Voc_t * 0.75;
-        double Imp = Isc_t * 0.9;
+        double Vmp_T = Vmp * (1 - BETAVOC * (cellTemp - 25));
+        double Imp_T = Imp * (1 - ALPHAISC * (cellTemp - 25));
 
-        double Rs = (Voc_t - Vmp) / (16 * Imp);
-        double Rsh = 5 * Vmp / (Isc_t - Imp);
+        double Rs = (Voc_t - Vmp_T) / (16 * Imp_T);
+        double Rsh = 5 * Vmp_T / (Isc_t - Imp_T);
         double Ipv = Isc_t * (Rsh + Rs) / Rsh;
 
         controller.accept(Rs, Rsh, Ipv);

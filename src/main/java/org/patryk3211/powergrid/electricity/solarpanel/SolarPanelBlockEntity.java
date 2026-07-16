@@ -122,6 +122,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
             ambientTemp = ThermalBehaviour.getAmbientTemperature(level, this.getBlockPos());
             if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
                 ambientTemp = 22f;
+            junction.setTemperatureCelsius(ambientTemp);
             firstTick = false;
         }
 
