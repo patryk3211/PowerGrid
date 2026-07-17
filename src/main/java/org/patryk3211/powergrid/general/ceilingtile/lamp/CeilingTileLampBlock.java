@@ -26,12 +26,14 @@ import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
+import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
 import org.patryk3211.powergrid.electricity.light.bulb.ILightBulb;
+import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 import org.patryk3211.powergrid.general.ceilingtile.CeilingBlock;
 
 import java.util.List;
 
-public class CeilingTileLampBlock extends ElectricBlock implements IBE<CeilingTileLampBlockEntity>, CeilingBlock, SpecialBlockItemRequirement {
+public class CeilingTileLampBlock extends ElectricBlock implements IBE<CeilingTileLampBlockEntity>, IAcceptCord, CeilingBlock, SpecialBlockItemRequirement {
     public static final EnumProperty<State> STATE = EnumProperty.create("state", State.class);
 
     private static final VoxelShape SHAPE = Shapes.or(

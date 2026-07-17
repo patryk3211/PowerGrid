@@ -1509,4 +1509,108 @@ public class DeviceScenes {
 
         scene.markAsFinished();
     }
+    public static void factoryLight(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("factory_light", "Lighting up your warehouse 101");
+        scene.configureBasePlate(0, 0, 5);
+        scene.showBasePlate();
+        scene.setSceneOffsetY(-2);
+
+        var poles = util.select().fromTo(1, 1, 4, 3, 5, 4)
+        .add(util.select().fromTo(1,5,4,1,6, 2)
+        .add(util.select().fromTo(3,5,4,3,6, 2)));
+        var light = util.select().fromTo(1, 4, 2, 3, 4, 2).add(util.select().position(2, 5, 2));
+        var connector1 = util.grid().at(3,6,2);
+        var connector2 = util.grid().at(1,6,2);
+        var device_connector = util.grid().at(2,5,2);
+        scene.idle(30);
+        scene.world().showSection(poles, Direction.DOWN);
+        scene.idle(20);
+        scene.world().showSection(light, Direction.UP);
+        scene.electric().addSource(connector1, 0, 120);
+        scene.electric().addSource(connector2, 0, 0);
+        scene.idle(10);
+        scene.electric().connect(connector1, 0, device_connector, 1);
+        scene.idle(10);
+        scene.electric().connect(connector2, 0, device_connector, 0);
+        scene.idle(20);
+        ItemStack bulb = new ItemStack(ModdedItems.LIGHT_BULB);
+        Vec3 frontVec = util.vector().blockSurface(util.grid().at(1, 4, 3), Direction.WEST);
+                //.add(-.125, 0, 0);
+
+        scene.overlay().showControls(frontVec, Pointing.DOWN, 40).rightClick()
+                .withItem(bulb);
+        scene.overlay().showOutlineWithText(util.select().fromTo(1, 4, 2, 3, 4, 2), 80)
+                .colored(PonderPalette.BLUE)
+                .pointAt(util.vector().blockSurface(util.grid().at(1, 4, 2), Direction.WEST))
+                .placeNearTarget()
+                .attachKeyFrame()
+                        .text("Right-click to add any light bulb");
+        scene.idle(90);
+        scene.electric().tickFor(20);
+    }
+    public static void factoryLightTall(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("factory_light_tall", "Using the Factory Light for tall buildings");
+        scene.configureBasePlate(0, 0, 5);
+        scene.showBasePlate();
+        scene.setSceneOffsetY(-3);
+        scene.scaleSceneView(0.8f);
+        scene.idle(30);
+        scene.world().showSection(util.select().fromTo(0,1,0,4, 8, 4), Direction.DOWN);
+        scene.electric().addSource(util.grid().at(3, 8 , 4), 0, 120);
+        scene.electric().addSource(util.grid().at(1, 8 , 4), 0, 0);
+        scene.idle(10);
+        scene.electric().connect(util.grid().at(3, 8 , 4), 0, util.grid().at(2, 8 , 3), 1);
+        scene.idle(10);
+        scene.electric().connect(util.grid().at(1, 8 , 4), 0, util.grid().at(2, 8 , 3), 0);
+        scene.idle(20);
+        scene.overlay().showOutlineWithText(util.select().position(2,7,3), 80)
+                .colored(PonderPalette.BLUE)
+                .pointAt(util.vector().blockSurface(util.grid().at(2, 7, 3), Direction.WEST))
+                .placeNearTarget()
+                .attachKeyFrame()
+                .text("A Factory light can provide a light level of 15 to the top face of a block up to 16 blocks below it");
+        scene.idle(10);
+        scene.overlay().showText(60)
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(util.grid().at(2, 0,3)))
+                .text("15");
+    }
+    public static void factoryLightConnect(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("factory_light_connect", "Connecting Factory Lights together");
+        scene.configureBasePlate(0, 0, 5);
+        scene.showBasePlate();
+        var left = util.select().fromTo(4, 1, 0, 4, 1, 2);
+        var back = util.select().fromTo(2, 1, 4, 0, 1, 4);
+        var both = util.select().fromTo(0, 1, 0, 2, 1, 2);
+        scene.idle(30);
+        scene.world().showSection(left, Direction.DOWN);
+        scene.idle(10);
+        scene.overlay().showOutlineWithText(left, 60)
+                .colored(PonderPalette.BLUE)
+                .pointAt(util.vector().blockSurface(util.grid().at(4, 1, 2), Direction.WEST))
+                .placeNearTarget()
+                .attachKeyFrame()
+                .text("Factory Lights can be connected to adjacent ones like this");
+        scene.idle(70);
+        scene.world().showSection(back, Direction.DOWN);
+        scene.idle(10);
+        scene.overlay().showOutlineWithText(back, 40)
+                .colored(PonderPalette.BLUE)
+                .pointAt(util.vector().blockSurface(util.grid().at(0, 1, 4), Direction.WEST))
+                .placeNearTarget()
+                .attachKeyFrame()
+                .text("Or like this");
+        scene.idle(50);
+        scene.world().showSection(both, Direction.DOWN);
+        scene.idle(10);
+        scene.overlay().showOutlineWithText(both, 40)
+                .colored(PonderPalette.BLUE)
+                .pointAt(util.vector().blockSurface(util.grid().at(0, 1, 1), Direction.WEST))
+                .placeNearTarget()
+                .attachKeyFrame()
+                .text("But not this");
+    }
 }

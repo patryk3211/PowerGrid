@@ -151,5 +151,10 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedItems.POTENTIOMETER, "circuit/potentiometer", CircuitScenes::potentiometer, PowerGridPonderTags.CIRCUIT_COMPONENTS);
         HELPER.addStoryBoard(ModdedItems.REGULATOR_TUBE, "circuit/regulator_tube", CircuitScenes::regulatorTube, PowerGridPonderTags.CIRCUIT_COMPONENTS);
         HELPER.addStoryBoard(ModdedItems.NEON_BULB, "circuit/neon", CircuitScenes::neonBulb, PowerGridPonderTags.CIRCUIT_COMPONENTS);
+        HELPER.forComponents(ModdedBlocks.FACTORY_LIGHT)
+                .addStoryBoard("factory_light/factory_light", DeviceScenes::factoryLight, PowerGridPonderTags.ELECTRIC_DEVICES)
+                .addStoryBoard("factory_light/factory_light_tall", DeviceScenes::factoryLightTall, PowerGridPonderTags.ELECTRIC_DEVICES)
+                .addStoryBoard("factory_light/factory_light_connect", DeviceScenes::factoryLightConnect, PowerGridPonderTags.ELECTRIC_DEVICES);
+
     }
 }
