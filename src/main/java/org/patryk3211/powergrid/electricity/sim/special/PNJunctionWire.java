@@ -77,7 +77,7 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
             return V1;
         var dV = V1 - V0;
         if(V1 > Vcrit && dV > idealityFactor * V_T * 2)
-            return V0 + idealityFactor * V_T * Math.log1p(dV / idealityFactor * V_T);
+            return V0 + idealityFactor * V_T * Math.log1p(dV / (idealityFactor * V_T));
         return V1;
     }
 
