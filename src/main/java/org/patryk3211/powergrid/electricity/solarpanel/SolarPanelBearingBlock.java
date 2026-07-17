@@ -139,7 +139,7 @@ public class SolarPanelBearingBlock extends ElectricKineticBlock implements IBE<
         Direction preferred = getPreferredFacing(context);
         if (preferred == null || (context.getPlayer() != null && context.getPlayer()
                 .isShiftKeyDown())) {
-            Direction nearestLookingDirection = context.getHorizontalDirection();
+            Direction nearestLookingDirection = context.getNearestLookingDirection();
             return defaultBlockState().setValue(FACING, context.getPlayer() != null && context.getPlayer()
                     .isShiftKeyDown() ? nearestLookingDirection : nearestLookingDirection.getOpposite());
         }
@@ -159,9 +159,6 @@ public class SolarPanelBearingBlock extends ElectricKineticBlock implements IBE<
 
     @Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
-        if (context.getClickedFace().getAxis() != Direction.Axis.Y || context.getClickedFace().getAxis() != Direction.Axis.Y) {
-            return InteractionResult.PASS;
-        }
         var be = context.getLevel().getBlockEntity(context.getClickedPos());
         if (be instanceof SolarPanelBearingBlockEntity blockEntity) {
             if (!context.getLevel().isClientSide) {
