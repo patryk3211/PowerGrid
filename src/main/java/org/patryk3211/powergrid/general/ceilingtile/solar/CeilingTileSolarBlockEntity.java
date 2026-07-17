@@ -31,6 +31,7 @@ import java.util.*;
 
 import static org.patryk3211.powergrid.electricity.solarpanel.SolarHelper.*;
 import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.isPast;
+import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.maxPanels;
 
 
 public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements ISolarPropertyConsumer {
@@ -452,12 +453,6 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
         return Optional.empty();
     }
 
-    public boolean canAccept() {
-        return getController()
-                .map(be -> be.connectedPanels.size() < 24)
-                .orElse(false);
-    }
-
     public void connect(CeilingTileSolarBlockEntity panel) {
         assert controller == null;
         connectedPanels.add(panel.getBlockPos());
@@ -503,6 +498,8 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
 
     public static void mergeMultiblock(CeilingTileSolarBlockEntity controller1, CeilingTileSolarBlockEntity controller2) {
         assert controller1.level != null && controller1.level == controller2.level;
+        if(controller1.connectedPanels.size() + controller2.connectedPanels.size() + 2 > maxPanels())
+            return;
         var level = controller1.level;
         var wires1 = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(controller1.electricBehaviour);
         var wires2 = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(controller2.electricBehaviour);

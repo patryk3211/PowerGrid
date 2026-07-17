@@ -14,6 +14,7 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3d;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.*;
@@ -444,9 +445,13 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
         return Optional.empty();
     }
 
+    public static int maxPanels() {
+        return ModdedConfigs.server().electricity.solarPanelMaxSize.get();
+    }
+
     public boolean canAccept() {
         return getController()
-                .map(be -> be.connectedPanels.size() < 24)
+                .map(be -> be.connectedPanels.size() < maxPanels() - 1)
                 .orElse(false);
     }
 
@@ -504,6 +509,8 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
 
     public static void mergeMultiblock(SolarPanelBlockEntity controller1, SolarPanelBlockEntity controller2) {
         assert controller1.level != null && controller1.level == controller2.level;
+        if(controller1.connectedPanels.size() + controller2.connectedPanels.size() + 2 > maxPanels())
+            return;
         var level = controller1.level;
         var wires1 = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(controller1.electricBehaviour);
         var wires2 = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(controller2.electricBehaviour);
