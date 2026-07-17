@@ -15,6 +15,7 @@ import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Power;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
@@ -51,6 +52,9 @@ public class FEInverterBlock extends Rotation4ElectricBlock implements IBE<FEInv
 
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
+        Power.max(FEInverterBlockEntity.energyBufferSize()
+                / ModdedConfigs.server().electricity.forgeEnergyPerWatt.getF()
+                / ModdedConfigs.server().electricity.forgeEnergyPerVolt.getF(), player, tooltip);
         Lang.translate("tooltip.device_connector.rate").style(ChatFormatting.GRAY).addTo(tooltip);
         LangBuilder valueText = Lang.builder().add(Component.nullToEmpty(" "));
         valueText.add(Lang.number(ModdedConfigs.server().electricity.forgeEnergyPerWatt.getF()))

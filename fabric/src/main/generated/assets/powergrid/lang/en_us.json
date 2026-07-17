@@ -70,6 +70,7 @@
   "block.powergrid.factory_light": "Factory Light",
   "block.powergrid.factory_light_light": "Factory Light Light",
   "block.powergrid.fe_inverter": "FE Inverter",
+  "block.powergrid.fe_inverter.tooltip.summary": "Converts _Forge Energy_ into _Electricity_ using advanced technology. Use the _Control Pin_ to adjust the output voltage and improve power conversion.",
   "block.powergrid.fuse_holder": "Fuse Holder",
   "block.powergrid.generator_clutch": "Generator Clutch",
   "block.powergrid.generator_commutator": "Generator Commutator",
