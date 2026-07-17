@@ -66,10 +66,22 @@ public class ModdedAdvancements implements DataProvider {
             .description("Make acid")
             .after(ROOT)
             .whenIconCollected()),
+    CIRCUIT_BOARD = create("circuit_board", b -> b
+            .icon(ModdedBlocks.CIRCUIT_BOARD)
+            .title("Miniaturization")
+            .description("Obtain a Circuit Board")
+            .after(ACID)
+            .whenIconCollected()),
     FE_INVERTER = create("fe_inverter", b -> b
             .icon(ModdedBlocks.FE_INVERTER)
             .title("How does this even work?")
             .description("Create a FE Inverter")
+            .after(ELECTRICAL_AGE)
+            .whenIconCollected()),
+    SOLAR_PANEL = create("solar_panel", b -> b
+            .icon(ModdedBlocks.SOLAR_PANEL)
+            .title("Going green")
+            .description("Obtain a Solar Panel")
             .after(ELECTRICAL_AGE)
             .whenIconCollected()),
 
