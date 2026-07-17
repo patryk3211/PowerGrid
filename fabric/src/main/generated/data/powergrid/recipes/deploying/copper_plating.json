@@ -5,7 +5,7 @@
       "item": "minecraft:copper_block"
     },
     {
-      "item": "create:copper_sheet"
+      "tag": "c:copper_plates"
     }
   ],
   "results": [

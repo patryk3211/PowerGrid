@@ -108,6 +108,10 @@ public class RecipeTags {
         return AllItems.CARDBOARD;
     }
 
+    public static TagKey<Item> woodenSlab() {
+        return ItemTags.WOODEN_SLABS;
+    }
+
     public static ItemLike andesiteAlloy() {
         return AllItems.ANDESITE_ALLOY;
     }

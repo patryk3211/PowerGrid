@@ -46,7 +46,7 @@ public class DeployerApplicationRecipes extends DeployingRecipeGen {
 
     COPPER_PLATING = create("copper_plating", b -> b
             .require(Items.COPPER_BLOCK)
-            .require(AllItems.COPPER_SHEET)
+            .require(RecipeTags.copperSheet())
             .output(ModdedBlocks.COPPER_PLATING)
     ),
 

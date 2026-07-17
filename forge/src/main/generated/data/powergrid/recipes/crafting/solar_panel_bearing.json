@@ -6,7 +6,7 @@
       "item": "powergrid:copper_plating"
     },
     "S": {
-      "item": "minecraft:oak_slab"
+      "tag": "minecraft:wooden_slabs"
     },
     "Z": {
       "item": "powergrid:conductive_casing"

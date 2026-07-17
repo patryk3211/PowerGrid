@@ -39,15 +39,15 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('A', andesiteAlloy())
             ),
 
-    SOLAR_PANEL_BEARING= create(ModdedBlocks.SOLAR_PANEL_BEARING)
+    SOLAR_PANEL_BEARING = create(ModdedBlocks.SOLAR_PANEL_BEARING)
             .unlockedBy(AllItems.ANDESITE_ALLOY::get)
             .viaShaped(b -> b
                     .pattern("S")
                     .pattern("P")
                     .pattern("Z")
-                    .define('S', Items.OAK_SLAB)
+                    .define('S', woodenSlab())
                     .define('P', ModdedBlocks.COPPER_PLATING)
-                    .define('Z', ModdedBlocks.CONDUCTIVE_CASING)
+                    .define('Z', conductiveCasing())
             ),
             FACTORY_LIGHT = create(ModdedBlocks.FACTORY_LIGHT)
                     .unlockedBy(AllItems.ANDESITE_ALLOY::get)
