@@ -2,6 +2,8 @@ package org.patryk3211.powergrid.electricity.solarpanel;
 
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.foundation.block.IBE;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.math.VoxelShaper;
 import net.minecraft.core.BlockPos;
@@ -75,6 +77,14 @@ public class SolarPanelBearingBlock extends ElectricKineticBlock implements IBE<
             return InteractionResult.FAIL;
         if (player.getItemInHand(handIn)
                 .isEmpty()) {
+            var behavior = BlockEntityBehaviour.get(worldIn, pos, SolarPanelBearingBlockScrollBehaviour.TYPE);
+            if(behavior != null) {
+                if(behavior.getSlotPositioning() instanceof ValueBoxTransform.Sided sided)
+                    sided.fromSide(hit.getDirection());
+                boolean hovering = behavior.testHit(hit.getLocation());
+                if(hovering)
+                    return InteractionResult.PASS;
+            }
             if (worldIn.isClientSide)
                 return InteractionResult.SUCCESS;
             withBlockEntityDo(worldIn, pos, be -> {
