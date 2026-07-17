@@ -90,11 +90,7 @@ public class SolarPanelBlock extends DirectionalElectricBlock implements IBE<Sol
         return true;
     }
 
-    @Override
-    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
-        var facing = state.getValue(FACING);
-        if(context.getClickedFace().getAxis() != facing.getAxis())
-            return super.onWrenched(state, context);
+    public static Direction getInteractionDirection(Direction facing, UseOnContext context) {
         var pos = context.getClickedPos();
         var clickLoc = context.getClickLocation();
         var relativeLoc = clickLoc.subtract(Vec3.atCenterOf(pos));
@@ -117,6 +113,16 @@ public class SolarPanelBlock extends DirectionalElectricBlock implements IBE<Sol
                 maxDir = dir;
             }
         }
+        return maxDir;
+    }
+
+    @Override
+    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        var facing = state.getValue(FACING);
+        if(context.getClickedFace().getAxis() != facing.getAxis())
+            return super.onWrenched(state, context);
+        var pos = context.getClickedPos();
+        Direction maxDir = getInteractionDirection(facing, context);
         if(maxDir == null)
             return super.onWrenched(state, context);
         // Split or merge panels.

@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -115,5 +116,10 @@ public class CeilingTileJunctionBlock extends ElectricBlock implements IBE<Ceili
         return new TerminalBoundingBox(IDecoratedTerminal.CORD,
                 point.x - 1.5, point.y - 1.5, point.z - 1.5,
                 point.x + 1.5, point.y + 1.5, point.z + 1.5);
+    }
+
+    @Override
+    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+        return ModdedBlocks.CORD_JUNCTION.asStack();
     }
 }

@@ -16,17 +16,28 @@ import org.joml.Vector3d;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
-import org.patryk3211.powergrid.electricity.base.*;
-import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
+import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
+import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
+import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWire;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
+import org.patryk3211.powergrid.electricity.solarpanel.ISolarPropertyConsumer;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarHelper;
 
 import java.util.*;
 
 import static org.patryk3211.powergrid.electricity.solarpanel.SolarHelper.*;
+import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.isPast;
 
 
-public class CeilingTileSolarBlockEntity extends ElectricBlockEntity {
-    protected VoltageSourceCoupling sourceCoupling;
+public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements ISolarPropertyConsumer {
+    protected CurrentSourceWire currentSource;
+    protected ElectricWire seriesResistor;
+    protected PNJunctionWire junction;
+
     private boolean firstTick = true;
     private float ambientTemp = -2000f;
     private int rayCastDelay = 0;
@@ -40,7 +51,8 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity {
     private BlockPos controller;
     private BlockPos lastKnownPos;
 
-    private double panelVoltage, panelResistance;
+    private double Rs, Rsh, I;
+    private int panelCount;
     private boolean valid = true;
 
     public CeilingTileSolarBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -50,7 +62,17 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity {
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        sourceCoupling = builder.addInternalNode(VoltageSourceCoupling.class, builder.terminalNode(0), builder.terminalNode(1), 0.01f);
+        var node = builder.addInternalNode();
+        currentSource = new CurrentSourceWire(node, builder.terminalNode(1), 0.00001f);
+        seriesResistor = builder.connect((float) 1, node, builder.terminalNode(0));
+        junction = new PNJunctionWire(
+                I_O, 0.075f,
+                ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO ? 22 : ambientTemp, IDEALITY * CELLS_IN_SERIES,
+                node, builder.terminalNode(1)
+        );
+        builder.add(currentSource);
+        builder.add(seriesResistor);
+        builder.add(junction);
     }
 
     private void makeProxy() {
@@ -65,7 +87,9 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity {
         electricBehaviour.inheritConnections(old);
         old.pause();
         attachBehaviourLate(electricBehaviour);
-        sourceCoupling = null;
+        currentSource = null;
+        seriesResistor = null;
+        junction = null;
         if(wires != null)
             wires.forEach(TransmissionLinePart::refreshEndpointNodes);
     }
@@ -85,26 +109,20 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity {
     }
 
     private void electricalProperties(CeilingTileSolarBlockEntity controller) {
-        var world = getLevel();
-        float cloudCover = getWeather(world);
+        float cloudCover = getWeather(level);
 
         getPlacedBlockRotation();
-        var irradiance = getIrradiance(getAM(world), cloudCover, this.getBlockPos().getY(), world);
-        var cellTemp = getCellTemp(irradiance, ambientTemp);
-        var Vt = 8.617e-5 * (cellTemp + 273.15);
-        double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt, STRINGS_IN_PARALLEL);
-        double cellCurrent = adjusted[0];
-        double Voc_t = adjusted[1];
-        double Voc_panel = Voc_t * CELLS_IN_SERIES;
+        var irradiance = getIrradiance(getAM(level), cloudCover, this.getBlockPos().getY(), level);
+        SolarHelper.electricalProperties(irradiance, ambientTemp, controller);
+    }
 
-        if (cellCurrent <= 0) {
-            controller.panelResistance += 1e6f;
-            return;
-        }
-
-        double panelResistance = (cellCurrent > 0) ? Voc_panel / cellCurrent : 1e6;
-        controller.panelResistance += panelResistance;
-        controller.panelVoltage += Voc_panel;
+    @Override
+    public void accept(double Rs, double Rsh, double I) {
+        this.Rs += Rs;
+        this.Rsh += Rsh;
+        if(I > this.I)
+            this.I = I;
+        ++panelCount;
     }
 
     @Override
@@ -113,12 +131,14 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity {
             ambientTemp = ThermalBehaviour.getAmbientTemperature(level, this.getBlockPos());
             if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
                 ambientTemp = 22f;
+            if (junction != null)
+                junction.setTemperatureCelsius(ambientTemp);
             firstTick = false;
         }
 
-        if (sourceCoupling == null) return;
+        if (currentSource == null) return;
 
-        panelVoltage = 0; panelResistance = 0;
+        I = 0; Rs = 0; Rsh = 0; panelCount = 0;
         electricalProperties(this);
         var iter = connectedPanelBEs.values().iterator();
         while(iter.hasNext()) {
@@ -132,8 +152,18 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity {
             }
         }
 
-        sourceCoupling.setVoltage((float) panelVoltage);
-        sourceCoupling.setResistance((float) panelResistance);
+        // Use sane values as fallback if something fails.
+        if(Rs <= 0 || !Double.isFinite(Rs))
+            Rs = 0.0001;
+        if(Rsh <= 0 || !Double.isFinite(Rsh))
+            Rsh = 10000;
+        if(!Double.isFinite(I))
+            I = 0;
+        junction.setIdealityFactor(IDEALITY * CELLS_IN_SERIES * panelCount);
+
+        seriesResistor.setResistance(Rs);
+        currentSource.setConductance(1 / Rsh);
+        currentSource.setCurrent(I);
 
         super.electricalTick();
     }
@@ -436,5 +466,58 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity {
         panel.notifyUpdate();
         panel.makeProxy();
         notifyUpdate();
+    }
+
+    public static void splitMultiblock(CeilingTileSolarBlockEntity controller, int splittingCoordinate, Direction splittingPlane) {
+        if(isPast(controller.worldPosition, splittingCoordinate, splittingPlane)) {
+            splittingCoordinate += splittingPlane.getAxisDirection() == Direction.AxisDirection.POSITIVE ? 1 : -1;
+            splittingPlane = splittingPlane.getOpposite();
+        }
+        var level = controller.level;
+        assert level != null;
+        var wires = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(controller.electricBehaviour);
+
+        var iter = controller.connectedPanels.iterator();
+        CeilingTileSolarBlockEntity secondController = null;
+        while(iter.hasNext()) {
+            var pos = iter.next();
+            if(isPast(pos, splittingCoordinate, splittingPlane)) {
+                var be = level.getBlockEntity(pos);
+                if(!(be instanceof CeilingTileSolarBlockEntity solar))
+                    continue;
+                if(secondController == null) {
+                    secondController = solar;
+                    secondController.controller = null;
+                    secondController.connectedPanels.clear();
+                    secondController.connectedPanelBEs.clear();
+                    secondController.makeMain();
+                } else {
+                    secondController.connect(solar);
+                }
+                iter.remove();
+            }
+        }
+        controller.notifyUpdate();
+        wires.forEach(TransmissionLinePart::refreshEndpointNodes);
+    }
+
+    public static void mergeMultiblock(CeilingTileSolarBlockEntity controller1, CeilingTileSolarBlockEntity controller2) {
+        assert controller1.level != null && controller1.level == controller2.level;
+        var level = controller1.level;
+        var wires1 = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(controller1.electricBehaviour);
+        var wires2 = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(controller2.electricBehaviour);
+
+        for(var pos : controller2.connectedPanels) {
+            var be = level.getBlockEntity(pos);
+            if(!(be instanceof CeilingTileSolarBlockEntity solar))
+                continue;
+            controller1.connect(solar);
+        }
+        controller2.connectedPanels.clear();
+        controller2.connectedPanelBEs.clear();
+        controller1.connect(controller2);
+
+        wires1.forEach(TransmissionLinePart::refreshEndpointNodes);
+        wires2.forEach(TransmissionLinePart::refreshEndpointNodes);
     }
 }

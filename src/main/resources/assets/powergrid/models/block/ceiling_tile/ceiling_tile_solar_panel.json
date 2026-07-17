@@ -6,6 +6,7 @@
 	"textures": {
 		"0": "powergrid:block/ceiling_tile/ceiling_tile",
 		"2": "powergrid:block/solar_panel/solar_panel_connected",
+		"3": "powergrid:block/solar_panel/solar_panel",
 		"particle": "powergrid:block/ceiling_tile/ceiling_tile"
 	},
 	"elements": [
@@ -54,7 +55,7 @@
 				"east": {"uv": [14, 15.5, 16, 15.75], "texture": "#2"},
 				"south": {"uv": [14, 15.5, 16, 15.75], "texture": "#2"},
 				"west": {"uv": [14, 15.5, 16, 15.75], "texture": "#2"},
-				"up": {"uv": [0, 0, 1.9875, 2.0375], "texture": "#2"},
+				"up": {"uv": [0, 0, 16, 16], "texture": "#3"},
 				"down": {"uv": [0, 0, 4, 4], "rotation": 180, "texture": "#missing"}
 			}
 		}
@@ -63,14 +64,12 @@
 		{
 			"name": "tile",
 			"origin": [0, 0, 16],
-			"scope": 0,
 			"color": 0,
 			"children": [0, 1]
 		},
 		{
 			"name": "solar_panel",
 			"origin": [0, 7, 0],
-			"scope": 0,
 			"color": 0,
 			"children": [2, 3]
 		}

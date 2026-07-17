@@ -460,7 +460,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
         notifyUpdate();
     }
 
-    private static boolean isPast(BlockPos pos, int splittingCord, Direction splittingPlane) {
+    public static boolean isPast(BlockPos pos, int splittingCord, Direction splittingPlane) {
         var cord = pos.get(splittingPlane.getAxis());
         if(splittingPlane.getAxisDirection() == Direction.AxisDirection.POSITIVE) {
             return cord > splittingCord;

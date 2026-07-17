@@ -34,9 +34,9 @@ public class SolarHelper {
     // I_sc temperature adjustment factor
     protected static final float ALPHAISC = 0.0005f;
     protected static final float NOCT = 52;
-    protected static final double I_O = 4.07e-6;
+    public static final double I_O = 4.07e-6;
     // Diode ideality factor
-    protected static final double IDEALITY = 1.5;
+    public static final double IDEALITY = 1.5;
     protected static final double Vmp = 20.34;
     protected static final double Imp = 2.7;
     public static final double DIFFUSE_FRAC = .12;
