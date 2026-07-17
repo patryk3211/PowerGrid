@@ -1,0 +1,22 @@
+{
+	"format_version": "1.21.6",
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "powergrid:block/component/triode",
+		"particle": "powergrid:block/component/triode"
+	},
+	"elements": [
+		{
+			"from": [-0.125, 1.375, -0.125],
+			"to": [3.125, 5.625, 3.125],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 2, 0]},
+			"faces": {
+				"north": {"uv": [16, 12, 13, 16], "texture": "#0"},
+				"east": {"uv": [13, 12, 16, 16], "texture": "#0"},
+				"south": {"uv": [16, 12, 13, 16], "texture": "#0"},
+				"west": {"uv": [13, 12, 16, 16], "texture": "#0"},
+				"up": {"uv": [13, 9, 16, 12], "texture": "#0"}
+			}
+		}
+	]
+}
