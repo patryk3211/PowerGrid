@@ -56,5 +56,7 @@
   "item.powergrid.integrated_circuit.tooltip.summary": "The integrated circuit is back! By deploying a circuit over a _compatible_ piece of equipment, you can _boost_ it, improving its _performance_ for a _limited_ number of uses. Beware, once boosted, the item will consume _twice_ as much power.",
 
   "block.powergrid.creative_voltage_source.tooltip.summary": "An _almost perfect_ voltage source. Set the output voltage with the _slider_ or _/powergrid_ command.",
-  "block.powergrid.creative_current_source.tooltip.summary": "An _almost perfect_ current source. Set the output current with the _slider_ or _/powergrid_ command."
+  "block.powergrid.creative_current_source.tooltip.summary": "An _almost perfect_ current source. Set the output current with the _slider_ or _/powergrid_ command.",
+
+  "block.powergrid.electric_pump.tooltip.summary": "An _Electric_ version of the _Mechanical Pump_",
 }

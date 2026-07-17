@@ -124,6 +124,10 @@ public class RecipeTags {
         return ModdedItems.ELECTRICAL_GIZMO;
     }
 
+    public static ItemLike electricMotor() {
+        return ModdedBlocks.ELECTRIC_MOTOR;
+    }
+
     public static ItemLike coalBlock() {
         return Items.COAL_BLOCK;
     }

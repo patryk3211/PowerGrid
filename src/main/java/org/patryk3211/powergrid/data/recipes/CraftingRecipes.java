@@ -429,20 +429,26 @@ public class CraftingRecipes extends StandardRecipeProvider {
     ELECTRIC_FAN = create(ModdedBlocks.ELECTRIC_FAN)
             .unlockedBy(() -> ModdedBlocks.ELECTRIC_MOTOR)
             .viaShapeless(b -> b
-                    .requires(ModdedBlocks.ELECTRIC_MOTOR)
+                    .requires(electricMotor())
                     .requires(AllBlocks.ENCASED_FAN)),
+
+    ELECTRIC_PUMP = create(ModdedBlocks.ELECTRIC_PUMP)
+            .unlockedBy(() -> ModdedBlocks.ELECTRIC_MOTOR)
+            .viaShapeless(b -> b
+                    .requires(electricMotor())
+                    .requires(AllBlocks.FLUID_PIPE)),
 
     CONSTANT_SPEED_MOTOR = create(ModdedBlocks.CONSTANT_SPEED_MOTOR)
             .unlockedBy(() -> ModdedBlocks.ELECTRIC_MOTOR)
             .viaShapeless(b -> b
-                    .requires(ModdedBlocks.ELECTRIC_MOTOR)
+                    .requires(electricMotor())
                     .requires(precisionMechanism())),
 
     SERVO = create(ModdedBlocks.SERVO)
             .unlockedBy(() -> ModdedBlocks.ELECTRIC_MOTOR)
             .viaShapeless(b -> b
-                    .requires(ModdedBlocks.ELECTRIC_MOTOR)
-                    .requires(ModdedItems.ELECTRICAL_GIZMO)
+                    .requires(electricMotor())
+                    .requires(electricalGizmo())
                     .requires(AllItems.PRECISION_MECHANISM)),
 
     FUSE_HOLDER = create(ModdedBlocks.FUSE_HOLDER)
@@ -562,7 +568,14 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('G', electricalGizmo())
                     .define('C', cardboard())
                     .define('P', pins())
-                    .define('M', copperCoil()))
+                    .define('M', copperCoil())),
+
+    REDSTONE_CONVERTER = create(ModdedBlocks.REDSTONE_CONVERTER)
+            .unlockedBy(() -> ModdedBlocks.CONDUCTIVE_CASING)
+            .viaShapeless(b -> b
+                    .requires(conductiveCasing())
+                    .requires(Items.COMPARATOR)
+                    .requires(pins()))
 
             ;
 
