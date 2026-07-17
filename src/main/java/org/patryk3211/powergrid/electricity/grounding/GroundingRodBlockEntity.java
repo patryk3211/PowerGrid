@@ -127,7 +127,7 @@ public class GroundingRodBlockEntity extends ElectricBlockEntity {
             var bb = new AABB(worldPosition.offset(-blockRadius, -blockRadius, -blockRadius), worldPosition.offset(blockRadius, blockRadius, blockRadius));
             var sqrDist = dangerRadius * dangerRadius;
             var center = worldPosition.getCenter();
-            var entities = level.getEntitiesOfClass(LivingEntity.class, bb, e -> e.position().distanceToSqr(center) <= sqrDist && e.onGround());
+            var entities = level.getEntitiesOfClass(LivingEntity.class, bb, e -> e.distanceToSqr(center) <= sqrDist && e.onGround());
 
             Registry<DamageType> registry = level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE);
             var source = new GroundingRodDamageSource(registry.getHolder(ModdedDamageTypes.ZAP).get(), this.getBlockState().getBlock());

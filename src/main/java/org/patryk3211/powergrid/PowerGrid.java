@@ -51,6 +51,7 @@ import org.patryk3211.powergrid.equipment.thunder.LightningRodMovementBehaviour;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlockEntity;
 import org.patryk3211.powergrid.network.packets.NegotiateSyncC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
+import org.patryk3211.powergrid.utility.VSUtils;
 import org.patryk3211.powergrid.utility.proxy.SubstituteBlockEntityProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +72,11 @@ public class PowerGrid {
 		ElectricalNetwork.LOGGER = LOGGER;
 
 		NativeMNA.tryLoad();
+		if(dev.architectury.platform.Platform.isModLoaded("valkyrienskies")) {
+			VSUtils.makeFullProxy();
+		} else {
+			VSUtils.makeDummyProxy();
+		}
 
 		ModdedSoundEvents.prepare();
 

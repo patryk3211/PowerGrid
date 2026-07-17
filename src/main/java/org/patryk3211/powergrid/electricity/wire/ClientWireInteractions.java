@@ -37,6 +37,7 @@ import org.patryk3211.powergrid.network.packets.AlternatePlacementStatusC2SPacke
 import org.patryk3211.powergrid.network.packets.BlockWireAttachC2SPacket;
 import org.patryk3211.powergrid.network.packets.BlockWireCutC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
+import org.valkyrienskies.mod.common.VSGameUtilsKt;
 
 @Environment(EnvType.CLIENT)
 public class ClientWireInteractions {
@@ -169,6 +170,12 @@ public class ClientWireInteractions {
         var stack = mc.player.getItemInHand(InteractionHand.MAIN_HAND);
         if(entity.getItem() != stack.getItem()) {
             mc.player.displayClientMessage(Lang.translate("message.connection_incorrect_wire_type").style(ChatFormatting.RED).component(), true);
+            return InteractionResult.FAIL;
+        }
+
+        var existingEndpoint = WireEndpointType.deserialize(stack.getTagElement("Connection"));
+        if(existingEndpoint != null && existingEndpoint.getShip(mc.level) != VSGameUtilsKt.getShipManaging(entity)) {
+            mc.player.displayClientMessage(Lang.translate("message.connection_failed").style(ChatFormatting.RED).component(), true);
             return InteractionResult.FAIL;
         }
 

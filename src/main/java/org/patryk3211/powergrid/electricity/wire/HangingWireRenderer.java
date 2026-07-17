@@ -34,6 +34,7 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
+import org.patryk3211.powergrid.utility.VSUtils;
 
 @Environment(EnvType.CLIENT)
 public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
@@ -47,6 +48,25 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
     @Override
     public ResourceLocation getTextureLocation(HangingWireEntity entity) {
         return entity.getWireEntry().texture();
+    }
+
+    public static int lodLevel(Vec3 playerPos, Vec3 offset, Vec3... wirePositions) {
+        if(!ModdedConfigs.client().wireLOD.get())
+            return 0;
+        double minDist = Double.POSITIVE_INFINITY;
+        for(var pos : wirePositions) {
+            double dx = playerPos.x - (pos.x - offset.x);
+            double dy = playerPos.y - (pos.y - offset.y);
+            double dz = playerPos.z - (pos.z - offset.z);
+            double dist = dx * dx + dy * dy * dz * dz;
+            if(dist < minDist)
+                minDist = dist;
+        }
+        if(minDist > 64 * 64)
+            return 2;
+        if(minDist > 32 * 32)
+            return 1;
+        return 0;
     }
 
     @Override
@@ -71,22 +91,21 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
             }
         }
 
-        var pos = entity.position();
+        var rawPos = entity.position();
+        var pos = VSUtils.projectToWorld(entity.level(), rawPos);
+        final var playerPos = ModdedConfigs.client().wireLOD.get() ? Minecraft.getInstance().player.position() : null;
         float segmentSize = 0.5f;
-        boolean simpleModel;
-        if(ModdedConfigs.client().wireLOD.get()) {
-            var playerPos = Minecraft.getInstance().player.position();
-            if (playerPos.distanceToSqr(pos) > 64 * 64) {
-                segmentSize = 3.0f;
-                simpleModel = true;
-            } else if (playerPos.distanceToSqr(pos) > 32 * 32) {
+        final boolean simpleModel;
+        switch(lodLevel(playerPos, rawPos.subtract(pos), rawPos, entity.terminalPos1, entity.terminalPos2)) {
+            case 1 -> {
                 segmentSize = 1.5f;
                 simpleModel = !Minecraft.useFancyGraphics();
-            } else {
-                simpleModel = !Minecraft.useFancyGraphics();
             }
-        } else {
-            simpleModel = !Minecraft.useFancyGraphics();
+            case 2 -> {
+                segmentSize = 3.0f;
+                simpleModel = true;
+            }
+            default -> simpleModel = !Minecraft.useFancyGraphics();
         }
         VertexConsumer buffer;
         if(!simpleModel) {
@@ -94,9 +113,23 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
         } else {
             buffer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(entity)));
         }
+
+        if(entity.terminal1Velocity != null && entity.terminal2Velocity != null) {
+            // Change curve based on velocity
+            tickDelta = 1 - tickDelta;
+            rp.nudge(
+                    entity.terminalPos1.x - entity.terminal1Velocity.x * tickDelta * 0.05,
+                    entity.terminalPos1.y - entity.terminal1Velocity.y * tickDelta * 0.05,
+                    entity.terminalPos1.z - entity.terminal1Velocity.z * tickDelta * 0.05,
+                    entity.terminalPos2.x - entity.terminal2Velocity.x * tickDelta * 0.05,
+                    entity.terminalPos2.y - entity.terminal2Velocity.y * tickDelta * 0.05,
+                    entity.terminalPos2.z - entity.terminal2Velocity.z * tickDelta * 0.05
+            );
+        }
         var world = entity.level();
         rp.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
             var blockPos = BlockPos.containing((x1 + x2) * 0.5 + pos.x, (y1 + y2) * 0.5 + pos.y, (z1 + z2) * 0.5 + pos.z);
+            //todo: might want to transform to ships?
             var sky = world.getBrightness(LightLayer.SKY, blockPos);
             var block = world.getBrightness(LightLayer.BLOCK, blockPos);
             renderSegment(matrices, buffer,
@@ -111,7 +144,11 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
         double x = (t1.x + t2.x) * 0.5;
         double y = t1.y;
         double z = (t1.z + t2.z) * 0.5;
-        var curve = new CurveParameters(t1, t2, horizontalCoefficient, verticalCoefficient, thickness);
+        var dX = t2.x - t1.x;
+        var dY = Math.abs(t2.y - t1.y);
+        var dZ = t2.z - t1.z;
+        var hL = Math.sqrt(dX * dX + dZ * dZ);
+        var curve = new CurveParameters(t1, t2, horizontalCoefficient * hL + verticalCoefficient * dY, thickness);
         curve.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) ->
                 renderSegment(matrices, buffer,
                         x1 + x, y1 + y, z1 + z,
@@ -124,7 +161,11 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
         double x = (t1.x + t2.x) * 0.5;
         double y = t1.y;
         double z = (t1.z + t2.z) * 0.5;
-        var curve = new CurveParameters(t1, t2, horizontalCoefficient, verticalCoefficient, thickness);
+        var dX = t2.x - t1.x;
+        var dY = Math.abs(t2.y - t1.y);
+        var dZ = t2.z - t1.z;
+        var hL = Math.sqrt(dX * dX + dZ * dZ);
+        var curve = new CurveParameters(t1, t2, horizontalCoefficient * hL + verticalCoefficient * dY, thickness);
         curve.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
                 var blockPos = BlockPos.containing((x1 + x2) * 0.5 + x, (y1 + y2) * 0.5 + y, (z1 + z2) * 0.5 + z);
                 var sky = lightProvider.getBrightness(LightLayer.SKY, blockPos);

@@ -36,8 +36,11 @@ import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.electricity.wire.CurveParameters;
+import org.patryk3211.powergrid.electricity.wire.HangingWireRenderer;
 import org.patryk3211.powergrid.electricity.wire.registry.WireItemEntry;
+import org.patryk3211.powergrid.utility.VSUtils;
 
+import static org.patryk3211.powergrid.electricity.wire.HangingWireRenderer.lodLevel;
 import static org.patryk3211.powergrid.electricity.wire.HangingWireRenderer.renderSegment;
 
 @Environment(EnvType.CLIENT)
@@ -90,24 +93,23 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
 
         int color = entity.getColor() | 0xFF000000;
 
-        var pos = entity.position();
+        var world = entity.level();
+        var rawPos = entity.position();
+        var pos = VSUtils.projectToWorld(world, rawPos);
+        final var playerPos = ModdedConfigs.client().wireLOD.get() ? Minecraft.getInstance().player.position() : null;
         float segmentSize = 0.5f;
-        boolean simpleModel;
-        if(ModdedConfigs.client().wireLOD.get()) {
-            var playerPos = Minecraft.getInstance().player.position();
-            if (playerPos.distanceToSqr(pos) > 64 * 64) {
-                segmentSize = 3.0f;
-                simpleModel = true;
-            } else if (playerPos.distanceToSqr(pos) > 32 * 32) {
+        final boolean simpleModel;
+        switch(lodLevel(playerPos, rawPos.subtract(pos), rawPos, entity.terminalPos1, entity.terminalPos2)) {
+            case 1 -> {
                 segmentSize = 1.5f;
                 simpleModel = !Minecraft.useFancyGraphics();
-            } else {
-                simpleModel = !Minecraft.useFancyGraphics();
             }
-        } else {
-            simpleModel = !Minecraft.useFancyGraphics();
+            case 2 -> {
+                segmentSize = 3.0f;
+                simpleModel = true;
+            }
+            default -> simpleModel = !Minecraft.useFancyGraphics();
         }
-        var world = entity.level();
         rp.runForSegments((x1, y1, z1, x2, y2, z2, offset, length, first, last) -> {
             var buffer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(getTextureLocation(entity)));
             var blockPos = BlockPos.containing((x1 + x2) * 0.5 + pos.x, (y1 + y2) * 0.5 + pos.y, (z1 + z2) * 0.5 + pos.z);
@@ -213,7 +215,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
     public static void renderPreview(ICordEndpoint start, Vec3 end, PoseStack matrices, MultiBufferSource vertexConsumers, Level level, WireItemEntry item, int color, Vec3 cameraPos) {
         var buffer = vertexConsumers.getBuffer(RenderType.entityCutoutNoCull(item.texture()));
         var startPos = start.getExactPosition(level);
-        CurveParameters rp = new CurveParameters(startPos, end, item.horizontalCoefficient(), item.verticalCoefficient(), item.wireThickness());
+        CurveParameters rp = new CurveParameters(startPos, end, end.distanceTo(startPos) * 1.01, item.wireThickness());
 
         // To introduce some subtle variety into the wires.
         var thicknessOffset = 0;

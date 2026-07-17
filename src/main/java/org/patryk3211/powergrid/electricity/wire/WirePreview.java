@@ -49,6 +49,7 @@ import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
 import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.PlacementOverlay;
+import org.patryk3211.powergrid.utility.VSUtils;
 
 @Environment(EnvType.CLIENT)
 public class WirePreview {
@@ -149,7 +150,9 @@ public class WirePreview {
             }
         }
 
-        float length = (float) currentPos.distanceTo(hitPoint);
+        var projCurrentPos = VSUtils.projectToWorld(world, currentPos);
+        var projHitPos = VSUtils.projectToWorld(world, hitPoint);
+        float length = (float) VSUtils.projectedDistance(world, currentPos, hitPoint);
         // Stop rendering the preview above a thousand blocks to stop the game from freezing
         if(length > 1000)
             return;
@@ -168,9 +171,11 @@ public class WirePreview {
 
         boolean isBlockWire = endpoint.type() != WireEndpointType.BLOCK;
         if(isBlockWire || hitTerminal == null) {
+            if(!VSUtils.sameShip(world, currentPos, hitPoint))
+                return;
             length = 0;
             currentPos = BlockTrace.alignPosition(currentPos);
-            renderedPos1 = currentPos;
+            renderedPos1 = projCurrentPos;
             renderedTrace = BlockTrace.findPathWithState(world, currentPos, hitPoint, hitTerminal, continueDir);
             if(renderedTrace != null) {
                 renderPath = 2;
@@ -183,8 +188,8 @@ public class WirePreview {
             }
         } else {
             renderedColor = length < renderedItem.maximumLength() ? 0x80AAFFAA : 0x80FFAAAA;
-            renderedPos1 = currentPos;
-            renderedPos2 = hitPoint;
+            renderedPos1 = projCurrentPos;
+            renderedPos2 = projHitPos;
             renderPath = 1;
         }
 
@@ -260,7 +265,7 @@ public class WirePreview {
         if(target == null || target.getType() != HitResult.Type.BLOCK)
             return null;
         var hitPoint = target.getLocation();
-        var distance = hitPoint.distanceTo(currentPos);
+        var distance = VSUtils.projectedDistance(player.level(), currentPos, hitPoint);
         var msg = Lang.translate("gui.endpoint_distance")
                 .add(Lang.numberConstant(distance).style(distance < wireEntry.maximumLength() ? ChatFormatting.GREEN : ChatFormatting.RED))
                 .style(ChatFormatting.WHITE);
@@ -272,7 +277,6 @@ public class WirePreview {
         }
 
         return msg.component();
-
     }
 
     public static void notifyOfBlock(BlockPos pos) {
