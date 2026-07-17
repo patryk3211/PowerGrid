@@ -64,10 +64,10 @@ public class PowerGridClient {
 		ClientTooltipEvent.ITEM.register(WireItem::tooltip);
 		ClientRawInputEvent.KEY_PRESSED.register(PowerGridClient::keyPress);
 		ClientRawInputEvent.MOUSE_CLICKED_POST.register(PowerGridClient::mousePress);
-		ClientLifecycleEvent.CLIENT_SETUP.register(PowerGridClient::clientSetup);
+		ClientLifecycleEvent.CLIENT_STARTED.register(PowerGridClient::clientStarted);
 	}
 
-	private static void clientSetup(Minecraft minecraft) {
+	private static void clientStarted(Minecraft minecraft) {
         ((RenderBuffersAccessor) minecraft.renderBuffers()).getFixedBuffers()
                 .put(ModdedRenderLayers.getAdditive(), new BufferBuilder(ModdedRenderLayers.getAdditive().bufferSize()));
 	}
