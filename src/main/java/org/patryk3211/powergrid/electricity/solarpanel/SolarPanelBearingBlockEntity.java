@@ -29,6 +29,7 @@ import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
 import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWire;
+import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWireSolar;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
 import java.util.List;
@@ -55,7 +56,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
 
     protected CurrentSourceWire currentSource;
     protected ElectricWire seriesResistor;
-    protected PNJunctionWire junction;
+    protected PNJunctionWireSolar junction;
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
@@ -76,9 +77,10 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         var node = builder.addInternalNode();
         currentSource = new CurrentSourceWire(node, builder.terminalNode(1), 0.00001f);
         seriesResistor = builder.connect((float) 1, node, builder.terminalNode(0));
-        junction = new PNJunctionWire(
+        junction = new PNJunctionWireSolar(
                 I_O, 0.075f,
                 ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO ? 22 : ambientTemp, IDEALITY * CELLS_IN_SERIES,
+                IDEALITY,
                 node, builder.terminalNode(1)
         );
         builder.add(currentSource);

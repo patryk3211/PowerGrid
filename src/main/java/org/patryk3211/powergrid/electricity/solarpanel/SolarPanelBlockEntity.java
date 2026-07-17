@@ -21,6 +21,7 @@ import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
 import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWire;
+import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWireSolar;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 
 import java.util.*;
@@ -30,7 +31,7 @@ import static org.patryk3211.powergrid.electricity.solarpanel.SolarHelper.*;
 public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolarPropertyConsumer {
     protected CurrentSourceWire currentSource;
     protected ElectricWire seriesResistor;
-    protected PNJunctionWire junction;
+    protected PNJunctionWireSolar junction;
 
     private boolean firstTick = true;
     private float ambientTemp = -2000f;
@@ -58,9 +59,10 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
         var node = builder.addInternalNode();
         currentSource = new CurrentSourceWire(node, builder.terminalNode(1), 0.00001f);
         seriesResistor = builder.connect((float) 1, node, builder.terminalNode(0));
-        junction = new PNJunctionWire(
+        junction = new PNJunctionWireSolar(
                 I_O, 0.075f,
                 ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO ? 22 : ambientTemp, IDEALITY * CELLS_IN_SERIES,
+                IDEALITY,
                 node, builder.terminalNode(1)
         );
         builder.add(currentSource);
