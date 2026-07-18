@@ -50,11 +50,11 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class CommutatorBlock extends AbstractRotorBlock implements IBE<CommutatorBlockEntity>, IBrushPlacement {
+public class CommutatorBlock extends AbstractRotorBlock implements IBE<CommutatorBlockEntity>, ICommutator {
     public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
 
-    final BlockStateTerminalCollection terminals;
-    final BlockStateTerminalCollection terminalsFlipped;
+    private final BlockStateTerminalCollection terminals;
+    private final BlockStateTerminalCollection terminalsFlipped;
     private final ImmutableMap<BlockState, VoxelShape> outlines;
 
     private static final TerminalBoundingBox[] TERMINALS_HORIZONTAL = new TerminalBoundingBox[] {
@@ -201,5 +201,15 @@ public class CommutatorBlock extends AbstractRotorBlock implements IBE<Commutato
     @Override
     public BlockState mirror(BlockState state, Mirror mirrorIn) {
         return state.rotate(mirrorIn.getRotation(state.getValue(HORIZONTAL_FACING)));
+    }
+
+    @Override
+    public BlockStateTerminalCollection terminals() {
+        return terminals;
+    }
+
+    @Override
+    public BlockStateTerminalCollection terminalsFlipped() {
+        return terminalsFlipped;
     }
 }
