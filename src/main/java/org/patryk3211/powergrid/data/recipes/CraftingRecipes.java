@@ -376,6 +376,26 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('G', glowstoneDust())
                     .define('I', ironSheet())),
 
+    TRIODE = create(ModdedItems.TRIODE)
+            .unlockedBy(() -> AllItems.IRON_SHEET)
+            .viaShaped(b -> b
+                    .pattern("Q")
+                    .pattern("G")
+                    .pattern("I")
+                    .define('Q', polishedRoseQuartz())
+                    .define('G', glowstoneDust())
+                    .define('I', ironSheet())),
+
+    PENTODE = create(ModdedItems.PENTODE)
+            .unlockedBy(() -> ModdedItems.TRIODE)
+            .viaShaped(b -> b
+                    .pattern("A")
+                    .pattern("T")
+                    .pattern("I")
+                    .define('A', amethystShard())
+                    .define('T', ModdedItems.TRIODE)
+                    .define('I', ironSheet())),
+
     BARRETTER_TUBE = create(ModdedItems.BARRETTER_TUBE)
             .unlockedBy(() -> Items.QUARTZ)
             .viaShaped(b -> b
