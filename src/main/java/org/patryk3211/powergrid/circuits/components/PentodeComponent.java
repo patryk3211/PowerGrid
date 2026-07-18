@@ -21,6 +21,7 @@ import com.simibubi.create.foundation.render.RenderTypes;
 import net.createmod.catnip.render.CachedBuffers;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
@@ -58,6 +59,15 @@ public class PentodeComponent extends MirrorableComponent implements IRenderedCo
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
         properties.add(GAIN, K_G, K_G2, K_P, K_VB, EX, SATURATION_CURRENT, HEATER_VOLTAGE, HEATER_POWER);
+    }
+
+    @Override
+    public void dataFixup(@NotNull CompoundTag tag) {
+        var props = tag.getCompound("Properties");
+        if (!props.contains(K_G2.id().toString())) {
+            props.putFloat(K_G2.id().toString(), K_G2.defaultValue());
+            tag.put("Properties", props);
+        }
     }
 
     @Override
