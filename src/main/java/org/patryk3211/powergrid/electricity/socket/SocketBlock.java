@@ -18,13 +18,20 @@ package org.patryk3211.powergrid.electricity.socket;
 import com.simibubi.create.foundation.block.IBE;
 import net.createmod.catnip.math.VoxelShaper;
 import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
+import org.patryk3211.powergrid.electricity.wire.powercord.SocketEndpoint;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -72,6 +79,23 @@ public class SocketBlock extends Rotation4ElectricBlock implements IBE<SocketBlo
                     return shaper.get(facing);
                 })
                 .build());
+    }
+
+    @Override
+    public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if(hand != InteractionHand.MAIN_HAND)
+            return InteractionResult.PASS;
+        var endpoint = (SocketEndpoint) socket(state);
+        var cord = endpoint.getConnection(level);
+        if(cord == null)
+            return InteractionResult.PASS;
+        if(cord.getEndpoint1().equals(endpoint)) {
+            return cord.cordDetach(player, false) ? InteractionResult.SUCCESS : InteractionResult.PASS;
+        } else if(cord.getEndpoint2().equals(endpoint)) {
+            return cord.cordDetach(player, true) ? InteractionResult.SUCCESS : InteractionResult.PASS;
+        } else {
+            return InteractionResult.FAIL;
+        }
     }
 
     @Override

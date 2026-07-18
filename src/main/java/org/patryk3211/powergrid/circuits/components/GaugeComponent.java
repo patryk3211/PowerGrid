@@ -154,26 +154,6 @@ public abstract class GaugeComponent extends OrientableComponent implements IRed
             if(evaluatedValue >= 0)
                 line.append(" ");
             String prefix = "";
-//            if(prefixes) {
-//                var abs = Math.abs(evaluatedValue);
-//                if (abs < 1) {
-//                    // Milli
-//                    evaluatedValue *= 1000;
-//                    prefix = "m";
-//                } else if (abs < 1000) {
-//                    prefix = "";
-//                } else if (abs < 1000000) {
-//                    // Kilo
-//                    evaluatedValue /= 1000;
-//                    prefix = "k";
-//                } else {
-//                    // Mega
-//                    evaluatedValue /= 1000000;
-//                    prefix = "M";
-//                }
-//            } else {
-//                prefix = "";
-//            }
             line.append(String.format("%.2f %s", evaluatedValue, prefix));
             var textComponent = Lang.text(line.toString())
                     .style(getColor(Math.abs(value), maxValue));
