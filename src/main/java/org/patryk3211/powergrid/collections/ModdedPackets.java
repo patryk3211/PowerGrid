@@ -55,6 +55,7 @@ public enum ModdedPackets {
     SAVE_CARD(SaveCardC2SPacket.class, SaveCardC2SPacket::new),
     SET_CUSTOM_DISPLAY(SetCustomDisplayC2SPacket.class, SetCustomDisplayC2SPacket::new),
     NEGOTIATE_SYNC(NegotiateSyncC2SPacket.class, NegotiateSyncC2SPacket::new),
+    CORD_DETACH(CordDetachC2SPacket.class, CordDetachC2SPacket::new),
 
     UPDATE_COMPONENT(UpdateComponentBiPacket.class, UpdateComponentBiPacket::new),
     ;

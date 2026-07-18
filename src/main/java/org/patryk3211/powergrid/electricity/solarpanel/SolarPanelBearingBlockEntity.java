@@ -78,7 +78,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         currentSource = new CurrentSourceWire(node, builder.terminalNode(1), 0.00001f);
         seriesResistor = builder.connect((float) 1, node, builder.terminalNode(0));
         junction = new PNJunctionWireSolar(
-                I_O, 0.075f,
+                IO_REF, 0.075f,
                 ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO ? 22 : ambientTemp, IDEALITY * CELLS_IN_SERIES,
                 IDEALITY,
                 node, builder.terminalNode(1)
@@ -170,28 +170,27 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
 
         var irradiance = getIrradiance(getAM(world), cloudCover, this.getBlockPos().getY(), world);
         var cellTemp = getCellTemp(irradiance, ambientTemp);
-        var Vt = 8.617e-5 * (cellTemp + 273.15);
-        double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt, parallelNumbers.getDivisor());
-        double Isc_t = adjusted[0];
         int seriesMultiplier = CELLS_IN_SERIES * (contraption.getPanelBlocks() / parallelNumbers.getDivisor());
-        double Voc_t = adjusted[1] * seriesMultiplier;
+        double Ipv = IPV_REF * (irradiance / 1000.0);
+        double Rsh;
+        if (RSH_SCALES_WITH_IRRADIANCE && irradiance > 1.0) {
+            Rsh = RSH_REF * (1000.0 / irradiance);
+        } else {
+            Rsh = RSH_REF;
+        }
 
-        double Vmp_T = Vmp * (1 - BETAVOC * (cellTemp - 25));
-        double Imp_T = Imp * (1 - ALPHAISC * (cellTemp - 25));
+        if (junction != null) {
+            junction.setTemperatureCelsius(cellTemp);
+            junction.setIdealityFactor(IDEALITY * CELLS_IN_SERIES * parallelNumbers.getDivisor());
+        }
 
-        double Rs = (Voc_t - Vmp_T) / (16 * Imp_T);
-        double Rsh = 5 * Vmp_T / (Isc_t - Imp_T);
-        double Ipv = Isc_t * (Rsh + Rs) / Rsh;
-
-        if(Rs <= 0 || !Double.isFinite(Rs))
-            Rs = 0.0001;
         if(Rsh <= 0 || !Double.isFinite(Rsh))
             Rsh = 10000;
         if(!Double.isFinite(Ipv))
             Ipv = 0;
         junction.setIdealityFactor(IDEALITY * seriesMultiplier);
 
-        seriesResistor.setResistance(Rs);
+        seriesResistor.setResistance(RS);
         currentSource.setConductance(1 / Rsh);
         currentSource.setCurrent(Ipv);
 

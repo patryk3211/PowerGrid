@@ -44,21 +44,26 @@ import java.util.function.Supplier;
 public class CustomDisplayBehaviour extends BlockEntityBehaviour implements MenuProvider {
     public static final BehaviourType<CustomDisplayBehaviour> TYPE = new BehaviourType<>("custom_display");
 
-    protected String equationStr = "x";
-    protected Expression expr = new Variable();
+    protected String equationStr;
+    protected Expression expr;
     protected Unit unit;
     public String unitStr;
     protected boolean prefixes;
 
+    @Nullable
     private final Supplier<Float> maxValue;
     private final Function<Float, ChatFormatting> color;
 
-    public CustomDisplayBehaviour(SmartBlockEntity be, Unit unit, boolean prefixes, Supplier<Float> maxValue, Function<Float, ChatFormatting> color) {
+    public CustomDisplayBehaviour(SmartBlockEntity be, Unit unit,
+                                  boolean prefixes, @Nullable Supplier<Float> maxValue, Function<Float, ChatFormatting> color,
+                                  String defaultEquation) {
         super(be);
         this.unit = unit;
         this.prefixes = prefixes;
         this.maxValue = maxValue;
         this.color = color;
+        this.equationStr = defaultEquation;
+        this.expr = Expression.parse(equationStr);
     }
 
     public static boolean use(Level level, BlockPos pos, Player player, InteractionHand hand) {
@@ -83,20 +88,22 @@ public class CustomDisplayBehaviour extends BlockEntityBehaviour implements Menu
         return new CustomDisplayMenu(ModdedMenus.CUSTOM_DISPLAY.get(), i, inventory, blockEntity);
     }
 
-    public LangBuilder format(float value) {
+    public LangBuilder format(float baseValue, @Nullable IVarSet variables) {
         if(expr == null) {
             return Lang.translate("gui.invalid_equation")
                     .style(ChatFormatting.RED);
         }
         String line = "";
-        if(Math.abs(value) > maxValue.get()) {
-            line += value >= 0 ? "> " : "< ";
-            if(value < 0)
-                value = -maxValue.get();
-            else
-                value = maxValue.get();
+        if(maxValue != null) {
+            if (Math.abs(baseValue) > maxValue.get()) {
+                line += baseValue >= 0 ? "> " : "< ";
+                if (baseValue < 0)
+                    baseValue = -maxValue.get();
+                else
+                    baseValue = maxValue.get();
+            }
         }
-        var evaluatedValue = expr.eval(value);
+        var evaluatedValue = variables != null ? expr.eval(variables) : expr.eval(baseValue);
         if(evaluatedValue >= 0)
             line += " ";
         String prefix;
@@ -122,7 +129,7 @@ public class CustomDisplayBehaviour extends BlockEntityBehaviour implements Menu
         }
         line += String.format("%.2f %s", evaluatedValue, prefix);
         var component = Lang.text(line)
-                .style(color.apply(Math.abs(value)));
+                .style(color.apply(Math.abs(baseValue)));
         if(unit != null) {
             component.add(unit.get());
         } else if(unitStr != null) {
