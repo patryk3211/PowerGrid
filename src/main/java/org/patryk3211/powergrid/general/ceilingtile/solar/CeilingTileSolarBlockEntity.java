@@ -68,7 +68,7 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
         currentSource = new CurrentSourceWire(node, builder.terminalNode(1), 0.00001f);
         seriesResistor = builder.connect((float) 1, node, builder.terminalNode(0));
         junction = new PNJunctionWireSolar(
-                I_O, 0.075f,
+                IO_REF, 0.075f,
                 ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO ? 22 : ambientTemp, IDEALITY * CELLS_IN_SERIES,
                 IDEALITY,
                 node, builder.terminalNode(1)
@@ -116,7 +116,7 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
 
         getPlacedBlockRotation();
         var irradiance = getIrradiance(getAM(level), cloudCover, this.getBlockPos().getY(), level);
-        SolarHelper.electricalProperties(irradiance, ambientTemp, controller);
+        SolarHelper.electricalProperties(irradiance, controller);
     }
 
     @Override
@@ -153,6 +153,14 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
                 iter.remove();
                 notifyUpdate();
             }
+        }
+
+        if (junction != null) {
+            float cloudCover = getWeather(level);
+            var irradiance = getIrradiance(getAM(level), cloudCover, this.getBlockPos().getY(), level);
+            var currentCellTemp = SolarHelper.getCellTemp(irradiance, ambientTemp);
+            junction.setTemperatureCelsius(currentCellTemp);
+            junction.setIdealityFactor(IDEALITY * CELLS_IN_SERIES * panelCount);
         }
 
         // Use sane values as fallback if something fails.

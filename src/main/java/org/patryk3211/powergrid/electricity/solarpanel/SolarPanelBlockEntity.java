@@ -60,7 +60,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
         currentSource = new CurrentSourceWire(node, builder.terminalNode(1), 0.00001f);
         seriesResistor = builder.connect((float) 1, node, builder.terminalNode(0));
         junction = new PNJunctionWireSolar(
-                I_O, 0.075f,
+                IO_REF, 0.075f,
                 ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO ? 22 : ambientTemp, IDEALITY * CELLS_IN_SERIES,
                 IDEALITY,
                 node, builder.terminalNode(1)
@@ -108,7 +108,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
 
         getPlacedBlockRotation();
         var irradiance = getIrradiance(getAM(level), cloudCover, this.getBlockPos().getY(), level);
-        SolarHelper.electricalProperties(irradiance, ambientTemp, controller);
+        SolarHelper.electricalProperties(irradiance, controller);
     }
 
     @Override
@@ -147,6 +147,14 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
             }
         }
 
+        if (junction != null) {
+            float cloudCover = getWeather(level);
+            var irradiance = getIrradiance(getAM(level), cloudCover, this.getBlockPos().getY(), level);
+            var currentCellTemp = SolarHelper.getCellTemp(irradiance, ambientTemp);
+            junction.setTemperatureCelsius(currentCellTemp);
+            junction.setIdealityFactor(IDEALITY * CELLS_IN_SERIES * panelCount);
+        }
+
         // Use sane values as fallback if something fails.
         if(Rs <= 0 || !Double.isFinite(Rs))
             Rs = 0.0001;
@@ -154,7 +162,6 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
             Rsh = 10000;
         if(!Double.isFinite(I))
             I = 0;
-        junction.setIdealityFactor(IDEALITY * CELLS_IN_SERIES * panelCount);
 
         seriesResistor.setResistance(Rs);
         currentSource.setConductance(1 / Rsh);
