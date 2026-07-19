@@ -35,6 +35,8 @@
   "powergrid.message.nether.no_other_side": "Target portal not generated yet",
   "powergrid.message.nether.blocked": "Target location blocked (%d,%d,%d)",
 
+  "powergrid.message.circuit_table.no_power": "This device needs power",
+
   "death.attack.overloaded_machine": "%s was killed by an overloaded %s",
   "death.attack.overloaded_machine.player": "%s was killed by an overloaded %s whilst trying to escape %s",
   "death.attack.zap": "%1$s was zapped by %2$s",

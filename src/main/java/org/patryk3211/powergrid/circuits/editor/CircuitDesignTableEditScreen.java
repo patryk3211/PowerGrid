@@ -409,12 +409,16 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
     @Override
     protected void containerTick() {
         super.containerTick();
-        if(!this.menu.getCarried().isEmpty()) {
-            toolSelect(this.menu.getCarried().getItem());
-            this.menu.setCarried(ItemStack.EMPTY);
+        if(!menu.getCarried().isEmpty()) {
+            toolSelect(menu.getCarried().getItem());
+            menu.setCarried(ItemStack.EMPTY);
         }
         if(unsavedPopupTimeout > 0)
             --unsavedPopupTimeout;
+        if(menu.contentHolder instanceof CircuitDesignTableBlockEntity be) {
+            if(!be.isPowered())
+                save();
+        }
     }
 
     @Override

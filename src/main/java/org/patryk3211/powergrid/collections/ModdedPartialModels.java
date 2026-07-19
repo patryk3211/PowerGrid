@@ -80,6 +80,8 @@ public class ModdedPartialModels {
 
     public static final PartialModel SOLAR_PANEL_BEARING_ROTOR = block("solar_panel/solar_panel_bearing_rotor");
 
+    public static final PartialModel CIRCUIT_TABLE_GLOW = block("circuit_design_table_glow");
+
     public static final SpriteShiftEntry PAPER_SHIFT = SpriteShifter.get(
             PowerGrid.asResource("block/plotter_paper"),
             PowerGrid.asResource("block/plotter_paper_shift"));
@@ -90,8 +92,8 @@ public class ModdedPartialModels {
     public static final CTSpriteShiftEntry COPPER_PLATING = CTSpriteShifter.getCT(
             AllCTTypes.OMNIDIRECTIONAL,
             PowerGrid.asResource("block/copper_plating"),
-            PowerGrid.asResource("block/copper_plating_connected"));    
-    
+            PowerGrid.asResource("block/copper_plating_connected"));
+
     public static final PartialModel FL_RAYS_CENTER = block("factory_light/godrayscenter");
     public static final PartialModel FL_RAYS_BACK = block("factory_light/godraysedgeback");
     public static final PartialModel FL_RAYS_FRONT = block("factory_light/godraysedgefront");

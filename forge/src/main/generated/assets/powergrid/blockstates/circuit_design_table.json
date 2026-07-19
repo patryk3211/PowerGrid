@@ -1,7 +1,19 @@
 {
   "variants": {
-    "": {
+    "facing=east": {
+      "model": "powergrid:block/circuit_design_table",
+      "y": 90
+    },
+    "facing=north": {
       "model": "powergrid:block/circuit_design_table"
+    },
+    "facing=south": {
+      "model": "powergrid:block/circuit_design_table",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "powergrid:block/circuit_design_table",
+      "y": 270
     }
   }
 }

@@ -1,0 +1,20 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Made with Blockbench",
+	"parent": "block/block",
+	"texture_size": [64, 64],
+	"textures": {
+		"1": "powergrid:block/circuit_design_table",
+		"particle": "powergrid:block/power_plug"
+	},
+	"elements": [
+		{
+			"from": [1, 13.5, 3],
+			"to": [15, 13.5, 13],
+			"rotation": {"angle": 0, "axis": "y", "origin": [1, 13, 3]},
+			"faces": {
+				"up": {"uv": [10, 0, 13.5, 2.5], "texture": "#1"}
+			}
+		}
+	]
+}

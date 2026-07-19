@@ -708,9 +708,12 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<CircuitDesignTableBlock> CIRCUIT_DESIGN_TABLE = REGISTRATE.block("circuit_design_table", CircuitDesignTableBlock::new)
-            .blockstate(circuitDesignTable())
+            .blockstate(horizontalBlock("block/circuit_design_table"))
             .initialProperties(() -> Blocks.CRAFTING_TABLE)
-            .transform(axeOnly())
+            .transform(axeOrPickaxe())
+            .transform(CResistance.setResistance(480))
+            .transform(CThermal.maxPower(50, 0.5f))
+            .addLayer(() -> RenderType::cutout)
             .defaultLoot()
             .simpleItem()
             .register();

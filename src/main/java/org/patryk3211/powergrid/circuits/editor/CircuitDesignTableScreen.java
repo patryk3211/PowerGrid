@@ -103,4 +103,11 @@ public class CircuitDesignTableScreen extends AbstractSimiContainerScreen<Circui
 
         ctx.drawCenteredString(font, title, leftPos + (WIDTH - 8) / 2, topPos + 3, 0xFFFFFF);
     }
+
+    @Override
+    protected void containerTick() {
+        super.containerTick();
+        if(!menu.contentHolder.isPowered())
+            onClose();
+    }
 }

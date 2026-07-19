@@ -49,6 +49,7 @@
     "powergrid:electric_fan",
     "powergrid:electric_pump",
     "powergrid:portable_battery",
+    "powergrid:circuit_design_table",
     "powergrid:circuit_board",
     "powergrid:winding",
     "powergrid:device_connector",

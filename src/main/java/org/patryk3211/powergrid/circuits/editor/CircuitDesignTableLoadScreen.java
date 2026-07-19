@@ -170,6 +170,8 @@ public class CircuitDesignTableLoadScreen extends AbstractSimiContainerScreen<Ci
         fileNameInput.tick();
         if(popupTimeout > 0)
             --popupTimeout;
+        if(!menu.contentHolder.isPowered())
+            onClose();
     }
 
     private void popup(Component text) {
