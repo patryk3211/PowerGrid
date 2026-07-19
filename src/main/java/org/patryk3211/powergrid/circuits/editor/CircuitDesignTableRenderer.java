@@ -5,6 +5,7 @@ import com.simibubi.create.foundation.blockEntity.renderer.SafeBlockEntityRender
 import net.createmod.catnip.render.CachedBuffers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
@@ -19,9 +20,10 @@ public class CircuitDesignTableRenderer extends SafeBlockEntityRenderer<CircuitD
         float power = Mth.clamp((be.power() - 15) / 15, 0, 1);
 
         var state = be.getBlockState();
-        var glow = CachedBuffers.partialFacing(ModdedPartialModels.CIRCUIT_TABLE_GLOW, state, state.getValue(CircuitDesignTableBlock.HORIZONTAL_FACING));
+        var glow = CachedBuffers.partial(ModdedPartialModels.CIRCUIT_TABLE_GLOW, state);
 
-        glow.disableDiffuse()
+        glow.rotateYCenteredDegrees(state.getValue(CircuitDesignTableBlock.HORIZONTAL_FACING).getAxis() == Direction.Axis.X ? 90 : 0)
+                .disableDiffuse()
                 .color((int) (power * 255), (int) (power * 255), (int) (power * 255), 255)
                 .renderInto(ms, bufferSource.getBuffer(ModdedRenderLayers.getAdditive()));
     }
