@@ -60,8 +60,8 @@ public class CircuitDesignTableBlock extends HorizontalElectricBlock implements 
 
     private static final TerminalBoundingBox SOCKET_NORTH = new TerminalBoundingBox(IDecoratedTerminal.SOCKET, 6, 5, 14, 10, 9, 18);
     private static final TerminalBoundingBox SOCKET_SOUTH = SOCKET_NORTH.rotateAroundY(180);
-    private static final TerminalBoundingBox SOCKET_EAST = SOCKET_NORTH.rotateAroundY(-90);
-    private static final TerminalBoundingBox SOCKET_WEST = SOCKET_NORTH.rotateAroundY(90);
+    private static final TerminalBoundingBox SOCKET_EAST = SOCKET_NORTH.rotateAroundY(90);
+    private static final TerminalBoundingBox SOCKET_WEST = SOCKET_NORTH.rotateAroundY(-90);
 
     public CircuitDesignTableBlock(Properties settings) {
         super(settings.lightLevel(state -> state.getValue(POWERED) ? 7 : 0));

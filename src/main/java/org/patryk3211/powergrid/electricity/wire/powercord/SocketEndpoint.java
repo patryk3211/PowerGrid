@@ -74,6 +74,8 @@ public class SocketEndpoint implements ICordEndpoint {
         var state = world.getBlockState(pos);
         if(state.hasProperty(BlockStateProperties.FACING))
             return state.getValue(BlockStateProperties.FACING);
+        if(state.hasProperty(BlockStateProperties.HORIZONTAL_FACING))
+            return state.getValue(BlockStateProperties.HORIZONTAL_FACING);
         return Direction.NORTH;
     }
 

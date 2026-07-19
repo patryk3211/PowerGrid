@@ -1,17 +1,32 @@
 {
   "variants": {
-    "facing=east": {
+    "facing=east,powered=false": {
       "model": "powergrid:block/circuit_design_table",
       "y": 90
     },
-    "facing=north": {
+    "facing=east,powered=true": {
+      "model": "powergrid:block/circuit_design_table",
+      "y": 90
+    },
+    "facing=north,powered=false": {
       "model": "powergrid:block/circuit_design_table"
     },
-    "facing=south": {
+    "facing=north,powered=true": {
+      "model": "powergrid:block/circuit_design_table"
+    },
+    "facing=south,powered=false": {
       "model": "powergrid:block/circuit_design_table",
       "y": 180
     },
-    "facing=west": {
+    "facing=south,powered=true": {
+      "model": "powergrid:block/circuit_design_table",
+      "y": 180
+    },
+    "facing=west,powered=false": {
+      "model": "powergrid:block/circuit_design_table",
+      "y": 270
+    },
+    "facing=west,powered=true": {
       "model": "powergrid:block/circuit_design_table",
       "y": 270
     }
