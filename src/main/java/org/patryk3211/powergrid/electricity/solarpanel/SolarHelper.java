@@ -9,6 +9,7 @@ import com.simibubi.create.content.contraptions.ContraptionCollider;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.contraptions.ContraptionCollider;
+import dev.ryanhcode.sable.companion.math.JOMLConversion;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -23,6 +24,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.joml.Vector3d;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedTags;
 
@@ -190,7 +192,9 @@ public class SolarHelper {
         return hits;
     }
 
-    public static boolean skyCheck(Level world, BlockPos pos) {
+    public static boolean skyCheck(Level world, BlockPos Bpos) {
+        var Vpos = SableCompanion.INSTANCE.projectOutOfSubLevel(world, new Vector3d(Bpos.getX(), Bpos.getY(), Bpos.getZ()));
+        var pos = BlockPos.containing(JOMLConversion.toMojang(Vpos));
         if (!world.canSeeSky(pos)){
             var topY = world.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX(), pos.getZ());
             var list = DDA(world, pos.getCenter(), pos.getCenter().add(0, topY - pos.getY(), 0));

@@ -62,7 +62,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
         var pos = new BlockPos((int)d.x, (int)d.y, (int)d.z);
 
         if (firstTick) {
-            ambientTemp = ThermalBehaviour.getAmbientTemperature(world, this.getBlockPos());
+            ambientTemp = ThermalBehaviour.getAmbientTemperature(world, pos);
             if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
                 ambientTemp = 22f;
             firstTick = false;
@@ -76,7 +76,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
             panelNormal.normalize();
         }
 
-        var irradiance = getIrradiance(getAM(world), cloudCover, this.getBlockPos().getY(), world);
+        var irradiance = getIrradiance(getAM(world), cloudCover, pos.getY(), world);
         var cellTemp = getCellTemp(irradiance, ambientTemp);
         var Vt = 8.617e-5 * (cellTemp + 273.15);
         double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt, STRINGS_IN_PARALLEL);
@@ -102,6 +102,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity {
         var transmittance = 1 - cloudCover;
         var irradiance = SOLAR_CONSTANT * Math.pow(0.7,Math.pow(AM, 0.678));
         irradiance = irradiance * ((((YPos - 70) / 250f) * 0.04f) + 1); //70 is around average world height, but it could also be put to sea level
+        if (irradiance > SOLAR_CONSTANT) irradiance = SOLAR_CONSTANT;
 
         double sunAngle = world.getSunAngle(0);
         Vector3d sunDir = new Vector3d(-Math.sin(sunAngle), Math.cos(sunAngle), 0);
