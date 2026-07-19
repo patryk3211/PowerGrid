@@ -208,6 +208,7 @@ public class ModdedBlocks {
     public static final BlockEntry<HeaterBlock> HEATING_COIL = REGISTRATE.block("heating_coil", HeaterBlock::new)
             .blockstate(horizontalBlock("block/heating_coil"))
             .initialProperties(SharedProperties::softMetal)
+            .addLayer(() -> RenderType::cutoutMipped)
             .transform(pickaxeOnly())
             .transform(CResistance.setResistance(25))
             .transform(CThermal.maxPower(60, 1.0f))
