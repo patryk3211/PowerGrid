@@ -25,38 +25,23 @@ import java.util.List;
 
 public class SolarHelper {
     public static final int SOLAR_CONSTANT = 1361;
-    // I_sc
     public static final int CELLS_IN_SERIES = 48;
-    public static final int STRINGS_IN_PARALLEL = 1;
-    // V_oc temperature adjustment factor
-    protected static final float BETAVOC = -0.0035f;
-    // I_sc temperature adjustment factor
-    protected static final float ALPHAISC = 0.0005f;
     protected static final float NOCT = 52;
-    // Diode ideality factor
+    public static final double DIFFUSE_FRAC = .12;
+    public static final double ALBEDO_FRAC = .08;
+    public static final double IO_REF = 4.07e-6;
+    // Diode ideality factor (per cell)
     public static final double IDEALITY = 1.5;
 
-    public static final double IO_REF = 4.07e-6;
+    // All values below are per panel, not per cell
     public static final double IPV_REF = 3.5;
     public static final double RS = 0.05;
     public static final double RSH_REF = 600.0;
     public static final boolean RSH_SCALES_WITH_IRRADIANCE = true;
 
-    public static final double DIFFUSE_FRAC = .12;
-    public static final double ALBEDO_FRAC = .08;
-
     private static boolean showDebugLines = true;
 
     public record DDAHit(BlockPos worldOrLocalPos, AbstractContraptionEntity contraption) {}
-
-    public static double[] getTempAdjusted(double irradiance, double cellTemp, double Vt, int stringsInParallel) {
-        var Isc_T = 4 * stringsInParallel * (irradiance / 1000) * (1 + ALPHAISC * (cellTemp - 25));
-        if (Isc_T <= 0) return new double[]{0, 0};
-        //var Voc_base = IDEALITY * Vt * Math.log(Isc_T / (I_O * stringsInParallel) + 1);
-        var Voc_base = IDEALITY * Vt * Math.log(Isc_T / (IO_REF * stringsInParallel) + 1);
-        var Voc_T = Voc_base + BETAVOC * (cellTemp - 25);
-        return new double[]{Isc_T, Voc_T};
-    }
 
     public static double getCellTemp(double Irradiance, float AMBIENT_TEMP){
         return AMBIENT_TEMP + (NOCT - 20) * (Irradiance / 800);

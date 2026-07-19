@@ -170,27 +170,30 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
 
         var irradiance = getIrradiance(getAM(world), cloudCover, this.getBlockPos().getY(), world);
         var cellTemp = getCellTemp(irradiance, ambientTemp);
-        int seriesMultiplier = CELLS_IN_SERIES * (contraption.getPanelBlocks() / parallelNumbers.getDivisor());
-        double Ipv = IPV_REF * (irradiance / 1000.0);
-        double Rsh;
+        int panelsInParallel = parallelNumbers.getDivisor();
+        int panelsInSeries = contraption.getPanelBlocks() / parallelNumbers.getDivisor();
+        int seriesMultiplier = CELLS_IN_SERIES * panelsInSeries;
+        double Ipv = IPV_REF * (irradiance / 1000.0) * panelsInParallel;
+        double RshPerString;
         if (RSH_SCALES_WITH_IRRADIANCE && irradiance > 1.0) {
-            Rsh = RSH_REF * (1000.0 / irradiance);
+            RshPerString = RSH_REF * (1000.0 / irradiance) * panelsInSeries;
         } else {
-            Rsh = RSH_REF;
+            RshPerString = RSH_REF * panelsInSeries;
         }
+        double Rsh = RshPerString / panelsInParallel;
+        double Rs = (RS * panelsInSeries) / panelsInParallel ;
 
         if (junction != null) {
             junction.setTemperatureCelsius(cellTemp);
-            junction.setIdealityFactor(IDEALITY * CELLS_IN_SERIES * parallelNumbers.getDivisor());
+            junction.setIdealityFactor(IDEALITY * seriesMultiplier);
         }
 
         if(Rsh <= 0 || !Double.isFinite(Rsh))
             Rsh = 10000;
         if(!Double.isFinite(Ipv))
             Ipv = 0;
-        junction.setIdealityFactor(IDEALITY * seriesMultiplier);
 
-        seriesResistor.setResistance(RS);
+        seriesResistor.setResistance(Rs);
         currentSource.setConductance(1 / Rsh);
         currentSource.setCurrent(Ipv);
 
