@@ -37,7 +37,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
@@ -125,7 +127,8 @@ import org.patryk3211.powergrid.kinetics.variac.VariacBlock;
 
 import static com.simibubi.create.foundation.data.CreateRegistrate.casingConnectivity;
 import static com.simibubi.create.foundation.data.CreateRegistrate.connectedTextures;
-import static com.simibubi.create.foundation.data.TagGen.*;
+import static com.simibubi.create.foundation.data.TagGen.axeOrPickaxe;
+import static com.simibubi.create.foundation.data.TagGen.pickaxeOnly;
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.POWERED;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 import static org.patryk3211.powergrid.utility.DataProviderUtility.*;
@@ -179,6 +182,21 @@ public class ModdedBlocks {
             .transform(pickaxeOnly())
             .onRegister(connectedTextures(() -> new EncasedCTBehaviour(ModdedPartialModels.COPPER_PLATING)))
             .onRegister(casingConnectivity((block, cc) -> cc.makeCasing(block, ModdedPartialModels.COPPER_PLATING)))
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<StairBlock> COPPER_PLATING_STAIRS = REGISTRATE.block("copper_plating_stairs", p -> new StairBlock(COPPER_PLATING.getDefaultState(), p))
+            .blockstate((ctx, prov) -> prov.stairsBlock(ctx.get(), prov.modLoc("block/solar_panel/copper_plating")))
+            .initialProperties(SharedProperties::softMetal)
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<SlabBlock> COPPER_PLATING_SLAB = REGISTRATE.block("copper_plating_slab", SlabBlock::new)
+            .blockstate((ctx, prov) ->
+                    prov.slabBlock(ctx.get(),
+                            prov.modLoc("block/copper_plating"),
+                            prov.modLoc("block/solar_panel/copper_plating")))
+            .initialProperties(SharedProperties::softMetal)
             .simpleItem()
             .register();
 
