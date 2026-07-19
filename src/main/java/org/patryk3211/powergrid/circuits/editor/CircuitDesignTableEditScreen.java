@@ -416,7 +416,7 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
         if(unsavedPopupTimeout > 0)
             --unsavedPopupTimeout;
         if(menu.contentHolder instanceof CircuitDesignTableBlockEntity be) {
-            if(!be.isPowered())
+            if(!menu.player.isCreative() && !be.isPowered())
                 save();
         }
     }

@@ -107,7 +107,7 @@ public class CircuitDesignTableScreen extends AbstractSimiContainerScreen<Circui
     @Override
     protected void containerTick() {
         super.containerTick();
-        if(!menu.contentHolder.isPowered())
+        if(!menu.player.isCreative() && !menu.contentHolder.isPowered())
             onClose();
     }
 }

@@ -64,10 +64,12 @@ public class CircuitDesignTableBlockEntity extends ElectricBlockEntity implement
             level.setBlock(worldPosition,
                     getBlockState().setValue(CircuitDesignTableBlock.POWERED, false),
                     CircuitDesignTableBlock.UPDATE_ALL_IMMEDIATE);
+            wasPowered = false;
         } else if(!wasPowered && isPowered()) {
             level.setBlock(worldPosition,
-                    getBlockState().setValue(CircuitDesignTableBlock.POWERED, false),
+                    getBlockState().setValue(CircuitDesignTableBlock.POWERED, true),
                     CircuitDesignTableBlock.UPDATE_ALL_IMMEDIATE);
+            wasPowered = true;
         }
     }
 
