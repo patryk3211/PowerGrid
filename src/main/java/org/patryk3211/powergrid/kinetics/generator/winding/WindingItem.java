@@ -160,9 +160,9 @@ public class WindingItem extends Item {
         } else {
             if(world.isClientSide)
                 return InteractionResult.SUCCESS;
-            tag = stack.getOrCreateTagElement("Connection");
-            tag.putIntArray("Position", new int[] { pos.getX(), pos.getY(), pos.getZ() });
-            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+            CompoundTag Tag = new CompoundTag();
+            Tag.putIntArray("Position", new int[] { pos.getX(), pos.getY(), pos.getZ() });
+            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(Tag));
         }
 
         return InteractionResult.SUCCESS;
