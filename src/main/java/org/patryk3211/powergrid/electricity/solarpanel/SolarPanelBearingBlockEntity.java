@@ -205,6 +205,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         var transmittance = 1 - cloudCover;
         var irradiance = SOLAR_CONSTANT * Math.pow(0.7,Math.pow(AM, 0.678));
         irradiance = irradiance * ((((YPos - 70) / 250f) * 0.04f) + 1); //70 is around average world height, but it could also be put to sea level
+        if (irradiance > SOLAR_CONSTANT) irradiance = SOLAR_CONSTANT;
 
         if (rayCastDelay-- == 0){
             sunVisibility = sunRaycast(world);
