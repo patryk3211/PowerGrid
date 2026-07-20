@@ -40,7 +40,6 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
-import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
@@ -50,6 +49,7 @@ import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEnti
 import org.patryk3211.powergrid.electricity.electromagnet.MagnetizingBehaviour;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.kinetics.plotter.PlotterBlockEntity;
@@ -1247,7 +1247,7 @@ public class DeviceScenes {
         scene.idle(10);
         scene.world().showSection(util.select().position(panel3), Direction.DOWN);
         scene.world().setBlock(panel3, ModdedBlocks.SOLAR_PANEL.getDefaultState()
-                .setValue(Rotation4ElectricBlock.FACING, Direction.DOWN), false);
+                .setValue(SolarPanelBlock.FACING, Direction.DOWN), false);
         scene.idle(90);
 
         scene.world().replaceBlocks(util.select().fromTo(1,1,1,3,1,3), Blocks.GRASS_BLOCK.defaultBlockState(), false);
@@ -1261,6 +1261,65 @@ public class DeviceScenes {
                 .text("Placing one in a plains biome.")
                 .pointAt(util.vector().centerOf(panel3));
         scene.idle(70);
+
+        scene.world().hideSection(util.select().fromTo(1, 1, 1, 3, 1, 3), Direction.UP);
+        scene.world().hideSection(util.select().position(3, 2, 1), Direction.UP);
+        scene.world().hideSection(util.select().position(3, 2, 3), Direction.UP);
+        scene.world().hideSection(util.select().position(3, 3, 3), Direction.UP);
+        scene.world().hideSection(util.select().position(2, 2, 2), Direction.UP);
+        scene.idle(20);
+
+        scene.world().replaceBlocks(util.select().fromTo(1, 1, 1, 3, 1, 3),
+                ModdedBlocks.SOLAR_PANEL.getDefaultState().setValue(SolarPanelBlock.FACING, Direction.DOWN),
+                false);
+        // 2x2
+        scene.electric().connectPanels(util.grid().at(1, 1, 1), util.grid().at(2, 1, 1));
+        scene.electric().connectPanels(util.grid().at(1, 1, 1), util.grid().at(1, 1, 2));
+        scene.electric().connectPanels(util.grid().at(1, 1, 1), util.grid().at(2, 1, 2));
+        // 1x2
+        scene.electric().connectPanels(util.grid().at(3, 1, 1), util.grid().at(3, 1, 2));
+        // 3x1
+        scene.electric().connectPanels(util.grid().at(1, 1, 3), util.grid().at(2, 1, 3));
+        scene.electric().connectPanels(util.grid().at(1, 1, 3), util.grid().at(3, 1, 3));
+        scene.world().showSection(util.select().fromTo(1, 1, 1, 3, 1, 3), Direction.DOWN);
+        scene.idle(10);
+
+        scene.overlay().showText(80)
+                .text("Solar panels placed next to each other can connect to form a multiblock.")
+                .placeNearTarget()
+                .pointAt(util.vector().of(2, 1.5, 2))
+                .attachKeyFrame();
+        scene.idle(90);
+
+        var wrench = AllItems.WRENCH.asStack();
+        scene.overlay().showControls(util.vector().of(2.5, 1.5, 2.9), Pointing.DOWN, 30)
+                .rightClick()
+                .withItem(wrench);
+        scene.idle(10);
+        scene.world().showSection(util.select().position(4, 1, 4), Direction.DOWN);
+        scene.idle(10);
+        scene.electric().mergePanels(util.grid().at(1, 1, 1), util.grid().at(1, 1, 3));
+        scene.idle(30);
+
+        scene.overlay().showControls(util.vector().of(2.9, 1.5, 2.5), Pointing.DOWN, 30)
+                .rightClick()
+                .withItem(wrench);
+        scene.idle(10);
+        scene.world().showSection(util.select().position(4, 1, 4), Direction.DOWN);
+        scene.idle(10);
+        scene.electric().mergePanels(util.grid().at(1, 1, 1), util.grid().at(3, 1, 1));
+        scene.world().showSection(util.select().position(4, 1, 4), Direction.DOWN);
+        scene.idle(30);
+
+        scene.overlay().showControls(util.vector().of(2.1, 1.5, 2.5), Pointing.DOWN, 30)
+                .rightClick()
+                .withItem(wrench);
+        scene.idle(10);
+        scene.world().showSection(util.select().position(4, 1, 4), Direction.DOWN);
+        scene.idle(10);
+        scene.electric().splitPanels(util.grid().at(1, 1, 1), 1, Direction.EAST);
+        scene.world().showSection(util.select().position(4, 1, 4), Direction.DOWN);
+        scene.idle(30);
 
         scene.overlay().showText(80)
                 .text("Next scene will show you how to start making power with Solar Panels.");
@@ -1281,7 +1340,7 @@ public class DeviceScenes {
         scene.showBasePlate();
         scene.idle(20);
         scene.world().replaceBlocks(util.select().position(deviceConnector), ModdedBlocks.SOLAR_PANEL.getDefaultState()
-                .setValue(Rotation4ElectricBlock.FACING, Direction.DOWN), false);
+                .setValue(SolarPanelBlock.FACING, Direction.DOWN), false);
         scene.world().showSection(util.select().position(deviceConnector), Direction.DOWN);
         scene.scaleSceneView(2f);
 

@@ -20,7 +20,6 @@ import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
-import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWire;
 import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWireSolar;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 
