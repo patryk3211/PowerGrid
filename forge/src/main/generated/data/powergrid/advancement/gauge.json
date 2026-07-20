@@ -2,21 +2,33 @@
   "parent": "powergrid:conductive_casing",
   "criteria": {
     "0": {
+<<<<<<<< HEAD:forge/src/main/generated/data/powergrid/advancement/gauge.json
       "trigger": "powergrid:gauge_builtin"
+========
+      "conditions": {},
+      "trigger": "create:electric_damage_builtin"
+>>>>>>>> architectury-1.20.1/v0.6:forge/src/main/generated/data/powergrid/advancement/electric_damage.json
     }
   },
   "display": {
-    "announce_to_chat": false,
+    "announce_to_chat": true,
     "description": {
       "color": "#DBA213",
-      "translate": "advancement.powergrid.gauge.desc"
+      "translate": "advancement.powergrid.electric_damage.desc"
     },
+<<<<<<<< HEAD:forge/src/main/generated/data/powergrid/advancement/gauge.json
     "icon": {
       "count": 1,
       "id": "powergrid:voltage_gauge"
+========
+    "frame": "goal",
+    "hidden": true,
+    "icon": {
+      "item": "powergrid:wire"
+>>>>>>>> architectury-1.20.1/v0.6:forge/src/main/generated/data/powergrid/advancement/electric_damage.json
     },
     "title": {
-      "translate": "advancement.powergrid.gauge"
+      "translate": "advancement.powergrid.electric_damage"
     }
   },
   "requirements": [

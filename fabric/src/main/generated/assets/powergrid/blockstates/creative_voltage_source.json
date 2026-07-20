@@ -1,11 +1,19 @@
 {
   "variants": {
-    "axis=x": {
+    "facing=east": {
       "model": "powergrid:block/creative_voltage_source",
       "y": 90
     },
-    "axis=z": {
+    "facing=north": {
       "model": "powergrid:block/creative_voltage_source"
+    },
+    "facing=south": {
+      "model": "powergrid:block/creative_voltage_source",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "powergrid:block/creative_voltage_source",
+      "y": 270
     }
   }
 }

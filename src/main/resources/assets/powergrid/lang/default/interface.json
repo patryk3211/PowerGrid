@@ -72,6 +72,9 @@
 
   "powergrid.gui.solar_panel_bearing.slider": "Strings in Parallel × Panels in String",
 
+  "powergrid.gui.portable.battery.low": "Portable battery low",
+  "powergrid.gui.portable.battery.depleted": "Portable battery empty",
+
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",
   "powergrid.generic.unit.ohm": "Ω",
@@ -107,6 +110,9 @@
   "powergrid.tooltip.device_connector.fe_w": "FE/W",
   "powergrid.tooltip.device_connector.max_rate": "Max transfer rate:",
   "powergrid.tooltip.device_connector.fe_v": "FE/t/V",
+
+  "powergrid.tooltip.fe_inverter.voltage": "Output voltage:",
+  "powergrid.tooltip.fe_inverter.fe_v": "FE/V",
 
   "powergrid.tooltip.voltage.rpm": "RPM per Volt:",
 

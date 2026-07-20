@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.equipment.portablebattery;
 import com.simibubi.create.content.equipment.armor.BacktankItem;
 import com.simibubi.create.content.equipment.armor.BaseArmorItem;
 import net.minecraft.core.Holder;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
@@ -34,6 +35,7 @@ import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Power;
 import org.patryk3211.powergrid.electricity.info.Resistance;
+import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -90,5 +92,14 @@ public class PortableBatteryItem extends BaseArmorItem implements IHaveElectricP
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         Resistance.series(ModdedBlocks.PORTABLE_BATTERY.get().resistance(), player, tooltip);
         Power.max(ModdedBlocks.PORTABLE_BATTERY.asStack(), player, tooltip);
+        float maxCharge = BatteryUtils.getMaxCharge(stack);
+        float charge = BatteryUtils.getCurrentCharge(stack) / maxCharge;
+        Lang.translate("tooltip.charge.current")
+                .style(ChatFormatting.GRAY).addTo(tooltip);
+        Lang.builder()
+                .add(Component.literal(" "))
+                .add(Lang.numberConstant(charge * 100))
+                .add(Component.literal("%"))
+                .style(ChatFormatting.AQUA).addTo(tooltip);
     }
 }

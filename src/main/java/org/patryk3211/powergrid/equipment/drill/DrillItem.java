@@ -12,6 +12,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Tiers;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.Tool;
+import net.minecraft.world.item.DiggerItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Tiers;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
@@ -26,7 +30,7 @@ public class DrillItem extends DiggerItem {
 
     public DrillItem(Properties properties) {
         super(Tiers.DIAMOND, BlockTags.MINEABLE_WITH_PICKAXE, properties.stacksTo(1));
-//        1.0f, -3.0f, Tiers.DIAMOND, BlockTags.MINEABLE_WITH_PICKAXE, properties.stacksTo(1));
+//        1.0f, -3.0f, Tiers.DIAMOND, BlockTags.MINEABLE_WITH_PICKAXE, properties.stacksTo(1).durability(250));
     }
 
     public static boolean canMine(BlockState state) {
@@ -35,17 +39,17 @@ public class DrillItem extends DiggerItem {
 
     @Override
     public boolean isBarVisible(ItemStack stack) {
-        return BatteryUtils.isBarVisible(stack, energyPerUse(), 0.3f);
+        return BatteryUtils.isBarVisible(stack, energyPerUse());
     }
 
     @Override
     public int getBarWidth(ItemStack stack) {
-        return BatteryUtils.getBarWidth(stack, energyPerUse(), 0.3f);
+        return BatteryUtils.getBarWidth(stack, energyPerUse());
     }
 
     @Override
     public int getBarColor(ItemStack stack) {
-        return BatteryUtils.getBarColor(stack, energyPerUse(), 0.3f);
+        return BatteryUtils.getBarColor(stack, energyPerUse());
     }
 
     public static int energyPerUse() {
@@ -73,7 +77,7 @@ public class DrillItem extends DiggerItem {
             if(miningEntity instanceof PlayerDrillExtensions ext) {
                 ext.powerGrid$blockDrilled(power);
             }
-            if(!level.isClientSide && state.getDestroySpeed(level, pos) != 0.0F && power < 0.3f) {
+            if(!level.isClientSide && state.getDestroySpeed(level, pos) != 0.0F && power == 0) {
                 Tool tool = stack.get(DataComponents.TOOL);
                 if(tool != null)
                     stack.hurtAndBreak(tool.damagePerBlock(), miningEntity, EquipmentSlot.MAINHAND);

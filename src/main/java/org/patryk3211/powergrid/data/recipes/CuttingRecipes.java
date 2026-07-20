@@ -18,7 +18,6 @@ package org.patryk3211.powergrid.data.recipes;
 import com.simibubi.create.api.data.recipe.CuttingRecipeGen;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
-import net.minecraft.tags.ItemTags;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
@@ -39,7 +38,7 @@ public class CuttingRecipes extends CuttingRecipeGen {
 
     EMPTY_CIRCUIT = create("empty_circuit_slabs", b -> b
             .output(ModdedItems.EMPTY_CIRCUIT, 2)
-            .require(ItemTags.WOODEN_SLABS)
+            .require(RecipeTags.woodenSlab())
             .duration(50))
 
             ;

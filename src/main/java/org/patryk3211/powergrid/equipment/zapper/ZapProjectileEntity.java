@@ -15,9 +15,7 @@
  */
 package org.patryk3211.powergrid.equipment.zapper;
 
-import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
@@ -25,7 +23,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -105,8 +102,7 @@ public class ZapProjectileEntity extends AbstractHurtingProjectile {
     }
 
     private DamageSource causeZapDamage() {
-        Registry<DamageType> registry = level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE);
-        return new DamageSource(registry.getHolder(ModdedDamageTypes.ZAP).get(), this, getOwner());
+        return new DamageSource(ModdedDamageTypes.ZAP.holder(level()), this, getOwner());
     }
 
     @Override

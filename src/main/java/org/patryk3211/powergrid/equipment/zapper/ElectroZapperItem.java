@@ -42,6 +42,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGridClient;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPackets;
+import org.patryk3211.powergrid.equipment.BoostingChipItem;
 import org.patryk3211.powergrid.equipment.ItemBoostUtils;
 import org.patryk3211.powergrid.equipment.portablebattery.BatteryUtils;
 import org.patryk3211.powergrid.utility.Lang;
@@ -83,17 +84,17 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
 
     @Override
     public boolean isBarVisible(ItemStack stack) {
-        return BatteryUtils.isBarVisible(stack, energyPerUse(), 0.5f);
+        return BatteryUtils.isBarVisible(stack, energyPerUse());
     }
 
     @Override
     public int getBarWidth(ItemStack stack) {
-        return BatteryUtils.getBarWidth(stack, energyPerUse(), 0.5f);
+        return BatteryUtils.getBarWidth(stack, energyPerUse());
     }
 
     @Override
     public int getBarColor(ItemStack stack) {
-        return BatteryUtils.getBarColor(stack, energyPerUse(), 0.5f);
+        return BatteryUtils.getBarColor(stack, energyPerUse());
     }
 
     public static int energyPerUse() {
@@ -112,6 +113,11 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
         if(world.isClientSide) {
             clientUse(hand);
             return InteractionResultHolder.success(stack);
+        }
+        if(!boosted) {
+            var otherStack = user.getItemInHand(hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
+            if(otherStack.getItem() instanceof BoostingChipItem)
+                return InteractionResultHolder.pass(stack);
         }
 
         float power = BatteryUtils.drawEnergy(user, energyPerUse());
@@ -133,7 +139,7 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
         Function<Boolean, ElectroZapperS2CPacket> factory = b -> new ElectroZapperS2CPacket(barrelPos, hand, b);
         ModdedPackets.sendToClientsTracking(factory.apply(false), user);
         ModdedPackets.sendToClient(factory.apply(true), (ServerPlayer) user);
-        if(power < 0.5f)
+        if(power == 0)
             stack.hurtAndBreak(1, user, EquipmentSlot.MAINHAND);
         return InteractionResultHolder.success(user.getItemInHand(hand));
     }

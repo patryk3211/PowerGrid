@@ -78,14 +78,14 @@ public class ModdedRenderLayers {
     );
 
     private static final RenderType ADDITIVE = RenderType.create("powergrid_additive", DefaultVertexFormat.BLOCK,
-            VertexFormat.Mode.QUADS, 256, true, true, RenderType.CompositeState.builder()
-                    .setShaderState(RenderStateShard.RENDERTYPE_SOLID_SHADER)
+            VertexFormat.Mode.QUADS, RenderType.SMALL_BUFFER_SIZE, true, true, RenderType.CompositeState.builder()
+                    .setShaderState(RenderStateShard.RENDERTYPE_TRANSLUCENT_SHADER)
                     .setTextureState(RenderStateShard.BLOCK_SHEET)
                     .setTransparencyState(RenderStateShard.ADDITIVE_TRANSPARENCY)
                     .setCullState(RenderStateShard.NO_CULL)
                     .setLightmapState(RenderStateShard.LIGHTMAP)
                     .setOverlayState(RenderStateShard.OVERLAY)
-                    .setOutputState(RenderStateShard.PARTICLES_TARGET)
+                    .setOutputState(RenderStateShard.TRANSLUCENT_TARGET)
                     .createCompositeState(true));
 
     public static RenderType getDebugLines() {

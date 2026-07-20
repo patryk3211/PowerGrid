@@ -12,7 +12,7 @@
 			"to": [17, 7, 16],
 			"faces": {
 				"north": {"uv": [6, 0, 10, 9], "rotation": 90, "texture": "#0"},
-				"east": {"uv": [0, 10, 5.5, 14], "rotation": 180, "texture": "#0"},
+				"east": {"uv": [0, 13.5, 5.5, 9.5], "rotation": 180, "texture": "#0"},
 				"west": {"uv": [0, 9.5, 5.5, 13.5], "texture": "#0"},
 				"up": {"uv": [0, 0, 5.5, 9], "rotation": 90, "texture": "#0"},
 				"down": {"uv": [0, 0, 5.5, 9], "rotation": 270, "texture": "#0"}

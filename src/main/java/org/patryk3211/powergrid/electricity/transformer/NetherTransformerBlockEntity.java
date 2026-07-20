@@ -1,10 +1,15 @@
 package org.patryk3211.powergrid.electricity.transformer;
 
+import com.simibubi.create.api.contraption.train.PortalTrackProvider;
 import it.unimi.dsi.fastutil.objects.Object2ReferenceArrayMap;
+import net.createmod.catnip.math.BlockFace;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -85,6 +90,41 @@ public class NetherTransformerBlockEntity extends ElectricBlockEntity {
         entry.setWire(secondary, null);
         if(entry.isEmpty())
             TRANSFORMERS.remove(id);
+    }
+
+    @Override
+    public void destroy() {
+        super.destroy();
+        if(this.level instanceof ServerLevel level) {
+            var state = getBlockState();
+            var part = state.getValue(NetherTransformerBlock.PART);
+            var facing = Direction.fromAxisAndDirection(state.getValue(NetherTransformerBlock.HORIZONTAL_AXIS), switch(part) {
+                case 0, 2 -> Direction.AxisDirection.POSITIVE;
+                case 1, 3 -> Direction.AxisDirection.NEGATIVE;
+                default -> throw new IllegalStateException();
+            });
+            var otherSide = PortalTrackProvider.getOtherSide(level, new BlockFace(worldPosition, facing));
+            if(otherSide == null)
+                return;
+            var otherLevel = otherSide.level();
+            var otherPos = otherSide.face().getPos();
+            int y = switch(part) {
+                case 0, 1 -> 1;
+                case 2, 3 -> -1;
+                default -> throw new IllegalStateException();
+            };
+            if(otherLevel.getBlockState(otherPos).is(state.getBlock()) && otherLevel.getBlockState(otherPos.above(y)).is(state.getBlock())) {
+                otherLevel.setBlock(otherPos, Blocks.AIR.defaultBlockState(), NetherTransformerBlock.UPDATE_KNOWN_SHAPE);
+                otherLevel.setBlock(otherPos.above(y), Blocks.AIR.defaultBlockState(), NetherTransformerBlock.UPDATE_KNOWN_SHAPE);
+            } else {
+                // Try the opposite face
+                otherPos = otherPos.relative(otherSide.face().getFace(), 2);
+                if(otherLevel.getBlockState(otherPos).is(state.getBlock()) && otherLevel.getBlockState(otherPos.above(y)).is(state.getBlock())) {
+                    otherLevel.setBlock(otherPos, Blocks.AIR.defaultBlockState(), NetherTransformerBlock.UPDATE_KNOWN_SHAPE);
+                    otherLevel.setBlock(otherPos.above(y), Blocks.AIR.defaultBlockState(), NetherTransformerBlock.UPDATE_KNOWN_SHAPE);
+                }
+            }
+        }
     }
 
     public void link(UUID id, boolean secondary) {

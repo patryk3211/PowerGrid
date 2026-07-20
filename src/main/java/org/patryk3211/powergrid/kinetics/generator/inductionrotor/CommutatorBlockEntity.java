@@ -22,7 +22,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang3.mutable.MutableObject;
-import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.*;
@@ -60,6 +59,11 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
     public CommutatorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
         source.setFieldStrengthProvider(totalFieldStrength);
+    }
+
+    @Override
+    protected float damageRadius() {
+        return 0;
     }
 
     @Override
@@ -210,7 +214,7 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
             // Max 5 particles per tick
             float chance = Math.min(Math.abs(angular / 32f * current / 4f), 5);
 
-            if(!(getBlockState().getBlock() instanceof IBrushPlacement brushes))
+            if(!(getBlockState().getBlock() instanceof ICommutator brushes))
                 return;
 
             var r = level.random;
@@ -239,10 +243,10 @@ public class CommutatorBlockEntity extends RotorBlockEntity implements IElectric
 
     @Override
     public ITerminalPlacement terminal(BlockState state, int index) {
-        if(!(state.getBlock() instanceof CommutatorBlock block))
+        if(!(state.getBlock() instanceof ICommutator block))
             return null;
         if(rotorBehaviour.getAngularVelocity() >= 0)
-            return block.terminals.get(state, index);
-        return block.terminalsFlipped.get(state, index);
+            return block.terminals().get(state, index);
+        return block.terminalsFlipped().get(state, index);
     }
 }

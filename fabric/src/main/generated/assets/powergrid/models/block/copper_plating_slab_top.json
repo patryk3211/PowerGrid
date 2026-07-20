@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/slab_top",
+  "textures": {
+    "bottom": "powergrid:block/solar_panel/copper_plating",
+    "side": "powergrid:block/solar_panel/copper_plating",
+    "top": "powergrid:block/solar_panel/copper_plating"
+  }
+}

@@ -40,6 +40,11 @@ public class InductionRotorBlockEntity extends RotorBlockEntity {
         neighborsChanged();
     }
 
+    @Override
+    protected float damageRadius() {
+        return 0.55f;
+    }
+
     public void neighborsChanged() {
         assert level != null;
         var state = getBlockState();

@@ -15,14 +15,43 @@
  */
 package org.patryk3211.powergrid.collections;
 
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
+import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.PowerGrid;
 
-public class ModdedDamageTypes {
-    public static final ResourceKey<DamageType> OVERLOADED_MACHINE = ResourceKey.create(Registries.DAMAGE_TYPE, PowerGrid.asResource("overloaded_machine"));
-    public static final ResourceKey<DamageType> ZAP = ResourceKey.create(Registries.DAMAGE_TYPE, PowerGrid.asResource("zap"));
-    public static final ResourceKey<DamageType> LIVE_WIRE_CUTTING = ResourceKey.create(Registries.DAMAGE_TYPE, PowerGrid.asResource("live_wire_cutting"));
-    public static final ResourceKey<DamageType> ELECTROCUTION = ResourceKey.create(Registries.DAMAGE_TYPE, PowerGrid.asResource("electrocution"));
+public enum ModdedDamageTypes {
+    OVERLOADED_MACHINE("overloaded_machine"),
+    ZAP("zap"),
+    LIVE_WIRE_CUTTING("live_wire_cutting"),
+    ELECTROCUTION("electrocution"),
+    SPINNING_ROTOR("spinning_rotor");
+
+    public final ResourceKey<DamageType> key;
+
+    ModdedDamageTypes(String id) {
+        key = net.minecraft.resources.ResourceKey.create(Registries.DAMAGE_TYPE, PowerGrid.asResource(id));
+    }
+
+    public Holder<DamageType> holder(Level level) {
+        var registry = level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE);
+        return registry.getHolderOrThrow(key);
+    }
+
+    public Holder<DamageType> holder(MinecraftServer server) {
+        var registry = server.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE);
+        return registry.getHolderOrThrow(key);
+    }
+
+    public DamageSource simpleDamageSource(Level level) {
+        return new DamageSource(holder(level));
+    }
+
+    public DamageSource simpleDamageSource(MinecraftServer server) {
+        return new DamageSource(holder(server));
+    }
 }

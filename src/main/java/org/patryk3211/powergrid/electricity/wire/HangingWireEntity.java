@@ -89,6 +89,9 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             return null;
         var pos = position();
         var box = new AABB(terminalPos1, terminalPos2);
+        if(curveParams.isVertical()) {
+            return box.inflate(getWireEntry().wireThickness());
+        }
         var minY = new MutableFloat(box.minY);
         final float eY = (float) pos.y;
         curveParams.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {

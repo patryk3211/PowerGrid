@@ -41,7 +41,7 @@ import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.transformer.NetherTransformerBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
-import org.patryk3211.powergrid.general.ceilingtile.CeilingTileBlock;
+import org.patryk3211.powergrid.general.ceilingtile.lamp.CeilingTileLampBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.VerticalCommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
@@ -337,7 +337,7 @@ public class DataProviderUtilityImpl {
                 prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
                     int y = 0;
                     if(state.getValue(HORIZONTAL_AXIS) == Direction.Axis.X)
-                        y += 90;
+                        y -= 90;
                     var builder = ConfiguredModel.builder();
                     builder.modelFile(modModel(prov, "block/transformer/nether"));
                     if(state.getValue(NetherTransformerBlock.PART) % 2 == 1)
@@ -534,7 +534,8 @@ public class DataProviderUtilityImpl {
         return (ctx, prov) -> prov.getVariantBuilder(ctx.get()).forAllStates(state -> {
             var builder = ConfiguredModel.builder();
             var part = state.getValue(FactoryLightBlock.PART);
-            builder.modelFile(modModel(prov, baseFolder + "/factorylight" + switch(part) {
+            var baseName = baseFolder + (state.getValue(FactoryLightBlock.POWER) == 0 ? "/empty" : "") + "/factorylight";
+            builder.modelFile(modModel(prov, baseName + switch(part) {
                 case 0 -> "";
                 case 1 -> "northedge";
                 case 2 -> "centerns";
@@ -549,12 +550,12 @@ public class DataProviderUtilityImpl {
         });
     }
 
-    public static NonNullBiConsumer<DataGenContext<Block, CeilingTileBlock>, RegistrateBlockstateProvider> ceilingTile(String baseFolder) {
+    public static NonNullBiConsumer<DataGenContext<Block, CeilingTileLampBlock>, RegistrateBlockstateProvider> ceilingTileLamp(String baseFolder) {
         return (ctx, prov) -> prov.getVariantBuilder(ctx.get()).forAllStates(state -> {
             var builder = ConfiguredModel.builder();
-            var lampState = state.getValue(CeilingTileBlock.STATE);
+            var lampState = state.getValue(CeilingTileLampBlock.STATE);
             builder.modelFile(modModel(prov, baseFolder + "/ceiling_tile" + switch(lampState) {
-                case EMPTY -> "";
+                case EMPTY -> "_light_empty";
                 case LAMP, LAMP_LOW_POWER, LAMP_ON -> "_light";
             }));
             return builder.build();

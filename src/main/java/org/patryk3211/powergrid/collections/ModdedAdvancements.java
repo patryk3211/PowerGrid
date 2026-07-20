@@ -68,10 +68,22 @@ public class ModdedAdvancements implements DataProvider {
             .description("Make acid")
             .after(ROOT)
             .whenIconCollected()),
+    CIRCUIT_BOARD = create("circuit_board", b -> b
+            .icon(ModdedBlocks.CIRCUIT_BOARD)
+            .title("Miniaturization")
+            .description("Obtain a Circuit Board")
+            .after(ACID)
+            .whenIconCollected()),
     FE_INVERTER = create("fe_inverter", b -> b
             .icon(ModdedBlocks.FE_INVERTER)
             .title("How does this even work?")
             .description("Create a FE Inverter")
+            .after(ELECTRICAL_AGE)
+            .whenIconCollected()),
+    SOLAR_PANEL = create("solar_panel", b -> b
+            .icon(ModdedBlocks.SOLAR_PANEL)
+            .title("Going green")
+            .description("Obtain a Solar Panel")
             .after(ELECTRICAL_AGE)
             .whenIconCollected()),
 
@@ -102,11 +114,12 @@ public class ModdedAdvancements implements DataProvider {
             .title("AC/DC wannabe")
             .description("Assemble and power a transformer")
             .after(ELECTRICAL_AGE)),
-    GAUGE = create("gauge", b -> b
-            .icon(ModdedBlocks.VOLTAGE_METER)
-            .title("Monitoring the electrons")
-            .description("Use an electric gauge")
-            .after(ELECTRICAL_AGE)),
+    NETHER_TRANSFORMER = create("nether_transformer", b -> b
+            .icon(ModdedBlocks.TRANSFORMER_CORE)
+            .title("Interdimensional electricity provider")
+            .description("Assemble a transformer inside of a portal")
+            .special(NOISY)
+            .after(TRANSFORMER)),
 
     /* -------======= Ooo, very ~secret~, don't look here =======------- */
     POTATO_BATTERY = create("potato_battery", b -> b

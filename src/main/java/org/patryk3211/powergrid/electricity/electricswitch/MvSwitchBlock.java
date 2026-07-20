@@ -25,11 +25,11 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 public class MvSwitchBlock extends SurfaceSwitchBlock {
     private static final TerminalBoundingBox[] DOWN_TERMINALS = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6, 0, 0, 10, 3, 2),
-            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6, 0, 14, 10, 3, 16)
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6.5, 0, 2.5, 9.5, 2, 4.5),
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6.5, 0, 11.5, 9.5, 2, 13.5)
     };
 
-    private static final VoxelShape SHAPE_DOWN = box(3, 0, 2, 13, 4, 14);
+    private static final VoxelShape SHAPE_DOWN = box(4.5, 0, 4.5, 11.5, 3, 11.5);
 
     public MvSwitchBlock(Properties settings) {
         super(settings);

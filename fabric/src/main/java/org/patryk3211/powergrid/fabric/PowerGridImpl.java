@@ -41,6 +41,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
 import org.patryk3211.powergrid.circuits.components.fabric.ComponentRegistryImpl;
 import org.patryk3211.powergrid.collections.ItemDisplay;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedCommands;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.fabric.ModdedSoundEventsImpl;
@@ -66,7 +67,7 @@ public class PowerGridImpl implements ModInitializer {
                 DynamicRegistries.SyncOption.SKIP_WHEN_EMPTY);
 
         var tab = FabricItemGroup.builder()
-                .icon(() -> new ItemStack(ModdedItems.WIRE))
+                .icon(() -> new ItemStack(ModdedBlocks.ELECTRIC_MOTOR))
                 .displayItems(new ItemDisplay.BaseItemDisplay(true))
                 .title(Component.translatable("itemGroup.powergrid.main"))
                 .build();

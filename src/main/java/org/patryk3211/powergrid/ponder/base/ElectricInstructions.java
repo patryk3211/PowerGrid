@@ -25,10 +25,12 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
 import org.patryk3211.powergrid.collections.ModdedDataComponents;
+import net.minecraft.world.level.block.Block;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.PonderElectricNetwork;
 import org.patryk3211.powergrid.electricity.light.string.PatternData;
 import org.patryk3211.powergrid.electricity.light.string.StringLightCordEntity;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
 import org.patryk3211.powergrid.electricity.wire.powercord.CordEntity;
@@ -158,6 +160,41 @@ public class ElectricInstructions {
             scene.linkElement(element, link);
         });
         return link;
+    }
+
+    public void connectPanels(BlockPos controller, BlockPos other) {
+        builder.addInstruction(scene -> {
+            var level = scene.getWorld();
+            var be1 = level.getBlockEntity(controller);
+            var be2 = level.getBlockEntity(other);
+            if(be1 instanceof SolarPanelBlockEntity sbe1 && be2 instanceof SolarPanelBlockEntity sbe2)
+                sbe1.connect(sbe2);
+        });
+    }
+
+    public void mergePanels(BlockPos controller, BlockPos otherController) {
+        builder.addInstruction(scene -> {
+            var level = scene.getWorld();
+            var be1 = level.getBlockEntity(controller);
+            var be2 = level.getBlockEntity(otherController);
+            if(be1 instanceof SolarPanelBlockEntity sbe1 && be2 instanceof SolarPanelBlockEntity sbe2) {
+                SolarPanelBlockEntity.mergeMultiblock(sbe1, sbe2);
+                var state = sbe1.getBlockState();
+                level.setBlock(controller, state, Block.UPDATE_ALL);
+            }
+        });
+    }
+
+    public void splitPanels(BlockPos controller, int splitCoord, Direction splitPlane) {
+        builder.addInstruction(scene -> {
+            var level = scene.getWorld();
+            var be1 = level.getBlockEntity(controller);
+            if(be1 instanceof SolarPanelBlockEntity sbe1) {
+                SolarPanelBlockEntity.splitMultiblock(sbe1, splitCoord, splitPlane);
+                var state = sbe1.getBlockState();
+                level.sendBlockUpdated(controller, state, state, Block.UPDATE_ALL);
+            }
+        });
     }
 
     public void setSource(ElementLink<VoltageSource> source, float value) {

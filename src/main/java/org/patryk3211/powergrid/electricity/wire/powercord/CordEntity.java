@@ -24,7 +24,10 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.FloatTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Rotation;
@@ -41,10 +44,7 @@ import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.WorldNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
-import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
-import org.patryk3211.powergrid.electricity.wire.CurveParameters;
-import org.patryk3211.powergrid.electricity.wire.IWire;
-import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
 
@@ -121,6 +121,9 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             return null;
         var pos = position();
         var box = new AABB(terminalPos1, terminalPos2);
+        if(curveParams.isVertical()) {
+            return box.inflate(getWireEntry().wireThickness());
+        }
         var minY = new MutableFloat(box.minY);
         final float eY = (float) pos.y;
         curveParams.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
@@ -367,6 +370,39 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     protected void addAdditionalSaveData(CompoundTag nbt) {
         super.addAdditionalSaveData(nbt);
         nbt.putFloat("PlacedLength", placedLength);
+    }
+
+    @Override
+    public InteractionResult interact(Player player, InteractionHand hand) {
+        var result = super.interact(player, hand);
+        if(hand != InteractionHand.MAIN_HAND || result != InteractionResult.PASS)
+            return result;
+        return level().isClientSide
+                ? ClientWireInteractions.cordInteraction(this)
+                : InteractionResult.CONSUME;
+    }
+
+    /**
+     * Detach cord and return half placed item to player
+     * @param player Interacting player
+     * @param secondEndpoint Which endpoint is being removed
+     * @return True if the item has been returned to the player
+     */
+    public boolean cordDetach(Player player, boolean secondEndpoint) {
+        var handStack = player.getMainHandItem();
+        boolean itemInHand = handStack.getItem() == getItem();
+        if(!handStack.isEmpty() && !itemInHand)
+            return false;
+        for(; itemCount > (itemInHand ? 0 : 64); itemCount -= 64) {
+            var stack = new ItemStack(getItem(), Math.min(itemCount, 64));
+            player.addItem(stack);
+        }
+        var stack = itemInHand ? handStack : new ItemStack(getItem(), itemCount);
+        stack.getOrCreateTag().put("Connection", (secondEndpoint ? endpoint1 : endpoint2).serialize());
+        player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+        itemCount = 0;
+        discard();
+        return true;
     }
 
     @Override

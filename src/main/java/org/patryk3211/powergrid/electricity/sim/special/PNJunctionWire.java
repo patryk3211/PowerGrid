@@ -25,13 +25,15 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
     private double temperatureCelsius;
     private final double reverseSaturationCurrent;
     private final double seriesResistance;
-    private final double idealityFactor;
+    private double idealityFactor;
     private final double breakdownVoltage;
     private final double breakdownSaturationCurrent;
 
     private double G = ElectricalNetwork.G_MIN;
     private double Ieq = 0;
     private double prevV;
+
+    public int iterationLimit = -1;
 
     public PNJunctionWire(double reverseSaturationCurrent, double seriesResistance, double temperatureCelsius, double idealityFactor, IElectricNode node1, IElectricNode node2) {
         super(node1, node2);
@@ -74,8 +76,8 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         if(V1 < Vcrit * 0.5f && V0 < Vcrit * 0.5f)
             return V1;
         var dV = V1 - V0;
-        if(V1 > Vcrit && dV > V_T * 2)
-            return V0 + V_T * Math.log1p(dV / V_T);
+        if(V1 > Vcrit && dV > idealityFactor * V_T * 2)
+            return V0 + idealityFactor * V_T * Math.log1p(dV / (idealityFactor * V_T));
         return V1;
     }
 
@@ -95,6 +97,8 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
 
     @Override
     public void startIteration(int iteration) {
+        if(iterationLimit > 0 && iteration > iterationLimit)
+            return;
         double k = 1.380649e-23; // Boltzmann constant in J/K
         double q = 1.602176634e-19; // Elementary charge in C
         double V_T = (k * (temperatureCelsius + 273.15)) / q; // Thermal voltage in V
@@ -143,5 +147,14 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
     public void addResidual(IResidualAdder residual) {
         residual.add(node1.getIndex(), Ieq);
         residual.add(node2.getIndex(), -Ieq);
+    }
+
+    public void setIdealityFactor(double idealityFactor) {
+        this.idealityFactor = idealityFactor;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("PNJunction(Is=%g)#%d", reverseSaturationCurrent, System.identityHashCode(this));
     }
 }

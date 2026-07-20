@@ -100,6 +100,11 @@ public class CordItem extends WireItem {
         if(e11 instanceof BlockWireEndpoint be1 && e21 instanceof BlockWireEndpoint be2) {
             var behaviour1 = be1.getElectricBehaviour(level);
             var behaviour2 = be2.getElectricBehaviour(level);
+            if(behaviour1 == null || behaviour2 == null) {
+                IElectric.sendMessage(context, Lang.translate("message.connection_failed").style(ChatFormatting.RED).component());
+                PowerGrid.LOGGER.error("Connection failed, behaviors: ({}, {})", behaviour1, behaviour2);
+                return InteractionResult.FAIL;
+            }
             // Check if there is an existing connection between these nodes.
             if (behaviour1.hasConnection(be1, be2) || behaviour2.hasConnection(be2, be1)) {
                 IElectric.sendMessage(context, Lang.translate("message.connection_exists").style(ChatFormatting.RED).component());
@@ -111,6 +116,11 @@ public class CordItem extends WireItem {
         if(e12 instanceof BlockWireEndpoint be1 && e22 instanceof BlockWireEndpoint be2) {
             var behaviour1 = be1.getElectricBehaviour(level);
             var behaviour2 = be2.getElectricBehaviour(level);
+            if(behaviour1 == null || behaviour2 == null) {
+                IElectric.sendMessage(context, Lang.translate("message.connection_failed").style(ChatFormatting.RED).component());
+                PowerGrid.LOGGER.error("Connection failed, behaviors: ({}, {})", behaviour1, behaviour2);
+                return InteractionResult.FAIL;
+            }
             // Check if there is an existing connection between these nodes.
             if (behaviour1.hasConnection(be1, be2) || behaviour2.hasConnection(be2, be1)) {
                 IElectric.sendMessage(context, Lang.translate("message.connection_exists").style(ChatFormatting.RED).component());

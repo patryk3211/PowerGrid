@@ -29,15 +29,19 @@ import com.simibubi.create.content.processing.AssemblyOperatorBlockItem;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.data.SharedProperties;
+import com.tterrag.registrate.util.DataIngredient;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.SlabBlock;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.MapColor;
@@ -88,6 +92,7 @@ import org.patryk3211.powergrid.electricity.resistor.ResistorBlock;
 import org.patryk3211.powergrid.electricity.socket.SocketBlock;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBearingBlock;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlock;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelCTBehaviour;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlock;
 import org.patryk3211.powergrid.electricity.transformer.NetherTransformerBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerCoreBlock;
@@ -101,6 +106,11 @@ import org.patryk3211.powergrid.equipment.thermometer.ThermometerBlock;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerItem;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerItemRenderer;
 import org.patryk3211.powergrid.general.ceilingtile.CeilingTileBlock;
+import org.patryk3211.powergrid.general.ceilingtile.junction.CeilingTileJunctionBlock;
+import org.patryk3211.powergrid.general.ceilingtile.lamp.CeilingTileLampBlock;
+import org.patryk3211.powergrid.general.ceilingtile.solar.CeilingTileSolarBlock;
+import org.patryk3211.powergrid.general.ceilingtile.solar.CeilingTileSolarBlockCTBehaviour;
+import org.patryk3211.powergrid.general.ceilingtile.wire.CeilingTileConnectorBlock;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.housing.VerticalGeneratorHousing;
@@ -119,7 +129,8 @@ import org.patryk3211.powergrid.kinetics.variac.VariacBlock;
 
 import static com.simibubi.create.foundation.data.CreateRegistrate.casingConnectivity;
 import static com.simibubi.create.foundation.data.CreateRegistrate.connectedTextures;
-import static com.simibubi.create.foundation.data.TagGen.*;
+import static com.simibubi.create.foundation.data.TagGen.axeOrPickaxe;
+import static com.simibubi.create.foundation.data.TagGen.pickaxeOnly;
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.POWERED;
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 import static org.patryk3211.powergrid.utility.DataProviderUtility.*;
@@ -167,6 +178,33 @@ public class ModdedBlocks {
             .onRegister(casingConnectivity((block, cc) -> cc.makeCasing(block, ModdedPartialModels.CONDUCTIVE_CASING)))
             .simpleItem()
             .register();
+    public static final BlockEntry<CasingBlock> COPPER_PLATING = REGISTRATE.block("copper_plating", CasingBlock::new)
+            .blockstate((ctx, prov) -> prov.simpleBlock(ctx.getEntry()))
+            .initialProperties(SharedProperties::softMetal)
+            .transform(pickaxeOnly())
+            .onRegister(connectedTextures(() -> new EncasedCTBehaviour(ModdedPartialModels.COPPER_PLATING)))
+            .onRegister(casingConnectivity((block, cc) -> cc.makeCasing(block, ModdedPartialModels.COPPER_PLATING)))
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<StairBlock> COPPER_PLATING_STAIRS = REGISTRATE.block("copper_plating_stairs", p -> new StairBlock(COPPER_PLATING.getDefaultState(), p))
+            .blockstate((ctx, prov) -> prov.stairsBlock(ctx.get(), prov.modLoc("block/solar_panel/copper_plating")))
+            .initialProperties(SharedProperties::softMetal)
+            .recipe((ctx, prov) -> prov
+                    .stonecutting(DataIngredient.items(COPPER_PLATING.get()), RecipeCategory.DECORATIONS, ctx::get, 1))
+            .simpleItem()
+            .register();
+
+    public static final BlockEntry<SlabBlock> COPPER_PLATING_SLAB = REGISTRATE.block("copper_plating_slab", SlabBlock::new)
+            .blockstate((ctx, prov) ->
+                    prov.slabBlock(ctx.get(),
+                            prov.modLoc("block/copper_plating"),
+                            prov.modLoc("block/solar_panel/copper_plating")))
+            .initialProperties(SharedProperties::softMetal)
+            .recipe((ctx, prov) -> prov
+                    .stonecutting(DataIngredient.items(COPPER_PLATING.get()), RecipeCategory.DECORATIONS, ctx::get, 2))
+            .simpleItem()
+            .register();
 
     public static final BlockEntry<ConnectorBlock> WIRE_CONNECTOR = REGISTRATE.block("wire_connector", ConnectorBlock::new)
             .blockstate(alternateDirectionalBlock("block/wire_connector"))
@@ -194,6 +232,7 @@ public class ModdedBlocks {
     public static final BlockEntry<HeaterBlock> HEATING_COIL = REGISTRATE.block("heating_coil", HeaterBlock::new)
             .blockstate(horizontalBlock("block/heating_coil"))
             .initialProperties(SharedProperties::softMetal)
+            .addLayer(() -> RenderType::cutoutMipped)
             .transform(pickaxeOnly())
             .transform(CResistance.setResistance(25))
             .transform(CThermal.maxPower(60, 1.0f))
@@ -517,26 +556,43 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<CeilingTileBlock> CEILING_TILE = REGISTRATE.block("ceiling_tile", CeilingTileBlock::new)
-            .blockstate(ceilingTile("block/ceiling_tile"))
+            .blockstate(simple("block/ceiling_tile/ceiling_tile"))
             .initialProperties(SharedProperties::stone)
             .transform(axeOrPickaxe())
-            .addLayer(() -> RenderType::cutout)
-            .loot((tables, block) ->
-                    tables.add(block, b -> LootTable.lootTable()
-                            .withPool(LootPool.lootPool()
-                                    .when(ExplosionCondition.survivesExplosion())
-                                    .add(LootItem.lootTableItem(b)))
-                            .withPool(LootPool.lootPool()
-                                    .when(ExplosionCondition.survivesExplosion())
-                                    .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(b)
-                                            .setProperties(StatePropertiesPredicate.Builder.properties()
-                                                    .hasProperty(CeilingTileBlock.STATE, CeilingTileBlock.State.EMPTY))
-                                            .invert())
-                                    .add(LootItem.lootTableItem(FACTORY_LIGHT)))
-                    ))
             .item()
                 .model(itemWithParent("block/ceiling_tile/ceiling_tile"))
                 .build()
+            .register();
+
+    public static final BlockEntry<CeilingTileLampBlock> CEILING_TILE_LAMP = REGISTRATE.block("ceiling_tile_lamp", CeilingTileLampBlock::new)
+            .blockstate(ceilingTileLamp("block/ceiling_tile"))
+            .initialProperties(SharedProperties::stone)
+            .transform(axeOrPickaxe())
+            .addLayer(() -> RenderType::cutout)
+            .loot((tables, block) -> {
+                tables.dropOther(block, FACTORY_LIGHT);
+                tables.dropOther(block, CEILING_TILE);
+            })
+            .register();
+
+    public static final BlockEntry<CeilingTileConnectorBlock> CEILING_TILE_CONNECTOR = REGISTRATE.block("ceiling_tile_connector", CeilingTileConnectorBlock::new)
+            .blockstate(simple("block/ceiling_tile/ceiling_tile_connector"))
+            .initialProperties(SharedProperties::stone)
+            .transform(axeOrPickaxe())
+            .loot((tables, block) -> {
+                tables.dropOther(block, WIRE_CONNECTOR);
+                tables.dropOther(block, CEILING_TILE);
+            })
+            .register();
+
+    public static final BlockEntry<CeilingTileJunctionBlock> CEILING_TILE_JUNCTION = REGISTRATE.block("ceiling_tile_junction", CeilingTileJunctionBlock::new)
+            .blockstate(simple("block/ceiling_tile/ceiling_tile_cord_junction"))
+            .initialProperties(SharedProperties::stone)
+            .transform(axeOrPickaxe())
+            .loot((tables, block) -> {
+                tables.dropOther(block, CORD_JUNCTION);
+                tables.dropOther(block, CEILING_TILE);
+            })
             .register();
 
     public static final BlockEntry<TransformerCoreBlock> TRANSFORMER_CORE = REGISTRATE.block("transformer_core", TransformerCoreBlock::new)
@@ -573,7 +629,7 @@ public class ModdedBlocks {
 
     public static final BlockEntry<VariacBlock> VARIAC = REGISTRATE.block("variac", VariacBlock::new)
             .initialProperties(TRANSFORMER_CORE)
-            .blockstate(horizontalBlock("block/variac/block"))
+            .blockstate(tunedBlock("block/variac/block", "block/variac/block_baseless"))
             .transform(pickaxeOnly())
             .transform(CStress.setNoImpact())
             .transform(CThermal.maxPower(1000, 4.0f))
@@ -677,9 +733,12 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<CircuitDesignTableBlock> CIRCUIT_DESIGN_TABLE = REGISTRATE.block("circuit_design_table", CircuitDesignTableBlock::new)
-            .blockstate(circuitDesignTable())
+            .blockstate(horizontalBlock("block/circuit_design_table"))
             .initialProperties(() -> Blocks.CRAFTING_TABLE)
-            .transform(axeOnly())
+            .transform(axeOrPickaxe())
+            .transform(CResistance.setResistance(480))
+            .transform(CThermal.maxPower(50, 0.5f))
+            .addLayer(() -> RenderType::cutout)
             .defaultLoot()
             .simpleItem()
             .register();
@@ -777,7 +836,7 @@ public class ModdedBlocks {
 
     public static final BlockEntry<RheostatBlock> RHEOSTAT = REGISTRATE.block("rheostat", RheostatBlock::new)
             .initialProperties(CONDUCTIVE_CASING)
-            .blockstate(horizontalBlock("block/rheostat/block"))
+            .blockstate(tunedBlock("block/rheostat/block", "block/rheostat/block_baseless"))
             .transform(pickaxeOnly())
             .transform(CStress.setNoImpact())
             .transform(CThermal.maxPower(1000, 4.0f))
@@ -859,9 +918,10 @@ public class ModdedBlocks {
     public static BlockEntry<SolarPanelBlock> SOLAR_PANEL = REGISTRATE.block("solar_panel", SolarPanelBlock::new)
             .initialProperties(SharedProperties::softMetal)
             .addLayer(() -> RenderType::translucent)
-            .blockstate(surfaceBlock("block/solar_panel/inline_solar_panel"))
+            .blockstate(alternateDirectionalBlock("block/solar_panel/inline_solar_panel"))
+            .onRegister(CreateRegistrate.connectedTextures(SolarPanelCTBehaviour::new))
             .item()
-                .model(itemWithParent("block/solar_panel/inline_solar_panel_v"))
+                .model(itemWithParent("block/solar_panel/inline_solar_panel"))
                 .build()
             .register();
 
@@ -872,6 +932,18 @@ public class ModdedBlocks {
             .item()
                 .model(itemWithParent("block/solar_panel/solar_panel_bearing_block"))
                 .build()
+            .register();
+
+    public static final BlockEntry<CeilingTileSolarBlock> CEILING_TILE_SOLAR = REGISTRATE.block("ceiling_tile_solar", CeilingTileSolarBlock::new)
+            .blockstate(simple("block/ceiling_tile/ceiling_tile_solar_panel"))
+            .initialProperties(SharedProperties::stone)
+            .addLayer(() -> RenderType::translucent)
+            .transform(axeOrPickaxe())
+            .onRegister(CreateRegistrate.connectedTextures(CeilingTileSolarBlockCTBehaviour::new))
+            .loot((tables, block) -> {
+                tables.dropOther(block, SOLAR_PANEL);
+                tables.dropOther(block, CEILING_TILE);
+            })
             .register();
 
     public static BlockEntry<StringLightBlock> STRING_LIGHT_BLOCK = REGISTRATE.block("string_light_block", StringLightBlock::new)

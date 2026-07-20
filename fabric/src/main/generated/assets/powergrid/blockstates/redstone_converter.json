@@ -2,7 +2,7 @@
   "variants": {
     "facing=down,powered=false,rotation=0": {
       "model": "powergrid:block/redstone_converter/off_v",
-      "y": 90
+      "y": -90
     },
     "facing=down,powered=false,rotation=1": {
       "model": "powergrid:block/redstone_converter/off_v"
@@ -12,11 +12,12 @@
       "y": 90
     },
     "facing=down,powered=false,rotation=3": {
-      "model": "powergrid:block/redstone_converter/off_v"
+      "model": "powergrid:block/redstone_converter/off_v",
+      "y": 180
     },
     "facing=down,powered=true,rotation=0": {
       "model": "powergrid:block/redstone_converter/on_v",
-      "y": 90
+      "y": -90
     },
     "facing=down,powered=true,rotation=1": {
       "model": "powergrid:block/redstone_converter/on_v"
@@ -26,18 +27,20 @@
       "y": 90
     },
     "facing=down,powered=true,rotation=3": {
-      "model": "powergrid:block/redstone_converter/on_v"
+      "model": "powergrid:block/redstone_converter/on_v",
+      "y": 180
     },
     "facing=east,powered=false,rotation=0": {
       "model": "powergrid:block/redstone_converter/off_h",
       "x": -90
     },
     "facing=east,powered=false,rotation=1": {
-      "model": "powergrid:block/redstone_converter/off_h"
+      "model": "powergrid:block/redstone_converter/off_h",
+      "x": 180
     },
     "facing=east,powered=false,rotation=2": {
       "model": "powergrid:block/redstone_converter/off_h",
-      "x": -90
+      "x": 90
     },
     "facing=east,powered=false,rotation=3": {
       "model": "powergrid:block/redstone_converter/off_h"
@@ -47,11 +50,12 @@
       "x": -90
     },
     "facing=east,powered=true,rotation=1": {
-      "model": "powergrid:block/redstone_converter/on_h"
+      "model": "powergrid:block/redstone_converter/on_h",
+      "x": 180
     },
     "facing=east,powered=true,rotation=2": {
       "model": "powergrid:block/redstone_converter/on_h",
-      "x": -90
+      "x": 90
     },
     "facing=east,powered=true,rotation=3": {
       "model": "powergrid:block/redstone_converter/on_h"
@@ -63,11 +67,12 @@
     },
     "facing=north,powered=false,rotation=1": {
       "model": "powergrid:block/redstone_converter/off_h",
+      "x": 180,
       "y": -90
     },
     "facing=north,powered=false,rotation=2": {
       "model": "powergrid:block/redstone_converter/off_h",
-      "x": -90,
+      "x": 90,
       "y": -90
     },
     "facing=north,powered=false,rotation=3": {
@@ -81,11 +86,12 @@
     },
     "facing=north,powered=true,rotation=1": {
       "model": "powergrid:block/redstone_converter/on_h",
+      "x": 180,
       "y": -90
     },
     "facing=north,powered=true,rotation=2": {
       "model": "powergrid:block/redstone_converter/on_h",
-      "x": -90,
+      "x": 90,
       "y": -90
     },
     "facing=north,powered=true,rotation=3": {
@@ -99,11 +105,12 @@
     },
     "facing=south,powered=false,rotation=1": {
       "model": "powergrid:block/redstone_converter/off_h",
+      "x": 180,
       "y": 90
     },
     "facing=south,powered=false,rotation=2": {
       "model": "powergrid:block/redstone_converter/off_h",
-      "x": -90,
+      "x": 90,
       "y": 90
     },
     "facing=south,powered=false,rotation=3": {
@@ -117,11 +124,12 @@
     },
     "facing=south,powered=true,rotation=1": {
       "model": "powergrid:block/redstone_converter/on_h",
+      "x": 180,
       "y": 90
     },
     "facing=south,powered=true,rotation=2": {
       "model": "powergrid:block/redstone_converter/on_h",
-      "x": -90,
+      "x": 90,
       "y": 90
     },
     "facing=south,powered=true,rotation=3": {
@@ -131,7 +139,7 @@
     "facing=up,powered=false,rotation=0": {
       "model": "powergrid:block/redstone_converter/off_v",
       "x": 180,
-      "y": 90
+      "y": -90
     },
     "facing=up,powered=false,rotation=1": {
       "model": "powergrid:block/redstone_converter/off_v",
@@ -144,12 +152,13 @@
     },
     "facing=up,powered=false,rotation=3": {
       "model": "powergrid:block/redstone_converter/off_v",
-      "x": 180
+      "x": 180,
+      "y": 180
     },
     "facing=up,powered=true,rotation=0": {
       "model": "powergrid:block/redstone_converter/on_v",
       "x": 180,
-      "y": 90
+      "y": -90
     },
     "facing=up,powered=true,rotation=1": {
       "model": "powergrid:block/redstone_converter/on_v",
@@ -162,7 +171,8 @@
     },
     "facing=up,powered=true,rotation=3": {
       "model": "powergrid:block/redstone_converter/on_v",
-      "x": 180
+      "x": 180,
+      "y": 180
     },
     "facing=west,powered=false,rotation=0": {
       "model": "powergrid:block/redstone_converter/off_h",
@@ -171,11 +181,12 @@
     },
     "facing=west,powered=false,rotation=1": {
       "model": "powergrid:block/redstone_converter/off_h",
+      "x": 180,
       "y": 180
     },
     "facing=west,powered=false,rotation=2": {
       "model": "powergrid:block/redstone_converter/off_h",
-      "x": -90,
+      "x": 90,
       "y": 180
     },
     "facing=west,powered=false,rotation=3": {
@@ -189,11 +200,12 @@
     },
     "facing=west,powered=true,rotation=1": {
       "model": "powergrid:block/redstone_converter/on_h",
+      "x": 180,
       "y": 180
     },
     "facing=west,powered=true,rotation=2": {
       "model": "powergrid:block/redstone_converter/on_h",
-      "x": -90,
+      "x": 90,
       "y": 180
     },
     "facing=west,powered=true,rotation=3": {

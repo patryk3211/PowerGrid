@@ -19,22 +19,22 @@ import java.util.List;
 
 public class SawItem extends AxeItem {
     public SawItem(Properties properties) {
-        super(Tiers.IRON, properties);
+        super(Tiers.IRON, properties.durability(250));
     }
 
     @Override
     public boolean isBarVisible(ItemStack stack) {
-        return BatteryUtils.isBarVisible(stack, energyPerUse(), 0.3f);
+        return BatteryUtils.isBarVisible(stack, energyPerUse());
     }
 
     @Override
     public int getBarWidth(ItemStack stack) {
-        return BatteryUtils.getBarWidth(stack, energyPerUse(), 0.3f);
+        return BatteryUtils.getBarWidth(stack, energyPerUse());
     }
 
     @Override
     public int getBarColor(ItemStack stack) {
-        return BatteryUtils.getBarColor(stack, energyPerUse(), 0.3f);
+        return BatteryUtils.getBarColor(stack, energyPerUse());
     }
 
     public static int energyPerUse() {
@@ -55,7 +55,7 @@ public class SawItem extends AxeItem {
         if(miningEntity instanceof Player player) {
             boolean boosted = ItemBoostUtils.useBoost(stack, player);
             float power = BatteryUtils.drawEnergy(player, energyPerUse() * (boosted ? 2 : 1));
-            if(!level.isClientSide && state.getDestroySpeed(level, pos) != 0.0F && power < 0.3f) {
+            if(!level.isClientSide && state.getDestroySpeed(level, pos) != 0.0F && power == 0) {
                 stack.hurtAndBreak(1, miningEntity, EquipmentSlot.MAINHAND);
             }
             return true;

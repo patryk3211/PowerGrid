@@ -2,6 +2,8 @@ package org.patryk3211.powergrid.electricity.solarpanel;
 
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.foundation.block.IBE;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.math.VoxelShaper;
 import net.minecraft.core.BlockPos;
@@ -77,6 +79,14 @@ public class SolarPanelBearingBlock extends ElectricKineticBlock implements IBE<
             return InteractionResult.FAIL;
         if (player.getItemInHand(handIn)
                 .isEmpty()) {
+            var behavior = BlockEntityBehaviour.get(worldIn, pos, SolarPanelBearingBlockScrollBehaviour.TYPE);
+            if(behavior != null) {
+                if(behavior.getSlotPositioning() instanceof ValueBoxTransform.Sided sided)
+                    sided.fromSide(hit.getDirection());
+                boolean hovering = behavior.testHit(hit.getLocation());
+                if(hovering)
+                    return InteractionResult.PASS;
+            }
             if (worldIn.isClientSide)
                 return InteractionResult.SUCCESS;
             withBlockEntityDo(worldIn, pos, be -> {
@@ -141,7 +151,7 @@ public class SolarPanelBearingBlock extends ElectricKineticBlock implements IBE<
         Direction preferred = getPreferredFacing(context);
         if (preferred == null || (context.getPlayer() != null && context.getPlayer()
                 .isShiftKeyDown())) {
-            Direction nearestLookingDirection = context.getHorizontalDirection();
+            Direction nearestLookingDirection = context.getNearestLookingDirection();
             return defaultBlockState().setValue(FACING, context.getPlayer() != null && context.getPlayer()
                     .isShiftKeyDown() ? nearestLookingDirection : nearestLookingDirection.getOpposite());
         }
@@ -161,9 +171,6 @@ public class SolarPanelBearingBlock extends ElectricKineticBlock implements IBE<
 
     @Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
-        if (context.getClickedFace().getAxis() != Direction.Axis.Y || context.getClickedFace().getAxis() != Direction.Axis.Y) {
-            return InteractionResult.PASS;
-        }
         var be = context.getLevel().getBlockEntity(context.getClickedPos());
         if (be instanceof SolarPanelBearingBlockEntity blockEntity) {
             if (!context.getLevel().isClientSide) {

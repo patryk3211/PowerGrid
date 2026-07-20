@@ -29,6 +29,8 @@ public class RedstoneConverterRegistry {
 
         registerUnifiedBlock(ModdedBlocks.BATTERY.get());
         registerUnifiedBlock(ModdedBlocks.GENERATOR_CLUTCH.get());
+
+        REGISTRY.register(Blocks.DAYLIGHT_DETECTOR, new DaylightSensorBehaviour());
     }
 
     public static <T extends Block&IRedstoneConverterBehaviour> void registerUnifiedBlock(T block) {

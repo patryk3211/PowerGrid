@@ -22,6 +22,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
@@ -60,9 +62,8 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
 
     @Override
     public void initialize() {
-        if(checkSizeConstraint()) {
+        if(!getWorld().isClientSide && checkSizeConstraint()) {
             makeController();
-            super.initialize();
             checkConnectivity(null);
         }
     }
@@ -163,7 +164,8 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
             var posArray = compound.getIntArray("LastKnownPos");
             lastKnownPos = new BlockPos(posArray[0], posArray[1], posArray[2]);
         }
-        if(clientPacket && !compound.getBoolean("SegmentedRebuild"))
+        boolean rebuild = compound.getBoolean("SegmentedRebuild") || segments == null;
+        if(clientPacket && !rebuild)
             return;
         if(compound.contains("Controller")) {
             var posArray = compound.getIntArray("Controller");
@@ -173,9 +175,18 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
             controllerPos = null;
             if(segments == null)
                 segments = new HashSet<>();
+            segments.clear();
             if(clientPacket) {
                 makeController();
-                checkConnectivity(null);
+                var segments = compound.getList("Segments", ListTag.TAG_COMPOUND);
+                var level = getWorld();
+                for(int i = 0; i < segments.size(); ++i) {
+                    var pos = NbtUtils.readBlockPos(segments.getCompound(i));
+                    var behavior = BlockEntityBehaviour.get(level, pos, getType());
+                    if(behavior == null)
+                        continue;
+                    behavior.makePeripheral((T) this);
+                }
             }
         }
     }
@@ -187,10 +198,15 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
             compound.putIntArray("LastKnownPos", new int[]{lastKnownPos.getX(), lastKnownPos.getY(), lastKnownPos.getZ()});
         }
         if(clientPacket) {
-            if(!rebuildClient)
-                return;
+            compound.putBoolean("SegmentedRebuild", rebuildClient);
             rebuildClient = false;
-            compound.putBoolean("SegmentedRebuild", true);
+            if(segments != null && isController()) {
+                var segments = new ListTag();
+                for (var segment : this.segments) {
+                    segments.add(NbtUtils.writeBlockPos(segment.getPos()));
+                }
+                compound.put("Segments", segments);
+            }
         }
         if (!isController()) {
             compound.putIntArray("Controller", new int[] { controllerPos.getX(), controllerPos.getY(), controllerPos.getZ() });
@@ -303,6 +319,8 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
     }
 
     public void remove() {
+        if(getWorld().isClientSide)
+            return;
         var controller = getControllerOrThis();
         controller.checkConnectivity((T) this);
     }

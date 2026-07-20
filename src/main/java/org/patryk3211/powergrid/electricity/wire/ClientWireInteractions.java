@@ -35,9 +35,11 @@ import org.lwjgl.glfw.GLFW;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.collections.ModdedPackets;
+import org.patryk3211.powergrid.electricity.wire.powercord.CordEntity;
 import org.patryk3211.powergrid.network.packets.AlternatePlacementStatusC2SPacket;
 import org.patryk3211.powergrid.network.packets.BlockWireAttachC2SPacket;
 import org.patryk3211.powergrid.network.packets.BlockWireCutC2SPacket;
+import org.patryk3211.powergrid.network.packets.CordDetachC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
 
 @Environment(EnvType.CLIENT)
@@ -199,5 +201,30 @@ public class ClientWireInteractions {
         if(action == GLFW.GLFW_PRESS || action == GLFW.GLFW_RELEASE) {
             ModdedPackets.sendToServer(new AlternatePlacementStatusC2SPacket(action == GLFW.GLFW_PRESS));
         }
+    }
+
+    public static InteractionResult cordInteraction(CordEntity entity) {
+        var mc = Minecraft.getInstance();
+        var player = mc.player;
+        if(!player.getMainHandItem().isEmpty() && player.getMainHandItem().getItem() != entity.getItem())
+            return InteractionResult.PASS;
+        var target = mc.hitResult;
+        if(target == null || target.getType() != HitResult.Type.ENTITY)
+            return InteractionResult.FAIL;
+        var hitPos = target.getLocation();
+        var level = mc.level;
+        if(entity.endpoint1 == null || entity.endpoint2 == null)
+            return InteractionResult.FAIL;
+        if(entity.endpoint1.type() == WireEndpointType.SOCKET
+                && hitPos.distanceToSqr(entity.endpoint1.getExactPosition(level)) < 0.25) {
+            ModdedPackets.sendToServer(new CordDetachC2SPacket(entity, false));
+            return InteractionResult.SUCCESS;
+        }
+        if(entity.endpoint2.type() == WireEndpointType.SOCKET
+                && hitPos.distanceToSqr(entity.endpoint2.getExactPosition(level)) < 0.25) {
+            ModdedPackets.sendToServer(new CordDetachC2SPacket(entity, true));
+            return InteractionResult.SUCCESS;
+        }
+        return InteractionResult.PASS;
     }
 }

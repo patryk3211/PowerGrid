@@ -4,9 +4,10 @@
   "compatibilityLevel": "JAVA_17",
   "minVersion": "0.8.3",
   "client": [
-    "BlueprintOverlayRendererAccessor",
     "BlueprintOverlayMixin",
+    "BlueprintOverlayRendererAccessor",
     "ComplexEntityRaycastMixin",
+    "RenderBuffersAccessor",
     "ValueSettingsScreenMixin"
   ],
   "injectors": {

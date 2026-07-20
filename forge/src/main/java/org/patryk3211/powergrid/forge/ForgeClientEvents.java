@@ -17,10 +17,12 @@ package org.patryk3211.powergrid.forge;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraftforge.client.event.RenderHandEvent;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
+import org.patryk3211.powergrid.equipment.drill.DrillItemRenderer;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 
 public class ForgeClientEvents {
@@ -35,6 +37,23 @@ public class ForgeClientEvents {
     public static void entityJoin(EntityJoinLevelEvent event) {
         if(event.getLevel().isClientSide) {
             EntityDataS2CPacket.clientEntityAdded(event.getEntity());
+        }
+    }
+
+    @SubscribeEvent
+    public static void renderPlayerHand(RenderHandEvent event) {
+        if(DrillItemRenderer.renderPlayerHand(
+                event.getItemStack(),
+                event.getHand(),
+                event.getPoseStack(),
+                event.getMultiBufferSource(),
+                event.getPackedLight(),
+                event.getPartialTick(),
+                event.getSwingProgress(),
+                event.getEquipProgress()
+        )) {
+            event.setCanceled(true);
+            return;
         }
     }
 }

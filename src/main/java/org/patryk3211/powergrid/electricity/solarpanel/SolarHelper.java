@@ -29,19 +29,25 @@ import org.patryk3211.powergrid.collections.ModdedTags;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.*;
-
 public class SolarHelper {
-    private static boolean showDebugLines = false;
-    public record DDAHit(BlockPos worldOrLocalPos, AbstractContraptionEntity contraption) {}
+    public static final int SOLAR_CONSTANT = 1361;
+    public static final int CELLS_IN_SERIES = 48;
+    protected static final float NOCT = 52;
+    public static final double DIFFUSE_FRAC = .12;
+    public static final double ALBEDO_FRAC = .08;
+    public static final double IO_REF = 4.07e-6;
+    // Diode ideality factor (per cell)
+    public static final double IDEALITY = 1.5;
 
-    public static double[] getTempAdjusted(double irradiance, double cellTemp, double Vt, int stringsInParallel) {
-        var Isc_T = SHORT_CURRENT * stringsInParallel * (irradiance / 1000) * (1 + ALPHAISC * (cellTemp - 25));
-        if (Isc_T <= 0) return new double[]{0, 0};
-        var Voc_base = IDEALITY * Vt * Math.log(Isc_T / (I_O * stringsInParallel) + 1);
-        var Voc_T = Voc_base + BETAVOC * (cellTemp - 25);
-        return new double[]{Isc_T, Voc_T};
-    }
+    // All values below are per panel, not per cell
+    public static final double IPV_REF = 3.5;
+    public static final double RS = 0.05;
+    public static final double RSH_REF = 600.0;
+    public static final boolean RSH_SCALES_WITH_IRRADIANCE = true;
+
+    private static boolean showDebugLines = true;
+
+    public record DDAHit(BlockPos worldOrLocalPos, AbstractContraptionEntity contraption) {}
 
     public static double getCellTemp(double Irradiance, float AMBIENT_TEMP){
         return AMBIENT_TEMP + (NOCT - 20) * (Irradiance / 800);
@@ -71,6 +77,7 @@ public class SolarHelper {
     }
 
     public static List<DDAHit> DDA(Level level, Vec3 start, Vec3 end) {
+        if (level.isClientSide()) return new ArrayList<>();
         ServerLevel serverWorld = (ServerLevel) level;
         var checkBox = new AABB(start, end);
         List<AbstractContraptionEntity> candidates = level.getEntitiesOfClass(AbstractContraptionEntity.class, checkBox);
@@ -225,6 +232,38 @@ public class SolarHelper {
         }
         return true;
     }
+
+    public static void electricalProperties(double irradiance, ISolarPropertyConsumer controller) {
+        double Ipv = IPV_REF * (irradiance / 1000.0);
+
+        double Rsh;
+        if (RSH_SCALES_WITH_IRRADIANCE && irradiance > 1.0) {
+            Rsh = RSH_REF * (1000.0 / irradiance);
+        } else {
+            Rsh = RSH_REF;
+        }
+
+        controller.accept(RS, Rsh, Ipv);
+    }
+
+//    public static void electricalProperties(double irradiance, float ambientTemp, ISolarPropertyConsumer controller) {
+//        var cellTemp = getCellTemp(irradiance, ambientTemp);
+//        var Vt = 8.617e-5 * (cellTemp + 273.15);
+//        double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt, STRINGS_IN_PARALLEL);
+//        double Isc_t = adjusted[0];
+//        double Voc_t = adjusted[1] * CELLS_IN_SERIES;
+//
+//        double Vmp_T = Vmp * (1 - BETAVOC * (cellTemp - 25));
+//        double Imp_T = Imp * (1 - ALPHAISC * (cellTemp - 25));
+//
+////        double Rs = .5;
+////        double Rsh = 350;
+//        double Rs = (Voc_t - Vmp_T) / (16 * Imp_T);
+//        double Rsh = 4 * Vmp_T / (Isc_t - Imp_T);
+//        double Ipv = Isc_t * (Rsh + Rs) / Rsh;
+//
+//        controller.accept(Rs, Rsh, Ipv);
+//    }
 
     private static void debugLines(ServerLevel serverLevel, Vec3 pos, SimpleParticleType particle) {
         serverLevel.sendParticles(particle, pos.x, pos.y, pos.z, 0, 0, 0, 0, 0);

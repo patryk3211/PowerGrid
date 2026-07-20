@@ -34,9 +34,11 @@ public abstract class RotorBlockEntity extends SmartBlockEntity {
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         assert getBlockState().getBlock() instanceof IRotorAssemblyPart;
-        rotorBehaviour = new RotorBehaviour(this, ((IRotorAssemblyPart) getBlockState().getBlock()).getInertia());
+        rotorBehaviour = new RotorBehaviour(this, ((IRotorAssemblyPart) getBlockState().getBlock()).getInertia(), damageRadius());
         behaviours.add(rotorBehaviour);
     }
+
+    protected abstract float damageRadius();
 
     @Override
     public void remove() {

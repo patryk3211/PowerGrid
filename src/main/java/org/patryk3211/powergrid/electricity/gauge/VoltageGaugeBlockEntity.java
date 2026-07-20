@@ -161,7 +161,7 @@ public class VoltageGaugeBlockEntity extends GaugeBlockEntity {
                 .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
 
-        display.format(getValue()).forGoggles(tooltip, 1);
+        display.format(getValue(), this).forGoggles(tooltip, 1);
         return true;
     }
 }

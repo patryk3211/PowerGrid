@@ -52,6 +52,37 @@ public class PNJunctionTests extends TestHelper {
     }
 
     @Test
+    void slowPNJunctionTest() {
+        var Net = new Network();
+
+        var V1 = Net.V(3.3f);
+        var GND = Net.V(0);
+
+        var Anode = Net.N();
+        var Cathode = Net.N();
+
+        var D = new PNJunctionWire(5.47e-9, 0.0414f, 22, 1.783, Anode, Cathode);
+        D.iterationLimit = 10;
+
+        Net.W(10.1f, V1, Anode);
+        Net.W(10.1f, GND, Cathode);
+        Net.network.addWire(D);
+
+        for(int i = 0; i < 10; ++i) {
+            Net.calculate();
+
+            System.out.printf("Iteration %d:\n", i);
+            System.out.printf("Anode voltage: %f\n", Anode.getVoltage());
+            System.out.printf("Cathode voltage: %f\n", Cathode.getVoltage());
+            System.out.printf("Diode current: %f\n", D.current());
+
+            System.out.printf("V1 current: %f\n", V1.getCurrent());
+            System.out.printf("GND current %f\n\n", GND.getCurrent());
+            Assertions.assertTrue(Net.network.isConverged(), "PN junction failed to converge");
+        }
+    }
+
+    @Test
     void simpleNPNTest() {
         var Net = new Network();
 

@@ -43,7 +43,6 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
-import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
@@ -53,6 +52,7 @@ import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEnti
 import org.patryk3211.powergrid.electricity.electromagnet.MagnetizingBehaviour;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.kinetics.plotter.PlotterBlockEntity;
@@ -1252,7 +1252,7 @@ public class DeviceScenes {
         scene.idle(10);
         scene.world().showSection(util.select().position(panel3), Direction.DOWN);
         scene.world().setBlock(panel3, ModdedBlocks.SOLAR_PANEL.getDefaultState()
-                .setValue(Rotation4ElectricBlock.FACING, Direction.DOWN), false);
+                .setValue(SolarPanelBlock.FACING, Direction.DOWN), false);
         scene.idle(90);
 
         scene.world().replaceBlocks(util.select().fromTo(1,1,1,3,1,3), Blocks.GRASS_BLOCK.defaultBlockState(), false);
@@ -1266,6 +1266,65 @@ public class DeviceScenes {
                 .text("Placing one in a plains biome.")
                 .pointAt(util.vector().centerOf(panel3));
         scene.idle(70);
+
+        scene.world().hideSection(util.select().fromTo(1, 1, 1, 3, 1, 3), Direction.UP);
+        scene.world().hideSection(util.select().position(3, 2, 1), Direction.UP);
+        scene.world().hideSection(util.select().position(3, 2, 3), Direction.UP);
+        scene.world().hideSection(util.select().position(3, 3, 3), Direction.UP);
+        scene.world().hideSection(util.select().position(2, 2, 2), Direction.UP);
+        scene.idle(20);
+
+        scene.world().replaceBlocks(util.select().fromTo(1, 1, 1, 3, 1, 3),
+                ModdedBlocks.SOLAR_PANEL.getDefaultState().setValue(SolarPanelBlock.FACING, Direction.DOWN),
+                false);
+        // 2x2
+        scene.electric().connectPanels(util.grid().at(1, 1, 1), util.grid().at(2, 1, 1));
+        scene.electric().connectPanels(util.grid().at(1, 1, 1), util.grid().at(1, 1, 2));
+        scene.electric().connectPanels(util.grid().at(1, 1, 1), util.grid().at(2, 1, 2));
+        // 1x2
+        scene.electric().connectPanels(util.grid().at(3, 1, 1), util.grid().at(3, 1, 2));
+        // 3x1
+        scene.electric().connectPanels(util.grid().at(1, 1, 3), util.grid().at(2, 1, 3));
+        scene.electric().connectPanels(util.grid().at(1, 1, 3), util.grid().at(3, 1, 3));
+        scene.world().showSection(util.select().fromTo(1, 1, 1, 3, 1, 3), Direction.DOWN);
+        scene.idle(10);
+
+        scene.overlay().showText(80)
+                .text("Solar panels placed next to each other can connect to form a multiblock.")
+                .placeNearTarget()
+                .pointAt(util.vector().of(2, 1.5, 2))
+                .attachKeyFrame();
+        scene.idle(90);
+
+        var wrench = AllItems.WRENCH.asStack();
+        scene.overlay().showControls(util.vector().of(2.5, 1.5, 2.9), Pointing.DOWN, 30)
+                .rightClick()
+                .withItem(wrench);
+        scene.idle(10);
+        scene.world().showSection(util.select().position(4, 1, 4), Direction.DOWN);
+        scene.idle(10);
+        scene.electric().mergePanels(util.grid().at(1, 1, 1), util.grid().at(1, 1, 3));
+        scene.idle(30);
+
+        scene.overlay().showControls(util.vector().of(2.9, 1.5, 2.5), Pointing.DOWN, 30)
+                .rightClick()
+                .withItem(wrench);
+        scene.idle(10);
+        scene.world().showSection(util.select().position(4, 1, 4), Direction.DOWN);
+        scene.idle(10);
+        scene.electric().mergePanels(util.grid().at(1, 1, 1), util.grid().at(3, 1, 1));
+        scene.world().showSection(util.select().position(4, 1, 4), Direction.DOWN);
+        scene.idle(30);
+
+        scene.overlay().showControls(util.vector().of(2.1, 1.5, 2.5), Pointing.DOWN, 30)
+                .rightClick()
+                .withItem(wrench);
+        scene.idle(10);
+        scene.world().showSection(util.select().position(4, 1, 4), Direction.DOWN);
+        scene.idle(10);
+        scene.electric().splitPanels(util.grid().at(1, 1, 1), 1, Direction.EAST);
+        scene.world().showSection(util.select().position(4, 1, 4), Direction.DOWN);
+        scene.idle(30);
 
         scene.overlay().showText(80)
                 .text("Next scene will show you how to start making power with Solar Panels.");
@@ -1286,7 +1345,7 @@ public class DeviceScenes {
         scene.showBasePlate();
         scene.idle(20);
         scene.world().replaceBlocks(util.select().position(deviceConnector), ModdedBlocks.SOLAR_PANEL.getDefaultState()
-                .setValue(Rotation4ElectricBlock.FACING, Direction.DOWN), false);
+                .setValue(SolarPanelBlock.FACING, Direction.DOWN), false);
         scene.world().showSection(util.select().position(deviceConnector), Direction.DOWN);
         scene.scaleSceneView(2f);
 
@@ -1511,6 +1570,118 @@ public class DeviceScenes {
                 .text("The fix is to add or remove Solar Panels.")
                 .attachKeyFrame();
         scene.idle(80);
+
+        scene.markAsFinished();
+    }
+    public static void factoryLight(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("factory_light", "Lighting up your warehouse 101");
+        scene.configureBasePlate(0, 0, 5);
+        scene.showBasePlate();
+        scene.setSceneOffsetY(-2);
+
+        var poles = util.select().fromTo(1, 1, 4, 3, 5, 4)
+        .add(util.select().fromTo(1,5,4,1,6, 2)
+        .add(util.select().fromTo(3,5,4,3,6, 2)));
+        var light = util.select().fromTo(1, 4, 2, 3, 4, 2).add(util.select().position(2, 5, 2));
+        var connector1 = util.grid().at(3,6,2);
+        var connector2 = util.grid().at(1,6,2);
+        var device_connector = util.grid().at(2,5,2);
+        scene.idle(10);
+        scene.world().showSection(poles, Direction.DOWN);
+        scene.idle(20);
+        scene.world().showSection(light, Direction.UP);
+        scene.electric().addSource(connector1, 0, 120);
+        scene.electric().addSource(connector2, 0, 0);
+        scene.idle(10);
+        scene.electric().connect(connector1, 0, device_connector, 1);
+        scene.idle(10);
+        scene.electric().connect(connector2, 0, device_connector, 0);
+        scene.idle(20);
+        ItemStack bulb = new ItemStack(ModdedItems.LIGHT_BULB);
+        Vec3 frontVec = util.vector().blockSurface(util.grid().at(1, 4, 3), Direction.WEST);
+                //.add(-.125, 0, 0);
+
+        scene.overlay().showControls(frontVec, Pointing.DOWN, 40).rightClick()
+                .withItem(bulb);
+        scene.overlay().showOutlineWithText(util.select().fromTo(1, 4, 2, 3, 4, 2), 80)
+                .colored(PonderPalette.BLUE)
+                .pointAt(util.vector().blockSurface(util.grid().at(1, 4, 2), Direction.WEST))
+                .placeNearTarget()
+                .attachKeyFrame()
+                        .text("Right-click to add any light bulb");
+        scene.idle(90);
+        scene.electric().tickFor(20);
+
+        scene.markAsFinished();
+    }
+    public static void factoryLightTall(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("factory_light_tall", "Using the Factory Light for tall buildings");
+        scene.configureBasePlate(0, 0, 5);
+        scene.showBasePlate();
+        scene.setSceneOffsetY(-3);
+        scene.scaleSceneView(0.8f);
+        scene.idle(10);
+        scene.world().showSection(util.select().fromTo(0,1,0,4, 8, 4), Direction.DOWN);
+        scene.electric().addSource(util.grid().at(3, 8 , 4), 0, 120);
+        scene.electric().addSource(util.grid().at(1, 8 , 4), 0, 0);
+        scene.idle(10);
+        scene.electric().connect(util.grid().at(3, 8 , 4), 0, util.grid().at(2, 8 , 3), 1);
+        scene.idle(10);
+        scene.electric().connect(util.grid().at(1, 8 , 4), 0, util.grid().at(2, 8 , 3), 0);
+        scene.idle(20);
+        scene.overlay().showOutlineWithText(util.select().position(2,7,3), 80)
+                .colored(PonderPalette.BLUE)
+                .pointAt(util.vector().blockSurface(util.grid().at(2, 7, 3), Direction.WEST))
+                .placeNearTarget()
+                .attachKeyFrame()
+                .text("A Factory light can provide a light level of 15 to the top face of a block up to 16 blocks below it");
+        scene.idle(10);
+        scene.overlay().showText(60)
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(util.grid().at(2, 0,3)))
+                .text("15");
+        scene.idle(80);
+
+        scene.markAsFinished();
+    }
+    public static void factoryLightConnect(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("factory_light_connect", "Connecting Factory Lights together");
+        scene.configureBasePlate(0, 0, 5);
+        scene.showBasePlate();
+        var left = util.select().fromTo(4, 1, 0, 4, 1, 2);
+        var back = util.select().fromTo(2, 1, 4, 0, 1, 4);
+        var both = util.select().fromTo(0, 1, 0, 2, 1, 2);
+        scene.idle(10);
+        scene.world().showSection(left, Direction.DOWN);
+        scene.idle(10);
+        scene.overlay().showOutlineWithText(left, 60)
+                .colored(PonderPalette.BLUE)
+                .pointAt(util.vector().blockSurface(util.grid().at(4, 1, 2), Direction.WEST))
+                .placeNearTarget()
+                .attachKeyFrame()
+                .text("Factory Lights can be connected to adjacent ones like this");
+        scene.idle(70);
+        scene.world().showSection(back, Direction.DOWN);
+        scene.idle(10);
+        scene.overlay().showOutlineWithText(back, 40)
+                .colored(PonderPalette.BLUE)
+                .pointAt(util.vector().blockSurface(util.grid().at(0, 1, 4), Direction.WEST))
+                .placeNearTarget()
+                .attachKeyFrame()
+                .text("Or like this");
+        scene.idle(50);
+        scene.world().showSection(both, Direction.DOWN);
+        scene.idle(10);
+        scene.overlay().showOutlineWithText(both, 40)
+                .colored(PonderPalette.BLUE)
+                .pointAt(util.vector().blockSurface(util.grid().at(0, 1, 1), Direction.WEST))
+                .placeNearTarget()
+                .attachKeyFrame()
+                .text("But not this");
+        scene.idle(50);
 
         scene.markAsFinished();
     }

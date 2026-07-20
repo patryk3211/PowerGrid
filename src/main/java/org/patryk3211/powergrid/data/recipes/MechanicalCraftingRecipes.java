@@ -45,16 +45,6 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
                     .patternLine("  E  ")
             ),
 
-//    GENERATOR_ROTOR = create(ModdedBlocks.GENERATOR_ROTOR::get)
-//            .recipe(b -> b
-//                    .key('A', AllItems.ANDESITE_ALLOY)
-//                    .key('M', ModdedItems.MAGNET)
-//                    .key('S', AllBlocks.SHAFT)
-//                    .patternLine("AMA")
-//                    .patternLine("MSM")
-//                    .patternLine("AMA")
-//            ),
-
     GENERATOR_INDUCTION_ROTOR = create(ModdedBlocks.GENERATOR_INDUCTION_ROTOR::get)
             .recipe(b -> b
                     .key('A', andesiteAlloy())
@@ -65,6 +55,19 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
                     .patternLine("AMA")
             ),
 
+    GENERATOR_LARGE_INDUCTION_ROTOR = create(ModdedBlocks.GENERATOR_LARGE_INDUCTION_ROTOR::get)
+            .recipe(b -> b
+                    .key('I', ironSheet())
+                    .key('A', andesiteAlloy())
+                    .key('M', copperCoil())
+                    .key('R', ModdedBlocks.GENERATOR_INDUCTION_ROTOR)
+                    .patternLine("  I  ")
+                    .patternLine(" AMA ")
+                    .patternLine("IMRMI")
+                    .patternLine(" AMA ")
+                    .patternLine("  I  ")
+            ),
+
     GENERATOR_COMMUTATOR = create(ModdedBlocks.GENERATOR_COMMUTATOR::get)
             .recipe(b -> b
                     .key('A', andesiteAlloy())
@@ -72,8 +75,8 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
                     .key('C', andesiteCasing())
                     .key('M', copperSheet())
                     .key('G', coal())
-                    .key('N', copperNugget())
-                    .patternLine("N N")
+                    .key('P', pins())
+                    .patternLine(" P ")
                     .patternLine("GMG")
                     .patternLine("ASA")
                     .patternLine(" C ")
@@ -84,7 +87,7 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
                     .key('L', Items.LAPIS_LAZULI)
                     .key('R', Items.REDSTONE)
                     .key('G', Items.GOLD_NUGGET)
-                    .key('Q', AllItems.ROSE_QUARTZ)
+                    .key('Q', AllItems.POLISHED_ROSE_QUARTZ)
                     .patternLine("  L  ")
                     .patternLine("RRQRR")
                     .patternLine(" GGG ")
@@ -128,6 +131,19 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
                     .patternLine(" A   ")
             ),
 
+    PORTABLE_SAW = create(ModdedItems.PORTABLE_SAW::get)
+            .recipe(b -> b
+            .key('A', andesiteAlloy())
+            .key('I', ironSheet())
+            .key('P', precisionMechanism())
+            .key('G', electricalGizmo())
+            .key('Z', zincSheet())
+            .key('z', zincIngot())
+            .patternLine(" I  ZA")
+            .patternLine("IAIPGz")
+            .patternLine(" I    ")
+            ),
+
     BASIN_HEATER = create(ModdedBlocks.BASIN_HEATER::get)
             .recipe(b -> b
                     .key('R', resistiveCoil())
@@ -161,14 +177,14 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
 
     PUNCH_CARD_READER = create(ModdedBlocks.PUNCH_CARD_READER::get)
             .recipe(b -> b
-                    .key('C', RecipeTags.conductiveCasing())
-                    .key('n', RecipeTags.copperNugget())
-                    .key('S', RecipeTags.shaft())
-                    .key('G', RecipeTags.smallCog())
-                    .key('Z', RecipeTags.zincSheet())
-                    .key('M', RecipeTags.precisionMechanism())
+                    .key('C', conductiveCasing())
+                    .key('P', pins())
+                    .key('S', shaft())
+                    .key('G', smallCog())
+                    .key('Z', zincSheet())
+                    .key('M', precisionMechanism())
                     .patternLine(" ZMZ ")
-                    .patternLine("nnCnn")
+                    .patternLine("PPCPP")
                     .patternLine(" GSG "))
         ;
 

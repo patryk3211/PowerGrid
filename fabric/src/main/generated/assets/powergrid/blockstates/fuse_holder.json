@@ -3,6 +3,7 @@
     {
       "apply": {
         "model": "powergrid:block/fuse_holder_h",
+        "x": 180,
         "y": -90
       },
       "when": {
@@ -13,7 +14,7 @@
     {
       "apply": {
         "model": "powergrid:block/fuse_holder_h",
-        "x": -90,
+        "x": 90,
         "y": -90
       },
       "when": {
@@ -43,7 +44,8 @@
     },
     {
       "apply": {
-        "model": "powergrid:block/fuse_holder_h"
+        "model": "powergrid:block/fuse_holder_h",
+        "x": 180
       },
       "when": {
         "axis_along_first": "true",
@@ -53,7 +55,7 @@
     {
       "apply": {
         "model": "powergrid:block/fuse_holder_h",
-        "x": -90
+        "x": 90
       },
       "when": {
         "axis_along_first": "false",
@@ -85,6 +87,7 @@
     {
       "apply": {
         "model": "powergrid:block/fuse_holder_h",
+        "x": 180,
         "y": 90
       },
       "when": {
@@ -95,7 +98,7 @@
     {
       "apply": {
         "model": "powergrid:block/fuse_holder_h",
-        "x": -90,
+        "x": 90,
         "y": 90
       },
       "when": {
@@ -126,6 +129,7 @@
     {
       "apply": {
         "model": "powergrid:block/fuse_holder_h",
+        "x": 180,
         "y": 180
       },
       "when": {
@@ -136,7 +140,7 @@
     {
       "apply": {
         "model": "powergrid:block/fuse_holder_h",
-        "x": -90,
+        "x": 90,
         "y": 180
       },
       "when": {
