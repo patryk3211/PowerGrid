@@ -1582,7 +1582,7 @@ public class DeviceScenes {
         var connector1 = util.grid().at(3,6,2);
         var connector2 = util.grid().at(1,6,2);
         var device_connector = util.grid().at(2,5,2);
-        scene.idle(30);
+        scene.idle(10);
         scene.world().showSection(poles, Direction.DOWN);
         scene.idle(20);
         scene.world().showSection(light, Direction.UP);
@@ -1607,6 +1607,8 @@ public class DeviceScenes {
                         .text("Right-click to add any light bulb");
         scene.idle(90);
         scene.electric().tickFor(20);
+
+        scene.markAsFinished();
     }
     public static void factoryLightTall(SceneBuilder builder, SceneBuildingUtil util) {
         var scene = new PowerGridSceneBuilder(builder);
@@ -1615,7 +1617,7 @@ public class DeviceScenes {
         scene.showBasePlate();
         scene.setSceneOffsetY(-3);
         scene.scaleSceneView(0.8f);
-        scene.idle(30);
+        scene.idle(10);
         scene.world().showSection(util.select().fromTo(0,1,0,4, 8, 4), Direction.DOWN);
         scene.electric().addSource(util.grid().at(3, 8 , 4), 0, 120);
         scene.electric().addSource(util.grid().at(1, 8 , 4), 0, 0);
@@ -1635,6 +1637,9 @@ public class DeviceScenes {
                 .placeNearTarget()
                 .pointAt(util.vector().topOf(util.grid().at(2, 0,3)))
                 .text("15");
+        scene.idle(80);
+
+        scene.markAsFinished();
     }
     public static void factoryLightConnect(SceneBuilder builder, SceneBuildingUtil util) {
         var scene = new PowerGridSceneBuilder(builder);
@@ -1644,7 +1649,7 @@ public class DeviceScenes {
         var left = util.select().fromTo(4, 1, 0, 4, 1, 2);
         var back = util.select().fromTo(2, 1, 4, 0, 1, 4);
         var both = util.select().fromTo(0, 1, 0, 2, 1, 2);
-        scene.idle(30);
+        scene.idle(10);
         scene.world().showSection(left, Direction.DOWN);
         scene.idle(10);
         scene.overlay().showOutlineWithText(left, 60)
@@ -1671,5 +1676,8 @@ public class DeviceScenes {
                 .placeNearTarget()
                 .attachKeyFrame()
                 .text("But not this");
+        scene.idle(50);
+
+        scene.markAsFinished();
     }
 }
