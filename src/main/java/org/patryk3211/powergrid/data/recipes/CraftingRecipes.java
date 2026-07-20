@@ -46,19 +46,38 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .pattern("P")
                     .pattern("Z")
                     .define('S', woodenSlab())
-                    .define('P', ModdedBlocks.COPPER_PLATING)
+                    .define('P', copperPlating())
                     .define('Z', conductiveCasing())
             ),
-            FACTORY_LIGHT = create(ModdedBlocks.FACTORY_LIGHT)
-                    .unlockedBy(AllItems.ANDESITE_ALLOY::get)
-                    .viaShaped(b -> b
-                            .pattern("I")
-                            .pattern("C")
-                            .pattern("G")
-                            .define('I', ironSheet())
-                            .define('C', andesiteAlloy())
-                            .define('G', glasspane())
-                    ),
+
+    FACTORY_LIGHT = create(ModdedBlocks.FACTORY_LIGHT)
+            .unlockedBy(AllItems.ANDESITE_ALLOY::get)
+            .viaShaped(b -> b
+                    .pattern("I")
+                    .pattern("C")
+                    .pattern("G")
+                    .define('I', ironSheet())
+                    .define('C', andesiteAlloy())
+                    .define('G', glasspane())
+            ),
+
+    COPPER_PLATING_SLAB = create(ModdedBlocks.COPPER_PLATING_SLAB)
+            .unlockedBy(() -> ModdedBlocks.COPPER_PLATING)
+            .returns(6)
+            .viaShaped(b -> b
+                    .pattern("PPP")
+                    .define('P', copperPlating())
+            ),
+
+    COPPER_PLATING_STAIRS = create(ModdedBlocks.COPPER_PLATING_STAIRS)
+            .unlockedBy(() -> ModdedBlocks.COPPER_PLATING)
+            .returns(4)
+            .viaShaped(b -> b
+                    .pattern("P  ")
+                    .pattern("PP ")
+                    .pattern("PPP")
+                    .define('P', copperPlating())
+            ),
 
     HEAVY_WIRE_CONNECTOR = create(ModdedBlocks.HEAVY_WIRE_CONNECTOR)
             .unlockedBy(() -> Items.TERRACOTTA)

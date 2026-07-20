@@ -48,6 +48,10 @@ public class RecipeTags {
         return wires("copper");
     }
 
+    public static ItemLike copperPlating() {
+        return ModdedBlocks.COPPER_PLATING;
+    }
+
     public static TagKey<Item> ironNugget() {
         return nuggets("iron");
     }

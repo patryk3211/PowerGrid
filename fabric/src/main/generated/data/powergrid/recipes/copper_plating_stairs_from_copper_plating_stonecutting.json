@@ -1,0 +1,8 @@
+{
+  "type": "minecraft:stonecutting",
+  "count": 1,
+  "ingredient": {
+    "item": "powergrid:copper_plating"
+  },
+  "result": "powergrid:copper_plating_stairs"
+}

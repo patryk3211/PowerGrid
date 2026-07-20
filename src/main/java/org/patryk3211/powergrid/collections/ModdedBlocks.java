@@ -29,11 +29,13 @@ import com.simibubi.create.content.processing.AssemblyOperatorBlockItem;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import com.simibubi.create.foundation.data.CreateRegistrate;
 import com.simibubi.create.foundation.data.SharedProperties;
+import com.tterrag.registrate.util.DataIngredient;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import net.minecraft.advancements.critereon.StatePropertiesPredicate;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
@@ -188,6 +190,8 @@ public class ModdedBlocks {
     public static final BlockEntry<StairBlock> COPPER_PLATING_STAIRS = REGISTRATE.block("copper_plating_stairs", p -> new StairBlock(COPPER_PLATING.getDefaultState(), p))
             .blockstate((ctx, prov) -> prov.stairsBlock(ctx.get(), prov.modLoc("block/solar_panel/copper_plating")))
             .initialProperties(SharedProperties::softMetal)
+            .recipe((ctx, prov) -> prov
+                    .stonecutting(DataIngredient.items(COPPER_PLATING.get()), RecipeCategory.DECORATIONS, ctx::get, 1))
             .simpleItem()
             .register();
 
@@ -197,6 +201,8 @@ public class ModdedBlocks {
                             prov.modLoc("block/copper_plating"),
                             prov.modLoc("block/solar_panel/copper_plating")))
             .initialProperties(SharedProperties::softMetal)
+            .recipe((ctx, prov) -> prov
+                    .stonecutting(DataIngredient.items(COPPER_PLATING.get()), RecipeCategory.DECORATIONS, ctx::get, 2))
             .simpleItem()
             .register();
 
