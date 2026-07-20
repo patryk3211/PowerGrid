@@ -239,9 +239,9 @@ public class Components {
             .register();
 
     public static final RegistryEntry<FuseHolderComponent> FUSE_HOLDER = REGISTRATE.component("fuse_holder", FuseHolderComponent::new)
-            .footprint(3, 5, b -> b
+            .footprint(3, 4, b -> b
                     .addPad(1, 0, 0)
-                    .addPad(1, 4, 1)
+                    .addPad(1, 3, 1)
                     .withItem().withOutline()
             )
             .item(ModdedBlocks.FUSE_HOLDER)
