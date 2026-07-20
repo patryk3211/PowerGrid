@@ -37,6 +37,7 @@ import org.apache.commons.lang3.mutable.MutableFloat;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.compat.sable.SableUtils;
@@ -398,7 +399,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             player.addItem(stack);
         }
         var stack = itemInHand ? handStack : new ItemStack(getItem(), itemCount);
-        stack.getOrCreateTag().put("Connection", (secondEndpoint ? endpoint1 : endpoint2).serialize());
+        stack.set(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.of(secondEndpoint ? endpoint1 : endpoint2));
         player.setItemInHand(InteractionHand.MAIN_HAND, stack);
         itemCount = 0;
         discard();

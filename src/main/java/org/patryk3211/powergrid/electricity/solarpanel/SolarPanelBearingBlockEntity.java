@@ -31,17 +31,12 @@ import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
-import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWire;
 import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWireSolar;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
 import java.util.List;
 
 import static org.patryk3211.powergrid.electricity.solarpanel.SolarHelper.*;
-import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.CELLS_IN_SERIES;
-import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.SOLAR_CONSTANT;
-import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.ALBEDO_FRAC;
-import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.DIFFUSE_FRAC;
 
 public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity implements IBearingBlockEntity, IDisplayAssemblyExceptions {
     protected ControlledContraptionEntity movedContraption;

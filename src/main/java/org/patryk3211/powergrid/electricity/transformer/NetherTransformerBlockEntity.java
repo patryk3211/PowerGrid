@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.objects.Object2ReferenceArrayMap;
 import net.createmod.catnip.math.BlockFace;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.ListTag;
@@ -46,8 +47,8 @@ public class NetherTransformerBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
-        super.write(tag, clientPacket);
+    protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(tag, registries, clientPacket);
         if(id == null || clientPacket)
             return;
         tag.putUUID("Link", id);
@@ -62,8 +63,8 @@ public class NetherTransformerBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
-        super.read(tag, clientPacket);
+    protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(tag, registries, clientPacket);
         if(!tag.contains("Link") || clientPacket)
             return;
         id = tag.getUUID("Link");

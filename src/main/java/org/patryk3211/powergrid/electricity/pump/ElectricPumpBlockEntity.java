@@ -15,6 +15,7 @@ import net.createmod.catnip.math.BlockFace;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -118,9 +119,10 @@ public class ElectricPumpBlockEntity extends ElectricBlockEntity implements IHav
         this.sidesToUpdate.forEach(MutableBoolean::setTrue);
     }
 
-    protected void read(CompoundTag compound, boolean clientPacket) {
-        super.read(compound, clientPacket);
-        if (compound.getBoolean("Reversed")) {
+    @Override
+    protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(tag, registries, clientPacket);
+        if(tag.getBoolean("Reversed")) {
             this.scheduleFlip = true;
         }
     }

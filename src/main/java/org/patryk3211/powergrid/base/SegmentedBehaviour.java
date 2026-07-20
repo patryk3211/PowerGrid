@@ -178,10 +178,13 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
             segments.clear();
             if(clientPacket) {
                 makeController();
-                var segments = compound.getList("Segments", ListTag.TAG_COMPOUND);
+                var segments = compound.getList("Segments", ListTag.TAG_INT_ARRAY);
                 var level = getWorld();
                 for(int i = 0; i < segments.size(); ++i) {
-                    var pos = NbtUtils.readBlockPos(segments.getCompound(i));
+                    var ints = segments.getIntArray(i);
+                    if(ints.length != 3)
+                        continue;
+                    var pos = new BlockPos(ints[0], ints[1], ints[2]);
                     var behavior = BlockEntityBehaviour.get(level, pos, getType());
                     if(behavior == null)
                         continue;

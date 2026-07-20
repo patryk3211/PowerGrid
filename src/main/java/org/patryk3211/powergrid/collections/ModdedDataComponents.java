@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.collections;
 import com.mojang.serialization.Codec;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import org.patryk3211.powergrid.PowerGrid;
@@ -32,6 +33,8 @@ public class ModdedDataComponents {
     public static final RegistrySupplier<DataComponentType<WireConnection>> CONNECTION_DATA = persistent("connection", WireConnection.CODEC);
 
     public static final RegistrySupplier<DataComponentType<BoostData>> BOOST = persistent("boost", BoostData.CODEC);
+
+    public static final RegistrySupplier<DataComponentType<BlockPos>> WINDING_CONNECTION = persistent("winding_connection", BlockPos.CODEC);
 
     public static <T> RegistrySupplier<DataComponentType<T>> persistent(String id, Codec<T> codec) {
         return REGISTER.register(id, () -> DataComponentType.<T>builder().persistent(codec).build());

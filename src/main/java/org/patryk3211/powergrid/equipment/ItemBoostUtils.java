@@ -6,9 +6,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
-import org.patryk3211.powergrid.collections.ModdedDataComponents;
-import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
@@ -57,7 +57,7 @@ public class ItemBoostUtils {
     }
 
     @ExpectPlatform
-    public static Recipe<?> findRecipe(Level level, ItemStack chip, ItemStack toBoost) {
+    public static RecipeHolder<?> findRecipe(Level level, ItemStack chip, ItemStack toBoost) {
         throw new AssertionError();
     }
 }

@@ -1,13 +1,11 @@
 package org.patryk3211.powergrid.network.packets;
 
-import dev.architectury.networking.NetworkManager;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
 import org.patryk3211.powergrid.electricity.wire.powercord.CordEntity;
-import org.patryk3211.powergrid.network.SimplePacket;
+import org.patryk3211.powergrid.network.C2SPacket;
 
-import java.util.function.Supplier;
-
-public class CordDetachC2SPacket implements SimplePacket {
+public class CordDetachC2SPacket implements C2SPacket {
     private final int entityId;
     private final boolean secondEndpoint;
 
@@ -22,21 +20,17 @@ public class CordDetachC2SPacket implements SimplePacket {
     }
 
     @Override
-    public void encode(FriendlyByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeInt(entityId);
         buf.writeBoolean(secondEndpoint);
     }
 
     @Override
-    public void handle(Supplier<NetworkManager.PacketContext> context) {
-        var ctx = context.get();
-        ctx.queue(() -> {
-            var player = ctx.getPlayer();
-            var level = player.level();
-            var entity = level.getEntity(entityId);
-            if(!(entity instanceof CordEntity cord))
-                return;
-            cord.cordDetach(player, secondEndpoint);
-        });
+    public void handle(ServerPlayer player) {
+        var level = player.level();
+        var entity = level.getEntity(entityId);
+        if(!(entity instanceof CordEntity cord))
+            return;
+        cord.cordDetach(player, secondEndpoint);
     }
 }

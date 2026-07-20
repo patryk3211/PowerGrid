@@ -8,6 +8,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -44,8 +45,8 @@ public class BoostingChipItem extends Item implements CustomUseEffectsItem {
         if(!ModdedAdvancements.BOOSTING_CHIP.isAlreadyAwardedTo(player)) {
             ModdedAdvancements.BOOSTING_CHIP.awardTo(player);
         }
+        entity.onEquippedItemBroken(stack.getItem(), player.getUsedItemHand() == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
         stack.shrink(1);
-        entity.broadcastBreakEvent(entity.getUsedItemHand());
         return stack;
     }
 
@@ -60,7 +61,7 @@ public class BoostingChipItem extends Item implements CustomUseEffectsItem {
     }
 
     @Override
-    public int getUseDuration(ItemStack stack) {
+    public int getUseDuration(ItemStack stack, LivingEntity entity) {
         return 32;
     }
 

@@ -1598,7 +1598,7 @@ public class DeviceScenes {
         scene.idle(10);
         scene.electric().connect(connector2, 0, device_connector, 0);
         scene.idle(20);
-        ItemStack bulb = new ItemStack(ModdedItems.LIGHT_BULB);
+        ItemStack bulb = new ItemStack(ModdedItems.LIGHT_BULB.get());
         Vec3 frontVec = util.vector().blockSurface(util.grid().at(1, 4, 3), Direction.WEST);
                 //.add(-.125, 0, 0);
 

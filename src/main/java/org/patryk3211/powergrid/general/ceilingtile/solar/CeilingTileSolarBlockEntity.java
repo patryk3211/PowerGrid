@@ -1,9 +1,6 @@
 package org.patryk3211.powergrid.general.ceilingtile.solar;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.SectionPos;
-import net.minecraft.core.Vec3i;
+import net.minecraft.core.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -22,7 +19,6 @@ import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
-import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWire;
 import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWireSolar;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.solarpanel.ISolarPropertyConsumer;
@@ -283,8 +279,8 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
     }
 
     @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
-        super.write(tag, clientPacket);
+    protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(tag, registries, clientPacket);
         if(controller != null) {
             tag.put("Controller", NbtUtils.writeBlockPos(controller));
         } else {
@@ -301,11 +297,11 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
     }
 
     @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
-        super.read(tag, clientPacket);
+    protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(tag, registries, clientPacket);
         Vec3i offset = null;
         if(tag.contains("LastKnownPos")) {
-            lastKnownPos = NbtUtils.readBlockPos(tag.getCompound("LastKnownPos"));
+            lastKnownPos = NbtUtils.readBlockPos(tag, "LastKnownPos").orElse(worldPosition);
             if(!worldPosition.equals(lastKnownPos)) {
                 offset = worldPosition.subtract(lastKnownPos);
             }
@@ -314,16 +310,22 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
         }
         connectedPanels.clear();
         if(tag.contains("Controller")) {
-            controller = NbtUtils.readBlockPos(tag.getCompound("Controller"));
-            if(offset != null)
-                controller = controller.offset(offset);
-            makeProxy();
+            var opt = NbtUtils.readBlockPos(tag, "Controller");
+            if(opt.isPresent()) {
+                controller = opt.get();
+                if (offset != null)
+                    controller = controller.offset(offset);
+                makeProxy();
+            }
         } else {
             controller = null;
             if(tag.contains("Connected", ListTag.TAG_LIST)) {
-                var list = tag.getList("Connected", ListTag.TAG_COMPOUND);
+                var list = tag.getList("Connected", ListTag.TAG_INT_ARRAY);
                 for(int i = 0; i < list.size(); ++i) {
-                    var pos = NbtUtils.readBlockPos(list.getCompound(i));
+                    var ints = list.getIntArray(i);
+                    if(ints.length != 3)
+                        continue;
+                    var pos = new BlockPos(ints[0], ints[1], ints[2]);
                     if(offset != null)
                         pos = pos.offset(offset);
                     connectedPanels.add(pos);

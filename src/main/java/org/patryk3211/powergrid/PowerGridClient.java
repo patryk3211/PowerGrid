@@ -16,7 +16,6 @@
 package org.patryk3211.powergrid;
 
 import com.mojang.blaze3d.platform.Window;
-import com.mojang.blaze3d.vertex.BufferBuilder;
 import dev.architectury.event.EventResult;
 import dev.architectury.event.events.client.*;
 import net.createmod.ponder.foundation.PonderIndex;
@@ -33,7 +32,6 @@ import org.patryk3211.powergrid.equipment.multimeter.MultimeterItemRenderer;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerItemRenderer;
 import org.patryk3211.powergrid.equipment.zapper.ElectroZapperRenderHandler;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingPreview;
-import org.patryk3211.powergrid.mixin.client.RenderBuffersAccessor;
 import org.patryk3211.powergrid.network.packets.NegotiateSyncC2SPacket;
 import org.patryk3211.powergrid.ponder.PowerGridPonderPlugin;
 import org.patryk3211.powergrid.utility.CustomValueSettingsScreen;
@@ -64,12 +62,6 @@ public class PowerGridClient {
 		ClientTooltipEvent.ITEM.register(WireItem::tooltip);
 		ClientRawInputEvent.KEY_PRESSED.register(PowerGridClient::keyPress);
 		ClientRawInputEvent.MOUSE_CLICKED_POST.register(PowerGridClient::mousePress);
-		ClientLifecycleEvent.CLIENT_STARTED.register(PowerGridClient::clientStarted);
-	}
-
-	private static void clientStarted(Minecraft minecraft) {
-        ((RenderBuffersAccessor) minecraft.renderBuffers()).getFixedBuffers()
-                .put(ModdedRenderLayers.getAdditive(), new BufferBuilder(ModdedRenderLayers.getAdditive().bufferSize()));
 	}
 
 	private static EventResult keyPress(Minecraft client, int keyCode, int scanCode, int action, int modifiers) {
