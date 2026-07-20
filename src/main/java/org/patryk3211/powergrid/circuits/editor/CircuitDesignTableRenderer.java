@@ -22,9 +22,10 @@ public class CircuitDesignTableRenderer extends SafeBlockEntityRenderer<CircuitD
         var state = be.getBlockState();
         var glow = CachedBuffers.partial(ModdedPartialModels.CIRCUIT_TABLE_GLOW, state);
 
+        int a = (int) (power * 192);
         glow.rotateYCenteredDegrees(state.getValue(CircuitDesignTableBlock.HORIZONTAL_FACING).getAxis() == Direction.Axis.X ? 90 : 0)
                 .disableDiffuse()
-                .color((int) (power * 255), (int) (power * 255), (int) (power * 255), 255)
+                .color(a, a, a, 255)
                 .renderInto(ms, bufferSource.getBuffer(ModdedRenderLayers.getAdditive()));
     }
 }
