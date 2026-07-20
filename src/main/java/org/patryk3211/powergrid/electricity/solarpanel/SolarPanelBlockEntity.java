@@ -1,6 +1,7 @@
 package org.patryk3211.powergrid.electricity.solarpanel;
 
 import dev.ryanhcode.sable.companion.SableCompanion;
+import dev.ryanhcode.sable.companion.math.JOMLConversion;
 import net.minecraft.core.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -36,6 +37,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
     private float sunVisibility = 0;
     private boolean skyVisible = false;
     private Vector3d panelNormal;
+    private double irradiance;
 
     private final Map<BlockPos, SolarPanelBlockEntity> connectedPanelBEs = new HashMap<>();
     private final Set<BlockPos> connectedPanels = new HashSet<>();
@@ -102,11 +104,15 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
 
     private void electricalProperties(SolarPanelBlockEntity controller) {
         float cloudCover = getWeather(level);
-
-        var d = SableCompanion.INSTANCE.projectOutOfSubLevel(level, new Vector3d(this.getBlockPos().getX(), this.getBlockPos().getY(), this.getBlockPos().getZ()));
+        var pos = SableCompanion.INSTANCE.projectOutOfSubLevel(level, new Vector3d(this.getBlockPos().getX(), this.getBlockPos().getY(), this.getBlockPos().getZ()));
 
         getPlacedBlockRotation();
-        var irradiance = getIrradiance(getAM(level), cloudCover, (int) d.y, level);
+        var subLevel = SableCompanion.INSTANCE.getContaining(this);
+        if(subLevel != null) {
+            subLevel.logicalPose().orientation().transform(panelNormal);
+            panelNormal.normalize();
+        }
+        irradiance = getIrradiance(getAM(level), cloudCover, (int) pos.y, level);
         SolarHelper.electricalProperties(irradiance, controller);
     }
 
@@ -124,18 +130,21 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
         var world = getLevel();
         if (world == null || world.isClientSide()) return;
         if (currentSource == null) return;
+        var worldPos = SableCompanion.INSTANCE.projectOutOfSubLevel(world,
+                new Vector3d(this.getBlockPos().getX(), this.getBlockPos().getY(), this.getBlockPos().getZ()));
+        var blockPos = BlockPos.containing(JOMLConversion.toMojang(worldPos));
+        var subLevel = SableCompanion.INSTANCE.getContaining(this);
 
-        if (firstTick) {
-            ambientTemp = ThermalBehaviour.getAmbientTemperature(level, this.getBlockPos());
+        if (firstTick || subLevel != null) {
+            ambientTemp = ThermalBehaviour.getAmbientTemperature(world, blockPos);
             if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
                 ambientTemp = 22f;
             if(junction != null)
                 junction.setTemperatureCelsius(ambientTemp);
             firstTick = false;
+            getPlacedBlockRotation();
         }
 
-        getPlacedBlockRotation();
-        var subLevel = SableCompanion.INSTANCE.getContaining(this);
         if(subLevel != null) {
             subLevel.logicalPose().orientation().transform(panelNormal);
             panelNormal.normalize();
@@ -156,8 +165,6 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
         }
 
         if (junction != null) {
-            float cloudCover = getWeather(level);
-            var irradiance = getIrradiance(getAM(level), cloudCover, this.getBlockPos().getY(), level);
             var currentCellTemp = SolarHelper.getCellTemp(irradiance, ambientTemp);
             junction.setTemperatureCelsius(currentCellTemp);
             junction.setIdealityFactor(IDEALITY * CELLS_IN_SERIES * panelCount);

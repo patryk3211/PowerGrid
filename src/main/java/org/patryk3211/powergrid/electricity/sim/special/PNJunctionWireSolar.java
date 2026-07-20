@@ -47,17 +47,6 @@ public class PNJunctionWireSolar extends AbstractElectricWire implements ISolver
         this.breakdownSaturationCurrent = 0;
     }
 
-    public PNJunctionWireSolar(double reverseSaturationCurrent, double seriesResistance, double temperatureCelsius, double idealityFactor, double singleIdealityFactor, double breakdownVoltage, double breakdownSaturationCurrent, IElectricNode node1, IElectricNode node2) {
-        super(node1, node2);
-        this.reverseSaturationCurrent = reverseSaturationCurrent;
-        this.seriesResistance = seriesResistance;
-        this.temperatureCelsius = temperatureCelsius;
-        this.idealityFactor = idealityFactor;
-        this.singleIdealityFactor = singleIdealityFactor;
-        this.breakdownVoltage = breakdownVoltage;
-        this.breakdownSaturationCurrent = breakdownSaturationCurrent;
-    }
-
     public static double WrightOmega(double z) {
         // D'Angelo, Gabrielli and Turchet (2019) approximation
         double x1 = -3.341459552768620;

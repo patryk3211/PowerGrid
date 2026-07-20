@@ -48,7 +48,6 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     protected double sequencedAngleLimit;
     SolarPanelBearingContraption contraption;
     private float prevAngle;
-    private boolean firstTick = true;
     private float ambientTemp = -2000f;
     private int rayCastDelay = 0;
     private float sunVisibility = 0;
@@ -154,14 +153,14 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
             return;
         }
 
-        if (firstTick) {
-            ambientTemp = ThermalBehaviour.getAmbientTemperature(world, this.getBlockPos());
-            if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
-                ambientTemp = 22f;
-            if(junction != null)
-                junction.setTemperatureCelsius(ambientTemp);
-            firstTick = false;
-        }
+        var pos = SableCompanion.INSTANCE.projectOutOfSubLevel(level, getContraptionCenter(movedContraption));
+        var contraptionCenterPos = BlockPos.containing(JOMLConversion.toMojang(pos));
+
+        ambientTemp = ThermalBehaviour.getAmbientTemperature(world, contraptionCenterPos);
+        if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
+            ambientTemp = 22f;
+        if(junction != null)
+            junction.setTemperatureCelsius(ambientTemp);
         float cloudCover = getWeather(world);
 
         Vec3 localDir = new Vec3(contraption.panelNormal.x, contraption.panelNormal.y, contraption.panelNormal.z);
@@ -175,8 +174,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
             subLevel.logicalPose().orientation().transform(panelNormal);
             panelNormal.normalize();
         }
-
-        var irradiance = getIrradiance(getAM(world), cloudCover, this.getBlockPos().getY(), world);
+        var irradiance = getIrradiance(getAM(world), cloudCover, contraptionCenterPos.getY(), world);
         var cellTemp = getCellTemp(irradiance, ambientTemp);
         int panelsInParallel = parallelNumbers.getDivisor();
         int panelsInSeries = contraption.getPanelBlocks() / parallelNumbers.getDivisor();
@@ -240,10 +238,10 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     }
 
     public float sunRaycast(Level world) {
-        var d = SableCompanion.INSTANCE.projectOutOfSubLevel(world, new Vector3d(this.getBlockPos().getX() + .5,
+        var pos = SableCompanion.INSTANCE.projectOutOfSubLevel(world, new Vector3d(this.getBlockPos().getX() + .5,
                 this.getBlockPos().getY() + .5, this.getBlockPos().getZ() + .5));
 
-        var blockPos = BlockPos.containing(d.x, d.y, d.z);
+        var blockPos = BlockPos.containing(pos.x, pos.y, pos.z);
         int castLength = 0;
         ChunkAccess chunk;
 

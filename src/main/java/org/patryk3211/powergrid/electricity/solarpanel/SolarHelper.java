@@ -9,6 +9,7 @@ import com.simibubi.create.content.contraptions.ContraptionCollider;
 import com.simibubi.create.content.contraptions.AbstractContraptionEntity;
 import com.simibubi.create.content.contraptions.Contraption;
 import com.simibubi.create.content.contraptions.ContraptionCollider;
+import dev.ryanhcode.sable.companion.math.JOMLConversion;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.particles.SimpleParticleType;
@@ -23,6 +24,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.joml.Vector3d;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedTags;
 
@@ -198,8 +200,44 @@ public class SolarHelper {
     }
 
     public static boolean skyCheck(Level world, BlockPos pos) {
-        if (!world.canSeeSky(pos)){
-            var topY = world.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX(), pos.getZ());
+        var subLevel = SableCompanion.INSTANCE.getContaining(world, new Vector3d(pos.getX(), pos.getY(), pos.getZ()));
+        if (subLevel == null) {
+            if (!world.canSeeSky(pos)) {
+                var topY = world.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX(), pos.getZ());
+                var list = DDA(world, pos.getCenter(), pos.getCenter().add(0, topY - pos.getY(), 0));
+                boolean hit = false;
+                for (DDAHit result : list) {
+                    BlockState blockState;
+                    if (result.contraption() != null) {
+                        blockState = result.contraption().getContraption().getBlocks().get(result.worldOrLocalPos()).state();
+                    } else {
+                        blockState = world.getBlockState(result.worldOrLocalPos());
+                    }
+
+                    if (blockState.is(ModdedBlocks.SOLAR_PANEL.get())) {
+                        if (result.worldOrLocalPos().equals(pos)) {
+                            continue;
+                        } else {
+                            hit = true;
+                            break;
+                        }
+                    }
+
+                    if (blockState.is(ModdedTags.Block.SOLAR_QUARTER_LIGHT.tag)) continue;
+                    if (blockState.is(ModdedTags.Block.SOLAR_HALF_LIGHT.tag)) continue;
+                    if (blockState.is(ModdedTags.Block.SOLAR_3QUARTER_LIGHT.tag)) continue;
+                    if (blockState.is(ModdedTags.Block.SOLAR_FULL_LIGHT.tag)) continue;
+                    hit = true;
+                    break;
+                }
+                return !hit;
+            }
+            return true;
+        } else {
+            var worldPos = BlockPos.containing(JOMLConversion.toMojang(SableCompanion.INSTANCE.projectOutOfSubLevel(world,
+                    new Vector3d(pos.getX(), pos.getY(), pos.getZ()))));
+            if (world.canSeeSky(worldPos) && world.canSeeSky(pos)) return true;
+            var topY = world.getHeight(Heightmap.Types.MOTION_BLOCKING, worldPos.getX(), worldPos.getZ());
             var list = DDA(world, pos.getCenter(), pos.getCenter().add(0, topY - pos.getY(), 0));
             boolean hit = false;
             for (DDAHit result : list) {
@@ -226,11 +264,8 @@ public class SolarHelper {
                 hit = true;
                 break;
             }
-            if (hit){
-                return false;
-            } else return true;
+            return !hit;
         }
-        return true;
     }
 
     public static void electricalProperties(double irradiance, ISolarPropertyConsumer controller) {

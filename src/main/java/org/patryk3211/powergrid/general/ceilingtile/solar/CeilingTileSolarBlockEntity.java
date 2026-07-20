@@ -1,5 +1,7 @@
 package org.patryk3211.powergrid.general.ceilingtile.solar;
 
+import dev.ryanhcode.sable.companion.SableCompanion;
+import dev.ryanhcode.sable.companion.math.JOMLConversion;
 import net.minecraft.core.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -43,6 +45,7 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
     private boolean skyVisible = false;
     private Vector3d panelNormal;
     protected Direction facing = Direction.DOWN; //imitate facing on normal horizontal panel
+    private double irradiance;
 
     private final Map<BlockPos, CeilingTileSolarBlockEntity> connectedPanelBEs = new HashMap<>();
     private final Set<BlockPos> connectedPanels = new HashSet<>();
@@ -109,9 +112,15 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
 
     private void electricalProperties(CeilingTileSolarBlockEntity controller) {
         float cloudCover = getWeather(level);
+        var pos = SableCompanion.INSTANCE.projectOutOfSubLevel(level, new Vector3d(this.getBlockPos().getX(), this.getBlockPos().getY(), this.getBlockPos().getZ()));
 
         getPlacedBlockRotation();
-        var irradiance = getIrradiance(getAM(level), cloudCover, this.getBlockPos().getY(), level);
+        var subLevel = SableCompanion.INSTANCE.getContaining(this);
+        if(subLevel != null) {
+            subLevel.logicalPose().orientation().transform(panelNormal);
+            panelNormal.normalize();
+        }
+        irradiance = getIrradiance(getAM(level), cloudCover, (int) pos.y, level);
         SolarHelper.electricalProperties(irradiance, controller);
     }
 
@@ -126,16 +135,28 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
 
     @Override
     public void electricalTick() {
-        if (firstTick) {
-            ambientTemp = ThermalBehaviour.getAmbientTemperature(level, this.getBlockPos());
+        var world = getLevel();
+        if (world == null || world.isClientSide()) return;
+        if (currentSource == null) return;
+        var worldPos = SableCompanion.INSTANCE.projectOutOfSubLevel(world,
+                new Vector3d(this.getBlockPos().getX(), this.getBlockPos().getY(), this.getBlockPos().getZ()));
+        var blockPos = BlockPos.containing(JOMLConversion.toMojang(worldPos));
+        var subLevel = SableCompanion.INSTANCE.getContaining(this);
+
+        if (firstTick || subLevel != null) {
+            ambientTemp = ThermalBehaviour.getAmbientTemperature(world, blockPos);
             if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
                 ambientTemp = 22f;
-            if (junction != null)
+            if(junction != null)
                 junction.setTemperatureCelsius(ambientTemp);
             firstTick = false;
+            getPlacedBlockRotation();
         }
 
-        if (currentSource == null) return;
+        if(subLevel != null) {
+            subLevel.logicalPose().orientation().transform(panelNormal);
+            panelNormal.normalize();
+        }
 
         I = 0; Rs = 0; Rsh = 0; panelCount = 0;
         electricalProperties(this);
@@ -152,8 +173,6 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
         }
 
         if (junction != null) {
-            float cloudCover = getWeather(level);
-            var irradiance = getIrradiance(getAM(level), cloudCover, this.getBlockPos().getY(), level);
             var currentCellTemp = SolarHelper.getCellTemp(irradiance, ambientTemp);
             junction.setTemperatureCelsius(currentCellTemp);
             junction.setIdealityFactor(IDEALITY * CELLS_IN_SERIES * panelCount);
@@ -166,7 +185,6 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
             Rsh = 10000;
         if(!Double.isFinite(I))
             I = 0;
-        junction.setIdealityFactor(IDEALITY * CELLS_IN_SERIES * panelCount);
 
         seriesResistor.setResistance(Rs);
         currentSource.setConductance(1 / Rsh);
@@ -206,7 +224,10 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
     }
 
     public float sunRaycast(Level world) {
-        var blockPos = getBlockPos();
+        var d = SableCompanion.INSTANCE.projectOutOfSubLevel(world, new Vector3d(this.getBlockPos().getX() + .5,
+                this.getBlockPos().getY() + .5, this.getBlockPos().getZ() + .5));
+
+        var blockPos = BlockPos.containing(d.x, d.y, d.z);
         int castLength = 0;
         ChunkAccess chunk;
         double sunAngle = world.getSunAngle(0);
@@ -223,7 +244,8 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
                 break;
             }
         }
-        var centerBlockPos = getBlockPos().getCenter().add(0, 0, 0);
+
+        var centerBlockPos = blockPos.getCenter().add(0, 0, 0);
         var end = centerBlockPos.add(new Vec3(sunX, sunY, 0).scale(castLength));
         var results = DDA(world, centerBlockPos, end);
         float returnValue = 1;
@@ -235,7 +257,7 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
                 blockState = world.getBlockState(result.worldOrLocalPos());
             }
 
-            if (blockState.is(ModdedBlocks.SOLAR_PANEL.get())) {
+            if (blockState.is(ModdedBlocks.CEILING_TILE_SOLAR.get())) {
                 if (result.worldOrLocalPos().equals(this.getBlockPos())) {
                     continue;
                 } else if (world.getBlockEntity(result.worldOrLocalPos()) instanceof CeilingTileSolarBlockEntity be) {
