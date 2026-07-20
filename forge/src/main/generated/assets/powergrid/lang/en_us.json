@@ -73,6 +73,7 @@
   "block.powergrid.electric_pump": "Electric Pump",
   "block.powergrid.electric_pump.tooltip.summary": "An _Electric_ version of the _Mechanical Pump_",
   "block.powergrid.electromagnet": "Electromagnet",
+  "block.powergrid.energy_meter": "Energy Meter",
   "block.powergrid.factory_light": "Factory Light",
   "block.powergrid.factory_light_light": "Factory Light Light",
   "block.powergrid.fe_inverter": "FE Inverter",

@@ -78,6 +78,7 @@ import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
 import org.patryk3211.powergrid.electricity.febridge.FEInverterBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
+import org.patryk3211.powergrid.electricity.gauge.EnergyMeterBlock;
 import org.patryk3211.powergrid.electricity.gauge.PowerGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
 import org.patryk3211.powergrid.electricity.grounding.GroundingRodBlock;
@@ -296,6 +297,17 @@ public class ModdedBlocks {
             .transform(DisplaySource.displaySource(ModdedDisplaySources.ELECTRIC_GAUGE))
             .item()
                 .model(gauge("block/gauge/item_power", "block/conductive_gauge"))
+                .build()
+            .register();
+
+    public static final BlockEntry<EnergyMeterBlock> ENERGY_METER = REGISTRATE.block("energy_meter", EnergyMeterBlock::new)
+            .blockstate(horizontalBlock("block/gauge/energy_meter"))
+            .initialProperties(SharedProperties::softMetal)
+            .transform(CResistance.setResistances("series", 0.05f, "shunt", 2e6))
+            .transform(CThermal.maxPower(100, 2.0f))
+            .transform(pickaxeOnly())
+            .item()
+                .model(itemWithParent("block/gauge/energy_meter"))
                 .build()
             .register();
 
