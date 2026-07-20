@@ -1,9 +1,6 @@
 package org.patryk3211.powergrid.electricity.solarpanel;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.SectionPos;
-import net.minecraft.core.Vec3i;
+import net.minecraft.core.*;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -38,6 +35,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
     private float sunVisibility = 0;
     private boolean skyVisible = false;
     private Vector3d panelNormal;
+    private double irradiance;
 
     private final Map<BlockPos, SolarPanelBlockEntity> connectedPanelBEs = new HashMap<>();
     private final Set<BlockPos> connectedPanels = new HashSet<>();
@@ -106,7 +104,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
         float cloudCover = getWeather(level);
 
         getPlacedBlockRotation();
-        var irradiance = getIrradiance(getAM(level), cloudCover, this.getBlockPos().getY(), level);
+        irradiance = getIrradiance(getAM(level), cloudCover, this.getBlockPos().getY(), level);
         SolarHelper.electricalProperties(irradiance, controller);
     }
 
@@ -121,8 +119,12 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
 
     @Override
     public void electricalTick() {
+        var world = getLevel();
+        if (world == null || world.isClientSide()) return;
+        if (currentSource == null) return;
+
         if (firstTick) {
-            ambientTemp = ThermalBehaviour.getAmbientTemperature(level, this.getBlockPos());
+            ambientTemp = ThermalBehaviour.getAmbientTemperature(world, this.getBlockPos());
             if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
                 ambientTemp = 22f;
             if(junction != null)
@@ -147,8 +149,6 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
         }
 
         if (junction != null) {
-            float cloudCover = getWeather(level);
-            var irradiance = getIrradiance(getAM(level), cloudCover, this.getBlockPos().getY(), level);
             var currentCellTemp = SolarHelper.getCellTemp(irradiance, ambientTemp);
             junction.setTemperatureCelsius(currentCellTemp);
             junction.setIdealityFactor(IDEALITY * CELLS_IN_SERIES * panelCount);

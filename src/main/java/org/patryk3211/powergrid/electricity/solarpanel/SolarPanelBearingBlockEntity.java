@@ -347,6 +347,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
 
         parallelNumbers.refreshDivisors(contraption.getPanelBlocks());
         sendData();
+        getPlacedBlockRotation();
     }
 
     public void disassemble() {

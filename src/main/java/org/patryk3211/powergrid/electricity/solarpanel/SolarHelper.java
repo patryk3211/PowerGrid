@@ -192,9 +192,7 @@ public class SolarHelper {
                 hit = true;
                 break;
             }
-            if (hit){
-                return false;
-            } else return true;
+            return !hit;
         }
         return true;
     }

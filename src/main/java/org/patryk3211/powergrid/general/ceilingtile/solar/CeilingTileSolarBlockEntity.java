@@ -22,7 +22,6 @@ import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
-import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWire;
 import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWireSolar;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.solarpanel.ISolarPropertyConsumer;
@@ -47,6 +46,7 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
     private boolean skyVisible = false;
     private Vector3d panelNormal;
     protected Direction facing = Direction.DOWN; //imitate facing on normal horizontal panel
+    private double irradiance;
 
     private final Map<BlockPos, CeilingTileSolarBlockEntity> connectedPanelBEs = new HashMap<>();
     private final Set<BlockPos> connectedPanels = new HashSet<>();
@@ -115,7 +115,7 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
         float cloudCover = getWeather(level);
 
         getPlacedBlockRotation();
-        var irradiance = getIrradiance(getAM(level), cloudCover, this.getBlockPos().getY(), level);
+        irradiance = getIrradiance(getAM(level), cloudCover, this.getBlockPos().getY(), level);
         SolarHelper.electricalProperties(irradiance, controller);
     }
 
@@ -130,13 +130,17 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
 
     @Override
     public void electricalTick() {
+        var world = getLevel();
+        if (world == null || world.isClientSide()) return;
+        if (currentSource == null) return;
         if (firstTick) {
-            ambientTemp = ThermalBehaviour.getAmbientTemperature(level, this.getBlockPos());
+            ambientTemp = ThermalBehaviour.getAmbientTemperature(world, this.getBlockPos());
             if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
                 ambientTemp = 22f;
-            if (junction != null)
+            if(junction != null)
                 junction.setTemperatureCelsius(ambientTemp);
             firstTick = false;
+            getPlacedBlockRotation();
         }
 
         if (currentSource == null) return;
@@ -156,8 +160,6 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
         }
 
         if (junction != null) {
-            float cloudCover = getWeather(level);
-            var irradiance = getIrradiance(getAM(level), cloudCover, this.getBlockPos().getY(), level);
             var currentCellTemp = SolarHelper.getCellTemp(irradiance, ambientTemp);
             junction.setTemperatureCelsius(currentCellTemp);
             junction.setIdealityFactor(IDEALITY * CELLS_IN_SERIES * panelCount);
@@ -170,7 +172,6 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
             Rsh = 10000;
         if(!Double.isFinite(I))
             I = 0;
-        junction.setIdealityFactor(IDEALITY * CELLS_IN_SERIES * panelCount);
 
         seriesResistor.setResistance(Rs);
         currentSource.setConductance(1 / Rsh);
@@ -239,7 +240,7 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
                 blockState = world.getBlockState(result.worldOrLocalPos());
             }
 
-            if (blockState.is(ModdedBlocks.SOLAR_PANEL.get())) {
+            if (blockState.is(ModdedBlocks.CEILING_TILE_SOLAR.get())) {
                 if (result.worldOrLocalPos().equals(this.getBlockPos())) {
                     continue;
                 } else if (world.getBlockEntity(result.worldOrLocalPos()) instanceof CeilingTileSolarBlockEntity be) {
