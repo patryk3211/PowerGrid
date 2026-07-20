@@ -7,7 +7,7 @@
     "BlueprintOverlayMixin",
     "BlueprintOverlayRendererAccessor",
     "ComplexEntityRaycastMixin",
-    "RenderBuffersAccessor",
+    "RenderBuffersMixin",
     "ValueSettingsScreenMixin"
   ],
   "injectors": {
