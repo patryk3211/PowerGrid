@@ -1,0 +1,29 @@
+{
+  "parent": "powergrid:conductive_casing",
+  "criteria": {
+    "0": {
+      "trigger": "powergrid:electric_damage_builtin"
+    }
+  },
+  "display": {
+    "description": {
+      "color": "#DBA213",
+      "translate": "advancement.powergrid.electric_damage.desc"
+    },
+    "frame": "goal",
+    "hidden": true,
+    "icon": {
+      "count": 1,
+      "id": "powergrid:wire"
+    },
+    "title": {
+      "translate": "advancement.powergrid.electric_damage"
+    }
+  },
+  "requirements": [
+    [
+      "0"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

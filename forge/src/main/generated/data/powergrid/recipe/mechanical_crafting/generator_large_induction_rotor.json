@@ -1,0 +1,30 @@
+{
+  "type": "create:mechanical_crafting",
+  "accept_mirrored": true,
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "create:andesite_alloy"
+    },
+    "I": {
+      "tag": "c:plates/iron"
+    },
+    "M": {
+      "tag": "c:copper_coils"
+    },
+    "R": {
+      "item": "powergrid:generator_induction_rotor"
+    }
+  },
+  "pattern": [
+    "  I  ",
+    " AMA ",
+    "IMRMI",
+    " AMA ",
+    "  I  "
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid:generator_large_induction_rotor"
+  }
+}

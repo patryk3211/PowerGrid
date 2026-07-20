@@ -3,17 +3,17 @@
   "category": "misc",
   "ingredients": [
     {
-      "item": "minecraft:lever"
+      "item": "powergrid:conductive_casing"
+    },
+    {
+      "item": "minecraft:comparator"
     },
     {
       "item": "powergrid:pins"
-    },
-    {
-      "item": "powergrid:conductive_casing"
     }
   ],
   "result": {
     "count": 1,
-    "id": "powergrid:lv_switch"
+    "id": "powergrid:redstone_converter"
   }
 }
