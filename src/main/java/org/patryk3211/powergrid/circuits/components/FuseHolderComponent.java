@@ -72,6 +72,7 @@ public class FuseHolderComponent extends OrientableComponent implements IInterac
         if (placed.wires.isEmpty())
             return;
         ((FuseSwitchWire) placed.wires.get(0)).setState(placed.get(STATE) == FuseState.CLOSED);
+        placed.onClientWorld(() -> world -> modelChanged(placed.getPos()));
     }
 
     public boolean resetFuse(PlacedComponent placed) {
@@ -117,4 +118,24 @@ public class FuseHolderComponent extends OrientableComponent implements IInterac
         }
         return InteractionResult.FAIL;
     }
+    
+    @Override
+    public @NotNull ResourceLocation getModelId(@NotNull PlacedComponent component) {
+        return switch (component.get(STATE)) {
+            case FuseState.OPEN -> PowerGrid.asResource("fuse");
+            case FuseState.BLOWN -> PowerGrid.asResource("fuse_blown");
+            case FuseState.CLOSED -> PowerGrid.asResource("fuse_on");
+        };
+    }
+
+    @Override
+    public @NotNull Collection<ResourceLocation> requestedModels() {
+        return List.of(
+                PowerGrid.asResource("fuse"),
+                PowerGrid.asResource("fuse_blown");
+                PowerGrid.asResource("fuse_on")
+        );
+    }
+
+
 }
