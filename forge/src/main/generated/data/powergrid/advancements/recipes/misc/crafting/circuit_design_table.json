@@ -6,7 +6,7 @@
         "items": [
           {
             "items": [
-              "create:empty_schematic"
+              "powergrid:conductive_casing"
             ]
           }
         ]

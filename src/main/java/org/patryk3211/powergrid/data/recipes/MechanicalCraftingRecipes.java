@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.data.recipes;
 
+import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.api.data.recipe.MechanicalCraftingRecipeGen;
 import net.minecraft.data.PackOutput;
@@ -41,7 +42,6 @@ public class MechanicalCraftingRecipes extends MechanicalCraftingRecipeGen {
                     .patternLine(" ICI ")
                     .patternLine("  E  ")
             ),
-
     GENERATOR_INDUCTION_ROTOR = create(ModdedBlocks.GENERATOR_INDUCTION_ROTOR::get)
             .recipe(b -> b
                     .key('A', andesiteAlloy())
