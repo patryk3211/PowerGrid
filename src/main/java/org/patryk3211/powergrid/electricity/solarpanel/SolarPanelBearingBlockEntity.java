@@ -28,7 +28,6 @@ import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
-import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWire;
 import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWireSolar;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
