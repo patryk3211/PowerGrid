@@ -126,6 +126,7 @@ public class HvBreakerBlockEntity extends ElectricKineticBlockEntity {
         } else if(charge.getValue() == 1 && charge.getValue(0) != 1) {
             level.playSound(null, worldPosition, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS,
                     .25f, 1.5f);
+            level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
         }
 
         if(wire != null) {
@@ -143,6 +144,14 @@ public class HvBreakerBlockEntity extends ElectricKineticBlockEntity {
                 electricBehaviour.rebuildCircuit(false);
             }
         }
+    }
+
+    public int getSignal() {
+        if(state)
+            return 15;
+        if(charge.getValue() == 1)
+            return 1;
+        return 0;
     }
 
     @Override

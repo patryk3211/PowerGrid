@@ -107,6 +107,16 @@ public class HvBreakerBlock extends HorizontalKineticBlock implements IElectric,
     }
 
     @Override
+    public boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
+
+    @Override
+    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+        return getBlockEntityOptional(level, pos).map(HvBreakerBlockEntity::getSignal).orElse(0);
+    }
+
+    @Override
     public boolean accepts(ItemStack wireStack) {
         return true;
     }
