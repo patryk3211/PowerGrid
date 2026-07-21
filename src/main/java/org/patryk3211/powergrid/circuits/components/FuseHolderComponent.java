@@ -1,6 +1,7 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.google.common.collect.ImmutableCollection;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -19,6 +20,9 @@ import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.fuse.FuseState;
 import org.patryk3211.powergrid.electricity.sim.special.FuseSwitchWire;
+
+import java.util.Collection;
+import java.util.List;
 
 public class FuseHolderComponent extends OrientableComponent implements IInteractableComponent, IGoggleLabel {
     public static final EnumProperty<FuseState> STATE = new EnumProperty<>(PowerGrid.MOD_ID, "fuse_state", FuseState.class).hidden().cast();
@@ -122,9 +126,9 @@ public class FuseHolderComponent extends OrientableComponent implements IInterac
     @Override
     public @NotNull ResourceLocation getModelId(@NotNull PlacedComponent component) {
         return switch (component.get(STATE)) {
-            case FuseState.OPEN -> PowerGrid.asResource("fuse");
-            case FuseState.BLOWN -> PowerGrid.asResource("fuse_blown");
-            case FuseState.CLOSED -> PowerGrid.asResource("fuse_on");
+            case OPEN -> PowerGrid.asResource("fuse");
+            case BLOWN -> PowerGrid.asResource("fuse_blown");
+            case CLOSED -> PowerGrid.asResource("fuse_on");
         };
     }
 
@@ -132,7 +136,7 @@ public class FuseHolderComponent extends OrientableComponent implements IInterac
     public @NotNull Collection<ResourceLocation> requestedModels() {
         return List.of(
                 PowerGrid.asResource("fuse"),
-                PowerGrid.asResource("fuse_blown");
+                PowerGrid.asResource("fuse_blown"),
                 PowerGrid.asResource("fuse_on")
         );
     }
