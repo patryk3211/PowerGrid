@@ -106,7 +106,7 @@ public class NetherTransformerBlock extends ElectricBlock implements IAcceptConn
             case 2, 3 -> -1;
             default -> throw new IllegalStateException();
         };
-        if(TransformerMediumBlock.updateShapeVerifyPart(0, y, pos, neighborPos, state, level))
+        if(updateShapeVerifyPart(0, y, pos, neighborPos, state, level))
             return state;
         return Blocks.AIR.defaultBlockState();
     }
@@ -120,4 +120,26 @@ public class NetherTransformerBlock extends ElectricBlock implements IAcceptConn
     public BlockEntityType<? extends NetherTransformerBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.NETHER_TRANSFORMER.get();
     }
+
+    public static boolean updateShapeVerifyPart(int offsetX, int offsetY, BlockPos pos, BlockPos neighborPos, BlockState state, LevelAccessor level) {
+        var axis = state.getValue(HORIZONTAL_AXIS);
+        var offsetPos = pos.relative(axis, offsetX).relative(Direction.Axis.Y, offsetY);
+        if (!neighborPos.equals(offsetPos))
+            return true; // Ignore
+        var offsetState = level.getBlockState(offsetPos);
+        if (!offsetState.is(state.getBlock()))
+            return false;
+        int part = state.getValue(PART);
+        int expectPart = part;
+        if (offsetX > 0)
+            expectPart |= 1;
+        else if (offsetX < 0)
+            expectPart &= ~1;
+        if (offsetY > 0)
+            expectPart |= 2;
+        else if (offsetY < 0)
+            expectPart &= ~2;
+        return offsetState.getValue(HORIZONTAL_AXIS) == axis && offsetState.getValue(PART) == expectPart;
+    }
+
 }
