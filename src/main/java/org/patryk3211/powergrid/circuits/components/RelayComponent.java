@@ -37,6 +37,7 @@ public class RelayComponent extends MirrorableComponent {
     public static final CalculatedProperty<Float> THRESHOLD_CURRENT = new CalculatedProperty<>(PowerGrid.MOD_ID, "relay_current",
             c -> 1.2f / c.get(THRESHOLD_VOLTAGE),
             v -> Unit.CURRENT.formatWithPrefixes(v).string());
+    public static final BooleanProperty LATCHING = new BooleanProperty(PowerGrid.MOD_ID, "relay_latching");
 
     public RelayComponent(ComponentFootprint footprint) {
         super(footprint);
@@ -45,7 +46,7 @@ public class RelayComponent extends MirrorableComponent {
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(THRESHOLD_VOLTAGE, STATE, THRESHOLD_CURRENT, current(32));
+        properties.add(THRESHOLD_VOLTAGE, STATE, THRESHOLD_CURRENT, LATCHING, current(32));
     }
 
     @Override
@@ -60,8 +61,9 @@ public class RelayComponent extends MirrorableComponent {
         final var switchResistance = 0.05f;
         var common = builder.terminalNode(3);
         var state = placed.get(STATE);
-        var normallyClosed = new RelaySwitchWire(switchResistance, common, builder.terminalNode(2), !state, coilWire, onCurrent, offCurrent, true);
-        var normallyOpen = new RelaySwitchWire(switchResistance, common, builder.terminalNode(4), state, coilWire, onCurrent, offCurrent, false);
+        var polarized = placed.get(LATCHING);
+        var normallyClosed = new RelaySwitchWire(switchResistance, common, builder.terminalNode(2), !state, coilWire, onCurrent, offCurrent, true, polarized);
+        var normallyOpen = new RelaySwitchWire(switchResistance, common, builder.terminalNode(4), state, coilWire, onCurrent, offCurrent, false, polarized);
 
         builder.add(normallyClosed);
         builder.add(normallyOpen);

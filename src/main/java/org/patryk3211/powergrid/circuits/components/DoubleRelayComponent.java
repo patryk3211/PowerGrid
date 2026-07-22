@@ -36,7 +36,7 @@ public class DoubleRelayComponent extends MirrorableComponent {
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(THRESHOLD_VOLTAGE, STATE, THRESHOLD_CURRENT, current(16));
+        properties.add(THRESHOLD_VOLTAGE, STATE, THRESHOLD_CURRENT, LATCHING, current(16));
     }
 
     @Override
@@ -49,14 +49,15 @@ public class DoubleRelayComponent extends MirrorableComponent {
 
         final var switchResistance = 0.05f;
         var state = placed.get(STATE);
+        var polarized = placed.get(LATCHING);
 
         var common1 = builder.terminalNode(3);
-        var nc1 = new RelaySwitchWire(switchResistance, common1, builder.terminalNode(2), !state, coilWire, onCurrent, offCurrent, true);
-        var no1 = new RelaySwitchWire(switchResistance, common1, builder.terminalNode(4), state, coilWire, onCurrent, offCurrent, false);
+        var nc1 = new RelaySwitchWire(switchResistance, common1, builder.terminalNode(2), !state, coilWire, onCurrent, offCurrent, true, polarized);
+        var no1 = new RelaySwitchWire(switchResistance, common1, builder.terminalNode(4), state, coilWire, onCurrent, offCurrent, false, polarized);
 
         var common2 = builder.terminalNode(6);
-        var nc2 = new RelaySwitchWire(switchResistance, common2, builder.terminalNode(5), !state, coilWire, onCurrent, offCurrent, true);
-        var no2 = new RelaySwitchWire(switchResistance, common2, builder.terminalNode(7), state, coilWire, onCurrent, offCurrent, false);
+        var nc2 = new RelaySwitchWire(switchResistance, common2, builder.terminalNode(5), !state, coilWire, onCurrent, offCurrent, true, polarized);
+        var no2 = new RelaySwitchWire(switchResistance, common2, builder.terminalNode(7), state, coilWire, onCurrent, offCurrent, false, polarized);
 
         builder.add(nc1);
         builder.add(no1);
