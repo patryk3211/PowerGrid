@@ -60,6 +60,9 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
     private boolean paused = true;
     private boolean reducedSync = false;
 
+    private int syncCount = 0;
+    private int lastSyncCount = 0;
+
     @Nullable
     private SyncAppender syncAppender;
 
@@ -338,6 +341,11 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
             for(var node : internalNodes) {
                 node.setStateValue(list.getFloat(index++) * 0.5f + node.getStateValue() * 0.5f);
             }
+            if(syncCount == lastSyncCount) {
+                // Server not sending data to client
+                GlobalElectricNetworks.nodeHolderAdded(this);
+            }
+            lastSyncCount = syncCount;
         }
     }
 
@@ -471,6 +479,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
         }
         if(syncAppender != null)
             syncAppender.readFromSync(buffer);
+        ++syncCount;
     }
 
     @Override
