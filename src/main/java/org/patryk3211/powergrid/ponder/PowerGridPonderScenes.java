@@ -75,8 +75,9 @@ public class PowerGridPonderScenes {
                 .addStoryBoard("ground2", WireScenes::improvedGround, PowerGridPonderTags.ELECTRIC_RELAYS);
 
         HELPER.forComponents(ModdedBlocks.TRANSFORMER_CORE)
-                .addStoryBoard("transformer/sizes", DeviceScenes::transformerSizes, PowerGridPonderTags.ELECTRIC_RELAYS)
-                .addStoryBoard("transformer/winding", DeviceScenes::transformerWinding, PowerGridPonderTags.ELECTRIC_RELAYS);
+                .addStoryBoard("transformer/sizes", RelayScenes::transformerSizes, PowerGridPonderTags.ELECTRIC_RELAYS)
+                .addStoryBoard("transformer/winding", RelayScenes::transformerWinding, PowerGridPonderTags.ELECTRIC_RELAYS)
+                .addStoryBoard("transformer/nether", RelayScenes::transformerNether, PowerGridPonderTags.ELECTRIC_RELAYS);
         HELPER.addStoryBoard(ModdedBlocks.VARIAC, "variac", RelayScenes::variac, PowerGridPonderTags.ELECTRIC_RELAYS);
 
         HELPER.addStoryBoard(ModdedBlocks.RHEOSTAT, "rheostat", RelayScenes::rheostat, PowerGridPonderTags.ELECTRIC_RELAYS);

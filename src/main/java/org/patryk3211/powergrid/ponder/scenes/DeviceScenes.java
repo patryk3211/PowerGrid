@@ -50,8 +50,6 @@ import org.patryk3211.powergrid.electricity.electromagnet.MagnetizingBehaviour;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlock;
-import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
-import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.kinetics.plotter.PlotterBlockEntity;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlockEntity;
 import org.patryk3211.powergrid.ponder.base.PowerGridSceneBuilder;
@@ -170,121 +168,6 @@ public class DeviceScenes {
         scene.overlay().showControls(item2Vec, Pointing.DOWN, 20).withItem(cooked);
 
         scene.idle(20);
-        scene.markAsFinished();
-    }
-
-    public static void transformerSizes(SceneBuilder scene, SceneBuildingUtil util) {
-        scene.title("transformer_sizes", "Transformers");
-        scene.setNextUpEnabled(true);
-        scene.configureBasePlate(0, 0, 5);
-
-        scene.showBasePlate();
-        scene.idle(5);
-
-        var smallTr = util.grid().at(2, 1, 1);
-        scene.world().showSection(util.select().position(smallTr), Direction.DOWN);
-        scene.idle(20);
-
-        scene.overlay().showControls(util.vector().blockSurface(smallTr, Direction.NORTH), Pointing.RIGHT, 30)
-                .withItem(AllItems.WRENCH.asStack());
-        scene.idle(20);
-        scene.world().setBlock(smallTr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState().setValue(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X), false);
-        scene.idle(20);
-
-        var mediumTr = util.grid().at(2, 1, 3);
-        scene.world().showSection(util.select().fromTo(mediumTr, mediumTr.west().above()), Direction.DOWN);
-        scene.idle(20);
-
-        scene.overlay().showControls(util.vector().blockSurface(mediumTr.above(), Direction.NORTH), Pointing.RIGHT, 30)
-                .withItem(AllItems.WRENCH.asStack());
-        scene.idle(20);
-        scene.world().setBlock(mediumTr, ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
-                .setValue(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .setValue(TransformerMediumBlock.PART, 1), false);
-        scene.world().setBlock(mediumTr.west(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
-                .setValue(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .setValue(TransformerMediumBlock.PART, 0), false);
-        scene.world().setBlock(mediumTr.above(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
-                .setValue(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .setValue(TransformerMediumBlock.PART, 3), false);
-        scene.world().setBlock(mediumTr.above().west(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
-                .setValue(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .setValue(TransformerMediumBlock.PART, 2), false);
-        scene.idle(20);
-
-        scene.overlay().showText(80)
-                .text("Transformers come in different sizes, each of them offering different power capabilities and winding capacities")
-                .attachKeyFrame()
-                .placeNearTarget();
-        scene.idle(90);
-
-        scene.markAsFinished();
-    }
-
-    public static void transformerWinding(SceneBuilder scene, SceneBuildingUtil util) {
-        scene.title("transformer_winding", "Winding a transformer");
-        scene.configureBasePlate(0, 0, 5);
-
-        scene.showBasePlate();
-        scene.idle(10);
-
-        var tr = util.grid().at(2, 1, 2);
-        scene.world().showSection(util.select().position(tr), Direction.DOWN);
-        scene.idle(15);
-
-        scene.overlay().showText(80)
-                .text("To wind a transformer, first select the starting terminal for your winding")
-                .attachKeyFrame()
-                .placeNearTarget();
-        scene.idle(90);
-
-        var stack = new ItemStack(ModdedItems.WIRE, 1);
-        scene.overlay().showControls(util.vector().of(2.8, 1.9, 2.0), Pointing.RIGHT, 30).withItem(stack);
-        scene.idle(30);
-
-        var side = util.vector().blockSurface(tr, Direction.NORTH);
-        scene.overlay().showText(80)
-                .text("Next, click on the transformer body and pick the number of turn you want to add")
-                .attachKeyFrame()
-                .pointAt(side)
-                .placeNearTarget();
-        scene.idle(50);
-        scene.overlay().showControls(side, Pointing.UP, 30).withItem(stack);
-        scene.idle(40);
-
-        scene.overlay().showText(80)
-                .text("Lastly, select the end terminal for your winding")
-                .attachKeyFrame()
-                .placeNearTarget();
-        scene.idle(90);
-
-        scene.overlay().showControls(util.vector().of(2.2, 1.9, 2.0), Pointing.LEFT, 30).withItem(stack);
-        scene.idle(20);
-        scene.world().setBlock(tr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState()
-                .setValue(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .setValue(TransformerSmallBlock.COILS, 1), false);
-        scene.idle(10);
-
-        scene.effects().indicateSuccess(tr);
-        scene.idle(10);
-
-        scene.overlay().showText(60)
-                .text("Repeat for the secondary winding")
-                .placeNearTarget();
-        scene.idle(50);
-
-        scene.world().setBlock(tr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState()
-                .setValue(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .setValue(TransformerSmallBlock.COILS, 2), false);
-        scene.effects().indicateSuccess(tr);
-        scene.idle(30);
-
-        scene.overlay().showText(80)
-                .text("Your transformer will now transform voltage with the ratio you wound")
-                .attachKeyFrame()
-                .placeNearTarget();
-        scene.idle(90);
-
         scene.markAsFinished();
     }
 
