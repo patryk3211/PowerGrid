@@ -29,7 +29,8 @@ public class PowerGridPonderTags {
             GENERATOR_ASSEMBLY = id("generator_assembly"),
             ELECTRIC_RELAYS = id("electric_relays"),
             ELECTRIC_DEVICES = id("electric_devices"),
-            CIRCUIT_COMPONENTS = id("circuit_components");
+            CIRCUIT_COMPONENTS = id("circuit_components"),
+            CEILING_TILE_ATTACHMENTS = id("ceiling_tile_attachments");
 
     private static ResourceLocation id(String name) {
         return PowerGrid.asResource(name);
@@ -61,6 +62,13 @@ public class PowerGridPonderTags {
                 .title("Circuit Components")
                 .description("Components which can be placed on a circuit")
                 .item(ModdedBlocks.CIRCUIT_BOARD, true, true)
+                .addToIndex()
+                .register();
+
+        helper.registerTag(CEILING_TILE_ATTACHMENTS)
+                .title("Ceiling tile attachments")
+                .description("Blocks which can be placed on the ceiling tile")
+                .item(ModdedBlocks.CEILING_TILE, true, true)
                 .addToIndex()
                 .register();
 
@@ -107,7 +115,9 @@ public class PowerGridPonderTags {
                 .add(ModdedItems.GROWTH_LAMP)
                 .add(ModdedBlocks.PLOTTER)
                 .add(ModdedBlocks.CRT)
-                .add(ModdedBlocks.PUNCH_CARD_READER);
+                .add(ModdedBlocks.PUNCH_CARD_READER)
+                .add(ModdedBlocks.SOLAR_PANEL)
+                .add(ModdedBlocks.SOLAR_PANEL_BEARING);
 
         HELPER.addToTag(CIRCUIT_COMPONENTS)
                 .add(ModdedBlocks.WIRE_CONNECTOR)
@@ -150,5 +160,12 @@ public class PowerGridPonderTags {
                 .add(ModdedBlocks.POWER_METER)
                 .add(ModdedBlocks.GENERATOR_CLUTCH)
                 .add(ModdedBlocks.BATTERY);
+
+        HELPER.addToTag(CEILING_TILE_ATTACHMENTS)
+                .add(ModdedBlocks.CEILING_TILE)
+                .add(ModdedBlocks.FACTORY_LIGHT)
+                .add(ModdedBlocks.WIRE_CONNECTOR)
+                .add(ModdedBlocks.CORD_JUNCTION)
+                .add(ModdedBlocks.SOLAR_PANEL);
     }
 }

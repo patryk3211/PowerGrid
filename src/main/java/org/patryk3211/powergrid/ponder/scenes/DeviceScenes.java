@@ -66,6 +66,7 @@ public class DeviceScenes {
     public static void heatingCoilBasic(SceneBuilder builder, SceneBuildingUtil util) {
         var scene = new PowerGridSceneBuilder(builder);
         scene.title("heating_coil_basic", "Warming up the atmosphere");
+        scene.setNextUpEnabled(true);
         scene.configureBasePlate(0, 0, 5);
 
         scene.showBasePlate();
@@ -174,6 +175,7 @@ public class DeviceScenes {
 
     public static void transformerSizes(SceneBuilder scene, SceneBuildingUtil util) {
         scene.title("transformer_sizes", "Transformers");
+        scene.setNextUpEnabled(true);
         scene.configureBasePlate(0, 0, 5);
 
         scene.showBasePlate();
@@ -816,6 +818,60 @@ public class DeviceScenes {
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(40);
+        scene.markAsFinished();
+    }
+
+    public static void ceilingTile(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("ceiling_tile", "A stylish ceiling");
+        scene.configureBasePlate(0, 0, 5);
+        scene.showBasePlate();
+
+        scene.idle(10);
+        scene.world().showSection(util.select().position(2, 2, 2), Direction.DOWN);
+        scene.idle(20);
+
+        scene.overlay().showText(60)
+                .text("The Ceiling Tile is a decorative block.")
+                .pointAt(util.vector().of(2.5, 2.25, 2.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(70);
+
+        scene.overlay().showText(60)
+                .text("You can add certain blocks to it to expand its functionality")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(70);
+
+        scene.overlay().showControls(util.vector().of(2.5, 2.5, 2.5), Pointing.DOWN, 30)
+                .withItem(ModdedBlocks.FACTORY_LIGHT.asStack())
+                .rightClick();
+        scene.idle(20);
+
+        scene.world().setBlock(util.grid().at(2, 2, 2), ModdedBlocks.CEILING_TILE_LAMP.getDefaultState(), false);
+        scene.idle(20);
+        scene.effects().indicateSuccess(util.grid().at(2, 2, 2));
+        scene.idle(30);
+
+        scene.world().hideSection(util.select().position(2, 2, 2), Direction.UP);
+        scene.idle(20);
+
+        scene.overlay().showText(80)
+                .text("The Ceiling Tile supports a variety of attachments")
+                .placeNearTarget()
+                .attachKeyFrame();
+
+        scene.idle(20);
+        scene.world().showSection(util.select().position(1, 2, 1), Direction.DOWN);
+        scene.idle(10);
+        scene.world().showSection(util.select().position(3, 2, 1), Direction.DOWN);
+        scene.idle(10);
+        scene.world().showSection(util.select().position(1, 2, 3), Direction.DOWN);
+        scene.idle(10);
+        scene.world().showSection(util.select().position(3, 2, 3), Direction.DOWN);
+        scene.idle(30);
+
         scene.markAsFinished();
     }
 
