@@ -20,6 +20,7 @@ import com.simibubi.create.content.equipment.goggles.GogglesItem;
 import net.createmod.catnip.outliner.Outliner;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.BlockHitResult;
@@ -27,12 +28,14 @@ import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.IElectric;
+import org.patryk3211.powergrid.electricity.base.IHelperTerminal;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.wire.IWire;
 import org.patryk3211.powergrid.electricity.wire.powercord.CordItem;
 
 public class TerminalHandler {
     private static final Object outlineSlot = new Object();
+    private static final Object helperOutlineSlot = new Object();
     private static IDecoratedTerminal targetTerminal = null;
 
     public static void tick(ClientLevel world) {
@@ -50,12 +53,15 @@ public class TerminalHandler {
             return;
 
         if(target instanceof BlockHitResult blockHit) {
+            int index = -1;
             ITerminalPlacement terminal = null;
             var blockPos = blockHit.getBlockPos();
             var state = world.getBlockState(blockPos);
             var electric = IElectric.getAt(world, blockPos);
             if(electric != null) {
-                terminal = electric.terminalAt(state, blockHit.getLocation().subtract(blockPos.getX(), blockPos.getY(), blockPos.getZ()));
+                index = electric.terminalIndexAt(state, blockHit.getLocation().subtract(blockPos.getX(), blockPos.getY(), blockPos.getZ()));
+                if(index != -1)
+                    terminal = electric.terminal(state, index);
             }
             if(terminal == null &&
                     ((mainItem != null && IWire.isCord(world, mainItem.getItem())) ||
@@ -75,6 +81,25 @@ public class TerminalHandler {
                     .colored(decorated.getColor())
                     .withFaceTexture(AllSpecialTextures.CUTOUT_CHECKERED)
                     .lineWidth(0.020f);
+            if(index == -1)
+                return;
+
+            ITerminalPlacement second = null;
+            BlockPos pos2 = null;
+            if(state.getBlock() instanceof IHelperTerminal helper) {
+                second = helper.connectedTerminal(state, index);
+                pos2 = helper.connectedTerminalPosition(blockPos, state, index);
+            } else if(world.getBlockEntity(blockPos) instanceof IHelperTerminal helper) {
+                second = helper.connectedTerminal(state, index);
+                pos2 = helper.connectedTerminalPosition(blockPos, state, index);
+            }
+
+            if(!(second instanceof IDecoratedTerminal decorated2))
+                return;
+            Outliner.getInstance().chaseAABB(helperOutlineSlot, decorated2.getOutline().move(pos2))
+                    .colored(decorated2.getColor())
+                    .withFaceTexture(AllSpecialTextures.CUTOUT_CHECKERED)
+                    .lineWidth(0.010f);
         }
     }
 
