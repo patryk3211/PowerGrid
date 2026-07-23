@@ -291,6 +291,25 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
     }
 
     @Override
+    public void writeSafe(CompoundTag tag) {
+        super.writeSafe(tag);
+        if(lastKnownPos != null) {
+            if (controller != null) {
+                tag.put("Controller", NbtUtils.writeBlockPos(controller));
+            } else {
+                if (!connectedPanels.isEmpty()) {
+                    var list = new ListTag();
+                    for (var pos : connectedPanels) {
+                        list.add(NbtUtils.writeBlockPos(pos));
+                    }
+                    tag.put("Connected", list);
+                }
+            }
+            tag.put("LastKnownPos", NbtUtils.writeBlockPos(lastKnownPos));
+        }
+    }
+
+    @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
         Vec3i offset = null;
@@ -299,6 +318,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
             if(!worldPosition.equals(lastKnownPos)) {
                 offset = worldPosition.subtract(lastKnownPos);
             }
+            lastKnownPos = worldPosition;
         } else {
             lastKnownPos = null;
         }
