@@ -45,6 +45,7 @@ import org.patryk3211.powergrid.equipment.multimeter.MultimeterItem;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItemRenderer;
 import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryItem;
 import org.patryk3211.powergrid.equipment.saw.SawItem;
+import org.patryk3211.powergrid.equipment.saw.SawItemRenderer;
 import org.patryk3211.powergrid.equipment.zapper.ElectroZapperItem;
 import org.patryk3211.powergrid.equipment.zapper.ElectroZapperItemRenderer;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingItem;
@@ -223,6 +224,7 @@ public class ModdedItems {
             .register();
 
     public static final ItemEntry<SawItem> PORTABLE_SAW = REGISTRATE.item("portable_saw", SawItem::new)
+            .transform(customRenderer(() -> SawItemRenderer::new))
             .model(itemWithParent("item/saw/item"))
             .register();
 
