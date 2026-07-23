@@ -1,6 +1,5 @@
 package org.patryk3211.powergrid.electricity.sim.special;
 
-import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
@@ -38,7 +37,6 @@ public class RelaySwitchWire extends SwitchedWire implements IOuterHook {
         if(coilWire.isConverged()) {
             if (polarized) {
                 var I = coilWire.current();
-                PowerGrid.LOGGER.info("{}A", I);
                 if ((getState() == normallyClosed) && I > onCurrent) { // Forward
                     setState(!normallyClosed);
                     switched = true;
