@@ -74,5 +74,8 @@
   "powergrid.component.property.barretter_resistance": "Minimum Resistance",
 
   "powergrid.component.property.varistor_voltage": "Threshold Voltage",
-  "powergrid.component.property.varistor_voltage.summary": "Voltage around which the varistor starts to conduct major current"
+  "powergrid.component.property.varistor_voltage.summary": "Voltage around which the varistor starts to conduct major current",
+
+  "powergrid.component.property.current_fuse_max": "Max Current",
+  "powergrid.component.property.current_fuse_max.summary": "Current at which the fuse blows"
 }
