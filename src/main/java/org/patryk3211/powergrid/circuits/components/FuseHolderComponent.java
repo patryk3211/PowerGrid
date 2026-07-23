@@ -1,6 +1,7 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.google.common.collect.ImmutableCollection;
+import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -19,6 +20,7 @@ import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.fuse.FuseState;
+import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 import org.patryk3211.powergrid.electricity.sim.special.FuseSwitchWire;
 
 import java.util.Collection;
@@ -26,6 +28,7 @@ import java.util.List;
 
 public class FuseHolderComponent extends OrientableComponent implements IInteractableComponent, IGoggleLabel {
     public static final EnumProperty<FuseState> STATE = new EnumProperty<>(PowerGrid.MOD_ID, "fuse_state", FuseState.class).hidden().cast();
+    public static final EnumProperty<FuseState> PREV_STATE = new EnumProperty<>(PowerGrid.MOD_ID, "fuse_state_prev", FuseState.class).hidden().cast();
     public static final FloatProperty MAX_CURRENT = new FloatProperty(PowerGrid.MOD_ID, "current_fuse_max", 10, 1, 20);
 
     public FuseHolderComponent(ComponentFootprint footprint) {
@@ -35,7 +38,7 @@ public class FuseHolderComponent extends OrientableComponent implements IInterac
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(STATE, MAX_CURRENT);
+        properties.add(STATE, PREV_STATE, MAX_CURRENT);
     }
 
     @Override
@@ -52,18 +55,14 @@ public class FuseHolderComponent extends OrientableComponent implements IInterac
 
     @Override
     public boolean tick(@NotNull PlacedComponent placed) {
-        if(placed.wires.isEmpty())
+        if(placed.wires.isEmpty() || placed.isClient())
             return true;
 
         var fuseWire = (FuseSwitchWire) placed.wires.get(0);
         if (fuseWire.wasBlown()) {
             placed.set(STATE, FuseState.BLOWN);
-            placed.onServerWorld(() -> world -> {
-                var pos = placed.getPos();
-                ModdedSoundEvents.FUSE_POPS.playOnServer(world, pos, 1.0f, 1.0f);
-                placed.notifyClients(STATE);
-                stateUpdated(placed);
-            });
+            placed.notifyClients(STATE);
+            stateUpdated(placed);
         }
 
         return true;
@@ -75,7 +74,16 @@ public class FuseHolderComponent extends OrientableComponent implements IInterac
         if (placed.wires.isEmpty())
             return;
         ((FuseSwitchWire) placed.wires.get(0)).setState(placed.get(STATE) == FuseState.CLOSED);
-        placed.onClientWorld(() -> world -> modelChanged(placed.getPos()));
+        placed.onClientWorld(() -> world -> {
+            modelChanged(placed.getPos());
+            if (placed.get(STATE) == FuseState.BLOWN && placed.get(PREV_STATE) == FuseState.CLOSED) {
+                var pos = placed.getPos();
+                ModdedSoundEvents.FUSE_POPS.playAt(world, pos, 1.0f, 1.0f, false);
+                var localPos = placed.getExactPos();
+                SparkParticleData.explodeParticles(world, localPos.x, localPos.y, localPos.z, Direction.UP, 5);
+            }
+        });
+        placed.set(PREV_STATE, placed.get(STATE));
     }
 
     public boolean resetFuse(PlacedComponent placed) {
