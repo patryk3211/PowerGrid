@@ -36,7 +36,7 @@ public class DoubleRelayComponent extends MirrorableComponent {
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(THRESHOLD_VOLTAGE, STATE, THRESHOLD_CURRENT, LATCHING, current(16));
+        properties.add(THRESHOLD_VOLTAGE, STATE, THRESHOLD_CURRENT, POLARIZED, current(16));
     }
 
     @Override
@@ -49,7 +49,7 @@ public class DoubleRelayComponent extends MirrorableComponent {
 
         final var switchResistance = 0.05f;
         var state = placed.get(STATE);
-        var polarized = placed.get(LATCHING);
+        var polarized = placed.get(POLARIZED);
 
         var common1 = builder.terminalNode(3);
         var nc1 = new RelaySwitchWire(switchResistance, common1, builder.terminalNode(2), !state, coilWire, onCurrent, offCurrent, true, polarized);
