@@ -546,6 +546,7 @@ public class ModdedBlocks {
     public static final BlockEntry<LightFixtureBlock> LIGHT_FIXTURE = REGISTRATE.block("light_fixture", LightFixtureBlock::new)
             .blockstate(lightFixture("block/fixtures/light_fixture"))
             .initialProperties(SharedProperties::softMetal)
+            .addLayer(() -> RenderType::cutoutMipped)
             .transform(pickaxeOnly())
             .transform(LightFixtureBlock.setBulbModelOffset(0, 3 / 16f, 0))
             .defaultLoot()
