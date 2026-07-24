@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.collections;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllTags;
 import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.api.boiler.BoilerHeater;
 import com.simibubi.create.api.connectivity.ConnectivityHandler;
@@ -237,6 +238,7 @@ public class ModdedBlocks {
             .transform(pickaxeOnly())
             .transform(CResistance.setResistance(25))
             .transform(CThermal.maxPower(60, 1.0f))
+            .tag(AllTags.AllBlockTags.FAN_TRANSPARENT.tag)
             .defaultLoot()
             .simpleItem()
             .register();
@@ -301,13 +303,13 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<EnergyMeterBlock> ENERGY_METER = REGISTRATE.block("energy_meter", EnergyMeterBlock::new)
-            .blockstate(horizontalBlock("block/gauge/energy_meter"))
+            .blockstate(horizontalBlock("block/energy_meter/block"))
             .initialProperties(SharedProperties::softMetal)
             .transform(CResistance.setResistances("series", 0.05f, "shunt", 2e6))
             .transform(CThermal.maxPower(100, 2.0f))
             .transform(pickaxeOnly())
             .item()
-                .model(itemWithParent("block/gauge/energy_meter"))
+                .model(itemWithParent("block/energy_meter/item"))
                 .build()
             .register();
 
