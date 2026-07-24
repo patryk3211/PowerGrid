@@ -45,6 +45,7 @@ import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.battery.MultiBlockBatteryEntity;
 import org.patryk3211.powergrid.electricity.crt.CRTBlock;
+import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
 import org.patryk3211.powergrid.electricity.electromagnet.MagnetizingBehaviour;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
@@ -75,13 +76,15 @@ public class DeviceScenes {
 
         var heatingCoil = util.grid().at(3, 1, 2);
         var voltageSource = util.grid().at(6, 2, 2);
+        var deviceConnector = util.grid().at(3, 2, 2);
         scene.world().showSection(util.select().position(4, 2, 1), Direction.DOWN);
         scene.world().showSection(util.select().position(4, 2, 3), Direction.DOWN);
         scene.world().showSection(util.select().position(heatingCoil), Direction.DOWN);
+        scene.world().showSection(util.select().position(deviceConnector), Direction.DOWN);
         scene.idle(10);
 
-        scene.electric().connect(util.grid().at(4, 2, 1), 0, heatingCoil, 0);
-        scene.electric().connect(util.grid().at(4, 2, 3), 0, heatingCoil, 1);
+        scene.electric().connect(util.grid().at(4, 2, 1), 0, deviceConnector, 0);
+        scene.electric().connect(util.grid().at(4, 2, 3), 0, deviceConnector, 1);
         scene.electric().connectInvisible(util.grid().at(4, 2, 1), 0, voltageSource, 0);
         scene.electric().connectInvisible(util.grid().at(4, 2, 3), 0, voltageSource, 1);
         scene.idle(5);
@@ -92,7 +95,7 @@ public class DeviceScenes {
                 .pointAt(util.vector().topOf(heatingCoil))
                 .placeNearTarget();
 
-        scene.electric().setSource(voltageSource, 32);
+        scene.electric().setSource(voltageSource, 45);
         scene.electric().tickFor(10);
         scene.idle(100);
 
@@ -122,16 +125,18 @@ public class DeviceScenes {
 
         var heatingCoil = util.grid().at(1, 1, 3);
         var voltageSource = util.grid().at(2, 1, 6);
+        var deviceConnector = util.grid().at(1, 2, 3);
         scene.world().showSection(util.select().position(0, 2, 4), Direction.DOWN);
         scene.world().showSection(util.select().position(2, 2, 4), Direction.DOWN);
         scene.world().showSection(util.select().position(heatingCoil), Direction.DOWN);
+        scene.world().showSection(util.select().position(deviceConnector), Direction.DOWN);
         scene.idle(10);
 
-        scene.electric().connect(util.grid().at(0, 2, 4), 0, heatingCoil, 1);
-        scene.electric().connect(util.grid().at(2, 2, 4), 0, heatingCoil, 0);
+        scene.electric().connect(util.grid().at(0, 2, 4), 0, deviceConnector, 0);
+        scene.electric().connect(util.grid().at(2, 2, 4), 0, deviceConnector, 1);
         scene.electric().connectInvisible(util.grid().at(0, 2, 4), 0, voltageSource, 0);
         scene.electric().connectInvisible(util.grid().at(2, 2, 4), 0, voltageSource, 1);
-        scene.electric().setSource(voltageSource, 32);
+        scene.electric().setSource(voltageSource, 45);
         scene.electric().tickFor(10);
         scene.idle(10);
 
