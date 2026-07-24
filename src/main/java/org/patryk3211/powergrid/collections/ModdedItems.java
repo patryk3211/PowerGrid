@@ -28,6 +28,7 @@ import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.IncompleteCircuitItem;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicItem;
+import org.patryk3211.powergrid.electricity.battery.BatteryItem;
 import org.patryk3211.powergrid.electricity.light.bulb.GrowthLamp;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
 import org.patryk3211.powergrid.electricity.light.bulb.LvLightBulb;
@@ -226,6 +227,11 @@ public class ModdedItems {
     public static final ItemEntry<SawItem> PORTABLE_SAW = REGISTRATE.item("portable_saw", SawItem::new)
             .transform(customRenderer(() -> SawItemRenderer::new))
             .model(itemWithParent("item/saw/item"))
+            .register();
+
+    public static final ItemEntry<BatteryItem> BATTERY = REGISTRATE.item("battery",
+                    p -> new BatteryItem(ModdedBlocks.BATTERY.get(), p))
+            .model(barrier())
             .register();
 
     public static final ItemEntry<BacktankItem.BacktankBlockItem> PORTABLE_BATTERY_PLACEABLE = REGISTRATE.item("portable_battery_placeable",

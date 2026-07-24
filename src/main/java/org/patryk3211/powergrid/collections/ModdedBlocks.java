@@ -146,7 +146,6 @@ public class ModdedBlocks {
             .transform(CThermal.maxPower(100, 1.5f))
             .transform(DisplaySource.displaySource(ModdedDisplaySources.BATTERY))
             .onRegister(CreateRegistrate.connectedTextures(BatteryCTBehaviour::new))
-            .simpleItem()
             .register();
 
     public static final BlockEntry<PotatoBatteryBlock> POTATO_BATTERY = REGISTRATE.block("potato_battery", PotatoBatteryBlock::new)
