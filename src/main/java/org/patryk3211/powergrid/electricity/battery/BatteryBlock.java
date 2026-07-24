@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.battery;
 
+import com.simibubi.create.content.fluids.tank.FluidTankBlock;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.minecraft.ChatFormatting;
@@ -179,5 +180,9 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
                 .add(Unit.ENERGY.get())
                 .style(ChatFormatting.GREEN)
                 .addTo(tooltip);
+    }
+
+    public static boolean isBattery(BlockState state) {
+        return state.getBlock() instanceof BatteryBlock;
     }
 }
