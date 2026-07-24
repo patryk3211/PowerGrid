@@ -19,13 +19,13 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 public class EnergyMeterBlock extends HorizontalElectricBlock implements IBE<EnergyMeterBlockEntity> {
     private static final TerminalBoundingBox[] TERMINALS_NORTH = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(IDecoratedTerminal.INPUT, 2, 12, 0, 5, 14, 2),
-            new TerminalBoundingBox(IDecoratedTerminal.OUTPUT, 11, 12, 0, 14, 14, 2),
-            new TerminalBoundingBox(IDecoratedTerminal.COMMON, 6, 12, 0, 9, 14, 2)
+            new TerminalBoundingBox(IDecoratedTerminal.INPUT, 2, 16, 0, 5, 18, 2),
+            new TerminalBoundingBox(IDecoratedTerminal.OUTPUT, 11, 16, 0, 14, 18, 2),
+            new TerminalBoundingBox(IDecoratedTerminal.COMMON, 6.5, 16, 0, 9.5, 18, 2)
                     .withColor(IDecoratedTerminal.BLUE)
     };
 
-    private static final VoxelShape SHAPE = box(0, 0, 0, 16, 12, 6);
+    private static final VoxelShape SHAPE = box(1, 0, 0, 14, 16, 6);
 
     public EnergyMeterBlock(Properties settings) {
         super(settings);

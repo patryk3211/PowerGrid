@@ -1,3 +1,3 @@
 {
-  "parent": "powergrid:block/gauge/energy_meter"
+  "parent": "powergrid:block/energy_meter/item"
 }

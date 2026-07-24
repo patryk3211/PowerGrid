@@ -305,6 +305,7 @@ public class ModdedBlocks {
     public static final BlockEntry<EnergyMeterBlock> ENERGY_METER = REGISTRATE.block("energy_meter", EnergyMeterBlock::new)
             .blockstate(horizontalBlock("block/energy_meter/block"))
             .initialProperties(SharedProperties::softMetal)
+            .addLayer(() -> RenderType::cutoutMipped)
             .transform(CResistance.setResistances("series", 0.05f, "shunt", 2e6))
             .transform(CThermal.maxPower(100, 2.0f))
             .transform(pickaxeOnly())

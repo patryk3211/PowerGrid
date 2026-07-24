@@ -64,6 +64,8 @@ public class ModdedPartialModels {
     public static final PartialModel THERMOMETER_NEEDLE = block("thermometer/needle");
     public static final PartialModel THERMOMETER_NEEDLE_RED = block("thermometer/needle_red");
 
+    public static final PartialModel ENERGY_METER_NEEDLE = block("energy_meter/dial");
+
     public static final PartialModel MULTIMETER_NEEDLE = model("item/multimeter/indicator");
     public static final PartialModel COMPONENT_GAUGE_NEEDLE = model("component/gauge_needle");
 

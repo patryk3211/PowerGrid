@@ -136,6 +136,7 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<EnergyMeterBlockEntity> ENERGY_METER =
             REGISTRATE.blockEntity("energy_meter", EnergyMeterBlockEntity::new)
                     .validBlock(ModdedBlocks.ENERGY_METER)
+                    .renderer(() -> EnergyMeterRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<PlotterBlockEntity> PLOTTER =

@@ -55,6 +55,9 @@ public class EnergyMeterScreen extends AbstractSimiContainerScreen<EnergyMeterMe
         ms.pushPose();
         float rotation = getDialValue(menu.contentHolder.energy, 0.1);
         float prevRotation = getDialValue(menu.contentHolder.lastEnergy, 0.1);
+        if(prevRotation > rotation) {
+            rotation += 1;
+        }
         float angle = AngleHelper.angleLerp(partialTick, prevRotation * Math.PI * 2, rotation * Math.PI * 2);
         ms.translate(leftPos + 168, topPos + 41, 0);
         ms.rotateAround(new Quaternionf().rotateZ(angle), 1.5f, 3.5f, 0);

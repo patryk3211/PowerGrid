@@ -1,18 +1,18 @@
 {
   "variants": {
     "facing=east": {
-      "model": "powergrid:block/gauge/energy_meter",
+      "model": "powergrid:block/energy_meter/block",
       "y": 90
     },
     "facing=north": {
-      "model": "powergrid:block/gauge/energy_meter"
+      "model": "powergrid:block/energy_meter/block"
     },
     "facing=south": {
-      "model": "powergrid:block/gauge/energy_meter",
+      "model": "powergrid:block/energy_meter/block",
       "y": 180
     },
     "facing=west": {
-      "model": "powergrid:block/gauge/energy_meter",
+      "model": "powergrid:block/energy_meter/block",
       "y": 270
     }
   }
