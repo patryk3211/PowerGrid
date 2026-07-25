@@ -24,6 +24,8 @@ import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import com.tterrag.registrate.util.nullness.NonnullType;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
@@ -59,6 +61,12 @@ public class ComponentBuilder<T extends Component, P> extends AbstractBuilder<Co
     public ComponentBuilder<T, P> item(ItemLike item) {
         addMiscData(AbstractPowerGridRegistrate.COMPONENT_ITEMS, provider ->
                 provider.add(getName(), item));
+        return this;
+    }
+
+    public ComponentBuilder<T, P> item(ItemLike item, TagKey<Item> tag) {
+        addMiscData(AbstractPowerGridRegistrate.COMPONENT_ITEMS, provider ->
+                provider.add(getName(), item, tag));
         return this;
     }
 

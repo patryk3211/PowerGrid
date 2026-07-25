@@ -20,6 +20,7 @@ import com.tterrag.registrate.util.entry.RegistryEntry;
 import net.minecraft.world.item.Items;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.collections.ModdedTags;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
@@ -27,7 +28,7 @@ import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 public class Components {
     public static final RegistryEntry<ViaComponent> VIA = REGISTRATE.component("via", ViaComponent::new)
             .footprint(1, 1, b -> b.addPad(0, 0))
-            .item(AllItems.COPPER_NUGGET)
+            .item(AllItems.COPPER_NUGGET, ModdedTags.nuggets("copper"))
             .register();
 
     public static final RegistryEntry<LabelComponent> LABEL = REGISTRATE.component("label", LabelComponent::new)
