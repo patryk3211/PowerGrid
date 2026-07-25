@@ -48,6 +48,7 @@ import org.patryk3211.powergrid.electricity.crt.CRTBlock;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
 import org.patryk3211.powergrid.electricity.electromagnet.MagnetizingBehaviour;
+import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlock;
@@ -94,8 +95,11 @@ public class DeviceScenes {
                 .attachKeyFrame()
                 .pointAt(util.vector().topOf(heatingCoil))
                 .placeNearTarget();
-
-        scene.electric().setSource(voltageSource, 45);
+        scene.world().modifyBlockEntity(heatingCoil, HeaterBlockEntity.class, c -> {
+            var temp = c.getBehaviour(ThermalBehaviour.TYPE);
+            temp.setTemperature(380);
+        });
+        scene.electric().setSource(voltageSource, 32);
         scene.electric().tickFor(10);
         scene.idle(100);
 
@@ -107,6 +111,10 @@ public class DeviceScenes {
 
         scene.electric().setSource(voltageSource, 38);
         scene.electric().tickFor(10);
+        scene.world().modifyBlockEntity(heatingCoil, HeaterBlockEntity.class, c -> {
+            var temp = c.getBehaviour(ThermalBehaviour.TYPE);
+            temp.setTemperature(510);
+        });
         scene.idle(80);
 
         scene.markAsFinished();
@@ -136,7 +144,11 @@ public class DeviceScenes {
         scene.electric().connect(util.grid().at(2, 2, 4), 0, deviceConnector, 1);
         scene.electric().connectInvisible(util.grid().at(0, 2, 4), 0, voltageSource, 0);
         scene.electric().connectInvisible(util.grid().at(2, 2, 4), 0, voltageSource, 1);
-        scene.electric().setSource(voltageSource, 45);
+        scene.electric().setSource(voltageSource, 32);
+        scene.world().modifyBlockEntity(heatingCoil, HeaterBlockEntity.class, c -> {
+            var temp = c.getBehaviour(ThermalBehaviour.TYPE);
+            temp.setTemperature(380);
+        });
         scene.electric().tickFor(10);
         scene.idle(10);
 
