@@ -52,7 +52,25 @@ public class TransmissionLine extends ElectricWire {
     private boolean splitting = false;
 
     public TransmissionLine(double resistance, IWireEndpoint endpoint1, IWireEndpoint endpoint2, WorldNetworks global) {
-        super(resistance, endpoint1.getNode(global.world), endpoint2.getNode(global.world));
+        this(
+                resistance,
+                endpoint1,
+                endpoint2,
+                global.holderOrPlaceholderNode(endpoint1),
+                global.holderOrPlaceholderNode(endpoint2),
+                global
+        );
+    }
+
+    public TransmissionLine(
+            double resistance,
+            IWireEndpoint endpoint1,
+            IWireEndpoint endpoint2,
+            OwnedFloatingNode node1,
+            OwnedFloatingNode node2,
+            WorldNetworks global
+    ) {
+        super(resistance, Objects.requireNonNull(node1), Objects.requireNonNull(node2));
         if(global.world.isClientSide && !(global.world instanceof PonderLevel))
             PowerGrid.LOGGER.warn("This method probably shouldn't be used on client-side");
         this.global = global;
@@ -63,25 +81,11 @@ public class TransmissionLine extends ElectricWire {
 
     // This should only be utilized by the client
     public TransmissionLine(int id, double resistance, OwnedFloatingNode node1, OwnedFloatingNode node2, WorldNetworks global) {
-        super(resistance, node1, node2);
+        super(resistance, Objects.requireNonNull(node1), Objects.requireNonNull(node2));
         if(!global.world.isClientSide)
             PowerGrid.LOGGER.warn("This method probably shouldn't be used on server-side");
         this.global = global;
         this.id = id;
-    }
-
-    private int validateEndpoints(TransmissionLinePart part, BaseWireEntity owner) {
-        if(part.getEndpoint1().equals(owner.getEndpoint1())) {
-            if(part.getEndpoint2().equals(owner.getEndpoint2())) {
-                return 1;
-            }
-        } else if(part.getEndpoint2().equals(owner.getEndpoint1())) {
-            // Endpoints are flipped
-            if(part.getEndpoint1().equals(owner.getEndpoint2())) {
-                return 2;
-            }
-        }
-        return 0;
     }
 
     public void validateLine() {
@@ -167,25 +171,26 @@ public class TransmissionLine extends ElectricWire {
         return endpoint2;
     }
 
-    public void grabPart(@NotNull BaseWireEntity owner, TransmissionLinePart part) {
-        if(part.persistentOwnerId.equals(owner.getUUID())) {
-            // If the owner id matches then the endpoints should match too
-            var endpointArrangement = validateEndpoints(part, owner);
-            if(endpointArrangement == 1 || endpointArrangement == 2) {
-                var node1 = part.getEndpoint1().getNode(owner.level());
-                var node2 = part.getEndpoint2().getNode(owner.level());
-                global.movePartMap(part.getNode1(), node1, part);
-                global.movePartMap(part.getNode2(), node2, part);
-                part.setNode1(node1);
-                part.setNode2(node2);
-                if(endpointArrangement == 2)
-                    owner.flipEndpoints();
-            } else {
-                PowerGrid.LOGGER.warn("Endpoint of wire and unloaded line segment do not match\n{}, {} vs {}, {}",
-                        part.getEndpoint1(), part.getEndpoint2(), owner.getEndpoint1(), owner.getEndpoint2());
-                remove();
-                return;
-            }
+    /**
+     * Rebind a line which has not entered the solver graph yet to the endpoint
+     * nodes currently indexed by the world network.
+     */
+    public void refreshDetachedEndpointNodes() {
+        if(getNetwork() != null)
+            throw new IllegalStateException("Cannot refresh endpoint nodes of a connected transmission line");
+        setNode1(endpoint1, global.holderOrPlaceholderNode(endpoint1));
+        setNode2(endpoint2, global.holderOrPlaceholderNode(endpoint2));
+    }
+
+    public boolean grabPart(@NotNull BaseWireEntity owner, WorldNetworks.PartId ownerId, TransmissionLinePart part) {
+        if(part.persistentOwnerId.equals(ownerId)) {
+            // WorldNetworks validates this part against the exact electrical
+            // endpoint pair passed by the physical owner before calling grab.
+            // That pair can differ from BaseWireEntity#getEndpointN for
+            // multi-conductor cords, so it must not be re-derived here.
+            part.refreshEndpointNodes();
+            var node1 = part.getNode1();
+            var node2 = part.getNode2();
             if(part.getEndpoint1().equals(endpoint1) && endpoint1.getNode(global.world) != node1) {
                 // Update node
                 setNode1(endpoint1.getNode(global.world));
@@ -203,7 +208,9 @@ public class TransmissionLine extends ElectricWire {
                 validateLine();
             if(ModdedConfigs.logsEnabled())
                 PowerGrid.LOGGER.debug("{}: Grabbed unloaded part of line, owner={}, between=({}, {})", this, owner, part.getNode1(), part.getNode2());
+            return true;
         }
+        return false;
     }
 
     public void addLastSegment(TransmissionLinePart wire) {
@@ -303,7 +310,7 @@ public class TransmissionLine extends ElectricWire {
             line2.setResistance(R2);
             var network = global.prepareForConnection(line2.endpoint1, line2.endpoint2);
             if(network != null)
-                network.addWire(line2);
+                global.addPreparedTransmissionLine(network, line2);
         } else {
             splitting = false;
             throw new IllegalStateException("Splitting failed for " + this);
@@ -383,6 +390,31 @@ public class TransmissionLine extends ElectricWire {
         optimizeNode(getNode2());
     }
 
+    /**
+     * Detach the derived transmission line without deleting its persisted physical
+     * segments. The server-side repair command uses this before assembling a fresh
+     * topology from those segments.
+     */
+    public void detachForRebuild() {
+        var affectedNetwork = getNetwork();
+        if(affectedNetwork != null)
+            super.remove();
+        if(global.globalGraph.getWires(getNode1(), getNode2()).contains(this))
+            global.globalGraph.disconnect(getNode1(), getNode2(), this);
+        setNetwork(null);
+
+        if(port1 != null) {
+            port1.remove();
+            port2.remove();
+            port1 = port2 = null;
+        }
+        for(var segment : segments) {
+            if(segment.getLine() == this)
+                segment.setLine(null);
+        }
+        global.scheduleIslandDiscovery(affectedNetwork);
+    }
+
     public boolean isPart(ElectricWire wire) {
         return segments.contains(wire);
     }
@@ -432,11 +464,12 @@ public class TransmissionLine extends ElectricWire {
             remove();
             return;
         }
-        if(!segments.contains(wire)) {
+        var segmentIndex = segments.indexOf(wire);
+        if(segmentIndex < 0) {
             PowerGrid.LOGGER.error("Wire is not part of this transmission line even though it thinks so");
             return;
         }
-        if (wire.getNode1() == node1) {
+        if (segmentIndex == 0) {
             // First segment
             PowerGrid.LOGGER.debug("{}: Removing first segment of transmission line", this);
             var removed = segments.remove(0);
@@ -455,7 +488,7 @@ public class TransmissionLine extends ElectricWire {
             optimizeNode(optiNode);
             if(ENABLE_VALIDATION)
                 validateLine();
-        } else if (wire.getNode2() == node2) {
+        } else if (segmentIndex == segments.size() - 1) {
             // Last segment
             if(ModdedConfigs.logsEnabled())
                 PowerGrid.LOGGER.debug("{}: Removing last segment of transmission line", this);

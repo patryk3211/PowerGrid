@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.wire.powercord;
 
+import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
 
@@ -25,6 +26,16 @@ public interface ICordEndpoint extends IWireEndpoint {
     @Override
     default <T extends BaseWireEntity> boolean canAcceptType(Class<T> clazz) {
         return CordEntity.class.isAssignableFrom(clazz);
+    }
+
+    @Override
+    default boolean isStructurallyValid(Level world) {
+        var endpoint1 = getEndpoint1();
+        var endpoint2 = getEndpoint2();
+        return endpoint1 != null
+                && endpoint1.isStructurallyValid(world)
+                && endpoint2 != null
+                && endpoint2.isStructurallyValid(world);
     }
 
     @Override

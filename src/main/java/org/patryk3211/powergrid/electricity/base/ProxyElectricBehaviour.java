@@ -106,6 +106,16 @@ public class ProxyElectricBehaviour extends ElectricBehaviour {
 
     @Override
     public void remove() {
+        var global = GlobalElectricNetworks.getWorldNetworks(getWorld());
+        for(var node : getExternalNodes()) {
+            if(node.endpoint instanceof BlockWireEndpoint endpoint) {
+                var thisEndpoint = new BlockWireEndpoint(
+                        getPos(),
+                        endpoint.getTerminal()
+                );
+                global.removeEndpointAlias(thisEndpoint, node);
+            }
+        }
         // Node holder might not be removed.
         breakConnections();
     }

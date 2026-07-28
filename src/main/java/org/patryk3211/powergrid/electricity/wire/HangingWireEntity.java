@@ -21,9 +21,8 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.FloatTag;
-import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -258,6 +257,23 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     }
 
     @Override
+    protected void sendTrackingRenderData(ServerPlayer player) {
+        if(terminalPos1 == null || terminalPos2 == null)
+            return;
+        ModdedPackets.sendToClient(
+                new EntityDataS2CPacket(
+                        this,
+                        WireRenderSync.terminalGeometry(
+                                terminalPos1,
+                                terminalPos2,
+                                isDynamic
+                        )
+                ),
+                player
+        );
+    }
+
+    @Override
     protected void addAdditionalSaveData(CompoundTag nbt) {
         super.addAdditionalSaveData(nbt);
         nbt.putFloat("PlacedLength", placedLength);
@@ -408,17 +424,14 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
                 // the update method would have to go into the tick function
                 // and that is probably slower.
 
-                var tag = new CompoundTag();
-                var list = new ListTag();
-                list.add(FloatTag.valueOf((float) terminalPos1.x));
-                list.add(FloatTag.valueOf((float) terminalPos1.y));
-                list.add(FloatTag.valueOf((float) terminalPos1.z));
-                list.add(FloatTag.valueOf((float) terminalPos2.x));
-                list.add(FloatTag.valueOf((float) terminalPos2.y));
-                list.add(FloatTag.valueOf((float) terminalPos2.z));
-                tag.putBoolean("D", isDynamic);
-                tag.put("V", list);
-                var packet = new EntityDataS2CPacket(this, tag);
+                var packet = new EntityDataS2CPacket(
+                        this,
+                        WireRenderSync.terminalGeometry(
+                                terminalPos1,
+                                terminalPos2,
+                                isDynamic
+                        )
+                );
                 ModdedPackets.sendToClientsTracking(packet, this);
             }
         }

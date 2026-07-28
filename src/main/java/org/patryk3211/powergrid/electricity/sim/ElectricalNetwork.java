@@ -175,6 +175,10 @@ public class ElectricalNetwork implements IStamped {
         return nodes.get(index) == node;
     }
 
+    public boolean ownsNode(INode node) {
+        return hasNode(node) || leafNodes.containsKey(node);
+    }
+
     public void addNode(INode node) {
         if(hasNode(node) || leafNodes.containsKey(node))
             return;

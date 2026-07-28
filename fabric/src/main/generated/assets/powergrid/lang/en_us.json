@@ -1,4 +1,12 @@
 {
+  "powergrid.command.rebuild.cooldown": "Wait %1$s seconds before rebuilding the network again.",
+  "powergrid.command.rebuild.failed": "Rebuild failed after %1$s attempts. Temporary chunks were released; check the log.",
+  "powergrid.command.rebuild.no_level": "The dimension is not available yet. Wait for the server to finish loading.",
+  "powergrid.command.rebuild.partial": "Partial verified rebuild: %1$s parts unresolved and %2$s parts queued for automatic retry (at most %3$s attempts). Check the log.",
+  "powergrid.command.rebuild.running": "A verified rebuild is already running in this dimension.",
+  "powergrid.command.rebuild.start": "Verified rebuild started: %1$s parts, %2$s unique chunks in %3$s batches. Chunks will be released progressively.",
+  "powergrid.command.rebuild.success": "Network verified: %1$s parts, %2$s chunks, %3$s records refreshed, %4$s recovered, %5$s removed, %6$s final lines, %7$s ms.",
+  "powergrid.command.rebuild.too_many_chunks": "Rebuild refused: the network needs %1$s chunks, above the safety limit of %2$s.",
   "block.powergrid.acid": "Acid",
   "block.powergrid.alarm_bell": "Alarm Bell",
   "block.powergrid.andesite_encased_crt": "Andesite Encased CRT",

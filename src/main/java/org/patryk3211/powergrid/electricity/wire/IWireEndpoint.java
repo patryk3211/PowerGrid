@@ -39,6 +39,17 @@ public interface IWireEndpoint {
         return true;
     }
 
+    /**
+     * Checks whether the physical endpoint still exists independently of
+     * runtime electrical-behaviour initialization.
+     *
+     * <p>Most endpoint types have no separate late-initialization phase, so
+     * their normal validity is also their structural validity.</p>
+     */
+    default boolean isStructurallyValid(Level world) {
+        return isValid(world);
+    }
+
     default <T extends BaseWireEntity> boolean canAcceptType(Class<T> clazz) {
         return false;
     }

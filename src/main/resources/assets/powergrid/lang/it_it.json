@@ -1,4 +1,12 @@
 {
+  "powergrid.command.rebuild.cooldown": "Attendi %1$s secondi prima di ricostruire nuovamente la rete.",
+  "powergrid.command.rebuild.failed": "Ricostruzione non riuscita dopo %1$s tentativi. I chunk temporanei sono stati rilasciati; controlla il log.",
+  "powergrid.command.rebuild.no_level": "La dimensione non \u00e8 ancora disponibile. Attendi il caricamento completo del server.",
+  "powergrid.command.rebuild.partial": "Ricostruzione verificata parziale: %1$s tratti non risolti e %2$s tratti in retry automatico (massimo %3$s tentativi). Controlla il log.",
+  "powergrid.command.rebuild.running": "Una ricostruzione verificata \u00e8 gi\u00e0 in corso in questa dimensione.",
+  "powergrid.command.rebuild.start": "Ricostruzione verificata avviata: %1$s tratti, %2$s chunk unici in %3$s gruppi. I chunk saranno rilasciati progressivamente.",
+  "powergrid.command.rebuild.success": "Rete verificata: %1$s tratti, %2$s chunk, %3$s registrazioni ricostruite, %4$s recuperate, %5$s rimosse, %6$s linee finali, %7$s ms.",
+  "powergrid.command.rebuild.too_many_chunks": "Ricostruzione rifiutata: la rete richiede %1$s chunk, oltre il limite di sicurezza di %2$s.",
   "block.powergrid.acid": "Acido",
   "block.powergrid.alarm_bell": "Campanello d'Allarme",
   "block.powergrid.andesite_encased_crt": "CRT incassato in andesite",

@@ -129,6 +129,21 @@ public class BlockWireEndpoint implements IWireEndpoint {
     }
 
     @Override
+    public boolean isStructurallyValid(Level world) {
+        if(pos == null
+                || !world.hasChunk(
+                        SectionPos.blockToSectionCoord(pos.getX()),
+                        SectionPos.blockToSectionCoord(pos.getZ())
+                )) {
+            return false;
+        }
+        var electric = getElectricBlock(world);
+        if(electric == null || terminal < 0 || terminal >= electric.terminalCount())
+            return false;
+        return electric.terminal(world.getBlockState(pos), terminal) != null;
+    }
+
+    @Override
     public <T extends BaseWireEntity> boolean canAcceptType(Class<T> clazz) {
         return WireEntity.class.isAssignableFrom(clazz);
     }

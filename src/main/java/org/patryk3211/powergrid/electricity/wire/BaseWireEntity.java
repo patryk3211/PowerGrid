@@ -20,15 +20,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -40,6 +38,7 @@ import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.material.PushReaction;
 import org.jetbrains.annotations.NotNull;
@@ -49,6 +48,7 @@ import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
+import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.DebugItem;
 import org.patryk3211.powergrid.electricity.wire.registry.WireItemEntry;
@@ -293,11 +293,24 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         ModdedPackets.sendToClientsTracking(createExtraDataPacket(), this);
     }
 
+    /**
+     * Sends render-only state which cannot be reconstructed reliably from a
+     * client's independently loaded block entities. Most wire types need only
+     * the complete persisted-data packet.
+     */
+    protected void sendTrackingRenderData(ServerPlayer player) {
+    }
+
     @Override
-    public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity entity) {
-        var extra = createExtraDataPacket();
-        ModdedPackets.sendToClientsTracking(extra, this);
-        return super.getAddEntityPacket(entity);
+    public void startSeenByPlayer(ServerPlayer player) {
+        super.startSeenByPlayer(player);
+        // Minecraft calls this only after its entity-spawn bundle has been sent
+        // to this player. The full packet initializes material and endpoint
+        // state. Hanging wires then send their server-calculated terminal
+        // geometry as a second, existing-format packet so render setup never
+        // depends on client chunk/block-entity readiness.
+        ModdedPackets.sendToClient(createExtraDataPacket(), player);
+        sendTrackingRenderData(player);
     }
 
     @Override
@@ -527,7 +540,11 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
     public abstract void unloaded();
 
     public static void entityUnload(Entity entity, ServerLevel world) {
-        if(entity instanceof BaseWireEntity wire)
+        if(entity instanceof BaseWireEntity wire) {
             wire.unloaded();
+            var networks = GlobalElectricNetworks.getWorldNetworks((LevelAccessor) world);
+            if(networks != null)
+                networks.unloadPartsOwnedBy(wire);
+        }
     }
 }

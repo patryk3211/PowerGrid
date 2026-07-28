@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity;
 
 import com.google.common.collect.Sets;
 import io.netty.util.collection.IntObjectHashMap;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -48,6 +49,22 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModifyHooks {
+    static final int ENTITY_LOAD_GRACE_TICKS = 10;
+    static final int MAX_AUTOMATIC_REBUILD_RETRIES = 3;
+    static final int REBUILD_RETRY_INTERVAL_TICKS = 20;
+    static final int MAX_REBUILD_RETRIES_PER_TICK = 16;
+
+    enum TransmissionPartSide {
+        FIRST,
+        SECOND,
+        NONE
+    }
+
+    enum NodeBindingMode {
+        BIND_ONLY,
+        BIND_AND_SPLIT
+    }
+
     public final Level world;
     public final NetworkGraph globalGraph = new NetworkGraph();
     protected final PerformanceCounter perf;
@@ -65,6 +82,12 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     protected final Set<TransmissionLinePart> deferredRewireEntities = new HashSet<>();
     protected final Set<ElectricalNetwork> islandDiscoveryQueue = new HashSet<>();
+    private final Map<PartId, RebuildRetry> rebuildRetryQueue = new HashMap<>();
+    private TransmissionNetworkRebuildJob verifiedRebuildJob;
+    private boolean startupRebuildStarted;
+    private boolean verifiedRebuildIsolated;
+    private boolean assemblingTransmissionTopology;
+    private int verifiedRebuildLinesBefore;
     private boolean runningDiscovery = false;
     private int syncTicks = 0;
 
@@ -72,6 +95,36 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     private record SyncState(int lod) { }
     private final Map<ServerPlayer, Map<ISynchronizedElement, SyncState>> syncStates = new HashMap<>();
+
+    public record RebuildResult(int parts, int linesBefore, int linesAfter, int retryingParts, int retryLimit) {
+        public boolean complete() {
+            return retryingParts == 0;
+        }
+    }
+
+    public enum VerifiedRebuildStartStatus {
+        STARTED,
+        ALREADY_RUNNING,
+        TOO_MANY_CHUNKS
+    }
+
+    public record VerifiedRebuildStart(
+            VerifiedRebuildStartStatus status,
+            @Nullable TransmissionNetworkRebuildJob.StartInfo info,
+            int requestedChunks
+    ) {
+    }
+
+    private static class RebuildRetry {
+        private final TransmissionLinePart part;
+        private final RetryBudget budget = new RetryBudget(MAX_AUTOMATIC_REBUILD_RETRIES);
+        private long nextAttemptTick;
+
+        private RebuildRetry(TransmissionLinePart part, long nextAttemptTick) {
+            this.part = part;
+            this.nextAttemptTick = nextAttemptTick;
+        }
+    }
 
     public WorldNetworks(Level world) {
         this.world = world;
@@ -93,17 +146,25 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     @Override
     public void lineConnected(TransmissionLine line) {
+        var node1 = Objects.requireNonNull(
+                line.getNode1(),
+                "Transmission lines cannot connect without a first node"
+        );
+        var node2 = Objects.requireNonNull(
+                line.getNode2(),
+                "Transmission lines cannot connect without a second node"
+        );
         var id = line.getId();
         transmissionLines.put(id, line);
 
-        var line1 = findLineMiddle(line.getNode1());
+        var line1 = findLineMiddle(node1);
         if(line1 != null)
-            line1.splitAt(line.getNode1());
-        var line2 = findLineMiddle(line.getNode2());
+            line1.splitAt(node1);
+        var line2 = findLineMiddle(node2);
         if(line2 != null)
-            line2.splitAt(line.getNode2());
-        scheduleIslandDiscovery(line.getNode1().getNetwork());
-        scheduleIslandDiscovery(line.getNode2().getNetwork());
+            line2.splitAt(node2);
+        scheduleIslandDiscovery(node1.getNetwork());
+        scheduleIslandDiscovery(node2.getNetwork());
         setDirty();
     }
 
@@ -120,7 +181,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public void scheduleIslandDiscovery(ElectricalNetwork network) {
-        if(network != null && !runningDiscovery)
+        if(network != null && !runningDiscovery && !verifiedRebuildIsolated)
             islandDiscoveryQueue.add(network);
     }
 
@@ -238,11 +299,23 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public void preTick() {
-        deferredRewireEntities.removeIf(part -> {
-            part.refreshEndpointNodes();
-            return true;
-        });
+        if(!verifiedRebuildIsolated) {
+            deferredRewireEntities.removeIf(part -> {
+                part.refreshEndpointNodes();
+                return true;
+            });
+        }
         JunctionWireEndpoint.processNewNodes(world);
+        startStartupRebuildIfNeeded();
+        tickVerifiedRebuild();
+        if(verifiedRebuildIsolated) {
+            // Physical entities keep ticking so the current chunk batch can
+            // register itself, but no partially rebuilt transmission topology
+            // may enter island discovery or the electrical solver.
+            islandDiscoveryQueue.clear();
+            return;
+        }
+        processRebuildRetries();
 
         runningDiscovery = true;
         for(var network : islandDiscoveryQueue) {
@@ -286,7 +359,107 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         perf.end();
     }
 
+    public boolean verifiedRebuildInProgress() {
+        return verifiedRebuildJob != null && !verifiedRebuildJob.isFinished();
+    }
+
+    public VerifiedRebuildStart startVerifiedRebuild(TransmissionNetworkRebuildJob.Listener listener) {
+        if(!(world instanceof ServerLevel serverWorld))
+            throw new IllegalStateException("Verified rebuilds require a server level");
+        if(verifiedRebuildInProgress()) {
+            return new VerifiedRebuildStart(
+                    VerifiedRebuildStartStatus.ALREADY_RUNNING,
+                    verifiedRebuildJob.startInfo(),
+                    verifiedRebuildJob.startInfo().uniqueChunks()
+            );
+        }
+
+        rebuildRetryQueue.clear();
+        try {
+            var job = TransmissionNetworkRebuildJob.create(this, serverWorld, listener);
+            beginVerifiedRebuildIsolation();
+            verifiedRebuildJob = job;
+            return new VerifiedRebuildStart(
+                    VerifiedRebuildStartStatus.STARTED,
+                    verifiedRebuildJob.startInfo(),
+                    verifiedRebuildJob.startInfo().uniqueChunks()
+            );
+        } catch(TransmissionNetworkRebuildJob.TooManyChunksException exception) {
+            return new VerifiedRebuildStart(
+                    VerifiedRebuildStartStatus.TOO_MANY_CHUNKS,
+                    null,
+                    exception.chunks()
+            );
+        }
+    }
+
+    public void close() {
+        if(verifiedRebuildJob != null)
+            verifiedRebuildJob.cancel();
+        verifiedRebuildJob = null;
+    }
+
+    private void startStartupRebuildIfNeeded() {
+        if(startupRebuildStarted || !(world instanceof ServerLevel))
+            return;
+        startupRebuildStarted = true;
+        var start = startVerifiedRebuild(new TransmissionNetworkRebuildJob.Listener() {
+            @Override
+            public void completed(TransmissionNetworkRebuildJob.Outcome outcome) {
+                if(outcome.complete()) {
+                    PowerGrid.LOGGER.info(
+                            "Startup transmission rebuild completed successfully in {}",
+                            world.dimension().location()
+                    );
+                } else {
+                    PowerGrid.LOGGER.warn(
+                            "Startup transmission rebuild completed partially in {}: {} unresolved parts, {} parts queued for retry",
+                            world.dimension().location(),
+                            outcome.unresolvedParts(),
+                            outcome.rebuild().retryingParts()
+                    );
+                }
+            }
+
+            @Override
+            public void failed(TransmissionNetworkRebuildJob.Failure failure) {
+                PowerGrid.LOGGER.error(
+                        "Startup transmission rebuild failed in {}: {}",
+                        world.dimension().location(),
+                        failure.reason()
+                );
+            }
+        });
+        if(start.status() == VerifiedRebuildStartStatus.TOO_MANY_CHUNKS) {
+            PowerGrid.LOGGER.error(
+                    "Startup transmission rebuild refused in {}: {} unique chunks exceeds the limit of {}",
+                    world.dimension().location(),
+                    start.requestedChunks(),
+                    TransmissionNetworkRebuildJob.MAX_UNIQUE_CHUNKS
+            );
+        } else if(start.status() == VerifiedRebuildStartStatus.STARTED) {
+            var info = Objects.requireNonNull(start.info());
+            PowerGrid.LOGGER.info(
+                    "Startup transmission rebuild scheduled in {}: {} physical parts, {} unique chunks, {} batches",
+                    world.dimension().location(),
+                    info.parts(),
+                    info.uniqueChunks(),
+                    info.batches()
+            );
+        }
+    }
+
+    private void tickVerifiedRebuild() {
+        if(verifiedRebuildJob == null)
+            return;
+        verifiedRebuildJob.tick();
+        if(verifiedRebuildJob.isFinished())
+            verifiedRebuildJob = null;
+    }
+
     public void postTick() {
+        if(verifiedRebuildIsolated)
+            return;
         if(world instanceof ServerLevel serverWorld) {
             // Check for line parts existence
             var checkIter = checkForExistence.entrySet().iterator();
@@ -297,12 +470,22 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     if(expectedInChunks.containsKey(chunk)) {
                         expectedInChunks.get(chunk).addAll(entry.getValue().entities);
                     } else {
-                        entry.getValue().ticks = 0;
+                        entry.getValue().resetTicks();
                         expectedInChunks.put(chunk, entry.getValue());
                     }
+                    checkIter.remove();
                     continue;
                 }
-                var remove = entry.getValue().ticks++ >= 10;
+                var chunkCheckPos = new BlockPos(
+                        chunk.getMinBlockX(),
+                        serverWorld.getMinBuildHeight(),
+                        chunk.getMinBlockZ()
+                );
+                if(!serverWorld.isPositionEntityTicking(chunkCheckPos)) {
+                    entry.getValue().resetTicks();
+                    continue;
+                }
+                var remove = entry.getValue().advanceEntityLoadCheck();
                 var entityIter = entry.getValue().entities.iterator();
                 while(entityIter.hasNext()) {
                     var id = entityIter.next();
@@ -310,15 +493,14 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                         if(remove) {
                             // Doesn't exist even after chunk has been loaded.
                             var part = lineParts.get(id);
-                            if (part == null)
+                            if (part == null) {
+                                entityIter.remove();
                                 continue;
-                            // Destroy line
-                            var line = part.getLine();
-                            if(line != null) {
-                                line.remove();
-                            } else {
-                                part.remove();
                             }
+                            // Only the missing physical segment is invalid. Removing the
+                            // entire optimized line would orphan every surviving segment.
+                            part.remove();
+                            entityIter.remove();
                         }
                     } else {
                         entityIter.remove();
@@ -448,6 +630,16 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         addAndMigrateNode(endpoint);
     }
 
+    public void putInNetwork(@NotNull IWireEndpoint endpoint) {
+        var node = endpoint.getNode(world);
+        add(endpoint);
+        var line = findLineMiddle(node);
+        if(line != null)
+            return;
+        if(node.getNetwork() == null)
+            endpoint.joinNetwork(world, newNetwork());
+    }
+
     public int connectionCount(IWireEndpoint endpoint) {
         return globalGraph.connectionCount(endpoint.getNode(world));
     }
@@ -466,16 +658,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             }
         }
         return null;
-    }
-
-    public void putInNetwork(@NotNull IWireEndpoint endpoint) {
-        var node = endpoint.getNode(world);
-        add(endpoint);
-        var line = findLineMiddle(node);
-        if(line != null)
-            return;
-        if(node.getNetwork() == null)
-            endpoint.joinNetwork(world, newNetwork());
     }
 
     @Nullable
@@ -588,6 +770,35 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         return network;
     }
 
+    /**
+     * Connect a newly assembled transmission line only after rebinding it to the
+     * endpoint nodes selected during connection preparation.
+     */
+    public void addPreparedTransmissionLine(
+            @NotNull ElectricalNetwork network,
+            @NotNull TransmissionLine line
+    ) {
+        if(line.getNetwork() != null)
+            throw new IllegalStateException("Transmission line is already connected");
+
+        line.refreshDetachedEndpointNodes();
+        inNetwork(network, line.getNode1(), line.getEndpoint1());
+        inNetwork(network, line.getNode2(), line.getEndpoint2());
+        if(!network.ownsNode(line.getNode1()) || !network.ownsNode(line.getNode2())) {
+            throw new IllegalStateException(
+                    "Prepared transmission line endpoints do not belong to the target network"
+                            + " (endpoint1=" + line.getEndpoint1()
+                            + ", node1=" + line.getNode1()
+                            + ", node1Network=" + line.getNode1().getNetwork()
+                            + ", endpoint2=" + line.getEndpoint2()
+                            + ", node2=" + line.getNode2()
+                            + ", node2Network=" + line.getNode2().getNetwork()
+                            + ", targetNetwork=" + network + ")"
+            );
+        }
+        network.addWire(line);
+    }
+
     @Nullable
     public ElectricalNetwork prepareForConnection(@NotNull OwnedFloatingNode node1, @NotNull OwnedFloatingNode node2) {
         var endpoint1 = node1.endpoint;
@@ -645,35 +856,47 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
         var existingPart = lineParts.get(id);
         if(existingPart != null) {
-            existingPart.grab(forEntity, id);
-            return existingPart;
+            if(!existingPart.endpointsMatch(endpoint1, endpoint2)) {
+                PowerGrid.LOGGER.warn(
+                        "Replacing stale transmission part {} from physical owner: stored=({}, {}), current=({}, {})",
+                        id,
+                        existingPart.getConnectionEndpoint1(),
+                        existingPart.getConnectionEndpoint2(),
+                        endpoint1,
+                        endpoint2
+                );
+                // Remove only the stale part. Removing its optimized
+                // TransmissionLine would unregister every healthy segment.
+                existingPart.remove();
+                return null;
+            }
+            if(existingPart.grab(forEntity, id))
+                return existingPart;
+            return null;
         }
 
         return null;
     }
 
     private boolean makeTransmissionLine(TransmissionLinePart linePart) {
+        if(!transmissionTopologyResolutionAllowed())
+            return false;
         if(linePart.getLine() != null)
             return true;
 
         var endpoint1 = linePart.getEndpoint1();
         var endpoint2 = linePart.getEndpoint2();
+        linePart.refreshEndpointNodes();
+        var node1 = linePart.getNode1();
+        var node2 = linePart.getNode2();
 
         // This method needs to ensure proper ordering of segments in the transmission line.
-        var network = prepareForConnection(endpoint1, endpoint2);
+        var network = prepareForConnection(node1, node2);
         if(network == null)
             return false;
 
         if(ModdedConfigs.logsEnabled())
             PowerGrid.LOGGER.debug("Creating a transmission line for {}", linePart);
-        var node1 = endpoint1.getNode(world);
-        var node2 = endpoint2.getNode(world);
-
-        // Make sure nodes are up-to-date
-        movePartMap(linePart.getNode1(), node1, linePart);
-        linePart.setNode1(node1);
-        movePartMap(linePart.getNode2(), node2, linePart);
-        linePart.setNode2(node2);
 
         int nConns1 = connectionCount(endpoint1);
         int nConns2 = connectionCount(endpoint2);
@@ -735,10 +958,17 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             line1.addLastSegment(linePart);
         }
         if(line1 == null && line2 == null) {
-            var line = new TransmissionLine(linePart.getResistance(), endpoint1, endpoint2, this);
+            var line = new TransmissionLine(
+                    linePart.getResistance(),
+                    endpoint1,
+                    endpoint2,
+                    node1,
+                    node2,
+                    this
+            );
             linePart.setLine(line);
             line.segments.add(linePart);
-            network.addWire(line);
+            addPreparedTransmissionLine(network, line);
             if(ModdedConfigs.logsEnabled())
                 PowerGrid.LOGGER.debug("{}: New transmission line between {} and {}", line, node1, node2);
         }
@@ -765,6 +995,9 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     @Nullable
     public ElectricWire makeTransmissionLine(IWireEndpoint endpoint1, IWireEndpoint endpoint2, BaseWireEntity forEntity, PartId id) {
+        if(verifiedRebuildIsolated && !assemblingTransmissionTopology)
+            return registerIsolatedTransmissionPart(endpoint1, endpoint2, forEntity, id);
+
         add(endpoint1);
         add(endpoint2);
 
@@ -778,6 +1011,38 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         if(makeTransmissionLine(linePart))
             return linePart;
         return null;
+    }
+
+    @Nullable
+    private TransmissionLinePart registerIsolatedTransmissionPart(
+            IWireEndpoint endpoint1,
+            IWireEndpoint endpoint2,
+            BaseWireEntity forEntity,
+            PartId id
+    ) {
+        var existingPart = lineParts.get(id);
+        if(existingPart != null && !existingPart.endpointsMatch(endpoint1, endpoint2)) {
+            PowerGrid.LOGGER.warn(
+                    "Replacing stale transmission part {} from physical owner while rebuild topology is isolated: stored=({}, {}), current=({}, {})",
+                    id,
+                    existingPart.getConnectionEndpoint1(),
+                    existingPart.getConnectionEndpoint2(),
+                    endpoint1,
+                    endpoint2
+            );
+            existingPart.remove();
+            existingPart = null;
+        }
+        if(existingPart != null)
+            return existingPart.grab(forEntity, id) ? existingPart : null;
+        return TransmissionLinePart.uniquePart(
+                forEntity.getResistance(),
+                endpoint1,
+                endpoint2,
+                forEntity,
+                this,
+                id
+        );
     }
 
     public List<TransmissionLinePart> findConnectedWires(ElectricBehaviour behaviour) {
@@ -806,6 +1071,289 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         deferredRewireEntities.add(part);
     }
 
+    /**
+     * Rebuild the derived transmission-line topology from the persisted physical
+     * line parts. Placed blocks, wire entities and saved line parts are preserved.
+     * This must run on the owning server thread.
+     */
+    public RebuildResult rebuildTransmissionNetwork() {
+        return rebuildTransmissionNetwork(-1);
+    }
+
+    private RebuildResult rebuildTransmissionNetwork(int linesBeforeOverride) {
+        if(world.isClientSide)
+            throw new IllegalStateException("Transmission networks can only be rebuilt on the server");
+
+        rebuildRetryQueue.clear();
+        var parts = new ArrayList<>(lineParts.values());
+        parts.sort(Comparator.comparing(part -> part.persistentOwnerId.toString()));
+
+        var detachedLines = detachDerivedTransmissionTopology();
+        var linesBefore = linesBeforeOverride >= 0 ? linesBeforeOverride : detachedLines;
+
+        for(var part : parts) {
+            part.setLine(null);
+            restorePartEndpointNodes(part);
+        }
+
+        // Recreate the node index from the persisted source of truth as well. The
+        // regular entity reload path will continue to migrate entries afterwards.
+        partNodeMap.clear();
+        for(var part : parts) {
+            partNodeMap.computeIfAbsent(part.getNode1(), $ -> new HashSet<>()).add(part);
+            partNodeMap.computeIfAbsent(part.getNode2(), $ -> new HashSet<>()).add(part);
+        }
+        deferredRewireEntities.clear();
+
+        int retryingParts = 0;
+        assemblingTransmissionTopology = true;
+        try {
+            for(var part : parts) {
+                if(!makeTransmissionLine(part)) {
+                    scheduleRebuildRetry(part);
+                    logRebuildFailure(part, 0, false, null);
+                    ++retryingParts;
+                }
+            }
+        } finally {
+            assemblingTransmissionTopology = false;
+        }
+
+        for(var network : subnetworks)
+            network.setDirty();
+        setDirty();
+
+        var result = new RebuildResult(
+                parts.size(),
+                linesBefore,
+                transmissionLines.size(),
+                retryingParts,
+                MAX_AUTOMATIC_REBUILD_RETRIES
+        );
+        PowerGrid.LOGGER.info(
+                "Rebuilt transmission network in {}: {} physical parts, {} lines before, {} lines after, {} parts queued for at most {} automatic retries",
+                world.dimension().location(),
+                result.parts(),
+                result.linesBefore(),
+                result.linesAfter(),
+                result.retryingParts(),
+                result.retryLimit()
+        );
+        return result;
+    }
+
+    private int detachDerivedTransmissionTopology() {
+        var oldLines = Collections.newSetFromMap(new IdentityHashMap<TransmissionLine, Boolean>());
+        oldLines.addAll(transmissionLines.values());
+        for(var part : lineParts.values()) {
+            if(part.getLine() != null)
+                oldLines.add(part.getLine());
+        }
+
+        for(var line : oldLines)
+            line.detachForRebuild();
+        transmissionLines.clear();
+        for(var part : lineParts.values())
+            part.setLine(null);
+        return oldLines.size();
+    }
+
+    private void beginVerifiedRebuildIsolation() {
+        if(verifiedRebuildIsolated)
+            throw new IllegalStateException("Verified rebuild topology is already isolated");
+
+        verifiedRebuildIsolated = true;
+        islandDiscoveryQueue.clear();
+        rebuildRetryQueue.clear();
+        try {
+            verifiedRebuildLinesBefore = detachDerivedTransmissionTopology();
+        } catch(RuntimeException exception) {
+            verifiedRebuildIsolated = false;
+            throw exception;
+        }
+    }
+
+    RebuildResult completeVerifiedRebuildIsolation() {
+        if(!verifiedRebuildIsolated)
+            throw new IllegalStateException("Verified rebuild topology is not isolated");
+
+        var result = rebuildTransmissionNetwork(verifiedRebuildLinesBefore);
+        verifiedRebuildIsolated = false;
+        verifiedRebuildLinesBefore = 0;
+        scheduleDiscoveryForAllNetworks();
+        return result;
+    }
+
+    RebuildResult refreshVerifiedRebuildResult(RebuildResult initialResult) {
+        return new RebuildResult(
+                lineParts.size(),
+                initialResult.linesBefore(),
+                transmissionLines.size(),
+                rebuildRetryQueue.size(),
+                MAX_AUTOMATIC_REBUILD_RETRIES
+        );
+    }
+
+    void abortVerifiedRebuildIsolation() {
+        if(!verifiedRebuildIsolated)
+            return;
+
+        try {
+            rebuildTransmissionNetwork(verifiedRebuildLinesBefore);
+        } catch(RuntimeException exception) {
+            PowerGrid.LOGGER.error(
+                    "Failed to restore transmission topology after an aborted verified rebuild in {}; leaving transmission lines disconnected",
+                    world.dimension().location(),
+                    exception
+            );
+            try {
+                detachDerivedTransmissionTopology();
+            } catch(RuntimeException detachException) {
+                exception.addSuppressed(detachException);
+            }
+        } finally {
+            verifiedRebuildIsolated = false;
+            verifiedRebuildLinesBefore = 0;
+            scheduleDiscoveryForAllNetworks();
+        }
+    }
+
+    private void scheduleDiscoveryForAllNetworks() {
+        islandDiscoveryQueue.clear();
+        islandDiscoveryQueue.addAll(subnetworks);
+    }
+
+    private void scheduleRebuildRetry(TransmissionLinePart part) {
+        rebuildRetryQueue.put(
+                part.persistentOwnerId,
+                new RebuildRetry(part, world.getGameTime() + REBUILD_RETRY_INTERVAL_TICKS)
+        );
+    }
+
+    private void processRebuildRetries() {
+        if(rebuildRetryQueue.isEmpty())
+            return;
+
+        var currentTick = world.getGameTime();
+        int attemptsThisTick = 0;
+        var iterator = rebuildRetryQueue.entrySet().iterator();
+        while(iterator.hasNext() && attemptsThisTick < MAX_REBUILD_RETRIES_PER_TICK) {
+            var entry = iterator.next();
+            var retry = entry.getValue();
+            var part = retry.part;
+
+            if(lineParts.get(entry.getKey()) != part) {
+                iterator.remove();
+                continue;
+            }
+            if(part.getLine() != null) {
+                PowerGrid.LOGGER.info(
+                        "Transmission part {} resolved before its queued retry in {}",
+                        part.persistentOwnerId,
+                        world.dimension().location()
+                );
+                iterator.remove();
+                continue;
+            }
+            if(currentTick < retry.nextAttemptTick)
+                continue;
+            if(!retry.budget.tryAcquire()) {
+                iterator.remove();
+                continue;
+            }
+
+            ++attemptsThisTick;
+            restorePartEndpointNodes(part);
+            try {
+                if(makeTransmissionLine(part)) {
+                    PowerGrid.LOGGER.info(
+                            "Transmission part {} rebuilt automatically on retry {}/{} in {}",
+                            part.persistentOwnerId,
+                            retry.budget.attempts(),
+                            MAX_AUTOMATIC_REBUILD_RETRIES,
+                            world.dimension().location()
+                    );
+                    iterator.remove();
+                    continue;
+                }
+                logRebuildFailure(part, retry.budget.attempts(), retry.budget.exhausted(), null);
+            } catch(RuntimeException exception) {
+                logRebuildFailure(part, retry.budget.attempts(), retry.budget.exhausted(), exception);
+            }
+
+            if(retry.budget.exhausted()) {
+                iterator.remove();
+            } else {
+                retry.nextAttemptTick = currentTick + REBUILD_RETRY_INTERVAL_TICKS;
+            }
+        }
+    }
+
+    private void restorePartEndpointNodes(TransmissionLinePart part) {
+        var endpoint1 = part.getConnectionEndpoint1();
+        var endpoint2 = part.getConnectionEndpoint2();
+        var node1 = holderOrPlaceholderNode(endpoint1);
+        var node2 = holderOrPlaceholderNode(endpoint2);
+
+        movePartMap(part.getNode1(), node1, part);
+        part.setNode1(node1);
+        movePartMap(part.getNode2(), node2, part);
+        part.setNode2(node2);
+        part.refreshEndpointNodes();
+    }
+
+    private void logRebuildFailure(TransmissionLinePart part, int retryAttempt, boolean exhausted, @Nullable RuntimeException exception) {
+        var endpoint1 = part.getConnectionEndpoint1();
+        var endpoint2 = part.getConnectionEndpoint2();
+        var node1 = part.getNode1();
+        var node2 = part.getNode2();
+        String reason;
+        if(endpoint1.equals(endpoint2)) {
+            reason = "identical endpoints";
+        } else if(node1 == node2) {
+            reason = "both endpoints resolve to the same node";
+        } else {
+            reason = "connection preparation returned no network";
+        }
+
+        var attempt = retryAttempt == 0
+                ? "initial rebuild"
+                : "automatic retry " + retryAttempt + "/" + MAX_AUTOMATIC_REBUILD_RETRIES;
+        var state = exhausted ? "retry limit exhausted" : "retry pending";
+        if(exception == null) {
+            PowerGrid.LOGGER.warn(
+                    "Failed to rebuild transmission part {} during {} in {} ({}; {}; endpoint1={}, endpoint2={}, node1={}, node2={}, lastKnownChunk={}, ownerLoaded={})",
+                    part.persistentOwnerId,
+                    attempt,
+                    world.dimension().location(),
+                    reason,
+                    state,
+                    endpoint1,
+                    endpoint2,
+                    node1,
+                    node2,
+                    part.lastKnownChunk,
+                    part.owner != null && !part.owner.isRemoved()
+            );
+        } else {
+            PowerGrid.LOGGER.error(
+                    "Exception while rebuilding transmission part {} during {} in {} ({}; {}; endpoint1={}, endpoint2={}, node1={}, node2={}, lastKnownChunk={}, ownerLoaded={})",
+                    part.persistentOwnerId,
+                    attempt,
+                    world.dimension().location(),
+                    reason,
+                    state,
+                    endpoint1,
+                    endpoint2,
+                    node1,
+                    node2,
+                    part.lastKnownChunk,
+                    part.owner != null && !part.owner.isRemoved(),
+                    exception
+            );
+        }
+    }
+
     @Override
     public CompoundTag save(CompoundTag tag, HolderLookup.Provider registries) {
         var partList = new ListTag();
@@ -825,32 +1373,18 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public void nodeHolderUnloaded(@NotNull OwnedFloatingNode ownedNode) {
-        // Here, we need to choose between preserving transmission line junction nodes or removing them.
-        // A transmission line should be preserved if terminates on a junction which connects to more
-        // transmission lines.
-        Collection<TransmissionLine> lines;
-        while(true) {
-            lines = globalGraph.getConnectedLines(ownedNode);
-            if(lines.size() != 1 || globalGraph.connectionCount(ownedNode) != 1) {
-                // We CANNOT delete the node, as it still is part of a bigger circuit.
-                break;
-            }
-            // No need to keep this line (or the node).
-            var line = lines.iterator().next();
-            var removeNode = ownedNode;
-            if(line.getNode1() == ownedNode) {
-                ownedNode = line.getNode2();
-            } else {
-                assert line.getNode2() == ownedNode;
-                ownedNode = line.getNode1();
-            }
-            // Also, we need to inform the wire entities about this.
-            line.unresolve();
-            setDirty();
-            scheduleIslandDiscovery(removeNode.getNetwork());
-            removeNode.remove();
-            globalExternalNodes.remove(removeNode.endpoint);
-        }
+        var affectedNetwork = ownedNode.getNetwork();
+        // An ordinary chunk unload must not tear down a healthy derived line.
+        // The verified rebuild deliberately assembles the complete passive
+        // topology from persisted parts, including unloaded chunks. Preserve
+        // that topology and replace only the departing block-owned node.
+        //
+        // TransmissionLine#setNodeN rewires the existing line in both the
+        // solver network and the global graph, while addAndMigrateNode also
+        // moves every physical-part index entry and endpoint alias.
+        addAndMigrateNode(ownedNode, new OwnedFloatingNode(ownedNode.endpoint));
+        scheduleIslandDiscovery(affectedNetwork);
+        setDirty();
     }
 
     public void nodeHolderRemoved(@NotNull OwnedFloatingNode ownedNode) {
@@ -868,104 +1402,174 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         }
         scheduleIslandDiscovery(ownedNode.getNetwork());
         ownedNode.remove();
-        globalExternalNodes.remove(ownedNode.endpoint);
+        globalExternalNodes.entrySet().removeIf(entry -> entry.getValue() == ownedNode);
     }
 
-    private boolean traceTree(IWireEndpoint endpoint, Set<IWireEndpoint> visited) {
-        if(!visited.add(endpoint))
+    private boolean traceTree(OwnedFloatingNode endpointNode, Set<OwnedFloatingNode> visited) {
+        if(!visited.add(endpointNode))
             return false;
-        Collection<TransmissionLinePart> parts = partNodeMap.get(globalExternalNodes.get(endpoint));
+        Collection<TransmissionLinePart> parts = partNodeMap.get(endpointNode);
         if(parts == null)
             return false;
-        // Make sure endpoints are always up to date in line parts.
-        // TODO: Verify that this doesn't brake a bunch of things
-        addAndMigrateNode(endpoint);
         parts = List.copyOf(parts);
         boolean continueResolving = false;
         for(var part : parts) {
+            var side = transmissionPartSide(
+                    part.getNode1(),
+                    part.getNode2(),
+                    endpointNode
+            );
             if(part.getLine() != null) {
                 // This branch connects to a valid line, back-trace and resolve all line parts.
                 continueResolving = true;
             }
             if(parts.size() == 1) {
                 if(ModdedConfigs.logsEnabled())
-                    PowerGrid.LOGGER.debug("Found edge line at {}", endpoint);
-                if(part.getEndpoint1().equals(endpoint)) {
+                    PowerGrid.LOGGER.debug("Found edge line at {}", endpointNode);
+                if(side == TransmissionPartSide.FIRST) {
                     // Check endpoint2
-                    if(part.getEndpoint2().isValid(world)) {
+                    if(part.getConnectionEndpoint2().isValid(world)) {
                         // Resolve segment
                         makeTransmissionLine(part);
                         return true;
                     }
-                } else if(part.getEndpoint2().equals(endpoint)) {
+                } else if(side == TransmissionPartSide.SECOND) {
                     // Check endpoint1
-                    if(part.getEndpoint1().isValid(world)) {
+                    if(part.getConnectionEndpoint1().isValid(world)) {
                         // Resolve segment
                         makeTransmissionLine(part);
                         return true;
                     }
                 } else {
-                    PowerGrid.LOGGER.warn("[1] Part was expected to have this endpoint");
+                    PowerGrid.LOGGER.warn(
+                            "Transmission part {} was indexed under a node it does not contain: indexedNode={}, node1={}, node2={}",
+                            part.persistentOwnerId,
+                            endpointNode,
+                            part.getNode1(),
+                            part.getNode2()
+                    );
                 }
                 break;
             }
             if(ModdedConfigs.logsEnabled())
-                PowerGrid.LOGGER.debug("Continuing line trace through {}", endpoint);
-            if(part.getEndpoint1().equals(endpoint)) {
-                if(traceTree(part.getEndpoint2(), visited)) {
+                PowerGrid.LOGGER.debug("Continuing line trace through {}", endpointNode);
+            if(side == TransmissionPartSide.FIRST) {
+                if(traceTree(part.getNode2(), visited)) {
                     makeTransmissionLine(part);
                     continueResolving = true;
                 }
-            } else if(part.getEndpoint2().equals(endpoint)) {
-                if(traceTree(part.getEndpoint1(), visited)) {
+            } else if(side == TransmissionPartSide.SECOND) {
+                if(traceTree(part.getNode1(), visited)) {
                     makeTransmissionLine(part);
                     continueResolving = true;
                 }
             } else {
-                PowerGrid.LOGGER.warn("[2] Part was expected to have this endpoint");
+                PowerGrid.LOGGER.warn(
+                        "Transmission part {} was indexed under a node it does not contain while tracing: indexedNode={}, node1={}, node2={}",
+                        part.persistentOwnerId,
+                        endpointNode,
+                        part.getNode1(),
+                        part.getNode2()
+                );
             }
         }
         return continueResolving;
     }
 
+    static TransmissionPartSide transmissionPartSide(
+            @NotNull OwnedFloatingNode node1,
+            @NotNull OwnedFloatingNode node2,
+            @NotNull OwnedFloatingNode indexedNode
+    ) {
+        if(node1 == indexedNode)
+            return TransmissionPartSide.FIRST;
+        if(node2 == indexedNode)
+            return TransmissionPartSide.SECOND;
+        return TransmissionPartSide.NONE;
+    }
+
     private void resolveTree(@NotNull IWireEndpoint endpoint) {
-        var unresolvedLines = partNodeMap.get(globalExternalNodes.get(endpoint));
+        if(!transmissionTopologyResolutionAllowed())
+            return;
+        var endpointNode = holderOrPlaceholderNode(endpoint);
+        var unresolvedLines = partNodeMap.get(endpointNode);
         if(unresolvedLines == null)
             return;
         // We need to trace the graph to all terminating nodes and see if any are loaded,
         // if so, we need to resolve all lines between them to ensure correct unloaded chunk behaviour.
-        var visited = new HashSet<IWireEndpoint>();
+        var visited = Collections.newSetFromMap(
+                new IdentityHashMap<OwnedFloatingNode, Boolean>()
+        );
         if(ModdedConfigs.logsEnabled())
-            PowerGrid.LOGGER.debug("Starting line trace at {}", endpoint);
-        traceTree(endpoint, visited);
+            PowerGrid.LOGGER.debug(
+                    "Starting line trace at connection endpoint {} resolved as {}",
+                    endpoint,
+                    endpointNode
+            );
+        traceTree(endpointNode, visited);
     }
 
     public void addAndMigrateNode(IWireEndpoint endpoint) {
         var newNode = endpoint.getNode(world);
         if(newNode == null)
             return;
-        addAndMigrateNode(newNode);
+        addAndMigrateNode(endpoint, newNode, NodeBindingMode.BIND_ONLY);
     }
 
     public void addAndMigrateNode(OwnedFloatingNode newNode) {
-        var endpoint = newNode.endpoint;
-        var oldNode = globalExternalNodes.put(endpoint, newNode);
-        addAndMigrateNode(oldNode, newNode);
+        bindEndpointNode(newNode.endpoint, newNode);
     }
 
-    public void addAndMigrateNode(IWireEndpoint oldEndpoint, OwnedFloatingNode newNode) {
+    public void addAndMigrateNode(IWireEndpoint endpointAlias, OwnedFloatingNode newNode) {
+        addAndMigrateNode(endpointAlias, newNode, NodeBindingMode.BIND_AND_SPLIT);
+    }
+
+    private void addAndMigrateNode(
+            IWireEndpoint endpointAlias,
+            OwnedFloatingNode newNode,
+            NodeBindingMode mode
+    ) {
         if(newNode == null)
             return;
-        var endpoint = newNode.endpoint;
-        var oldNode = globalExternalNodes.put(endpoint, newNode);
-        addAndMigrateNode(oldNode, newNode);
-        var oldNode2 = globalExternalNodes.remove(oldEndpoint);
-        addAndMigrateNode(oldNode2, newNode);
+        bindCanonicalAndAlias(endpointAlias, newNode);
 
-        var line = findLineMiddle(newNode);
-        if(line != null) {
-            line.splitAt(newNode);
+        if(shouldSplitAfterNodeBinding(mode, transmissionTopologyResolutionAllowed())) {
+            var line = findLineMiddle(newNode);
+            if(line != null)
+                line.splitAt(newNode);
         }
+    }
+
+    static boolean shouldSplitAfterNodeBinding(
+            NodeBindingMode mode,
+            boolean topologyResolutionAllowed
+    ) {
+        return mode == NodeBindingMode.BIND_AND_SPLIT
+                && topologyResolutionAllowed;
+    }
+
+    private void bindCanonicalAndAlias(
+            @NotNull IWireEndpoint endpointAlias,
+            @NotNull OwnedFloatingNode node
+    ) {
+        bindEndpointNode(node.endpoint, node);
+        if(!node.endpoint.equals(endpointAlias))
+            bindEndpointNode(endpointAlias, node);
+    }
+
+    private void bindEndpointNode(
+            @NotNull IWireEndpoint endpoint,
+            @NotNull OwnedFloatingNode node
+    ) {
+        var previousNode = globalExternalNodes.put(endpoint, node);
+        addAndMigrateNode(previousNode, node);
+    }
+
+    public void removeEndpointAlias(
+            @NotNull IWireEndpoint endpointAlias,
+            @NotNull OwnedFloatingNode expectedNode
+    ) {
+        globalExternalNodes.remove(endpointAlias, expectedNode);
     }
 
     public void addAndMigrateNode(OwnedFloatingNode oldNode, OwnedFloatingNode newNode) {
@@ -977,8 +1581,9 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             // This happens when a block entity is loaded but its terminal was acting as a transmission line junction.
             if(ModdedConfigs.logsEnabled())
                 PowerGrid.LOGGER.debug("Migrating external node from {} to {}", oldNode, newNode);
-            var parts = partNodeMap.remove(oldNode);
-            if(parts != null) {
+            rebindNodeAliasesByIdentity(globalExternalNodes, oldNode, newNode);
+            var parts = moveNodeIndex(partNodeMap, oldNode, newNode);
+            if(!parts.isEmpty()) {
                 for(TransmissionLinePart part : parts) {
                     if(ModdedConfigs.logsEnabled())
                         PowerGrid.LOGGER.debug("Migrating node for part {}", part);
@@ -1010,7 +1615,6 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                             }
                         }
                     }
-                    partNodeMap.computeIfAbsent(newNode, $ -> new HashSet<>()).add(part);
                 }
             }
             if(oldNode.getNetwork() != null) {
@@ -1053,10 +1657,33 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         }
     }
 
+    static void rebindNodeAliasesByIdentity(
+            Map<IWireEndpoint, OwnedFloatingNode> endpointBindings,
+            OwnedFloatingNode oldNode,
+            OwnedFloatingNode newNode
+    ) {
+        endpointBindings.replaceAll((endpoint, node) -> node == oldNode ? newNode : node);
+        endpointBindings.put(oldNode.endpoint, newNode);
+    }
+
+    static <T> List<T> moveNodeIndex(
+            Map<OwnedFloatingNode, Set<T>> nodeIndex,
+            OwnedFloatingNode oldNode,
+            OwnedFloatingNode newNode
+    ) {
+        var moved = nodeIndex.remove(oldNode);
+        if(moved == null || moved.isEmpty())
+            return List.of();
+        nodeIndex.computeIfAbsent(newNode, $ -> new HashSet<>()).addAll(moved);
+        return List.copyOf(moved);
+    }
+
     public void nodeHolderAdded(@NotNull OwnedFloatingNode ownedNode, boolean hasInternals) {
         if(ModdedConfigs.logsEnabled())
             PowerGrid.LOGGER.debug("Node holder added, {}", ownedNode);
         addAndMigrateNode(ownedNode.endpoint);
+        if(!transmissionTopologyResolutionAllowed())
+            return;
         // Try to resolve an end of a transmission line
         resolveTree(ownedNode.endpoint);
         if(hasInternals) {
@@ -1071,9 +1698,25 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     public void prepareUnpaused(OwnedFloatingNode node) {
         if(ModdedConfigs.logsEnabled())
             PowerGrid.LOGGER.debug("Preparing node for unpaused internal connections");
+        if(!transmissionTopologyResolutionAllowed())
+            return;
         var line = findLineMiddle(node);
         if(line != null)
             line.splitAt(node);
+    }
+
+    private boolean transmissionTopologyResolutionAllowed() {
+        return transmissionTopologyResolutionAllowed(
+                verifiedRebuildIsolated,
+                assemblingTransmissionTopology
+        );
+    }
+
+    static boolean transmissionTopologyResolutionAllowed(
+            boolean verifiedRebuildIsolated,
+            boolean assemblingTransmissionTopology
+    ) {
+        return !verifiedRebuildIsolated || assemblingTransmissionTopology;
     }
 
     /**
@@ -1088,6 +1731,13 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             return;
         }
         expectedInChunks.computeIfAbsent(lastKnownChunk, $ -> new CheckChunk()).add(entityId);
+    }
+
+    public void unloadPartsOwnedBy(BaseWireEntity owner) {
+        for(var part : lineParts.values()) {
+            if(part.owner == owner)
+                part.unload();
+        }
     }
 
     public void tracking(ServerPlayer tracker, IWireEndpoint endpoint, boolean end) {
@@ -1125,16 +1775,31 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public OwnedFloatingNode holderOrPlaceholderNode(@NotNull IWireEndpoint endpoint) {
-        var node = globalExternalNodes.get(endpoint);
-        if (node != null)
-            return node;
+        var indexedNode = globalExternalNodes.get(endpoint);
+
+        OwnedFloatingNode loadedNode = null;
         if(endpoint.isValid(world)) {
-            node = endpoint.getNode(world);
-        } else {
-            node = new OwnedFloatingNode(endpoint);
+            loadedNode = endpoint.getNode(world);
         }
-        globalExternalNodes.put(endpoint, node);
-        return node;
+
+        var selectedNode = selectLoadedOrIndexedNode(endpoint, indexedNode, loadedNode);
+        bindCanonicalAndAlias(endpoint, selectedNode);
+        return selectedNode;
+    }
+
+    static OwnedFloatingNode selectLoadedOrIndexedNode(
+            @NotNull IWireEndpoint endpoint,
+            @Nullable OwnedFloatingNode indexedNode,
+            @Nullable OwnedFloatingNode loadedNode
+    ) {
+        // A proxy endpoint may legitimately resolve to a node owned by the main
+        // block of a multiblock, so the node's canonical endpoint can differ
+        // from the endpoint used as the index key.
+        if(loadedNode != null)
+            return loadedNode;
+        if(indexedNode != null)
+            return indexedNode;
+        return new OwnedFloatingNode(endpoint);
     }
 
     public void registerPart(PartId persistentOwnerId, TransmissionLinePart part) {
@@ -1166,29 +1831,79 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         return lineParts.get(persistentOwnerId);
     }
 
+    Map<PartId, TransmissionLinePart> linePartsSnapshot() {
+        return Map.copyOf(lineParts);
+    }
+
+    boolean removeStalePartAfterVerifiedScan(PartId id) {
+        var part = lineParts.get(id);
+        if(part == null || part.owner != null)
+            return false;
+        PowerGrid.LOGGER.warn(
+                "Removing stale transmission registration {} after its owner and endpoint chunks were entity-ticking and no physical owner was found",
+                id
+        );
+        part.remove();
+        return true;
+    }
+
+    void removePartForVerifiedRefresh(PartId id, BaseWireEntity physicalOwner) {
+        if(id.getEntity((ServerLevel) world) != physicalOwner)
+            throw new IllegalArgumentException("Physical owner does not match the transmission part id");
+        var part = lineParts.get(id);
+        if(part != null)
+            part.remove();
+    }
+
     public void inNetwork(@Nullable ElectricalNetwork network, @NotNull OwnedFloatingNode node) {
+        inNetwork(network, node, node.endpoint);
+    }
+
+    public void inNetwork(
+            @Nullable ElectricalNetwork network,
+            @NotNull OwnedFloatingNode node,
+            @NotNull IWireEndpoint connectionEndpoint
+    ) {
         if(network == null)
             return;
-        if(node.getNetwork() != null) {
-            if(node.getNetwork() != network) {
-                network.merge(node.getNetwork());
-            }
-        } else {
-            node.endpoint.joinNetwork(world, network);
+        var currentNetwork = node.getNetwork();
+        if(currentNetwork != null && !currentNetwork.ownsNode(node))
+            node.setNetwork(null);
+        if(node.getNetwork() == null)
+            connectionEndpoint.joinNetwork(world, network);
+        addOrMergeExactNode(network, node);
+    }
+
+    static void addOrMergeExactNode(
+            @NotNull ElectricalNetwork network,
+            @NotNull OwnedFloatingNode node
+    ) {
+        var currentNetwork = node.getNetwork();
+        if(currentNetwork == network && network.ownsNode(node))
+            return;
+        if(currentNetwork != null && currentNetwork.ownsNode(node)) {
+            network.merge(currentNetwork);
+            return;
         }
+        if(currentNetwork != null)
+            node.setNetwork(null);
+        network.addNode(node);
     }
 
     public void movePartMap(OwnedFloatingNode oldNode, OwnedFloatingNode newNode, TransmissionLinePart part) {
-        if(oldNode == newNode || oldNode == null || newNode == null)
+        if(newNode == null)
             return;
-        var parts = partNodeMap.get(oldNode);
-        if(parts == null)
-            return;
-        if(parts.remove(part)) {
-            if (parts.isEmpty())
-                partNodeMap.remove(oldNode);
-            partNodeMap.computeIfAbsent(newNode, $ -> new HashSet<>()).add(part);
+        if(oldNode != null && oldNode != newNode) {
+            var parts = partNodeMap.get(oldNode);
+            if(parts != null) {
+                parts.remove(part);
+                if(parts.isEmpty())
+                    partNodeMap.remove(oldNode);
+            }
         }
+        // Re-add even if the old index entry was already missing. This keeps the
+        // node-to-part index self-healing during entity reloads.
+        partNodeMap.computeIfAbsent(newNode, $ -> new HashSet<>()).add(part);
     }
 
     public void removeFromNetwork(OwnedFloatingNode node) {
@@ -1212,18 +1927,26 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         }
     }
 
-    private static class CheckChunk {
+    static class CheckChunk {
         public final Set<PartId> entities = Sets.newConcurrentHashSet();
-        public int ticks = 0;
+        private int ticks = 0;
 
         public void add(PartId id) {
             entities.add(id);
-            ticks = 0;
+            resetTicks();
         }
 
         public void addAll(Set<PartId> ids) {
             entities.addAll(ids);
+            resetTicks();
+        }
+
+        public void resetTicks() {
             ticks = 0;
+        }
+
+        public boolean advanceEntityLoadCheck() {
+            return ticks++ >= ENTITY_LOAD_GRACE_TICKS;
         }
     }
 

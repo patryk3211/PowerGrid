@@ -28,7 +28,6 @@ import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
-import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
 
 import java.util.Objects;
 
@@ -37,23 +36,47 @@ public class TransmissionLinePart extends ElectricWire {
     private TransmissionLine line;
     @NotNull
     private final WorldNetworks global;
+    @NotNull
+    private final TransmissionConnectionEndpoints connectionEndpoints;
 
     @Nullable
     public BaseWireEntity owner;
     public final WorldNetworks.PartId persistentOwnerId;
     public ChunkPos lastKnownChunk;
 
-    private TransmissionLinePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, WorldNetworks.PartId ownerId, ChunkPos lastKnownChunk, @NotNull WorldNetworks global) {
-        super(resistance, global.holderOrPlaceholderNode(endpoint1), global.holderOrPlaceholderNode(endpoint2));
+    private TransmissionLinePart(
+            double resistance,
+            @NotNull TransmissionConnectionEndpoints connectionEndpoints,
+            WorldNetworks.PartId ownerId,
+            ChunkPos lastKnownChunk,
+            @NotNull WorldNetworks global
+    ) {
+        super(
+                resistance,
+                global.holderOrPlaceholderNode(connectionEndpoints.endpoint1()),
+                global.holderOrPlaceholderNode(connectionEndpoints.endpoint2())
+        );
         this.global = global;
+        this.connectionEndpoints = connectionEndpoints;
         this.persistentOwnerId = ownerId;
         this.lastKnownChunk = lastKnownChunk;
         global.registerPart(persistentOwnerId, this);
     }
 
-    private TransmissionLinePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, @NotNull BaseWireEntity owner, @NotNull WorldNetworks global, WorldNetworks.PartId id) {
-        super(resistance, global.holderOrPlaceholderNode(endpoint1), global.holderOrPlaceholderNode(endpoint2));
+    private TransmissionLinePart(
+            double resistance,
+            @NotNull TransmissionConnectionEndpoints connectionEndpoints,
+            @NotNull BaseWireEntity owner,
+            @NotNull WorldNetworks global,
+            WorldNetworks.PartId id
+    ) {
+        super(
+                resistance,
+                global.holderOrPlaceholderNode(connectionEndpoints.endpoint1()),
+                global.holderOrPlaceholderNode(connectionEndpoints.endpoint2())
+        );
         this.global = global;
+        this.connectionEndpoints = connectionEndpoints;
         this.owner = owner;
         this.persistentOwnerId = id;
         this.lastKnownChunk = new ChunkPos(owner.blockPosition());
@@ -68,19 +91,30 @@ public class TransmissionLinePart extends ElectricWire {
             ownerId = new WorldNetworks.SimpleId(tag.getUUID("Owner"));
         }
         var resistance = tag.getDouble("Resistance");
-        var endpoint1 = WireEndpointType.deserialize(tag.getCompound("Node1"));
-        var endpoint2 = WireEndpointType.deserialize(tag.getCompound("Node2"));
+        var connectionEndpoints = TransmissionConnectionEndpoints.fromNbt(tag);
         var lastKnownChunk = new ChunkPos(tag.getInt("X"), tag.getInt("Z"));
         var part = global.getPart(ownerId);
         if(part == null)
-            return new TransmissionLinePart(resistance, endpoint1, endpoint2, ownerId, lastKnownChunk, global);
+            return new TransmissionLinePart(
+                    resistance,
+                    connectionEndpoints,
+                    ownerId,
+                    lastKnownChunk,
+                    global
+            );
         return part;
     }
 
     public static TransmissionLinePart uniquePart(double resistance, @NotNull IWireEndpoint endpoint1, @NotNull IWireEndpoint endpoint2, BaseWireEntity owner, @NotNull WorldNetworks global, WorldNetworks.PartId id) {
         var part = global.getPart(id);
         if(part == null)
-            return new TransmissionLinePart(resistance, endpoint1, endpoint2, owner, global, id);
+            return new TransmissionLinePart(
+                    resistance,
+                    new TransmissionConnectionEndpoints(endpoint1, endpoint2),
+                    owner,
+                    global,
+                    id
+            );
         return part;
     }
 
@@ -116,6 +150,24 @@ public class TransmissionLinePart extends ElectricWire {
         return getNode2().endpoint;
     }
 
+    /**
+     * Return the physical endpoint recorded by the owning wire entity.
+     * It can differ from the canonical endpoint returned by {@link #getEndpoint1()}.
+     */
+    @NotNull
+    public IWireEndpoint getConnectionEndpoint1() {
+        return connectionEndpoints.endpoint1();
+    }
+
+    /**
+     * Return the physical endpoint recorded by the owning wire entity.
+     * It can differ from the canonical endpoint returned by {@link #getEndpoint2()}.
+     */
+    @NotNull
+    public IWireEndpoint getConnectionEndpoint2() {
+        return connectionEndpoints.endpoint2();
+    }
+
     @Nullable
     public TransmissionLine getLine() {
         return line;
@@ -134,14 +186,36 @@ public class TransmissionLinePart extends ElectricWire {
         owner = null;
     }
 
-    public void grab(BaseWireEntity forEntity, WorldNetworks.PartId id) {
+    public boolean grab(BaseWireEntity forEntity, WorldNetworks.PartId id) {
         if(persistentOwnerId.equals(id)) {
             owner = forEntity;
-            if (line != null)
-                line.grabPart(forEntity, this);
+            if(line != null && !line.grabPart(forEntity, id, this)) {
+                owner = null;
+                return false;
+            }
+            return true;
         } else {
             PowerGrid.LOGGER.warn("Entity tried to grab a part which it does not own, part: {}, entity: {}", this, forEntity);
+            return false;
         }
+    }
+
+    public boolean endpointsMatch(IWireEndpoint endpoint1, IWireEndpoint endpoint2) {
+        return connectionEndpoints.matches(endpoint1, endpoint2);
+    }
+
+    public static boolean sameEndpoints(
+            IWireEndpoint stored1,
+            IWireEndpoint stored2,
+            IWireEndpoint current1,
+            IWireEndpoint current2
+    ) {
+        return TransmissionConnectionEndpoints.sameEndpoints(
+                stored1,
+                stored2,
+                current1,
+                current2
+        );
     }
 
     // Transmission line part can NEVER be directly in a network.
@@ -182,13 +256,19 @@ public class TransmissionLinePart extends ElectricWire {
 
     @Override
     public String toString() {
-        return String.format("LinePart[id=%s, %s, %s]", persistentOwnerId, getEndpoint1(), getEndpoint2());
+        return String.format(
+                "LinePart[id=%s, connections=(%s, %s), nodes=(%s, %s)]",
+                persistentOwnerId,
+                getConnectionEndpoint1(),
+                getConnectionEndpoint2(),
+                getNode1(),
+                getNode2()
+        );
     }
 
     public CompoundTag toNbt() {
         var tag = new CompoundTag();
-        tag.put("Node1", getEndpoint1().serialize());
-        tag.put("Node2", getEndpoint2().serialize());
+        connectionEndpoints.writeToNbt(tag);
         if(persistentOwnerId instanceof WorldNetworks.SimpleId id) {
             tag.putUUID("Owner", id.id());
         } else if(persistentOwnerId instanceof WorldNetworks.ComplexId id) {
@@ -204,14 +284,14 @@ public class TransmissionLinePart extends ElectricWire {
     }
 
     public void refreshEndpointNodes() {
-        var node1 = getEndpoint1().getNode(global.world);
+        var node1 = global.holderOrPlaceholderNode(getConnectionEndpoint1());
         if(this.node1 != node1 && node1 != null) {
-            global.addAndMigrateNode(getNode1().endpoint, node1);
+            global.movePartMap(getNode1(), node1, this);
             setNode1(node1);
         }
-        var node2 = getEndpoint2().getNode(global.world);
+        var node2 = global.holderOrPlaceholderNode(getConnectionEndpoint2());
         if(this.node2 != node2 && node2 != null) {
-            global.addAndMigrateNode(getNode2().endpoint, node2);
+            global.movePartMap(getNode2(), node2, this);
             setNode2(node2);
         }
     }

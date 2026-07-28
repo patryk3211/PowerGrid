@@ -50,6 +50,8 @@ public class GlobalElectricNetworks {
 
     public static void preTick(Level world) {
         var networks = worldNetworks.get(world);
+        if(networks == null && world instanceof ServerLevel)
+            networks = getWorldNetworks(world);
         if(networks == null)
             return;
         networks.preTick();
@@ -63,7 +65,9 @@ public class GlobalElectricNetworks {
     }
 
     public static void unloadWorld(ServerLevel world) {
-        worldNetworks.remove(world);
+        var networks = worldNetworks.remove(world);
+        if(networks != null)
+            networks.close();
     }
 
     @Environment(EnvType.CLIENT)
