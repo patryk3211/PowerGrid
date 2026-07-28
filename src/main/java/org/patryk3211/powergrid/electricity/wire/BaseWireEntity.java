@@ -20,11 +20,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -302,14 +305,20 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
     }
 
     @Override
+    public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity entity) {
+        // The official client retains one entity-data packet when it arrives
+        // before the matching spawn packet. Send the complete state first so
+        // it replaces any stale render-only packet for a reused entity id.
+        ModdedPackets.sendToClientsTracking(createExtraDataPacket(), this);
+        return super.getAddEntityPacket(entity);
+    }
+
+    @Override
     public void startSeenByPlayer(ServerPlayer player) {
         super.startSeenByPlayer(player);
-        // Minecraft calls this only after its entity-spawn bundle has been sent
-        // to this player. The full packet initializes material and endpoint
-        // state. Hanging wires then send their server-calculated terminal
-        // geometry as a second, existing-format packet so render setup never
-        // depends on client chunk/block-entity readiness.
-        ModdedPackets.sendToClient(createExtraDataPacket(), player);
+        // ServerEntity calls this after queuing the entity-spawn bundle. The
+        // pre-spawn full packet is ordered to initialize material and endpoint
+        // state before render-only geometry is applied after entity join.
         sendTrackingRenderData(player);
     }
 

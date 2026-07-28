@@ -38,5 +38,6 @@ public class WireRenderSyncTests {
         Assertions.assertEquals((float) terminal2.z, positions.getFloat(5));
         Assertions.assertTrue(tag.getBoolean("D"));
         Assertions.assertFalse(tag.contains("Version"));
+        Assertions.assertFalse(tag.contains("Item"));
     }
 }

@@ -40,8 +40,16 @@ public class EntityDataS2CPacket implements S2CPacket {
         data = buffer.readNbt();
     }
 
+    static CompoundTag takeDeferredData(int entityId) {
+        return DEFERRED_DATA.remove(entityId);
+    }
+
+    static void deferData(int entityId, CompoundTag data) {
+        DEFERRED_DATA.put(entityId, data);
+    }
+
     public static void clientEntityAdded(Entity entity) {
-        var tag = DEFERRED_DATA.remove(entity.getId());
+        var tag = takeDeferredData(entity.getId());
         if(tag == null)
             return;
         if(entity instanceof IConsumer consumer)
@@ -59,7 +67,7 @@ public class EntityDataS2CPacket implements S2CPacket {
         var world = ClientSideAccess.world();
         var entity = world.getEntity(entityId);
         if(entity == null) {
-            DEFERRED_DATA.put(entityId, data);
+            deferData(entityId, data);
             return;
         }
         if(entity instanceof IConsumer consumer)
