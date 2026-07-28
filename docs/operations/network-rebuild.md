@@ -156,6 +156,25 @@ verified to belong to the target electrical network. This prevents a
 placeholder left over from chunk loading from being inserted as an
 out-of-network wire endpoint.
 
+## Incremental additions
+
+Placing a new electrical block, cable or cord does not start a verified rebuild.
+The normal entity lifecycle attaches the new physical part to the existing
+derived topology and schedules island discovery after the block's internal
+circuit has joined its endpoint networks.
+
+If two distinct physical endpoints temporarily resolve to an incomplete or
+shared node while their block entities are initializing, the physical owner now
+keeps its persisted part registration instead of dropping the reference. The
+server retries only that unresolved part at most three times, 20 ticks apart,
+and processes at most 16 such retries in one tick. A successful retry schedules
+the same island-discovery path as an immediate connection.
+
+Island-discovery requests raised while a discovery pass is already running are
+deferred to the next tick instead of being discarded. These incremental paths
+do not load chunks, do not interrupt the complete dimension network and do not
+consume the verified rebuild's separate retry budget.
+
 ## Safety bounds
 
 - At most 8 chunks are temporarily active at once.

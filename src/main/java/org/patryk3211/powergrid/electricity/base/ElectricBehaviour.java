@@ -222,6 +222,9 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
                 GlobalElectricNetworks.prepareUnpaused(this);
                 tracedAdd(new LinkedList<>(externalNodes));
                 element.unpaused();
+                // Internal circuit insertion can merge or reshape electrical
+                // islands after the transmission-line hooks have already run.
+                GlobalElectricNetworks.nodeHolderInternalsConnected(this);
             }
         }
     }

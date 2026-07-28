@@ -203,6 +203,13 @@ public class GlobalElectricNetworks {
         }
     }
 
+    public static void nodeHolderInternalsConnected(ElectricBehaviour behaviour) {
+        var worldNetworks = getWorldNetworks(behaviour.blockEntity.getLevel());
+        for(OwnedFloatingNode node : behaviour.getExternalNodes()) {
+            worldNetworks.scheduleIslandDiscovery(node.getNetwork());
+        }
+    }
+
     public static void configsReloaded() {
         var cSolver = ModdedConfigs.server().electricity.solver;
         var backend = cSolver.solverBackend.get();

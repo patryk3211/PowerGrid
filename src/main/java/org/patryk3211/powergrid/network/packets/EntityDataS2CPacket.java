@@ -44,8 +44,18 @@ public class EntityDataS2CPacket implements S2CPacket {
         return DEFERRED_DATA.remove(entityId);
     }
 
+    static CompoundTag selectDeferredData(CompoundTag existing, CompoundTag incoming) {
+        if(existing != null && existing.contains("Item") && !incoming.contains("Item"))
+            return existing;
+        return incoming;
+    }
+
     static void deferData(int entityId, CompoundTag data) {
-        DEFERRED_DATA.put(entityId, data);
+        DEFERRED_DATA.compute(entityId, ($, existing) -> selectDeferredData(existing, data));
+    }
+
+    public static void clearDeferredData() {
+        DEFERRED_DATA.clear();
     }
 
     public static void clientEntityAdded(Entity entity) {

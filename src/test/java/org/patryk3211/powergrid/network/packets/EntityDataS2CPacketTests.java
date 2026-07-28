@@ -17,11 +17,17 @@ package org.patryk3211.powergrid.network.packets;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.phys.Vec3;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.patryk3211.powergrid.electricity.wire.WireRenderSync;
 
 public class EntityDataS2CPacketTests {
+    @AfterEach
+    void clearDeferredData() {
+        EntityDataS2CPacket.clearDeferredData();
+    }
+
     @Test
     void completePreSpawnDataReplacesStaleRenderOnlyData() {
         int entityId = 42;
@@ -38,5 +44,21 @@ public class EntityDataS2CPacketTests {
         Assertions.assertTrue(deferred.contains("Item"));
         Assertions.assertFalse(deferred.contains("V"));
         Assertions.assertNull(EntityDataS2CPacket.takeDeferredData(entityId));
+    }
+
+    @Test
+    void staleRenderOnlyDataCannotReplaceCompletePreSpawnData() {
+        int entityId = 43;
+        var complete = new CompoundTag();
+        complete.put("Item", new CompoundTag());
+        var renderOnly = WireRenderSync.terminalGeometry(Vec3.ZERO, new Vec3(1, 2, 3), false);
+
+        EntityDataS2CPacket.deferData(entityId, complete);
+        EntityDataS2CPacket.deferData(entityId, renderOnly);
+
+        var deferred = EntityDataS2CPacket.takeDeferredData(entityId);
+        Assertions.assertSame(complete, deferred);
+        Assertions.assertTrue(deferred.contains("Item"));
+        Assertions.assertFalse(deferred.contains("V"));
     }
 }

@@ -29,6 +29,7 @@ import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.ImaginaryWireEndpoint;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -57,6 +58,48 @@ public class TransmissionLineRecoveryTests {
                 WorldNetworks.NodeBindingMode.BIND_AND_SPLIT,
                 true
         ));
+    }
+
+    @Test
+    void discoveryRequestedDuringDiscoveryIsDeferredInsteadOfDiscarded() {
+        var current = new HashSet<String>();
+        var deferred = new HashSet<String>();
+
+        WorldNetworks.enqueueIslandDiscovery("network", true, current, deferred);
+
+        Assertions.assertTrue(current.isEmpty());
+        Assertions.assertEquals(Set.of("network"), deferred);
+    }
+
+    @Test
+    void unresolvedIncrementalPartRemainsOwnedWhileRetryIsScheduled() {
+        var part = new Object();
+        var retries = new ArrayList<Object>();
+
+        var retained = WorldNetworks.retainRegisteredPartWhileResolving(
+                part,
+                false,
+                retries::add
+        );
+
+        Assertions.assertSame(part, retained);
+        Assertions.assertEquals(java.util.List.of(part), retries);
+        Assertions.assertEquals(3, WorldNetworks.MAX_INCREMENTAL_RESOLUTION_RETRIES);
+    }
+
+    @Test
+    void resolvedIncrementalPartDoesNotScheduleARetry() {
+        var part = new Object();
+        var retries = new ArrayList<Object>();
+
+        var retained = WorldNetworks.retainRegisteredPartWhileResolving(
+                part,
+                true,
+                retries::add
+        );
+
+        Assertions.assertSame(part, retained);
+        Assertions.assertTrue(retries.isEmpty());
     }
 
     @Test

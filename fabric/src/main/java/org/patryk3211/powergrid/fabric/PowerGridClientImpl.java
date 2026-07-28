@@ -56,7 +56,10 @@ public class PowerGridClientImpl implements ClientModInitializer, ModelLoadingPl
         WorldRenderEvents.BEFORE_ENTITIES.register(this::onLevelRender);
 
         // Register platform events
-        ClientWorldEvents.UNLOAD.register(ClientElectricNetwork::unloadWorld);
+        ClientWorldEvents.UNLOAD.register((client, world) -> {
+            ClientElectricNetwork.unloadWorld(client, world);
+            EntityDataS2CPacket.clearDeferredData();
+        });
     }
 
     private void onLevelRender(WorldRenderContext context) {

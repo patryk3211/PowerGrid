@@ -28,6 +28,10 @@ public final class WireRenderSync {
     private WireRenderSync() {
     }
 
+    public static boolean canApplyTerminalGeometry(CompoundTag data, boolean materialReady) {
+        return !data.contains("V") || materialReady;
+    }
+
     public static CompoundTag terminalGeometry(Vec3 terminal1, Vec3 terminal2, boolean dynamic) {
         var tag = new CompoundTag();
         var positions = new ListTag();

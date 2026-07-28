@@ -20,6 +20,8 @@ import net.minecraft.world.phys.Vec3;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
+
 public class WireRenderSyncTests {
     @Test
     void terminalGeometryContainsServerCalculatedEndpoints() {
@@ -39,5 +41,32 @@ public class WireRenderSyncTests {
         Assertions.assertTrue(tag.getBoolean("D"));
         Assertions.assertFalse(tag.contains("Version"));
         Assertions.assertFalse(tag.contains("Item"));
+    }
+
+    @Test
+    void terminalGeometryWaitsForWireMaterial() {
+        var tag = WireRenderSync.terminalGeometry(Vec3.ZERO, new Vec3(1, 2, 3), false);
+
+        Assertions.assertFalse(WireRenderSync.canApplyTerminalGeometry(tag, false));
+        Assertions.assertTrue(WireRenderSync.canApplyTerminalGeometry(tag, true));
+        Assertions.assertTrue(WireRenderSync.canApplyTerminalGeometry(new net.minecraft.nbt.CompoundTag(), false));
+    }
+
+    @Test
+    void renderBroadcastsOnlyReachCompletedTrackingSessions() {
+        var recipients = new WireTrackingRecipients<Object>();
+        var player = new Object();
+        var deliveries = new ArrayList<Object>();
+
+        recipients.forEach(deliveries::add);
+        Assertions.assertTrue(deliveries.isEmpty());
+
+        recipients.start(player);
+        recipients.forEach(deliveries::add);
+        Assertions.assertEquals(java.util.List.of(player), deliveries);
+
+        recipients.stop(player);
+        recipients.forEach(deliveries::add);
+        Assertions.assertEquals(java.util.List.of(player), deliveries);
     }
 }

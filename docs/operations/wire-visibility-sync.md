@@ -8,19 +8,20 @@ Power Grid wires are persistent entities. Their electrical state is authoritativ
 on the server, while their item, endpoints and render geometry are sent to each
 client through the existing Power Grid entity-data packet.
 
-The server sends the complete wire data directly to a player immediately before
-Minecraft sends that wire entity's spawn bundle. Hanging wires and cords then
-receive a second packet containing the exact terminal positions already
-calculated by the server, after the spawn bundle has been queued. Both packets
-use formats already supported by the official client.
+Minecraft sends the wire entity's spawn bundle first. The server then sends the
+complete wire data directly to that exact player, followed by a second packet
+containing the terminal positions already calculated by the server. Render-only
+geometry broadcasts are restricted to players whose tracking session has
+completed. All packets use formats already supported by the official client.
 
 The ordering is intentional. The official client can retain one entity-data
 packet while waiting for the entity with that numeric id to spawn. A render-only
-geometry packet left behind by an earlier tracking session does not contain the
-wire item, so applying it to a fresh entity can fail during render setup. The
-new complete pre-spawn packet replaces any such stale entry, initializes the
-wire item and endpoints when the entity joins, and only then is the render-only
-geometry sent.
+geometry packet does not contain the wire item, so applying it to a fresh entity
+can fail during render setup. Excluding not-yet-paired players from ordinary
+geometry broadcasts prevents that packet from arriving before spawn. Once
+spawned, complete material and endpoint state is sent before render geometry.
+Players are removed from the geometry recipient set before Minecraft ends their
+tracking session, preventing a late geometry packet from surviving the removal.
 
 This applies whenever the player starts tracking:
 
@@ -34,12 +35,13 @@ Packet formats, packet registration and the entity registry are unchanged.
 The same universal mod jar still contains the server logic when playing in an
 integrated single-player server.
 
-The synchronization is event-driven. It sends one full-data packet during
-pairing with a wire. Hanging wires, power cords and string-light cords also send
-one existing terminal-geometry packet after pairing. Block-mounted wires need
-only the full packet because their segment geometry is stored directly in that
-data. The repair does not add a periodic retry or broadcast loop. Normal wire
-updates continue to use the existing tracking broadcast.
+The synchronization is event-driven. It sends one full-data packet after the
+spawn bundle during pairing with a wire. Hanging wires, power cords and
+string-light cords also receive one existing terminal-geometry packet
+immediately afterward. Block-mounted wires need only the full packet because
+their segment geometry is stored directly in that data. The repair does not add
+a periodic retry or broadcast loop. Normal geometry updates are sent only to
+the entity's established tracking sessions.
 
 ## Observable behavior
 
@@ -57,10 +59,13 @@ official client removes that local wire entity on its next tick. The server
 entity and electrical connection remain healthy, which explains why power
 continues and why visibility can differ between players.
 
-After the repair, full material and endpoint data still arrives first. The
-server-calculated terminal geometry follows the spawn bundle, so curve
-initialization does not depend on client chunk or block-entity timing and a
-geometry-only packet cannot replace the full deferred initialization packet.
+After the repair, full material and endpoint data arrives before terminal
+geometry for every completed pairing. The server-calculated geometry therefore
+does not depend on client chunk or block-entity timing. Updated clients also
+retain complete deferred data when a render-only packet arrives out of order,
+ignore geometry until wire material exists, and clear deferred entity data when
+leaving a world. These client guards complement the server-side ordering but
+are not required for an official client connecting to a repaired server.
 
 This repair does not:
 
@@ -68,7 +73,7 @@ This repair does not:
 - change current flow or resistance;
 - load or retain chunks;
 - increase entity tracking distance;
-- change any client class or resource.
+- change packet formats or require a modified client.
 
 If a wire remains invisible for every player while its complete entity bounding
 box is visible with Minecraft's entity-hitbox debug view, investigate a

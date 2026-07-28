@@ -20,14 +20,11 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerEntity;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -87,6 +84,8 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
     protected Float resistanceOverride = null;
 
     protected boolean sublevelMove;
+    private final WireTrackingRecipients<ServerPlayer> establishedTrackingPlayers =
+            new WireTrackingRecipients<>();
 
     public BaseWireEntity(EntityType<?> type, Level world) {
         super(type, world);
@@ -304,22 +303,27 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
     protected void sendTrackingRenderData(ServerPlayer player) {
     }
 
-    @Override
-    public Packet<ClientGamePacketListener> getAddEntityPacket(ServerEntity entity) {
-        // The official client retains one entity-data packet when it arrives
-        // before the matching spawn packet. Send the complete state first so
-        // it replaces any stale render-only packet for a reused entity id.
-        ModdedPackets.sendToClientsTracking(createExtraDataPacket(), this);
-        return super.getAddEntityPacket(entity);
+    protected void sendRenderDataToEstablishedTrackingPlayers(EntityDataS2CPacket packet) {
+        establishedTrackingPlayers.forEach(player -> ModdedPackets.sendToClient(packet, player));
     }
 
     @Override
     public void startSeenByPlayer(ServerPlayer player) {
         super.startSeenByPlayer(player);
-        // ServerEntity calls this after queuing the entity-spawn bundle. The
-        // pre-spawn full packet is ordered to initialize material and endpoint
-        // state before render-only geometry is applied after entity join.
+        // ServerEntity calls this after sending the entity-spawn bundle. Send
+        // complete material and endpoint state before render-only geometry,
+        // then admit the player to normal geometry broadcasts.
+        ModdedPackets.sendToClient(createExtraDataPacket(), player);
         sendTrackingRenderData(player);
+        establishedTrackingPlayers.start(player);
+    }
+
+    @Override
+    public void stopSeenByPlayer(ServerPlayer player) {
+        // Stop render-only broadcasts before Minecraft queues the removal
+        // packet so geometry cannot outlive this tracking session.
+        establishedTrackingPlayers.stop(player);
+        super.stopSeenByPlayer(player);
     }
 
     @Override

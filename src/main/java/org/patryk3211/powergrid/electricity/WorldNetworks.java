@@ -53,6 +53,9 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     static final int MAX_AUTOMATIC_REBUILD_RETRIES = 3;
     static final int REBUILD_RETRY_INTERVAL_TICKS = 20;
     static final int MAX_REBUILD_RETRIES_PER_TICK = 16;
+    static final int MAX_INCREMENTAL_RESOLUTION_RETRIES = 3;
+    static final int INCREMENTAL_RESOLUTION_RETRY_INTERVAL_TICKS = 20;
+    static final int MAX_INCREMENTAL_RESOLUTION_RETRIES_PER_TICK = 16;
 
     enum TransmissionPartSide {
         FIRST,
@@ -82,7 +85,10 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     protected final Set<TransmissionLinePart> deferredRewireEntities = new HashSet<>();
     protected final Set<ElectricalNetwork> islandDiscoveryQueue = new HashSet<>();
+    private final Set<ElectricalNetwork> deferredIslandDiscoveryQueue = new HashSet<>();
     private final Map<PartId, RebuildRetry> rebuildRetryQueue = new HashMap<>();
+    private final Map<PartId, IncrementalResolutionRetry> incrementalResolutionRetryQueue =
+            new HashMap<>();
     private TransmissionNetworkRebuildJob verifiedRebuildJob;
     private boolean startupRebuildStarted;
     private boolean verifiedRebuildIsolated;
@@ -121,6 +127,17 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         private long nextAttemptTick;
 
         private RebuildRetry(TransmissionLinePart part, long nextAttemptTick) {
+            this.part = part;
+            this.nextAttemptTick = nextAttemptTick;
+        }
+    }
+
+    private static class IncrementalResolutionRetry {
+        private final TransmissionLinePart part;
+        private final RetryBudget budget = new RetryBudget(MAX_INCREMENTAL_RESOLUTION_RETRIES);
+        private long nextAttemptTick;
+
+        private IncrementalResolutionRetry(TransmissionLinePart part, long nextAttemptTick) {
             this.part = part;
             this.nextAttemptTick = nextAttemptTick;
         }
@@ -181,8 +198,23 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
     }
 
     public void scheduleIslandDiscovery(ElectricalNetwork network) {
-        if(network != null && !runningDiscovery && !verifiedRebuildIsolated)
-            islandDiscoveryQueue.add(network);
+        if(network == null || verifiedRebuildIsolated)
+            return;
+        enqueueIslandDiscovery(
+                network,
+                runningDiscovery,
+                islandDiscoveryQueue,
+                deferredIslandDiscoveryQueue
+        );
+    }
+
+    static <T> void enqueueIslandDiscovery(
+            @NotNull T network,
+            boolean runningDiscovery,
+            Set<T> currentQueue,
+            Set<T> deferredQueue
+    ) {
+        (runningDiscovery ? deferredQueue : currentQueue).add(network);
     }
 
     private void runIslandDiscoveryFor(ElectricalNetwork network) {
@@ -313,16 +345,24 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             // register itself, but no partially rebuilt transmission topology
             // may enter island discovery or the electrical solver.
             islandDiscoveryQueue.clear();
+            deferredIslandDiscoveryQueue.clear();
             return;
         }
         processRebuildRetries();
+        processIncrementalResolutionRetries();
 
-        runningDiscovery = true;
-        for(var network : islandDiscoveryQueue) {
-            runIslandDiscoveryFor(network);
-        }
+        var discoveryBatch = List.copyOf(islandDiscoveryQueue);
         islandDiscoveryQueue.clear();
-        runningDiscovery = false;
+        runningDiscovery = true;
+        try {
+            for(var network : discoveryBatch) {
+                runIslandDiscoveryFor(network);
+            }
+        } finally {
+            runningDiscovery = false;
+            islandDiscoveryQueue.addAll(deferredIslandDiscoveryQueue);
+            deferredIslandDiscoveryQueue.clear();
+        }
 
         var iter2 = transmissionLines.values().iterator();
         var removed = new ArrayList<TransmissionLine>();
@@ -977,6 +1017,26 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         return true;
     }
 
+    private boolean resolveIncrementalTransmissionPart(TransmissionLinePart linePart) {
+        var resolved = makeTransmissionLine(linePart);
+        retainRegisteredPartWhileResolving(
+                linePart,
+                resolved,
+                this::scheduleIncrementalResolutionRetry
+        );
+        return resolved;
+    }
+
+    static <T> T retainRegisteredPartWhileResolving(
+            @NotNull T part,
+            boolean resolved,
+            java.util.function.Consumer<T> retryScheduler
+    ) {
+        if(!resolved)
+            retryScheduler.accept(part);
+        return part;
+    }
+
     @Nullable
     public ElectricWire makeSimpleWire(IWireEndpoint endpoint1, IWireEndpoint endpoint2, float resistance) {
         var network = prepareForConnection(endpoint1, endpoint2);
@@ -1008,9 +1068,11 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         if(linePart == null)
             linePart = TransmissionLinePart.uniquePart(forEntity.getResistance(), endpoint1, endpoint2, forEntity, this, id);
 
-        if(makeTransmissionLine(linePart))
-            return linePart;
-        return null;
+        resolveIncrementalTransmissionPart(linePart);
+        // Keep the physical owner linked to its persisted registration even if
+        // endpoint initialization requires a bounded deferred resolution. This
+        // lets removal, unload and the retry path continue to manage the part.
+        return linePart;
     }
 
     @Nullable
@@ -1085,6 +1147,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
             throw new IllegalStateException("Transmission networks can only be rebuilt on the server");
 
         rebuildRetryQueue.clear();
+        incrementalResolutionRetryQueue.clear();
         var parts = new ArrayList<>(lineParts.values());
         parts.sort(Comparator.comparing(part -> part.persistentOwnerId.toString()));
 
@@ -1164,7 +1227,9 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
         verifiedRebuildIsolated = true;
         islandDiscoveryQueue.clear();
+        deferredIslandDiscoveryQueue.clear();
         rebuildRetryQueue.clear();
+        incrementalResolutionRetryQueue.clear();
         try {
             verifiedRebuildLinesBefore = detachDerivedTransmissionTopology();
         } catch(RuntimeException exception) {
@@ -1220,7 +1285,123 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
 
     private void scheduleDiscoveryForAllNetworks() {
         islandDiscoveryQueue.clear();
+        deferredIslandDiscoveryQueue.clear();
         islandDiscoveryQueue.addAll(subnetworks);
+    }
+
+    private void scheduleIncrementalResolutionRetry(TransmissionLinePart part) {
+        if(verifiedRebuildIsolated || assemblingTransmissionTopology)
+            return;
+        incrementalResolutionRetryQueue.computeIfAbsent(
+                part.persistentOwnerId,
+                $ -> {
+                    PowerGrid.LOGGER.warn(
+                            "Deferred incremental transmission attachment {} in {} because its endpoint nodes are not ready; retrying at most {} times",
+                            part.persistentOwnerId,
+                            world.dimension().location(),
+                            MAX_INCREMENTAL_RESOLUTION_RETRIES
+                    );
+                    return new IncrementalResolutionRetry(
+                            part,
+                            world.getGameTime() + INCREMENTAL_RESOLUTION_RETRY_INTERVAL_TICKS
+                    );
+                }
+        );
+    }
+
+    private void processIncrementalResolutionRetries() {
+        if(incrementalResolutionRetryQueue.isEmpty())
+            return;
+
+        var currentTick = world.getGameTime();
+        int attemptsThisTick = 0;
+        var iterator = incrementalResolutionRetryQueue.entrySet().iterator();
+        while(iterator.hasNext()
+                && attemptsThisTick < MAX_INCREMENTAL_RESOLUTION_RETRIES_PER_TICK) {
+            var entry = iterator.next();
+            var retry = entry.getValue();
+            var part = retry.part;
+
+            if(lineParts.get(entry.getKey()) != part) {
+                iterator.remove();
+                continue;
+            }
+            if(part.getLine() != null) {
+                iterator.remove();
+                continue;
+            }
+            if(currentTick < retry.nextAttemptTick)
+                continue;
+            if(!retry.budget.tryAcquire()) {
+                iterator.remove();
+                continue;
+            }
+
+            ++attemptsThisTick;
+            restorePartEndpointNodes(part);
+            try {
+                if(makeTransmissionLine(part)) {
+                    PowerGrid.LOGGER.info(
+                            "Incremental transmission attachment {} resolved automatically on retry {}/{} in {}",
+                            part.persistentOwnerId,
+                            retry.budget.attempts(),
+                            MAX_INCREMENTAL_RESOLUTION_RETRIES,
+                            world.dimension().location()
+                    );
+                    iterator.remove();
+                    continue;
+                }
+                logIncrementalResolutionFailure(part, retry.budget, null);
+            } catch(RuntimeException exception) {
+                logIncrementalResolutionFailure(part, retry.budget, exception);
+            }
+
+            if(retry.budget.exhausted()) {
+                iterator.remove();
+            } else {
+                retry.nextAttemptTick =
+                        currentTick + INCREMENTAL_RESOLUTION_RETRY_INTERVAL_TICKS;
+            }
+        }
+    }
+
+    private void logIncrementalResolutionFailure(
+            TransmissionLinePart part,
+            RetryBudget budget,
+            @Nullable RuntimeException exception
+    ) {
+        var state = budget.exhausted() ? "retry limit exhausted" : "retry pending";
+        var message =
+                "Failed incremental transmission attachment {} on retry {}/{} in {} "
+                        + "({}; endpoint1={}, endpoint2={}, node1={}, node2={})";
+        if(exception == null) {
+            PowerGrid.LOGGER.warn(
+                    message,
+                    part.persistentOwnerId,
+                    budget.attempts(),
+                    MAX_INCREMENTAL_RESOLUTION_RETRIES,
+                    world.dimension().location(),
+                    state,
+                    part.getConnectionEndpoint1(),
+                    part.getConnectionEndpoint2(),
+                    part.getNode1(),
+                    part.getNode2()
+            );
+        } else {
+            PowerGrid.LOGGER.error(
+                    message,
+                    part.persistentOwnerId,
+                    budget.attempts(),
+                    MAX_INCREMENTAL_RESOLUTION_RETRIES,
+                    world.dimension().location(),
+                    state,
+                    part.getConnectionEndpoint1(),
+                    part.getConnectionEndpoint2(),
+                    part.getNode1(),
+                    part.getNode2(),
+                    exception
+            );
+        }
     }
 
     private void scheduleRebuildRetry(TransmissionLinePart part) {
@@ -1430,14 +1611,14 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     // Check endpoint2
                     if(part.getConnectionEndpoint2().isValid(world)) {
                         // Resolve segment
-                        makeTransmissionLine(part);
+                        resolveIncrementalTransmissionPart(part);
                         return true;
                     }
                 } else if(side == TransmissionPartSide.SECOND) {
                     // Check endpoint1
                     if(part.getConnectionEndpoint1().isValid(world)) {
                         // Resolve segment
-                        makeTransmissionLine(part);
+                        resolveIncrementalTransmissionPart(part);
                         return true;
                     }
                 } else {
@@ -1455,12 +1636,12 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 PowerGrid.LOGGER.debug("Continuing line trace through {}", endpointNode);
             if(side == TransmissionPartSide.FIRST) {
                 if(traceTree(part.getNode2(), visited)) {
-                    makeTransmissionLine(part);
+                    resolveIncrementalTransmissionPart(part);
                     continueResolving = true;
                 }
             } else if(side == TransmissionPartSide.SECOND) {
                 if(traceTree(part.getNode1(), visited)) {
-                    makeTransmissionLine(part);
+                    resolveIncrementalTransmissionPart(part);
                     continueResolving = true;
                 }
             } else {

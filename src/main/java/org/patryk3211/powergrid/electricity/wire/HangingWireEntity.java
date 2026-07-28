@@ -246,6 +246,8 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     @Override
     public void onEntityDataPacket(CompoundTag data) {
         if(data.contains("V")) {
+            if(!WireRenderSync.canApplyTerminalGeometry(data, getWireEntry() != null))
+                return;
             var list = data.getList("V", Tag.TAG_FLOAT);
             terminalPos1 = new Vec3(list.getFloat(0), list.getFloat(1), list.getFloat(2));
             terminalPos2 = new Vec3(list.getFloat(3), list.getFloat(4), list.getFloat(5));
@@ -432,7 +434,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
                                 isDynamic
                         )
                 );
-                ModdedPackets.sendToClientsTracking(packet, this);
+                sendRenderDataToEstablishedTrackingPlayers(packet);
             }
         }
     }

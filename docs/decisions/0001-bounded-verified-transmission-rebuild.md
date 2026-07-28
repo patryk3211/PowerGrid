@@ -91,6 +91,13 @@ The operation is a bounded server-thread state machine:
   player-position or login precondition. Its temporary entity-ticking tickets,
   structural validation and placeholder nodes are sufficient to complete a
   matching persisted network while no player is connected.
+- Normal placement remains incremental. A newly registered physical part stays
+  owned by its wire entity when its endpoint nodes are not ready on the first
+  connection attempt, and only that part receives at most three delayed
+  resolution attempts. Electrical block activation schedules island discovery
+  after its internal circuit has joined the endpoint networks. Discovery
+  requests produced during a running pass are carried into the next tick rather
+  than discarded.
 
 The scan is refused above 512 unique chunks. Chunk loading has three attempts
 per group, a 100-tick attempt timeout, a 20-tick retry delay and a five-minute
@@ -146,6 +153,12 @@ Loading a physical wire or rebuilding a line no longer requests a nested split
 while an outer split is preparing its replacement lines. The existing defensive
 guard remains available for unrelated invariant violations without producing
 routine stack traces during chunk loading.
+
+New cables and electrical blocks no longer depend on a later verified rebuild
+to become part of a previously rebuilt network. The bounded per-part retry
+handles only transient endpoint initialization and retains normal removal and
+unload ownership. Deferred island discovery makes topology changes visible to
+the solver without introducing a full-network rebuild on every placement.
 
 Startup takes longer in proportion to the number of discovered groups. The hard
 limits turn excessive load or a stuck chunk into a visible failure with all
