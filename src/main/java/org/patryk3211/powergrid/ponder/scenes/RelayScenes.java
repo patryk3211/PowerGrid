@@ -77,9 +77,9 @@ public class RelayScenes {
 
         electric.connectInvisible(util.grid().at(0, 2, 2), 0, source, 0);
         electric.connectInvisible(util.grid().at(4, 2, 2), 0, source, 1);
-        electric.connect(util.grid().at(0, 2, 2), 0, target, 1);
-        electric.connect(util.grid().at(4, 2, 2), 0, bulb, 0);
-        electric.connect(target, 0, bulb, 1);
+        electric.connect(util.grid().at(0, 2, 2), 0, target, 0);
+        electric.connect(util.grid().at(4, 2, 2), 0, bulb, 1);
+        electric.connect(target, 1, bulb, 0);
         scene.idle(10);
 
         scene.overlay().showText(80)
