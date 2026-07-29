@@ -4,7 +4,7 @@
 	"texture_size": [64, 64],
 	"textures": {
 		"1": "powergrid:block/fe_inverter",
-		"particle": "powergrid:block/fe_inverter"
+		"particle": "create:block/cardboard_block_side"
 	},
 	"elements": [
 		{
