@@ -6,7 +6,7 @@
 	"textures": {
 		"0": "powergrid:block/generator/large_induction_rotor",
 		"1": "powergrid:block/generator/clutch_shaft",
-		"particle": "powergrid:block/generator/large_induction_rotor"
+		"particle": "powergrid:block/wire_connector"
 	},
 	"elements": [
 		{

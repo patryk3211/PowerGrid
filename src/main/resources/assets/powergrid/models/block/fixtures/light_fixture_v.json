@@ -5,7 +5,7 @@
 	"texture_size": [32, 32],
 	"textures": {
 		"0": "powergrid:block/light_fixture",
-		"particle": "powergrid:block/light_fixture"
+		"particle": "powergrid:block/wire_connector"
 	},
 	"elements": [
 		{

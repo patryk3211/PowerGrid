@@ -6,7 +6,7 @@
 	"textures": {
 		"0": "powergrid:block/power_plug",
 		"1": "powergrid:block/circuit_design_table",
-		"particle": "powergrid:block/power_plug"
+		"particle": "powergrid:block/wire_connector"
 	},
 	"elements": [
 		{

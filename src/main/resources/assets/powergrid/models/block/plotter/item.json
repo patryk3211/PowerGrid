@@ -7,7 +7,7 @@
 		"0": "powergrid:block/plotter",
 		"1": "create:block/axis_top",
 		"2": "create:block/axis",
-		"particle": "powergrid:block/plotter"
+		"particle": "powergrid:block/conductive_casing"
 	},
 	"elements": [
 		{

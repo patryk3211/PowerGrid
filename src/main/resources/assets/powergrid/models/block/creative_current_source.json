@@ -5,7 +5,7 @@
 	"texture_size": [64, 64],
 	"textures": {
 		"0": "powergrid:block/creative_source",
-		"particle": "powergrid:block/creative_source"
+		"particle": "create:block/creative_casing"
 	},
 	"elements": [
 		{
