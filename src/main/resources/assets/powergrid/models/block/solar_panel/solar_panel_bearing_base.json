@@ -4,7 +4,7 @@
 	"texture_size": [64, 64],
 	"textures": {
 		"0": "powergrid:block/solar_panel_bearing",
-		"particle": "powergrid:block/solar_panel_bearing"
+		"particle": "powergrid:block/wire_connector"
 	},
 	"elements": [
 		{

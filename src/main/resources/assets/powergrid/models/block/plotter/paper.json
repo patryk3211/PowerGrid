@@ -4,7 +4,7 @@
 	"parent": "block/block",
 	"textures": {
 		"1": "powergrid:block/plotter_paper",
-		"particle": "powergrid:block/plotter_paper"
+		"particle": "powergrid:block/conductive_casing"
 	},
 	"elements": [
 		{
