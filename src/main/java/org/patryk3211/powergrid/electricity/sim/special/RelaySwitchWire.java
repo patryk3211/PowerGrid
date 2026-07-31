@@ -10,6 +10,7 @@ public class RelaySwitchWire extends SwitchedWire implements IOuterHook {
     private final float onCurrent;
     private final float offCurrent;
     private final boolean normallyClosed;
+    private final boolean polarized;
 
     private boolean switched = false;
 
@@ -19,26 +20,39 @@ public class RelaySwitchWire extends SwitchedWire implements IOuterHook {
         this.onCurrent = onCurrent;
         this.offCurrent = offCurrent;
         this.normallyClosed = normallyClosed;
+        this.polarized = false;
     }
 
-    public RelaySwitchWire(float resistance, IElectricNode node1, IElectricNode node2, boolean initialState, ElectricWire coilWire, float onCurrent, float offCurrent, boolean normallyClosed) {
+    public RelaySwitchWire(float resistance, IElectricNode node1, IElectricNode node2, boolean initialState, ElectricWire coilWire, float onCurrent, float offCurrent, boolean normallyClosed, boolean polarized) {
         super(resistance, node1, node2, initialState);
         this.coilWire = coilWire;
         this.onCurrent = onCurrent;
         this.offCurrent = offCurrent;
         this.normallyClosed = normallyClosed;
+        this.polarized = polarized;
     }
 
     @Override
     public void preSolve() {
         if(coilWire.isConverged()) {
-            var I = Math.abs(coilWire.current());
-            if((getState() != normallyClosed) && I < offCurrent) {
-                setState(normallyClosed);
-                switched = true;
-            } else if((getState() == normallyClosed) && I > onCurrent) {
-                setState(!normallyClosed);
-                switched = true;
+            if (polarized) {
+                var I = coilWire.current();
+                if ((getState() == normallyClosed) && I > onCurrent) { // Forward
+                    setState(!normallyClosed);
+                    switched = true;
+                } else if ((getState() != normallyClosed) && I < -onCurrent) { // Reverse
+                    setState(normallyClosed);
+                    switched = true;
+                }
+            } else {
+                var I = Math.abs(coilWire.current());
+                if ((getState() != normallyClosed) && I < offCurrent) {
+                    setState(normallyClosed);
+                    switched = true;
+                } else if ((getState() == normallyClosed) && I > onCurrent) {
+                    setState(!normallyClosed);
+                    switched = true;
+                }
             }
         }
     }

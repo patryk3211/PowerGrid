@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.circuits.components;
 import com.simibubi.create.AllItems;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import net.minecraft.world.item.Items;
+import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 
@@ -247,6 +248,15 @@ public class Components {
                     .withItem().withOutline()
             )
             .item(ModdedItems.VARISTOR)
+            .register();
+
+    public static final RegistryEntry<FuseHolderComponent> FUSE_HOLDER = REGISTRATE.component("fuse_holder", FuseHolderComponent::new)
+            .footprint(4, 3, b -> b
+                    .addPad(0, 1, 0)
+                    .addPad(3, 1, 1)
+                    .withItem().withOutline()
+            )
+            .item(ModdedBlocks.FUSE_HOLDER)
             .register();
 
     @SuppressWarnings("EmptyMethod")
