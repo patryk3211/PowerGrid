@@ -73,10 +73,12 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
     }
 
     public double pnLim(double V1, double V0, double Vcrit, double V_T) {
-        if(V1 < Vcrit * 0.5f && V0 < Vcrit * 0.5f)
-            return V1;
+        if(V0 < 0 && V1 > Vcrit)
+            return 0;
+        if(V0 >= 0 && V0 < Vcrit && V1 > Vcrit)
+            return Vcrit;
         var dV = V1 - V0;
-        if(V1 > Vcrit && dV > idealityFactor * V_T * 2)
+        if(V1 > Vcrit && dV > V_T * 2)
             return V0 + idealityFactor * V_T * Math.log1p(dV / (idealityFactor * V_T));
         return V1;
     }
