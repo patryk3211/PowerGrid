@@ -147,7 +147,7 @@ public class ModdedBlocks {
             .transform(DisplaySource.displaySource(ModdedDisplaySources.BATTERY))
             .onRegister(CreateRegistrate.connectedTextures(BatteryCTBehaviour::new))
             .item(BatteryItem::new)
-                .model((ctx, prov) -> prov.blockItem(ctx))
+                .model(itemWithParent("block/battery"))
                 .build()
             .register();
 
