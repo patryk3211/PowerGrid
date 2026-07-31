@@ -51,6 +51,7 @@ import org.patryk3211.powergrid.circuits.components.forge.ComponentRegistryImpl;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.collections.forge.ModdedSoundEventsImpl;
 import org.patryk3211.powergrid.commands.PerformanceCommand;
+import org.patryk3211.powergrid.compat.cc.CCBridge;
 import org.patryk3211.powergrid.compat.cold_sweat.ColdSweatBridge;
 import org.patryk3211.powergrid.compat.tfmg.TFMGBridge;
 import org.patryk3211.powergrid.compat.tfmg.TFMGProxyImpl;
@@ -95,6 +96,10 @@ public class PowerGridImpl {
 
         if (Platform.isModLoaded("cold_sweat")) {
             MinecraftForge.EVENT_BUS.register(ColdSweatBridge.class);
+        }
+
+        if (Platform.isModLoaded("computercraft")) {
+            CCBridge.register();
         }
 
         SubstituteBlockEntityProvider.INSTANCE.register(PunchCardReaderBlockEntity.class, PunchCardReaderBlockEntityImpl::new);
