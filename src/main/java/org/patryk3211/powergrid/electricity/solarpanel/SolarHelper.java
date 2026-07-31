@@ -39,7 +39,7 @@ public class SolarHelper {
     public static final double RSH_REF = 600.0;
     public static final boolean RSH_SCALES_WITH_IRRADIANCE = true;
 
-    private static boolean showDebugLines = true;
+    private static boolean showDebugLines = false;
 
     public record DDAHit(BlockPos worldOrLocalPos, AbstractContraptionEntity contraption) {}
 
