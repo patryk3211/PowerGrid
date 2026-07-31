@@ -25,7 +25,7 @@ public class EnergyMeterBlock extends HorizontalElectricBlock implements IBE<Ene
                     .withColor(IDecoratedTerminal.BLUE)
     };
 
-    private static final VoxelShape SHAPE = box(1, 0, 0, 14, 16, 6);
+    private static final VoxelShape SHAPE = box(1, 0, 0, 15, 16, 6);
 
     public EnergyMeterBlock(Properties settings) {
         super(settings);
@@ -39,7 +39,7 @@ public class EnergyMeterBlock extends HorizontalElectricBlock implements IBE<Ene
         withBlockEntityDo(level, pos, be -> {
             MenuRegistry.openExtendedMenu((ServerPlayer) player, be, be::sendToMenu);
         });
-        return super.use(state, level, pos, player, hand, hit);
+        return InteractionResult.SUCCESS;
     }
 
     @Override
