@@ -58,6 +58,7 @@ import org.patryk3211.powergrid.circuits.components.forge.ComponentRegistryImpl;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.collections.forge.ModdedSoundEventsImpl;
 import org.patryk3211.powergrid.commands.PerformanceCommand;
+import org.patryk3211.powergrid.compat.cc.CCBridge;
 import org.patryk3211.powergrid.compat.cold_sweat.ColdSweatBridge;
 import org.patryk3211.powergrid.compat.tfmg.TFMGBridge;
 import org.patryk3211.powergrid.compat.tfmg.TFMGProxyImpl;
@@ -239,6 +240,10 @@ public class PowerGridImpl {
                 (be, side) -> ((PunchCardReaderBlockEntityImpl) be).getItemHandler(side));
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModdedBlockEntities.FE_INVERTER.get(),
                 (be, side) -> ((FEInverterBlockEntityImpl) be).getEnergyStorage(side));
+
+        if(Platform.isModLoaded("computercraft")) {
+            CCBridge.registerCapabilities(event);
+        }
     }
 
     @SubscribeEvent
