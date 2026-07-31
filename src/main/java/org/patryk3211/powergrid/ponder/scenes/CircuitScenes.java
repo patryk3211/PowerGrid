@@ -226,9 +226,9 @@ public class CircuitScenes {
         scene.markAsFinished();
     }
 
-    public static void electronTube(SceneBuilder builder, SceneBuildingUtil util) {
+    public static void triode(SceneBuilder builder, SceneBuildingUtil util) {
         var scene = new PowerGridSceneBuilder(builder);
-        scene.title("circuit_electron_tube", "Electron tube");
+        scene.title("circuit_triode", "Triode");
         scene.configureBasePlate(0, 0, 3);
         scene.scaleSceneView(3.0f);
 
@@ -242,7 +242,7 @@ public class CircuitScenes {
         scene.idle(10);
 
         scene.overlay().showText(70)
-                .text("The Electron Tube is a non-linear electrical component which can amplify signals")
+                .text("The Triode is a non-linear electrical component which can amplify signals")
                 .pointAt(util.vector().of(1.5, 1.125, 1.25))
                 .placeNearTarget()
                 .attachKeyFrame();
@@ -268,6 +268,61 @@ public class CircuitScenes {
 
         scene.overlay().showText(80)
                 .text("A negative voltage can be applied to the grid. A small change there can result in a major change of the anode current")
+                .pointAt(util.vector().of(1.25, 1.25, 1.875))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.electric().addSource(util.grid().at(1, 1, 1), 1, -5);
+        scene.electric().tickFor(10);
+        scene.idle(30);
+
+        scene.markAsFinished();
+    }
+
+    public static void pentode(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("circuit_pentode", "Pentode");
+        scene.configureBasePlate(0, 0, 3);
+        scene.scaleSceneView(3.0f);
+
+        scene.showBasePlate();
+        scene.idle(5);
+        scene.world().showSection(util.select().position(1, 1, 1), Direction.DOWN);
+
+        scene.electric().addSource(util.grid().at(1, 1, 1), 3, 0);
+        scene.electric().addSource(util.grid().at(1, 1, 1), 0, 50);
+        scene.electric().addSource(util.grid().at(1, 1, 1), 5, 50);
+        scene.electric().tickFor(10);
+        scene.idle(10);
+
+        scene.overlay().showText(80)
+                .text("The Pentode is like a triode with an additional Screen Grid (G2) between the control grid and the anode")
+                .pointAt(util.vector().of(1.5, 1.125, 1.25))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.overlay().showText(60)
+                .text("As with a triode, you must first power the heating element before the tube will conduct")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(70);
+
+        scene.electric().addSource(util.grid().at(1, 1, 1), 2, 6);
+        scene.electric().tickFor(10);
+        scene.effects().indicateSuccess(util.grid().at(1, 1, 1));
+        scene.idle(30);
+
+        scene.overlay().showText(80)
+                .text("The screen grid shields the anode from the control grid, allowing higher gain")
+                .pointAt(util.vector().of(1.625, 1.25, 1.875))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.overlay().showText(80)
+                .text("Both the control grid and screen grid influence plate current, the screen must be positively biased for normal operation")
                 .pointAt(util.vector().of(1.25, 1.25, 1.875))
                 .placeNearTarget()
                 .attachKeyFrame();
