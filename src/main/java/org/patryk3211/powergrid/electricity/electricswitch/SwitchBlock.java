@@ -68,8 +68,8 @@ public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlo
 
     @Override
     public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
-        if(!player.isShiftKeyDown()) {
-            if(!IWire.holdsWire(player) && !AllItems.WRENCH.isIn(player.getItemInHand(hand))) {
+        if(!player.isShiftKeyDown() && !IWire.holdsWire(player)) {
+            if(!AllItems.WRENCH.isIn(player.getItemInHand(hand))) {
                 var isOpen = !state.getValue(OPEN);
                 if(!isButton) {
                     world.setBlockAndUpdate(pos, state.setValue(OPEN, isOpen));
@@ -84,6 +84,13 @@ public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlo
                     if(!world.isClientSide)
                         withBlockEntityDo(world, pos, be -> be.setState(true));
                 }
+                return InteractionResult.SUCCESS;
+            } else if (isButton) {
+                if(!world.isClientSide)
+                    withBlockEntityDo(world, pos, be -> {
+                        be.setNormallyClosed(!be.isNormallyClosed());
+                        be.setState(false);
+                    });
                 return InteractionResult.SUCCESS;
             }
         }

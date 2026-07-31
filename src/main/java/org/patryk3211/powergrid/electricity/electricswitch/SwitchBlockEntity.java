@@ -38,6 +38,7 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
     private boolean switchState;
     private Float overvoltResistance;
     private boolean isButton;
+    private boolean isNormallyClosed;
     private int buttonTimeout = 0;
     private boolean playEffect = false;
 
@@ -89,11 +90,19 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
     public void setState(boolean state) {
         switchState = state;
         if(overvoltResistance == null)
-            wire.setState(state);
+            wire.setState(state != isNormallyClosed);
         if(isButton && state)
             buttonTimeout = 10;
         if(!level.isClientSide)
             notifyUpdate();
+    }
+
+    public void setNormallyClosed(boolean normallyClosed) {
+        isNormallyClosed = normallyClosed;
+    }
+
+    public boolean isNormallyClosed() {
+        return isNormallyClosed;
     }
 
     @Override
@@ -112,8 +121,10 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
             if(tag.getBoolean("Effect"))
                 overvoltEffect();
         }
-        if(isButton)
+        if(isButton) {
             buttonTimeout = tag.getByte("Timeout");
+            isNormallyClosed = tag.getBoolean("NormallyClosed");
+        }
     }
 
     @Override
@@ -129,8 +140,10 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
                 playEffect = false;
             }
         }
-        if(isButton)
+        if(isButton) {
             tag.putByte("Timeout", (byte) buttonTimeout);
+            tag.putBoolean("NormallyClosed", isNormallyClosed);
+        }
     }
 
     @Override
