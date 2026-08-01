@@ -22,7 +22,6 @@ import com.tterrag.registrate.util.entry.ItemProviderEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import net.createmod.ponder.api.registration.PonderSceneRegistrationHelper;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Items;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.ponder.scenes.*;
@@ -152,6 +151,6 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedItems.POTENTIOMETER, "circuit/potentiometer", CircuitScenes::potentiometer, PowerGridPonderTags.CIRCUIT_COMPONENTS);
         HELPER.addStoryBoard(ModdedItems.REGULATOR_TUBE, "circuit/regulator_tube", CircuitScenes::regulatorTube, PowerGridPonderTags.CIRCUIT_COMPONENTS);
         HELPER.addStoryBoard(ModdedItems.NEON_BULB, "circuit/neon", CircuitScenes::neonBulb, PowerGridPonderTags.CIRCUIT_COMPONENTS);
-        helper.addStoryBoard(new ResourceLocation("paper"), "circuit/label", CircuitScenes::label, PowerGridPonderTags.CIRCUIT_COMPONENTS);
+        helper.addStoryBoard(ResourceLocation.fromNamespaceAndPath(ResourceLocation.DEFAULT_NAMESPACE, "paper"), "circuit/label", CircuitScenes::label, PowerGridPonderTags.CIRCUIT_COMPONENTS);
     }
 }
