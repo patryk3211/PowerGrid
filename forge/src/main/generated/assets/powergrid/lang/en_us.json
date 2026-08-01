@@ -854,6 +854,7 @@
   "powergrid.tooltip.power.rated": "Rated power:",
   "powergrid.tooltip.range.max": "Maximum range:",
   "powergrid.tooltip.resistance.coil": "Coil resistance:",
+  "powergrid.tooltip.resistance.maximum": "Maximum resistance:",
   "powergrid.tooltip.resistance.minimum": "Minimum resistance:",
   "powergrid.tooltip.resistance.series": "Series resistance:",
   "powergrid.tooltip.resistance.switch": "Switch resistance:",
