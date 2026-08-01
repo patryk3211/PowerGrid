@@ -26,17 +26,27 @@ import java.util.List;
 public class SolarHelper {
     public static final int SOLAR_CONSTANT = 1361;
     public static final int CELLS_IN_SERIES = 48;
-    protected static final float NOCT = 52;
-    public static final double DIFFUSE_FRAC = .12;
-    public static final double ALBEDO_FRAC = .08;
-    public static final double IO_REF = 4.07e-6;
-    // Diode ideality factor (per cell)
-    public static final double IDEALITY = 1.5;
 
-    // All values below are per panel, not per cell
-    public static final double IPV_REF = 3.5;
+    public static final double ISC_REF = 3.5;
+    public static final double VOC_REF = 0.52 * CELLS_IN_SERIES;
+    public static final double IMP_REF = ISC_REF * 0.92;
+    public static final double VMP_REF = VOC_REF * 0.80;
+
+    // STC constants
+    public static final double W_REF = 1000.0;
+    public static final double T_REF = 25.0;
+
+    public static final double ALPHA_ISC = 0.0005;
+    public static final double BETA_VOC  = -0.0035;
+    protected static final float NOCT = 52;
     public static final double RS = 0.05;
     public static final double RSH_REF = 600.0;
+
+    public static final double DIFFUSE_FRAC = .12;
+    public static final double ALBEDO_FRAC = .08;
+
+    // todo Remove all below if simplified thingy works and remove or refactor this electricalProperties
+    public static final double IPV_REF = 3.5;
     public static final boolean RSH_SCALES_WITH_IRRADIANCE = true;
 
     private static boolean showDebugLines = false;
@@ -163,17 +173,32 @@ public class SolarHelper {
         return hits;
     }
 
-    public static double criticalVoltage(double temperature, double n) {
+    public static double[] IVCurve(double irradiance, double cellTempC, double v0, int panelsInSeries, int panelsInParallel) {
         double k = 1.380649e-23; // Boltzmann constant in J/K
         double q = 1.602176634e-19; // Elementary charge in C
-        double V_T = (k * (temperature + 273.15)) / q; // Thermal voltage in V
-        double E_g = 1.12; // Silicon bandgap energy in eV
-        double T_1 = 22 + 273.15; // Reference temperature in K
-        double T_2 = temperature + 273.15; // Actual temperature in K
-        double T_2_div_T_1 = T_2 / T_1;
-        double I_s2 = IO_REF * Math.pow(T_2_div_T_1, 3 / IDEALITY)
-                * Math.exp(- (q * E_g / k / T_2 / IDEALITY) * (1 - T_2_div_T_1));
-        return n * V_T * Math.log((n * V_T) / (I_s2 * Math.sqrt(2)));
+        double dT = cellTempC - T_REF;
+        double gRatio = Math.max(0, irradiance) / W_REF;
+        if (gRatio <= 1e-6) return new double[] { 0, 1e-6 };
+        double Isc = (gRatio * (ISC_REF + ALPHA_ISC * ISC_REF * dT)) * panelsInParallel;
+        double logG = Math.log(Math.max(gRatio, 1e-6));
+        double tV = k * (cellTempC + 273.15) / q;
+        double Voc = (VOC_REF + BETA_VOC * VOC_REF * dT + tV * CELLS_IN_SERIES * logG) * panelsInSeries;
+        double Imp = (gRatio * (IMP_REF + ALPHA_ISC * IMP_REF * dT)) * panelsInParallel;
+        double Vmp = (VMP_REF + BETA_VOC * VMP_REF * dT + tV * CELLS_IN_SERIES * logG) * panelsInSeries;;
+        if (Voc <= 0 || Isc <= 0) return new double[] { 0, 1e-6 };
+
+        double ratio = Math.min(0.999, Imp / Isc);
+        double C2 = (Vmp / Voc - 1.0) / Math.log(1.0 - ratio);
+        double C1 = (1.0 - ratio) * Math.exp(-Vmp / (C2 * Voc));
+
+        double V = Math.max(0, Math.min(v0, Voc * 1.05));
+        double expTerm = Math.exp(V / (C2 * Voc));
+        double I = Isc * (1 - C1 * (expTerm - 1));
+        double dIdV = -Isc * C1 / (C2 * Voc) * expTerm;
+
+        double G = Math.max(1e-6, -dIdV);
+        double Ieq = I + G * V;
+        return new double[] { Ieq, G };
     }
 
     public static boolean skyCheck(Level world, BlockPos pos) {
@@ -211,6 +236,7 @@ public class SolarHelper {
     }
 
     public static void electricalProperties(double irradiance, ISolarPropertyConsumer controller) {
+        // todo More or less redundant remove or refactor if new model doesn't explode
         double Ipv = IPV_REF * (irradiance / 1000.0);
 
         double Rsh;

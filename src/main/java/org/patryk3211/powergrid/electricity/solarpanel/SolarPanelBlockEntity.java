@@ -139,28 +139,12 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
             }
         }
 
+        double v0 = currentSource.potentialDifference();
         var currentCellTemp = SolarHelper.getCellTemp(irradiance, ambientTemp);
-        double Vcrit = SolarHelper.criticalVoltage(currentCellTemp, IDEALITY * CELLS_IN_SERIES * panelCount);
-
-        // Use sane values as fallback if something fails.
-        if(Rs <= 0 || !Double.isFinite(Rs))
-            Rs = 0.0001;
-        if(Rsh <= 0 || !Double.isFinite(Rsh))
-            Rsh = 10000;
-        if(!Double.isFinite(I))
-            I = 0;
-
+        double[] results = IVCurve(irradiance, currentCellTemp, v0, panelCount, 1);
+        currentSource.setCurrent(results[0]);
+        currentSource.setConductance(results[1]);
         seriesResistor.setResistance(Rs);
-
-        double loadResistance = 1/Math.abs(I/currentSource.potentialDifference() - 1/currentSource.getResistance());
-        if(loadResistance * I > Vcrit && I != 0 && Vcrit != 0) {
-            double aboveCurrent = I - Vcrit / loadResistance;
-            currentSource.setConductance(1 / Rsh + aboveCurrent / Vcrit);
-        } else {
-            currentSource.setConductance(1 / Rsh);
-        }
-        currentSource.setCurrent(I);
-
         super.electricalTick();
     }
 

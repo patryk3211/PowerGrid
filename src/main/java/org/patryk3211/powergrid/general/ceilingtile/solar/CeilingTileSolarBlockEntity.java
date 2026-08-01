@@ -22,7 +22,6 @@ import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
-import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWireSolar;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.solarpanel.ISolarPropertyConsumer;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarHelper;
@@ -37,7 +36,6 @@ import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEnt
 public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements ISolarPropertyConsumer {
     protected CurrentSourceWire currentSource;
     protected ElectricWire seriesResistor;
-    protected PNJunctionWireSolar junction;
 
     private boolean firstTick = true;
     private float ambientTemp = -2000f;
@@ -67,15 +65,8 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
         var node = builder.addInternalNode();
         currentSource = new CurrentSourceWire(node, builder.terminalNode(1), 0.00001f);
         seriesResistor = builder.connect((float) 1, node, builder.terminalNode(0));
-        junction = new PNJunctionWireSolar(
-                IO_REF, 0.075f,
-                ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO ? 22 : ambientTemp, IDEALITY * CELLS_IN_SERIES,
-                IDEALITY,
-                node, builder.terminalNode(1)
-        );
         builder.add(currentSource);
         builder.add(seriesResistor);
-        builder.add(junction);
     }
 
     private void makeProxy() {
@@ -92,7 +83,6 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
         attachBehaviourLate(electricBehaviour);
         currentSource = null;
         seriesResistor = null;
-        junction = null;
         if(wires != null)
             wires.forEach(TransmissionLinePart::refreshEndpointNodes);
     }
@@ -133,14 +123,12 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
         var world = getLevel();
         if (world == null || world.isClientSide()) return;
         if (currentSource == null) return;
+
         if (firstTick) {
             ambientTemp = ThermalBehaviour.getAmbientTemperature(world, this.getBlockPos());
             if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
                 ambientTemp = 22f;
-            if(junction != null)
-                junction.setTemperatureCelsius(ambientTemp);
             firstTick = false;
-            getPlacedBlockRotation();
         }
 
         if (currentSource == null) return;
@@ -159,12 +147,6 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
             }
         }
 
-        if (junction != null) {
-            var currentCellTemp = SolarHelper.getCellTemp(irradiance, ambientTemp);
-            junction.setTemperatureCelsius(currentCellTemp);
-            junction.setIdealityFactor(IDEALITY * CELLS_IN_SERIES * panelCount);
-        }
-
         // Use sane values as fallback if something fails.
         if(Rs <= 0 || !Double.isFinite(Rs))
             Rs = 0.0001;
@@ -173,10 +155,12 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
         if(!Double.isFinite(I))
             I = 0;
 
+        double v0 = currentSource.potentialDifference();
+        var currentCellTemp = SolarHelper.getCellTemp(irradiance, ambientTemp);
+        double[] results = IVCurve(irradiance, currentCellTemp, v0, panelCount, 1);
+        currentSource.setCurrent(results[0]);
+        currentSource.setConductance(results[1]);
         seriesResistor.setResistance(Rs);
-        currentSource.setConductance(1 / Rsh);
-        currentSource.setCurrent(I);
-
         super.electricalTick();
     }
 

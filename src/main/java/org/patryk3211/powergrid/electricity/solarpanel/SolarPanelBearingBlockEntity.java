@@ -28,7 +28,6 @@ import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
-import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWireSolar;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
 import java.util.List;
@@ -55,7 +54,6 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
 
     protected CurrentSourceWire currentSource;
     protected ElectricWire seriesResistor;
-    protected PNJunctionWireSolar junction;
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
@@ -76,15 +74,8 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         var node = builder.addInternalNode();
         currentSource = new CurrentSourceWire(node, builder.terminalNode(1), 0.00001f);
         seriesResistor = builder.connect((float) 1, node, builder.terminalNode(0));
-        junction = new PNJunctionWireSolar(
-                IO_REF, 0.075f,
-                ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO ? 22 : ambientTemp, IDEALITY * CELLS_IN_SERIES,
-                IDEALITY,
-                node, builder.terminalNode(1)
-        );
         builder.add(currentSource);
         builder.add(seriesResistor);
-        builder.add(junction);
     }
 
     @Override
@@ -155,8 +146,6 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
             ambientTemp = ThermalBehaviour.getAmbientTemperature(world, this.getBlockPos());
             if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
                 ambientTemp = 22f;
-            if(junction != null)
-                junction.setTemperatureCelsius(ambientTemp);
             firstTick = false;
         }
         float cloudCover = getWeather(world);
@@ -168,33 +157,16 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         panelNormal = new Vector3d(worldDir.x, worldDir.y, worldDir.z);
 
         var irradiance = getIrradiance(getAM(world), cloudCover, this.getBlockPos().getY(), world);
-        var cellTemp = getCellTemp(irradiance, ambientTemp);
         int panelsInParallel = parallelNumbers.getDivisor();
         int panelsInSeries = contraption.getPanelBlocks() / parallelNumbers.getDivisor();
-        int seriesMultiplier = CELLS_IN_SERIES * panelsInSeries;
-        double Ipv = IPV_REF * (irradiance / 1000.0) * panelsInParallel;
-        double RshPerString;
-        if (RSH_SCALES_WITH_IRRADIANCE && irradiance > 1.0) {
-            RshPerString = RSH_REF * (1000.0 / irradiance) * panelsInSeries;
-        } else {
-            RshPerString = RSH_REF * panelsInSeries;
-        }
-        double Rsh = RshPerString / panelsInParallel;
-        double Rs = (RS * panelsInSeries) / panelsInParallel ;
+        double Rs = (RS * panelsInSeries) / panelsInParallel;
 
-        if (junction != null) {
-            junction.setTemperatureCelsius(cellTemp);
-            junction.setIdealityFactor(IDEALITY * seriesMultiplier);
-        }
-
-        if(Rsh <= 0 || !Double.isFinite(Rsh))
-            Rsh = 10000;
-        if(!Double.isFinite(Ipv))
-            Ipv = 0;
-
+        double v0 = currentSource.potentialDifference();
+        var currentCellTemp = SolarHelper.getCellTemp(irradiance, ambientTemp);
+        double[] results = IVCurve(irradiance, currentCellTemp, v0, panelsInSeries, panelsInParallel);
+        currentSource.setCurrent(results[0]);
+        currentSource.setConductance(results[1]);
         seriesResistor.setResistance(Rs);
-        currentSource.setConductance(1 / Rsh);
-        currentSource.setCurrent(Ipv);
 
         super.electricalTick();
     }
