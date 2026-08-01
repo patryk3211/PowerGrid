@@ -169,7 +169,7 @@ public class PowerGaugeBlockEntity extends GaugeBlockEntity {
         } else if(lname.equals("v")) {
             return (float) shunt.potentialDifference();
         }
-        return super.get(name);
+        return getValue();
     }
 
     @Override
