@@ -278,7 +278,7 @@
   "powergrid.ponder.circuit_pentode.text_1": "The Pentode is like a triode with an additional Screen Grid (G2) between the control grid and the anode",
   "powergrid.ponder.circuit_pentode.text_2": "As with a triode, you must first power the heating element before the tube will conduct",
   "powergrid.ponder.circuit_pentode.text_3": "The screen grid shields the anode from the control grid, allowing higher gain",
-  "powergrid.ponder.circuit_pentode.text_4": "Both the control grid and screen grid influence plate current, the screen must be positively biased for normal operation"
+  "powergrid.ponder.circuit_pentode.text_4": "Both the control grid and screen grid influence plate current, the screen must be positively biased for normal operation",
   "powergrid.component.property.varistor_voltage": "Threshold Voltage",
   "powergrid.component.property.varistor_voltage.summary": "Voltage around which the varistor starts to conduct major current",
   "powergrid.component.property.vertical": "Vertical",
