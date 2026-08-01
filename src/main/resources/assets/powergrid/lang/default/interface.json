@@ -88,6 +88,7 @@
   "powergrid.tooltip.resistance.switch": "Switch resistance:",
   "powergrid.tooltip.resistance.coil": "Coil resistance:",
   "powergrid.tooltip.resistance.minimum": "Minimum resistance:",
+  "powergrid.tooltip.resistance.maximum": "Maximum resistance:",
   "powergrid.tooltip.voltage.max": "Maximum voltage:",
   "powergrid.tooltip.current.max": "Maximum current:",
   "powergrid.tooltip.range.max": "Maximum range:",

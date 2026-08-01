@@ -49,6 +49,12 @@ dependencies {
     forgeRuntimeLibrary "cc.tweaked:cobalt:0.9.7"
     modLocalRuntime("cc.tweaked:cc-tweaked-${project.minecraft_version}-forge:${cc_tweaked_version}")
 
+    // CC: Tweaked
+    modCompileOnly("cc.tweaked:cc-tweaked-${project.minecraft_version}-core-api:${cc_tweaked_version}")
+    modCompileOnly("cc.tweaked:cc-tweaked-${project.minecraft_version}-forge-api:${cc_tweaked_version}")
+    forgeRuntimeLibrary "cc.tweaked:cobalt:0.9.7"
+    modLocalRuntime("cc.tweaked:cc-tweaked-${project.minecraft_version}-forge:${cc_tweaked_version}")
+
     // Cold Sweat
     modCompileOnly "curse.maven:cold-sweat-506194:${cold_sweat_cursemaven_fileid}-sources-${cold_sweat_sources_cursemaven_fileid}"
 

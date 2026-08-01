@@ -486,4 +486,35 @@ public class CircuitScenes {
 
         scene.markAsFinished();
     }
+
+    public static void label(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("circuit_label", "Label");
+        scene.configureBasePlate(0, 0, 3);
+        scene.scaleSceneView(3.0f);
+
+        scene.showBasePlate();
+        scene.idle(5);
+        scene.world().showSection(util.select().position(1, 1, 1), Direction.DOWN);
+        scene.idle(10);
+
+        scene.overlay().showText(80)
+                .text("Labels can be placed on circuit boards to label components or provide other information")
+                .pointAt(util.vector().of(1.6875, 1.0625, 1.475))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.overlay().showText(80)
+                .text("They also come in different sizes, and their text color can be changed")
+                .pointAt(util.vector().of(1.5, 1.0625, 1.2))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.effects().indicateSuccess(util.grid().at(1, 1, 1));
+        scene.idle(20);
+
+        scene.markAsFinished();
+    }
 }
