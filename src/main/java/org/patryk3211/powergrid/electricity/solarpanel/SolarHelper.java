@@ -163,6 +163,19 @@ public class SolarHelper {
         return hits;
     }
 
+    public static double criticalVoltage(double temperature, double n) {
+        double k = 1.380649e-23; // Boltzmann constant in J/K
+        double q = 1.602176634e-19; // Elementary charge in C
+        double V_T = (k * (temperature + 273.15)) / q; // Thermal voltage in V
+        double E_g = 1.12; // Silicon bandgap energy in eV
+        double T_1 = 22 + 273.15; // Reference temperature in K
+        double T_2 = temperature + 273.15; // Actual temperature in K
+        double T_2_div_T_1 = T_2 / T_1;
+        double I_s2 = IO_REF * Math.pow(T_2_div_T_1, 3 / IDEALITY)
+                * Math.exp(- (q * E_g / k / T_2 / IDEALITY) * (1 - T_2_div_T_1));
+        return n * V_T * Math.log((n * V_T) / (I_s2 * Math.sqrt(2)));
+    }
+
     public static boolean skyCheck(Level world, BlockPos pos) {
         if (!world.canSeeSky(pos)){
             var topY = world.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX(), pos.getZ());

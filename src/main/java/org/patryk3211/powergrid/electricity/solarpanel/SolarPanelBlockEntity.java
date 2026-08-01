@@ -1,6 +1,9 @@
 package org.patryk3211.powergrid.electricity.solarpanel;
 
-import net.minecraft.core.*;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
+import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -17,7 +20,6 @@ import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
-import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWireSolar;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 
 import java.util.*;
@@ -27,7 +29,6 @@ import static org.patryk3211.powergrid.electricity.solarpanel.SolarHelper.*;
 public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolarPropertyConsumer {
     protected CurrentSourceWire currentSource;
     protected ElectricWire seriesResistor;
-    protected PNJunctionWireSolar junction;
 
     private boolean firstTick = true;
     private float ambientTemp = -2000f;
@@ -56,15 +57,8 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
         var node = builder.addInternalNode();
         currentSource = new CurrentSourceWire(node, builder.terminalNode(1), 0.00001f);
         seriesResistor = builder.connect((float) 1, node, builder.terminalNode(0));
-        junction = new PNJunctionWireSolar(
-                IO_REF, 0.075f,
-                ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO ? 22 : ambientTemp, IDEALITY * CELLS_IN_SERIES,
-                IDEALITY,
-                node, builder.terminalNode(1)
-        );
         builder.add(currentSource);
         builder.add(seriesResistor);
-        builder.add(junction);
     }
 
     private void makeProxy() {
@@ -81,7 +75,6 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
         attachBehaviourLate(electricBehaviour);
         currentSource = null;
         seriesResistor = null;
-        junction = null;
         if(wires != null)
             wires.forEach(TransmissionLinePart::refreshEndpointNodes);
     }
@@ -127,8 +120,6 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
             ambientTemp = ThermalBehaviour.getAmbientTemperature(world, this.getBlockPos());
             if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
                 ambientTemp = 22f;
-            if(junction != null)
-                junction.setTemperatureCelsius(ambientTemp);
             firstTick = false;
         }
 
@@ -148,11 +139,8 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
             }
         }
 
-        if (junction != null) {
-            var currentCellTemp = SolarHelper.getCellTemp(irradiance, ambientTemp);
-            junction.setTemperatureCelsius(currentCellTemp);
-            junction.setIdealityFactor(IDEALITY * CELLS_IN_SERIES * panelCount);
-        }
+        var currentCellTemp = SolarHelper.getCellTemp(irradiance, ambientTemp);
+        double Vcrit = SolarHelper.criticalVoltage(currentCellTemp, IDEALITY * CELLS_IN_SERIES * panelCount);
 
         // Use sane values as fallback if something fails.
         if(Rs <= 0 || !Double.isFinite(Rs))
@@ -163,7 +151,14 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
             I = 0;
 
         seriesResistor.setResistance(Rs);
-        currentSource.setConductance(1 / Rsh);
+
+        double loadResistance = 1/Math.abs(I/currentSource.potentialDifference() - 1/currentSource.getResistance());
+        if(loadResistance * I > Vcrit && I != 0 && Vcrit != 0) {
+            double aboveCurrent = I - Vcrit / loadResistance;
+            currentSource.setConductance(1 / Rsh + aboveCurrent / Vcrit);
+        } else {
+            currentSource.setConductance(1 / Rsh);
+        }
         currentSource.setCurrent(I);
 
         super.electricalTick();
