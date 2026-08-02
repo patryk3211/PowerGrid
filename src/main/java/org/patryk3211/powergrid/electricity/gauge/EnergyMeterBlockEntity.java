@@ -53,7 +53,7 @@ public class EnergyMeterBlockEntity extends ElectricBlockEntity implements MenuP
     @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
-        energy = tag.getDouble("Energy");
+        lastEnergy = energy = tag.getDouble("Energy");
     }
 
     @Override
