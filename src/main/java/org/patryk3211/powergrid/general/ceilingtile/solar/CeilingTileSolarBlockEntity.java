@@ -51,7 +51,7 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
     private BlockPos controller;
     private BlockPos lastKnownPos;
 
-    private double Rs, Rsh, I;
+    private double Rs;
     private int panelCount;
     private boolean valid = true;
 
@@ -106,15 +106,12 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
 
         getPlacedBlockRotation();
         irradiance = getIrradiance(getAM(level), cloudCover, this.getBlockPos().getY(), level);
-        SolarHelper.electricalProperties(irradiance, controller);
+        SolarHelper.electricalProperties(controller);
     }
 
     @Override
-    public void accept(double Rs, double Rsh, double I) {
+    public void accept(double Rs) {
         this.Rs += Rs;
-        this.Rsh += Rsh;
-        if(I > this.I)
-            this.I = I;
         ++panelCount;
     }
 
@@ -133,7 +130,7 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
 
         if (currentSource == null) return;
 
-        I = 0; Rs = 0; Rsh = 0; panelCount = 0;
+        Rs = 0; panelCount = 0;
         electricalProperties(this);
         var iter = connectedPanelBEs.values().iterator();
         while(iter.hasNext()) {
@@ -149,11 +146,7 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
 
         // Use sane values as fallback if something fails.
         if(Rs <= 0 || !Double.isFinite(Rs))
-            Rs = 0.0001;
-        if(Rsh <= 0 || !Double.isFinite(Rsh))
-            Rsh = 10000;
-        if(!Double.isFinite(I))
-            I = 0;
+            Rs = 0.05;
 
         double v0 = currentSource.potentialDifference();
         var currentCellTemp = SolarHelper.getCellTemp(irradiance, ambientTemp);

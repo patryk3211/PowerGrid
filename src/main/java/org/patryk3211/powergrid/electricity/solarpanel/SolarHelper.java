@@ -27,8 +27,8 @@ public class SolarHelper {
     public static final int SOLAR_CONSTANT = 1361;
     public static final int CELLS_IN_SERIES = 48;
 
-    public static final double ISC_REF = 3.5;
-    public static final double VOC_REF = 0.52 * CELLS_IN_SERIES;
+    public static final double ISC_REF = 3.3;
+    public static final double VOC_REF = 0.55 * CELLS_IN_SERIES;
     public static final double IMP_REF = ISC_REF * 0.92;
     public static final double VMP_REF = VOC_REF * 0.80;
 
@@ -38,16 +38,11 @@ public class SolarHelper {
 
     public static final double ALPHA_ISC = 0.0005;
     public static final double BETA_VOC  = -0.0035;
-    protected static final float NOCT = 52;
+    protected static final float NOCT = 45;
     public static final double RS = 0.05;
-    public static final double RSH_REF = 600.0;
 
     public static final double DIFFUSE_FRAC = .12;
     public static final double ALBEDO_FRAC = .08;
-
-    // todo Remove all below if simplified thingy works and remove or refactor this electricalProperties
-    public static final double IPV_REF = 3.5;
-    public static final boolean RSH_SCALES_WITH_IRRADIANCE = true;
 
     private static boolean showDebugLines = false;
 
@@ -178,14 +173,14 @@ public class SolarHelper {
         double q = 1.602176634e-19; // Elementary charge in C
         double dT = cellTempC - T_REF;
         double gRatio = Math.max(0, irradiance) / W_REF;
-        if (gRatio <= 1e-6) return new double[] { 0, 1e-6 };
+        if (gRatio <= 1e-6) return new double[] {0, 1e-6};
         double Isc = (gRatio * (ISC_REF + ALPHA_ISC * ISC_REF * dT)) * panelsInParallel;
         double logG = Math.log(Math.max(gRatio, 1e-6));
         double tV = k * (cellTempC + 273.15) / q;
         double Voc = (VOC_REF + BETA_VOC * VOC_REF * dT + tV * CELLS_IN_SERIES * logG) * panelsInSeries;
         double Imp = (gRatio * (IMP_REF + ALPHA_ISC * IMP_REF * dT)) * panelsInParallel;
         double Vmp = (VMP_REF + BETA_VOC * VMP_REF * dT + tV * CELLS_IN_SERIES * logG) * panelsInSeries;;
-        if (Voc <= 0 || Isc <= 0) return new double[] { 0, 1e-6 };
+        if (Voc <= 0 || Isc <= 0) return new double[] {0, 1e-6};
 
         double ratio = Math.min(0.999, Imp / Isc);
         double C2 = (Vmp / Voc - 1.0) / Math.log(1.0 - ratio);
@@ -201,7 +196,7 @@ public class SolarHelper {
         G = Math.max(G, G_floor);
 
         double Ieq = I + G * V;
-        return new double[] { Ieq, G };
+        return new double[] {Ieq, G};
     }
 
     public static boolean skyCheck(Level world, BlockPos pos) {
@@ -238,38 +233,9 @@ public class SolarHelper {
         return true;
     }
 
-    public static void electricalProperties(double irradiance, ISolarPropertyConsumer controller) {
-        // todo More or less redundant remove or refactor if new model doesn't explode
-        double Ipv = IPV_REF * (irradiance / 1000.0);
-
-        double Rsh;
-        if (RSH_SCALES_WITH_IRRADIANCE && irradiance > 1.0) {
-            Rsh = RSH_REF * (1000.0 / irradiance);
-        } else {
-            Rsh = RSH_REF;
-        }
-
-        controller.accept(RS, Rsh, Ipv);
+    public static void electricalProperties(ISolarPropertyConsumer controller) {
+        controller.accept(RS);
     }
-
-//    public static void electricalProperties(double irradiance, float ambientTemp, ISolarPropertyConsumer controller) {
-//        var cellTemp = getCellTemp(irradiance, ambientTemp);
-//        var Vt = 8.617e-5 * (cellTemp + 273.15);
-//        double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt, STRINGS_IN_PARALLEL);
-//        double Isc_t = adjusted[0];
-//        double Voc_t = adjusted[1] * CELLS_IN_SERIES;
-//
-//        double Vmp_T = Vmp * (1 - BETAVOC * (cellTemp - 25));
-//        double Imp_T = Imp * (1 - ALPHAISC * (cellTemp - 25));
-//
-////        double Rs = .5;
-////        double Rsh = 350;
-//        double Rs = (Voc_t - Vmp_T) / (16 * Imp_T);
-//        double Rsh = 4 * Vmp_T / (Isc_t - Imp_T);
-//        double Ipv = Isc_t * (Rsh + Rs) / Rsh;
-//
-//        controller.accept(Rs, Rsh, Ipv);
-//    }
 
     private static void debugLines(ServerLevel serverLevel, Vec3 pos, SimpleParticleType particle) {
         serverLevel.sendParticles(particle, pos.x, pos.y, pos.z, 0, 0, 0, 0, 0);
