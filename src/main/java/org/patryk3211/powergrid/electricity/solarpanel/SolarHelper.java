@@ -233,10 +233,6 @@ public class SolarHelper {
         return true;
     }
 
-    public static void electricalProperties(ISolarPropertyConsumer controller) {
-        controller.accept(RS);
-    }
-
     private static void debugLines(ServerLevel serverLevel, Vec3 pos, SimpleParticleType particle) {
         serverLevel.sendParticles(particle, pos.x, pos.y, pos.z, 0, 0, 0, 0, 0);
     }

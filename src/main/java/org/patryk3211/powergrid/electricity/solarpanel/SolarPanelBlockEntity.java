@@ -26,7 +26,7 @@ import java.util.*;
 
 import static org.patryk3211.powergrid.electricity.solarpanel.SolarHelper.*;
 
-public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolarPropertyConsumer {
+public class SolarPanelBlockEntity extends ElectricBlockEntity  {
     protected CurrentSourceWire currentSource;
     protected ElectricWire seriesResistor;
 
@@ -43,8 +43,6 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
     private BlockPos controller;
     private BlockPos lastKnownPos;
 
-    private double Rs, I;
-    private int panelCount;
     private boolean valid = true;
 
     public SolarPanelBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -93,20 +91,6 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
             wires.forEach(TransmissionLinePart::refreshEndpointNodes);
     }
 
-    private void electricalProperties(SolarPanelBlockEntity controller) {
-        float cloudCover = getWeather(level);
-
-        getPlacedBlockRotation();
-        irradiance = getIrradiance(getAM(level), cloudCover, this.getBlockPos().getY(), level);
-        SolarHelper.electricalProperties(controller);
-    }
-
-    @Override
-    public void accept(double Rs) {
-        this.Rs += Rs;
-        ++panelCount;
-    }
-
     @Override
     public void electricalTick() {
         var world = getLevel();
@@ -121,27 +105,28 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements ISolar
         }
 
         if (currentSource == null) return;
-
-        Rs = 0; panelCount = 0;
-        electricalProperties(this);
         var iter = connectedPanelBEs.values().iterator();
         while(iter.hasNext()) {
             var panel = iter.next();
-            if(panel.valid) {
-                panel.electricalProperties(this);
-            } else {
+            if(!panel.valid) {
                 connectedPanels.remove(panel.getBlockPos());
                 iter.remove();
                 notifyUpdate();
             }
         }
 
+        int panelCount = 1 + connectedPanelBEs.size();
+        float cloudCover = getWeather(level);
+
+        getPlacedBlockRotation();
+        irradiance = getIrradiance(getAM(level), cloudCover, this.getBlockPos().getY(), level);
+
         double v0 = currentSource.potentialDifference();
         var currentCellTemp = SolarHelper.getCellTemp(irradiance, ambientTemp);
         double[] results = IVCurve(irradiance, currentCellTemp, v0, panelCount, 1);
         currentSource.setCurrent(results[0]);
         currentSource.setConductance(results[1]);
-        seriesResistor.setResistance(Rs);
+        seriesResistor.setResistance(RS * panelCount);
         super.electricalTick();
     }
 
