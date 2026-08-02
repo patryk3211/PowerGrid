@@ -22,6 +22,7 @@ import org.patryk3211.powergrid.collections.ModdedTags;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 public class SolarHelper {
     public static final int SOLAR_CONSTANT = 1361;
@@ -31,6 +32,7 @@ public class SolarHelper {
     public static final double VOC_REF = 0.55 * CELLS_IN_SERIES;
     public static final double IMP_REF = ISC_REF * 0.92;
     public static final double VMP_REF = VOC_REF * 0.80;
+    public static final double IDEALITY = 1.5;
 
     // STC constants
     public static final double W_REF = 1000.0;
@@ -177,9 +179,10 @@ public class SolarHelper {
         double Isc = (gRatio * (ISC_REF + ALPHA_ISC * ISC_REF * dT)) * panelsInParallel;
         double logG = Math.log(Math.max(gRatio, 1e-6));
         double tV = k * (cellTempC + 273.15) / q;
-        double Voc = (VOC_REF + BETA_VOC * VOC_REF * dT + tV * CELLS_IN_SERIES * logG) * panelsInSeries;
+        double delta = IDEALITY * CELLS_IN_SERIES * tV;
+        double Voc = (VOC_REF + BETA_VOC * VOC_REF * dT + delta * logG) * panelsInSeries;
         double Imp = (gRatio * (IMP_REF + ALPHA_ISC * IMP_REF * dT)) * panelsInParallel;
-        double Vmp = (VMP_REF + BETA_VOC * VMP_REF * dT + tV * CELLS_IN_SERIES * logG) * panelsInSeries;;
+        double Vmp = (VMP_REF + BETA_VOC * VMP_REF * dT + delta * logG) * panelsInSeries;
         if (Voc <= 0 || Isc <= 0) return new double[] {0, 1e-6};
 
         double ratio = Math.min(0.999, Imp / Isc);
@@ -231,6 +234,22 @@ public class SolarHelper {
             return !hit;
         }
         return true;
+    }
+
+    public static Vec3 getSolarPanelCenter(BlockPos self, Set<BlockPos> connectedPanels) {
+        double sumX = self.getX();
+        double sumY = self.getY();
+        double sumZ = self.getZ();
+        for (BlockPos pos : connectedPanels) {
+            sumX += pos.getX();
+            sumY += pos.getY();
+            sumZ += pos.getZ();
+        }
+        int count = connectedPanels.size() + 1;
+        double avgX = sumX / count;
+        double avgY = sumY / count;
+        double avgZ = sumZ / count;
+        return new Vec3(avgX + 0.5, avgY + 0.5, avgZ + 0.5);
     }
 
     private static void debugLines(ServerLevel serverLevel, Vec3 pos, SimpleParticleType particle) {

@@ -150,6 +150,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         }
         float cloudCover = getWeather(world);
 
+        if (contraption.panelNormal == null) return;
         Vec3 localDir = new Vec3(contraption.panelNormal.x, contraption.panelNormal.y, contraption.panelNormal.z);
         Vec3 worldTip = movedContraption.toGlobalVector(localDir, 1.0f);
         Vec3 worldOrigin = movedContraption.toGlobalVector(Vec3.ZERO, 1.0f);

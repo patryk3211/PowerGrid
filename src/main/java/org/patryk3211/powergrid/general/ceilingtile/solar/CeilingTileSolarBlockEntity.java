@@ -149,9 +149,20 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity {
         if (sunDir.y <= 0) return 0;
 
         if (rayCastDelay-- == 0){
-            sunVisibility = sunRaycast(world);
-            rayCastDelay = world.random.nextInt(41) + 10;
-            skyVisible = skyCheck(world, this.getBlockPos());
+            if (connectedPanels.isEmpty()){
+                sunVisibility = sunRaycast(world, null);
+                rayCastDelay = world.random.nextInt(41) + 10;
+                skyVisible = skyCheck(world, this.getBlockPos());
+            } else {
+                if (controller == null){
+                    var multiBlockCenter = getSolarPanelCenter(this.getBlockPos(), connectedPanels);
+                    sunVisibility = sunRaycast(world, multiBlockCenter);
+                    rayCastDelay = world.random.nextInt(41) + 10;
+                    skyVisible = skyCheck(world, BlockPos.containing(multiBlockCenter));
+                } else {
+                    rayCastDelay = world.random.nextInt(41) + 10;
+                }
+            }
         }
 
         double cosIncidence = Math.max(0, sunDir.dot(panelNormal));
@@ -167,8 +178,14 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity {
         return (irradiance * sunVisibility) * transmittance * cosIncidence + diffuseLight + reflected;
     }
 
-    public float sunRaycast(Level world) {
-        var blockPos = getBlockPos();
+    public float sunRaycast(Level world, Vec3 raycastPos) {
+        BlockPos blockPos;
+        if (raycastPos == null) {
+            blockPos = this.getBlockPos();
+        } else {
+            blockPos = BlockPos.containing(raycastPos);
+        }
+
         int castLength = 0;
         ChunkAccess chunk;
         double sunAngle = world.getSunAngle(0);
@@ -185,7 +202,8 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity {
                 break;
             }
         }
-        var centerBlockPos = getBlockPos().getCenter().add(0, 0, 0);
+        Vec3 centerBlockPos;
+        centerBlockPos = Objects.requireNonNullElseGet(raycastPos, () -> getBlockPos().getCenter().add(0, 0, 0));
         var end = centerBlockPos.add(new Vec3(sunX, sunY, 0).scale(castLength));
         var results = DDA(world, centerBlockPos, end);
         float returnValue = 1;
