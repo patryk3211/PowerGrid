@@ -197,6 +197,9 @@ public class SolarHelper {
         double dIdV = -Isc * C1 / (C2 * Voc) * expTerm;
 
         double G = Math.max(1e-6, -dIdV);
+        double G_floor = Isc / Voc;
+        G = Math.max(G, G_floor);
+
         double Ieq = I + G * V;
         return new double[] { Ieq, G };
     }
