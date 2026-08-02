@@ -77,6 +77,12 @@ public class PlotterRenderer extends KineticBlockEntityRenderer<PlotterBlockEnti
                 .uncenter()
                 .translate(Mth.lerp(partialTicks, be.prevHeadPosition, be.headPosition) * VOLTAGE_SPAN * 0.5f, 0, 0)
                 .renderInto(ms, buffer.getBuffer(RenderType.solid()));
+        var viewer = CachedBuffers.partial(ModdedPartialModels.PLOTTER_VIEWER, state);
+        viewer.light(light)
+                .center()
+                .rotateToFace(facing)
+                .uncenter()
+                .renderInto(ms, buffer.getBuffer(RenderType.cutoutMipped()));
         var sprite = ModdedPartialModels.PAPER_SHIFT;
         float spriteWidth = sprite.getTarget().getU1() - sprite.getTarget().getU0();
         double uScroll = be.getAnimationSpeed() * AnimationTickHolder.getRenderTime(be.getLevel()) / (256 * 20) * TIME_SPAN;
