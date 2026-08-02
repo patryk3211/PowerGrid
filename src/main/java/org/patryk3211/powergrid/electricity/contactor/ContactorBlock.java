@@ -22,6 +22,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -100,6 +101,16 @@ public class ContactorBlock extends HorizontalAxisElectricBlock implements IBE<C
     @Override
     public boolean canConnect(LevelReader world, BlockPos pos, BlockState state, Direction side) {
         return side.getAxis() != Direction.Axis.Y && state.getValue(HORIZONTAL_AXIS) != side.getAxis();
+    }
+
+    @Override
+    public boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
+
+    @Override
+    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+        return getBlockEntityOptional(level, pos).map(ContactorBlockEntity::getSignal).orElse(0);
     }
 
     @Override

@@ -47,7 +47,7 @@ public class HvBreakerBlockEntity extends ElectricKineticBlockEntity {
     private ScrollValueBehaviour setting;
 
     protected LerpedFloat charge;
-    protected boolean prevState, state;
+    protected boolean prevState, state, wasCharged;
     private boolean redstoneState;
     private int splitCooldown;
 
@@ -123,10 +123,12 @@ public class HvBreakerBlockEntity extends ElectricKineticBlockEntity {
             if (((int) level.getGameTime()) % soundRate == 0)
                 level.playSound(null, worldPosition, SoundEvents.WOODEN_BUTTON_CLICK_OFF, SoundSource.BLOCKS,
                         volume, pitch);
-        } else if(charge.getValue() == 1 && charge.getValue(0) != 1) {
+            wasCharged = false;
+        } else if(charge.getValue() == 1 && !wasCharged) {
             level.playSound(null, worldPosition, SoundEvents.STONE_BUTTON_CLICK_ON, SoundSource.BLOCKS,
                     .25f, 1.5f);
             level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+            wasCharged = true;
         }
 
         if(wire != null) {
