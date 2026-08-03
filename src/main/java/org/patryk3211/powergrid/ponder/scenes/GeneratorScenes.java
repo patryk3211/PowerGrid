@@ -71,11 +71,11 @@ public class GeneratorScenes {
                 be -> {
             be.updateStrength(0);
             var tag = new CompoundTag();
-            be.saveAdditional(tag);
+            be.saveAdditional(tag, be.getLevel().registryAccess());
             var network = tag.getCompound("Network");
             network.putFloat("AddedStress", 256);
             network.putFloat("Stress", 256);
-            be.load(tag);
+            be.loadCustomOnly(tag, be.getLevel().registryAccess());
         });
         scene.idle(50);
 

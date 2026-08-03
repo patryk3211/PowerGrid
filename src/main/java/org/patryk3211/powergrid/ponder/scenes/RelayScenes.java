@@ -783,7 +783,7 @@ public class RelayScenes {
                 .placeNearTarget();
         scene.idle(90);
 
-        var stack = new ItemStack(ModdedItems.WIRE, 1);
+        var stack = new ItemStack(ModdedItems.WIRE.get(), 1);
         scene.overlay().showControls(util.vector().of(2.8, 1.9, 2.0), Pointing.RIGHT, 30).withItem(stack);
         scene.idle(30);
 

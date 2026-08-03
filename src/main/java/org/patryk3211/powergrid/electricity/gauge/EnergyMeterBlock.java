@@ -3,6 +3,7 @@ package org.patryk3211.powergrid.electricity.gauge;
 import com.simibubi.create.foundation.block.IBE;
 import dev.architectury.registry.menu.MenuRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -37,7 +38,7 @@ public class EnergyMeterBlock extends HorizontalElectricBlock implements IBE<Ene
         if(level.isClientSide)
             return InteractionResult.SUCCESS;
         withBlockEntityDo(level, pos, be -> {
-            MenuRegistry.openExtendedMenu((ServerPlayer) player, be, be::sendToMenu);
+            MenuRegistry.openExtendedMenu((ServerPlayer) player, be, buf -> be.sendToMenu(new RegistryFriendlyByteBuf(buf, level.registryAccess())));
         });
         return InteractionResult.SUCCESS;
     }

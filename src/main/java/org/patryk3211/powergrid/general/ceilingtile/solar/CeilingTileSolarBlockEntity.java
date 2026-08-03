@@ -290,8 +290,8 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    public void writeSafe(CompoundTag tag) {
-        super.writeSafe(tag);
+    public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
+        super.writeSafe(tag, registries);
         if(lastKnownPos != null) {
             if (controller != null) {
                 tag.put("Controller", NbtUtils.writeBlockPos(controller));
