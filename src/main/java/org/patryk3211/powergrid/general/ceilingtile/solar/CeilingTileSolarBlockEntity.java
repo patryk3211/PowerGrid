@@ -114,6 +114,7 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity {
             if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
                 ambientTemp = 22f;
             firstTick = false;
+            getPlacedBlockRotation();
         }
 
         if(subLevel != null) {
@@ -133,9 +134,8 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity {
         }
 
         int panelCount = 1 + connectedPanelBEs.size();
-        float cloudCover = getWeather(level);
-
-        irradiance = getIrradiance(getAM(level), cloudCover, this.getBlockPos().getY(), level);
+        float cloudCover = getWeather(world);
+        irradiance = getIrradiance(getAM(world), cloudCover, blockPos.getY(), world);
 
         double v0 = currentSource.potentialDifference();
         var currentCellTemp = SolarHelper.getCellTemp(irradiance, ambientTemp);
