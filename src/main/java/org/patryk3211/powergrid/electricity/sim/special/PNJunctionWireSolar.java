@@ -21,6 +21,8 @@ import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
+import static org.patryk3211.powergrid.electricity.sim.special.PNJunctionWire.WrightOmega;
+
 public class PNJunctionWireSolar extends AbstractElectricWire implements ISolverHook {
     private double temperatureCelsius;
     private final double reverseSaturationCurrent;
@@ -47,28 +49,13 @@ public class PNJunctionWireSolar extends AbstractElectricWire implements ISolver
         this.breakdownSaturationCurrent = 0;
     }
 
-    public static double WrightOmega(double z) {
-        // D'Angelo, Gabrielli and Turchet (2019) approximation
-        double x1 = -3.341459552768620;
-        double x2 = 8;
-        double alpha = -1.314293149877800e-3;
-        double beta = 4.775931364975583e-2;
-        double gamma = 3.631952663804445e-1;
-        double zeta = 6.313183464296682e-1;
-        if (z <= x1) {
-            return 0;
-        } else if (z < x2) {
-            return alpha * z * z * z + beta * z * z + gamma * z + zeta;
-        } else {
-            return z - Math.log(z);
-        }
-    }
-
     public double pnLim(double V1, double V0, double Vcrit, double V_T) {
-        if(V1 < Vcrit * 0.5f && V0 < Vcrit * 0.5f)
-            return V1;
+        if(V0 < 0 && V1 > Vcrit)
+            return 0;
+        if(V0 >= 0 && V0 < Vcrit && V1 > Vcrit)
+            return Vcrit;
         var dV = V1 - V0;
-        if(V1 > Vcrit && dV > idealityFactor * V_T * 2)
+        if(V1 > Vcrit && dV > V_T * 2)
             return V0 + idealityFactor * V_T * Math.log1p(dV / (idealityFactor * V_T));
         return V1;
     }
@@ -96,7 +83,7 @@ public class PNJunctionWireSolar extends AbstractElectricWire implements ISolver
         double V_T = (k * (temperatureCelsius + 273.15)) / q; // Thermal voltage in V
         double n = idealityFactor;
         double V = potentialDifference();
-        double Vcrit = n * V_T * Math.log(V_T / (reverseSaturationCurrent * Math.sqrt(2)));
+        double Vcrit = n * V_T * Math.log((n * V_T) / (reverseSaturationCurrent * Math.sqrt(2)));
         prevV = V = pnLim(V, prevV, Vcrit, V_T);
         double I_s1 = reverseSaturationCurrent;
         double E_g = 1.12; // Silicon bandgap energy in eV

@@ -23,6 +23,7 @@ import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import org.patryk3211.powergrid.electricity.ClientElectricNetwork;
 import org.patryk3211.powergrid.equipment.drill.DrillItemRenderer;
+import org.patryk3211.powergrid.equipment.saw.SawItemRenderer;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 
 public class ForgeClientEvents {
@@ -53,7 +54,17 @@ public class ForgeClientEvents {
                 event.getEquipProgress()
         )) {
             event.setCanceled(true);
-            return;
+        } else if(SawItemRenderer.renderPlayerHand(
+                event.getItemStack(),
+                event.getHand(),
+                event.getPoseStack(),
+                event.getMultiBufferSource(),
+                event.getPackedLight(),
+                event.getPartialTick(),
+                event.getSwingProgress(),
+                event.getEquipProgress()
+        )) {
+            event.setCanceled(true);
         }
     }
 }

@@ -98,7 +98,13 @@ public abstract class GaugeBlockEntity extends ElectricBlockEntity implements IH
 
     @Override
     public float get(String name) {
-        return getValue();
+        float x = getValue();
+        float max = getMaxValue();
+        if(x > max)
+            return max;
+        if(x < -max)
+            return -max;
+        return x;
     }
 
     @Override

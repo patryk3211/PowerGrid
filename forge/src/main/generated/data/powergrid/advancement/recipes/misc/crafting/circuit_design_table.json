@@ -5,7 +5,9 @@
       "conditions": {
         "items": [
           {
-            "items": "create:empty_schematic"
+            "items": [
+              "powergrid:conductive_casing"
+            ]
           }
         ]
       },
@@ -20,13 +22,14 @@
   },
   "requirements": [
     [
-      "has_the_recipe",
-      "has_item"
+      "has_item",
+      "has_the_recipe"
     ]
   ],
   "rewards": {
     "recipes": [
       "powergrid:crafting//circuit_design_table"
     ]
-  }
+  },
+  "sends_telemetry_event": false
 }

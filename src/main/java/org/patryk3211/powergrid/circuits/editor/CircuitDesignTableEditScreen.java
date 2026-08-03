@@ -309,7 +309,7 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
 
         changed = true;
         playSound(ModdedSoundEvents.UI_PLACE_TRACE);
-        if(schematic.isPad(clickX, clickY) || isTrace)
+        if((schematic.isPad(clickX, clickY) || isTrace) ^ Screen.hasShiftDown()) // Invert (XOR) if shifting
             return CircuitEditWidget.SelectionResult.BEGIN_NEW;
         return CircuitEditWidget.SelectionResult.CONTINUE;
     }

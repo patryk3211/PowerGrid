@@ -10,5 +10,5 @@
   "texture": "powergrid:textures/special/insulated_wire.png",
   "thermalMass": 2.0,
   "verticalCoefficient": 1.005,
-  "wireThickness": 0.125
+  "wireThickness": 0.1875
 }

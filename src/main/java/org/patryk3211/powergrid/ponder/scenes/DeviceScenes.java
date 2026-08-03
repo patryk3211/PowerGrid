@@ -48,13 +48,13 @@ import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.battery.MultiBlockBatteryEntity;
 import org.patryk3211.powergrid.electricity.crt.CRTBlock;
+import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
 import org.patryk3211.powergrid.electricity.electromagnet.MagnetizingBehaviour;
+import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlock;
-import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
-import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.kinetics.plotter.PlotterBlockEntity;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlockEntity;
 import org.patryk3211.powergrid.ponder.base.PowerGridSceneBuilder;
@@ -69,6 +69,7 @@ public class DeviceScenes {
     public static void heatingCoilBasic(SceneBuilder builder, SceneBuildingUtil util) {
         var scene = new PowerGridSceneBuilder(builder);
         scene.title("heating_coil_basic", "Warming up the atmosphere");
+        scene.setNextUpEnabled(true);
         scene.configureBasePlate(0, 0, 5);
 
         scene.showBasePlate();
@@ -79,13 +80,15 @@ public class DeviceScenes {
 
         var heatingCoil = util.grid().at(3, 1, 2);
         var voltageSource = util.grid().at(6, 2, 2);
+        var deviceConnector = util.grid().at(3, 2, 2);
         scene.world().showSection(util.select().position(4, 2, 1), Direction.DOWN);
         scene.world().showSection(util.select().position(4, 2, 3), Direction.DOWN);
         scene.world().showSection(util.select().position(heatingCoil), Direction.DOWN);
+        scene.world().showSection(util.select().position(deviceConnector), Direction.DOWN);
         scene.idle(10);
 
-        scene.electric().connect(util.grid().at(4, 2, 1), 0, heatingCoil, 0);
-        scene.electric().connect(util.grid().at(4, 2, 3), 0, heatingCoil, 1);
+        scene.electric().connect(util.grid().at(4, 2, 1), 0, deviceConnector, 0);
+        scene.electric().connect(util.grid().at(4, 2, 3), 0, deviceConnector, 1);
         scene.electric().connectInvisible(util.grid().at(4, 2, 1), 0, voltageSource, 0);
         scene.electric().connectInvisible(util.grid().at(4, 2, 3), 0, voltageSource, 1);
         scene.idle(5);
@@ -95,7 +98,10 @@ public class DeviceScenes {
                 .attachKeyFrame()
                 .pointAt(util.vector().topOf(heatingCoil))
                 .placeNearTarget();
-
+        scene.world().modifyBlockEntity(heatingCoil, HeaterBlockEntity.class, c -> {
+            var temp = c.getBehaviour(ThermalBehaviour.TYPE);
+            temp.setTemperature(380);
+        });
         scene.electric().setSource(voltageSource, 32);
         scene.electric().tickFor(10);
         scene.idle(100);
@@ -108,6 +114,10 @@ public class DeviceScenes {
 
         scene.electric().setSource(voltageSource, 38);
         scene.electric().tickFor(10);
+        scene.world().modifyBlockEntity(heatingCoil, HeaterBlockEntity.class, c -> {
+            var temp = c.getBehaviour(ThermalBehaviour.TYPE);
+            temp.setTemperature(510);
+        });
         scene.idle(80);
 
         scene.markAsFinished();
@@ -126,16 +136,22 @@ public class DeviceScenes {
 
         var heatingCoil = util.grid().at(1, 1, 3);
         var voltageSource = util.grid().at(2, 1, 6);
+        var deviceConnector = util.grid().at(1, 2, 3);
         scene.world().showSection(util.select().position(0, 2, 4), Direction.DOWN);
         scene.world().showSection(util.select().position(2, 2, 4), Direction.DOWN);
         scene.world().showSection(util.select().position(heatingCoil), Direction.DOWN);
+        scene.world().showSection(util.select().position(deviceConnector), Direction.DOWN);
         scene.idle(10);
 
-        scene.electric().connect(util.grid().at(0, 2, 4), 0, heatingCoil, 1);
-        scene.electric().connect(util.grid().at(2, 2, 4), 0, heatingCoil, 0);
+        scene.electric().connect(util.grid().at(0, 2, 4), 0, deviceConnector, 0);
+        scene.electric().connect(util.grid().at(2, 2, 4), 0, deviceConnector, 1);
         scene.electric().connectInvisible(util.grid().at(0, 2, 4), 0, voltageSource, 0);
         scene.electric().connectInvisible(util.grid().at(2, 2, 4), 0, voltageSource, 1);
         scene.electric().setSource(voltageSource, 32);
+        scene.world().modifyBlockEntity(heatingCoil, HeaterBlockEntity.class, c -> {
+            var temp = c.getBehaviour(ThermalBehaviour.TYPE);
+            temp.setTemperature(380);
+        });
         scene.electric().tickFor(10);
         scene.idle(10);
 
@@ -172,120 +188,6 @@ public class DeviceScenes {
         scene.overlay().showControls(item2Vec, Pointing.DOWN, 20).withItem(cooked);
 
         scene.idle(20);
-        scene.markAsFinished();
-    }
-
-    public static void transformerSizes(SceneBuilder scene, SceneBuildingUtil util) {
-        scene.title("transformer_sizes", "Transformers");
-        scene.configureBasePlate(0, 0, 5);
-
-        scene.showBasePlate();
-        scene.idle(5);
-
-        var smallTr = util.grid().at(2, 1, 1);
-        scene.world().showSection(util.select().position(smallTr), Direction.DOWN);
-        scene.idle(20);
-
-        scene.overlay().showControls(util.vector().blockSurface(smallTr, Direction.NORTH), Pointing.RIGHT, 30)
-                .withItem(AllItems.WRENCH.asStack());
-        scene.idle(20);
-        scene.world().setBlock(smallTr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState().setValue(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X), false);
-        scene.idle(20);
-
-        var mediumTr = util.grid().at(2, 1, 3);
-        scene.world().showSection(util.select().fromTo(mediumTr, mediumTr.west().above()), Direction.DOWN);
-        scene.idle(20);
-
-        scene.overlay().showControls(util.vector().blockSurface(mediumTr.above(), Direction.NORTH), Pointing.RIGHT, 30)
-                .withItem(AllItems.WRENCH.asStack());
-        scene.idle(20);
-        scene.world().setBlock(mediumTr, ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
-                .setValue(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .setValue(TransformerMediumBlock.PART, 1), false);
-        scene.world().setBlock(mediumTr.west(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
-                .setValue(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .setValue(TransformerMediumBlock.PART, 0), false);
-        scene.world().setBlock(mediumTr.above(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
-                .setValue(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .setValue(TransformerMediumBlock.PART, 3), false);
-        scene.world().setBlock(mediumTr.above().west(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
-                .setValue(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .setValue(TransformerMediumBlock.PART, 2), false);
-        scene.idle(20);
-
-        scene.overlay().showText(80)
-                .text("Transformers come in different sizes, each of them offering different power capabilities and winding capacities")
-                .attachKeyFrame()
-                .placeNearTarget();
-        scene.idle(90);
-
-        scene.markAsFinished();
-    }
-
-    public static void transformerWinding(SceneBuilder scene, SceneBuildingUtil util) {
-        scene.title("transformer_winding", "Winding a transformer");
-        scene.configureBasePlate(0, 0, 5);
-
-        scene.showBasePlate();
-        scene.idle(10);
-
-        var tr = util.grid().at(2, 1, 2);
-        scene.world().showSection(util.select().position(tr), Direction.DOWN);
-        scene.idle(15);
-
-        scene.overlay().showText(80)
-                .text("To wind a transformer, first select the starting terminal for your winding")
-                .attachKeyFrame()
-                .placeNearTarget();
-        scene.idle(90);
-
-        var stack = new ItemStack(ModdedItems.WIRE.getDelegate(), 1);
-        scene.overlay().showControls(util.vector().of(2.8, 1.9, 2.0), Pointing.RIGHT, 30).withItem(stack);
-        scene.idle(30);
-
-        var side = util.vector().blockSurface(tr, Direction.NORTH);
-        scene.overlay().showText(80)
-                .text("Next, click on the transformer body and pick the number of turn you want to add")
-                .attachKeyFrame()
-                .pointAt(side)
-                .placeNearTarget();
-        scene.idle(50);
-        scene.overlay().showControls(side, Pointing.UP, 30).withItem(stack);
-        scene.idle(40);
-
-        scene.overlay().showText(80)
-                .text("Lastly, select the end terminal for your winding")
-                .attachKeyFrame()
-                .placeNearTarget();
-        scene.idle(90);
-
-        scene.overlay().showControls(util.vector().of(2.2, 1.9, 2.0), Pointing.LEFT, 30).withItem(stack);
-        scene.idle(20);
-        scene.world().setBlock(tr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState()
-                .setValue(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .setValue(TransformerSmallBlock.COILS, 1), false);
-        scene.idle(10);
-
-        scene.effects().indicateSuccess(tr);
-        scene.idle(10);
-
-        scene.overlay().showText(60)
-                .text("Repeat for the secondary winding")
-                .placeNearTarget();
-        scene.idle(50);
-
-        scene.world().setBlock(tr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState()
-                .setValue(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .setValue(TransformerSmallBlock.COILS, 2), false);
-        scene.effects().indicateSuccess(tr);
-        scene.idle(30);
-
-        scene.overlay().showText(80)
-                .text("Your transformer will now transform voltage with the ratio you wound")
-                .attachKeyFrame()
-                .placeNearTarget();
-        scene.idle(90);
-
         scene.markAsFinished();
     }
 
@@ -819,6 +721,60 @@ public class DeviceScenes {
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(40);
+        scene.markAsFinished();
+    }
+
+    public static void ceilingTile(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("ceiling_tile", "A stylish ceiling");
+        scene.configureBasePlate(0, 0, 5);
+        scene.showBasePlate();
+
+        scene.idle(10);
+        scene.world().showSection(util.select().position(2, 2, 2), Direction.DOWN);
+        scene.idle(20);
+
+        scene.overlay().showText(60)
+                .text("The Ceiling Tile is a decorative block.")
+                .pointAt(util.vector().of(2.5, 2.25, 2.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(70);
+
+        scene.overlay().showText(60)
+                .text("You can add certain blocks to it to expand its functionality")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(70);
+
+        scene.overlay().showControls(util.vector().of(2.5, 2.5, 2.5), Pointing.DOWN, 30)
+                .withItem(ModdedBlocks.FACTORY_LIGHT.asStack())
+                .rightClick();
+        scene.idle(20);
+
+        scene.world().setBlock(util.grid().at(2, 2, 2), ModdedBlocks.CEILING_TILE_LAMP.getDefaultState(), false);
+        scene.idle(20);
+        scene.effects().indicateSuccess(util.grid().at(2, 2, 2));
+        scene.idle(30);
+
+        scene.world().hideSection(util.select().position(2, 2, 2), Direction.UP);
+        scene.idle(20);
+
+        scene.overlay().showText(80)
+                .text("The Ceiling Tile supports a variety of attachments")
+                .placeNearTarget()
+                .attachKeyFrame();
+
+        scene.idle(20);
+        scene.world().showSection(util.select().position(1, 2, 1), Direction.DOWN);
+        scene.idle(10);
+        scene.world().showSection(util.select().position(3, 2, 1), Direction.DOWN);
+        scene.idle(10);
+        scene.world().showSection(util.select().position(1, 2, 3), Direction.DOWN);
+        scene.idle(10);
+        scene.world().showSection(util.select().position(3, 2, 3), Direction.DOWN);
+        scene.idle(30);
+
         scene.markAsFinished();
     }
 

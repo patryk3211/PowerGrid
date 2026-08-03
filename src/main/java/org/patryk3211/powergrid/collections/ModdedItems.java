@@ -46,6 +46,7 @@ import org.patryk3211.powergrid.equipment.multimeter.MultimeterItem;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItemRenderer;
 import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryItem;
 import org.patryk3211.powergrid.equipment.saw.SawItem;
+import org.patryk3211.powergrid.equipment.saw.SawItemRenderer;
 import org.patryk3211.powergrid.equipment.zapper.ElectroZapperItem;
 import org.patryk3211.powergrid.equipment.zapper.ElectroZapperItemRenderer;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingItem;
@@ -82,18 +83,18 @@ public class ModdedItems {
             .register();
     public static final ItemEntry<WireItem> INSULATED_COPPER_WIRE = REGISTRATE.item("insulated_copper_wire", WireItem::new)
             .transform(WireItem.properties(0.0015f, 16, 0.5f, 1.2f, 70,
-                    PowerGrid.texture("special/insulated_wire"), 1.01f, 1.2f, 0.0625f,
+                    PowerGrid.texture("special/insulated_wire"), 1.01f, 1.2f, 0.125f,
                     true, false, true))
             .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag)
             .register();
     public static final ItemEntry<CordItem> CORD = REGISTRATE.item("copper_cord", CordItem::new)
             .transform(WireItem.properties(0.0015f, 16, 0.5f, 2.0f, 60,
-                    PowerGrid.texture("special/insulated_wire"), 1.005f, 1.005f, 0.125f,
+                    PowerGrid.texture("special/insulated_wire"), 1.005f, 1.005f, 0.1875f,
                     true, true, true))
             .register();
     public static final ItemEntry<StringLightCordItem> STRING_LIGHT_CORD = REGISTRATE.item("string_light_cord", StringLightCordItem::new)
             .transform(WireItem.properties(0.0015f, 16, 0.5f, 2.0f, 60,
-                    PowerGrid.texture("special/insulated_wire"), 1.005f, 1.005f, 0.125f,
+                    PowerGrid.texture("special/insulated_wire"), 1.005f, 1.005f, 0.1875f,
                     false, true, true))
             .register();
 
@@ -225,6 +226,7 @@ public class ModdedItems {
             .register();
 
     public static final ItemEntry<SawItem> PORTABLE_SAW = REGISTRATE.item("portable_saw", SawItem::new)
+            .transform(customRenderer(() -> SawItemRenderer::new))
             .model(itemWithParent("item/saw/item"))
             .register();
 

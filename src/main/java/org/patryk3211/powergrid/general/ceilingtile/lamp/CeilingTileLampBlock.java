@@ -97,6 +97,11 @@ public class CeilingTileLampBlock extends ElectricBlock implements IBE<CeilingTi
     }
 
     @Override
+    public boolean renderPlug() {
+        return true;
+    }
+
+    @Override
     public ItemRequirement getRequiredItems(BlockState blockState, @Nullable BlockEntity blockEntity) {
         return new ItemRequirement(ItemRequirement.ItemUseType.CONSUME, List.of(
                 ModdedBlocks.CEILING_TILE.asStack(),

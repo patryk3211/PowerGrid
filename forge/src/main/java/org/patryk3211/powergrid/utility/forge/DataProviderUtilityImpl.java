@@ -607,6 +607,10 @@ public class DataProviderUtilityImpl {
                 prov.withExistingParent(ctx.getName(), prov.modLoc(parent));
     }
 
+    public static <T extends Item> NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> blockItem() {
+        return (ctx, prov) -> prov.blockItem(ctx);
+    }
+
     public static <T extends Item> NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> barrier() {
         return (ctx, prov) ->
                 prov.withExistingParent(ctx.getName(), prov.mcLoc("item/barrier"));

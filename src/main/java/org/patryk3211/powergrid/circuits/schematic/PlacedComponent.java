@@ -15,10 +15,15 @@
  */
 package org.patryk3211.powergrid.circuits.schematic;
 
+import net.createmod.catnip.math.VecHelper;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
@@ -263,6 +268,14 @@ public class PlacedComponent {
 
     public BlockPos getPos() {
         return pos;
+    }
+
+    public @NotNull Vec3 getExactPos() {
+        var pos = new Vec3((x + 0.5f) / 16f, 2 / 16f, (y + 0.5f) / 16f);
+        var state = getWorld().getBlockState(this.pos);
+        pos = VecHelper.rotateCentered(pos, CircuitBoardBlock.getAngleX(state), Direction.Axis.X);
+        pos = VecHelper.rotateCentered(pos, CircuitBoardBlock.getAngleY(state), Direction.Axis.Y);
+        return pos.add(this.pos.getX(), this.pos.getY(), this.pos.getZ());
     }
 
     public <T> T data() {

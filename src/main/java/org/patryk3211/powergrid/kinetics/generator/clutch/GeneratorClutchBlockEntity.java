@@ -144,7 +144,7 @@ public class GeneratorClutchBlockEntity extends GeneratingKineticBlockEntity imp
     @Override
     public void updateFromNetwork(float maxStress, float currentStress, int networkSize) {
         super.updateFromNetwork(maxStress, currentStress, networkSize);
-        motorLoad = currentStress / maxStress;
+        motorLoad = maxStress == 0 ? 0 : currentStress / maxStress;
     }
 
     @Override

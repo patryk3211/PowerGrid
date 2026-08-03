@@ -11,6 +11,7 @@
     "powergrid:voltage_gauge",
     "powergrid:current_gauge",
     "powergrid:power_gauge",
+    "powergrid:energy_meter",
     "powergrid:plotter",
     "powergrid:generator_induction_rotor",
     "powergrid:generator_large_induction_rotor",

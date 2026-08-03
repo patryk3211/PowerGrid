@@ -62,7 +62,7 @@ public abstract class SegmentedBehaviour<T extends SegmentedBehaviour<T>> extend
 
     @Override
     public void initialize() {
-        if(!getWorld().isClientSide && checkSizeConstraint()) {
+        if((!getWorld().isClientSide || blockEntity.isVirtual()) && checkSizeConstraint()) {
             makeController();
             checkConnectivity(null);
         }

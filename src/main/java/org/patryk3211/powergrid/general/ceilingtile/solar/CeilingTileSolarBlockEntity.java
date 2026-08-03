@@ -23,7 +23,6 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
 import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWireSolar;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
-import org.patryk3211.powergrid.electricity.solarpanel.ISolarPropertyConsumer;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarHelper;
 
 import java.util.*;
@@ -33,10 +32,9 @@ import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEnt
 import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.maxPanels;
 
 
-public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements ISolarPropertyConsumer {
+public class CeilingTileSolarBlockEntity extends ElectricBlockEntity {
     protected CurrentSourceWire currentSource;
     protected ElectricWire seriesResistor;
-    protected PNJunctionWireSolar junction;
 
     private boolean firstTick = true;
     private float ambientTemp = -2000f;
@@ -52,8 +50,6 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
     private BlockPos controller;
     private BlockPos lastKnownPos;
 
-    private double Rs, Rsh, I;
-    private int panelCount;
     private boolean valid = true;
 
     public CeilingTileSolarBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -66,15 +62,8 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
         var node = builder.addInternalNode();
         currentSource = new CurrentSourceWire(node, builder.terminalNode(1), 0.00001f);
         seriesResistor = builder.connect((float) 1, node, builder.terminalNode(0));
-        junction = new PNJunctionWireSolar(
-                IO_REF, 0.075f,
-                ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO ? 22 : ambientTemp, IDEALITY * CELLS_IN_SERIES,
-                IDEALITY,
-                node, builder.terminalNode(1)
-        );
         builder.add(currentSource);
         builder.add(seriesResistor);
-        builder.add(junction);
     }
 
     private void makeProxy() {
@@ -91,7 +80,6 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
         attachBehaviourLate(electricBehaviour);
         currentSource = null;
         seriesResistor = null;
-        junction = null;
         if(wires != null)
             wires.forEach(TransmissionLinePart::refreshEndpointNodes);
     }
@@ -110,34 +98,12 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
             wires.forEach(TransmissionLinePart::refreshEndpointNodes);
     }
 
-    private void electricalProperties(CeilingTileSolarBlockEntity controller) {
-        float cloudCover = getWeather(level);
-        var pos = SableCompanion.INSTANCE.projectOutOfSubLevel(level, new Vector3d(this.getBlockPos().getX(), this.getBlockPos().getY(), this.getBlockPos().getZ()));
-
-        getPlacedBlockRotation();
-        var subLevel = SableCompanion.INSTANCE.getContaining(this);
-        if(subLevel != null) {
-            subLevel.logicalPose().orientation().transform(panelNormal);
-            panelNormal.normalize();
-        }
-        irradiance = getIrradiance(getAM(level), cloudCover, (int) pos.y, level);
-        SolarHelper.electricalProperties(irradiance, controller);
-    }
-
-    @Override
-    public void accept(double Rs, double Rsh, double I) {
-        this.Rs += Rs;
-        this.Rsh += Rsh;
-        if(I > this.I)
-            this.I = I;
-        ++panelCount;
-    }
-
     @Override
     public void electricalTick() {
         var world = getLevel();
         if (world == null || world.isClientSide()) return;
         if (currentSource == null) return;
+
         var worldPos = SableCompanion.INSTANCE.projectOutOfSubLevel(world,
                 new Vector3d(this.getBlockPos().getX(), this.getBlockPos().getY(), this.getBlockPos().getZ()));
         var blockPos = BlockPos.containing(JOMLConversion.toMojang(worldPos));
@@ -147,49 +113,36 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
             ambientTemp = ThermalBehaviour.getAmbientTemperature(world, blockPos);
             if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
                 ambientTemp = 22f;
-            if(junction != null)
-                junction.setTemperatureCelsius(ambientTemp);
             firstTick = false;
-            getPlacedBlockRotation();
         }
 
         if(subLevel != null) {
+            getPlacedBlockRotation();
             subLevel.logicalPose().orientation().transform(panelNormal);
             panelNormal.normalize();
         }
 
-        I = 0; Rs = 0; Rsh = 0; panelCount = 0;
-        electricalProperties(this);
         var iter = connectedPanelBEs.values().iterator();
         while(iter.hasNext()) {
             var panel = iter.next();
-            if(panel.valid) {
-                panel.electricalProperties(this);
-            } else {
+            if(!panel.valid) {
                 connectedPanels.remove(panel.getBlockPos());
                 iter.remove();
                 notifyUpdate();
             }
         }
 
-        if (junction != null) {
-            var currentCellTemp = SolarHelper.getCellTemp(irradiance, ambientTemp);
-            junction.setTemperatureCelsius(currentCellTemp);
-            junction.setIdealityFactor(IDEALITY * CELLS_IN_SERIES * panelCount);
-        }
+        int panelCount = 1 + connectedPanelBEs.size();
+        float cloudCover = getWeather(level);
 
-        // Use sane values as fallback if something fails.
-        if(Rs <= 0 || !Double.isFinite(Rs))
-            Rs = 0.0001;
-        if(Rsh <= 0 || !Double.isFinite(Rsh))
-            Rsh = 10000;
-        if(!Double.isFinite(I))
-            I = 0;
+        irradiance = getIrradiance(getAM(level), cloudCover, this.getBlockPos().getY(), level);
 
-        seriesResistor.setResistance(Rs);
-        currentSource.setConductance(1 / Rsh);
-        currentSource.setCurrent(I);
-
+        double v0 = currentSource.potentialDifference();
+        var currentCellTemp = SolarHelper.getCellTemp(irradiance, ambientTemp);
+        double[] results = IVCurve(irradiance, currentCellTemp, v0, panelCount, 1);
+        currentSource.setCurrent(results[0]);
+        currentSource.setConductance(results[1]);
+        seriesResistor.setResistance(RS * panelCount);
         super.electricalTick();
     }
 
@@ -205,9 +158,20 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
         if (sunDir.y <= 0) return 0;
 
         if (rayCastDelay-- == 0){
-            sunVisibility = sunRaycast(world);
-            rayCastDelay = world.random.nextInt(41) + 10;
-            skyVisible = skyCheck(world, this.getBlockPos());
+            if (connectedPanels.isEmpty()){
+                sunVisibility = sunRaycast(world, null);
+                rayCastDelay = world.random.nextInt(41) + 10;
+                skyVisible = skyCheck(world, this.getBlockPos());
+            } else {
+                if (controller == null){
+                    var multiBlockCenter = getSolarPanelCenter(this.getBlockPos(), connectedPanels);
+                    sunVisibility = sunRaycast(world, multiBlockCenter);
+                    rayCastDelay = world.random.nextInt(41) + 10;
+                    skyVisible = skyCheck(world, BlockPos.containing(multiBlockCenter));
+                } else {
+                    rayCastDelay = world.random.nextInt(41) + 10;
+                }
+            }
         }
 
         double cosIncidence = Math.max(0, sunDir.dot(panelNormal));
@@ -223,11 +187,18 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
         return (irradiance * sunVisibility) * transmittance * cosIncidence + diffuseLight + reflected;
     }
 
-    public float sunRaycast(Level world) {
-        var d = SableCompanion.INSTANCE.projectOutOfSubLevel(world, new Vector3d(this.getBlockPos().getX() + .5,
-                this.getBlockPos().getY() + .5, this.getBlockPos().getZ() + .5));
+    public float sunRaycast(Level world, Vec3 raycastPos) {
+        BlockPos blockPos;
+        if (raycastPos == null) {
+            blockPos = this.getBlockPos();
+        } else {
+            blockPos = BlockPos.containing(raycastPos);
+        }
 
-        var blockPos = BlockPos.containing(d.x, d.y, d.z);
+        var d = SableCompanion.INSTANCE.projectOutOfSubLevel(world, new Vector3d(blockPos.getX() + .5,
+                blockPos.getY() + .5, blockPos.getZ() + .5));
+        blockPos = BlockPos.containing(d.x, d.y, d.z);
+
         int castLength = 0;
         ChunkAccess chunk;
         double sunAngle = world.getSunAngle(0);
@@ -319,6 +290,25 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
     }
 
     @Override
+    public void writeSafe(CompoundTag tag) {
+        super.writeSafe(tag);
+        if(lastKnownPos != null) {
+            if (controller != null) {
+                tag.put("Controller", NbtUtils.writeBlockPos(controller));
+            } else {
+                if (!connectedPanels.isEmpty()) {
+                    var list = new ListTag();
+                    for (var pos : connectedPanels) {
+                        list.add(NbtUtils.writeBlockPos(pos));
+                    }
+                    tag.put("Connected", list);
+                }
+            }
+            tag.put("LastKnownPos", NbtUtils.writeBlockPos(lastKnownPos));
+        }
+    }
+
+    @Override
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
         Vec3i offset = null;
@@ -327,6 +317,7 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity implements 
             if(!worldPosition.equals(lastKnownPos)) {
                 offset = worldPosition.subtract(lastKnownPos);
             }
+            lastKnownPos = worldPosition;
         } else {
             lastKnownPos = null;
         }

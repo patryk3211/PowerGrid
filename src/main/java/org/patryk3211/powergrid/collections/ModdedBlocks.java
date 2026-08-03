@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.collections;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllTags;
 import com.simibubi.create.api.behaviour.display.DisplaySource;
 import com.simibubi.create.api.boiler.BoilerHeater;
 import com.simibubi.create.api.connectivity.ConnectivityHandler;
@@ -44,6 +45,9 @@ import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.Half;
+import net.minecraft.world.level.block.state.properties.SlabType;
+import net.minecraft.world.level.block.state.properties.StairsShape;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
@@ -59,10 +63,7 @@ import org.patryk3211.powergrid.config.CStress;
 import org.patryk3211.powergrid.config.CThermal;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlockEntity;
-import org.patryk3211.powergrid.electricity.battery.BatteryBlock;
-import org.patryk3211.powergrid.electricity.battery.BatteryCTBehaviour;
-import org.patryk3211.powergrid.electricity.battery.PotatoBatteryBlock;
-import org.patryk3211.powergrid.electricity.battery.SimpleBatterySpec;
+import org.patryk3211.powergrid.electricity.battery.*;
 import org.patryk3211.powergrid.electricity.bell.AlarmBellBlock;
 import org.patryk3211.powergrid.electricity.carbonpile.CarbonPileBlock;
 import org.patryk3211.powergrid.electricity.carbonpile.CarbonPileCoilBlock;
@@ -78,6 +79,7 @@ import org.patryk3211.powergrid.electricity.fan.ElectricFanBlock;
 import org.patryk3211.powergrid.electricity.febridge.FEInverterBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlock;
+import org.patryk3211.powergrid.electricity.gauge.EnergyMeterBlock;
 import org.patryk3211.powergrid.electricity.gauge.PowerGaugeBlock;
 import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlock;
 import org.patryk3211.powergrid.electricity.grounding.GroundingRodBlock;
@@ -144,6 +146,9 @@ public class ModdedBlocks {
             .transform(CThermal.maxPower(100, 1.5f))
             .transform(DisplaySource.displaySource(ModdedDisplaySources.BATTERY))
             .onRegister(CreateRegistrate.connectedTextures(BatteryCTBehaviour::new))
+            .item(BatteryItem::new)
+                .model(itemWithParent("block/battery"))
+                .build()
             .register();
 
     public static final BlockEntry<PotatoBatteryBlock> POTATO_BATTERY = REGISTRATE.block("potato_battery", PotatoBatteryBlock::new)
@@ -187,8 +192,25 @@ public class ModdedBlocks {
             .register();
 
     public static final BlockEntry<StairBlock> COPPER_PLATING_STAIRS = REGISTRATE.block("copper_plating_stairs", p -> new StairBlock(COPPER_PLATING.getDefaultState(), p))
-            .blockstate((ctx, prov) -> prov.stairsBlock(ctx.get(), prov.modLoc("block/solar_panel/copper_plating")))
+            .blockstate((ctx, prov) -> prov.stairsBlock(ctx.get(), prov.modLoc("block/copper_plating")))
             .initialProperties(SharedProperties::softMetal)
+            .onRegister(connectedTextures(() -> new EncasedCTBehaviour(ModdedPartialModels.COPPER_PLATING)))
+            .onRegister(casingConnectivity((block, cc) -> cc.make(block, ModdedPartialModels.COPPER_PLATING, (s, f) -> {
+                var shape = s.getValue(StairBlock.SHAPE);
+                var half = s.getValue(StairBlock.HALF);
+                var facing = s.getValue(StairBlock.FACING);
+                if(half == Half.TOP && f == Direction.UP)
+                    return true;
+                if(half == Half.BOTTOM && f == Direction.DOWN)
+                    return true;
+                if(facing == f)
+                    return true;
+                if(shape == StairsShape.INNER_LEFT && f == facing.getCounterClockWise())
+                    return true;
+                if(shape == StairsShape.INNER_RIGHT && f == facing.getClockWise())
+                    return true;
+                return false;
+            })))
             .recipe((ctx, prov) -> prov
                     .stonecutting(DataIngredient.items(COPPER_PLATING.get()), RecipeCategory.DECORATIONS, ctx::get, 1))
             .simpleItem()
@@ -198,8 +220,17 @@ public class ModdedBlocks {
             .blockstate((ctx, prov) ->
                     prov.slabBlock(ctx.get(),
                             prov.modLoc("block/copper_plating"),
-                            prov.modLoc("block/solar_panel/copper_plating")))
+                            prov.modLoc("block/copper_plating")))
             .initialProperties(SharedProperties::softMetal)
+            .onRegister(connectedTextures(() -> new EncasedCTBehaviour(ModdedPartialModels.COPPER_PLATING)))
+            .onRegister(casingConnectivity((block, cc) -> cc.make(block, ModdedPartialModels.COPPER_PLATING, (s, f) -> {
+                var type = s.getValue(SlabBlock.TYPE);
+                if(type == SlabType.TOP && f == Direction.UP)
+                    return true;
+                if(type == SlabType.BOTTOM && f == Direction.DOWN)
+                    return true;
+                return false;
+            })))
             .recipe((ctx, prov) -> prov
                     .stonecutting(DataIngredient.items(COPPER_PLATING.get()), RecipeCategory.DECORATIONS, ctx::get, 2))
             .simpleItem()
@@ -235,6 +266,7 @@ public class ModdedBlocks {
             .transform(pickaxeOnly())
             .transform(CResistance.setResistance(25))
             .transform(CThermal.maxPower(60, 1.0f))
+            .tag(AllTags.AllBlockTags.FAN_TRANSPARENT.tag)
             .defaultLoot()
             .simpleItem()
             .register();
@@ -295,6 +327,18 @@ public class ModdedBlocks {
             .transform(DisplaySource.displaySource(ModdedDisplaySources.ELECTRIC_GAUGE))
             .item()
                 .model(gauge("block/gauge/item_power", "block/conductive_gauge"))
+                .build()
+            .register();
+
+    public static final BlockEntry<EnergyMeterBlock> ENERGY_METER = REGISTRATE.block("energy_meter", EnergyMeterBlock::new)
+            .blockstate(horizontalBlock("block/energy_meter/block"))
+            .initialProperties(SharedProperties::softMetal)
+            .addLayer(() -> RenderType::cutoutMipped)
+            .transform(CResistance.setResistances("series", 0.05f, "shunt", 2e6))
+            .transform(CThermal.maxPower(100, 2.0f))
+            .transform(pickaxeOnly())
+            .item()
+                .model(itemWithParent("block/energy_meter/item"))
                 .build()
             .register();
 
@@ -533,6 +577,7 @@ public class ModdedBlocks {
     public static final BlockEntry<LightFixtureBlock> LIGHT_FIXTURE = REGISTRATE.block("light_fixture", LightFixtureBlock::new)
             .blockstate(lightFixture("block/fixtures/light_fixture"))
             .initialProperties(SharedProperties::softMetal)
+            .addLayer(() -> RenderType::cutoutMipped)
             .transform(pickaxeOnly())
             .transform(LightFixtureBlock.setBulbModelOffset(0, 3 / 16f, 0))
             .defaultLoot()

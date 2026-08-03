@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.ponder.scenes;
 
+import com.simibubi.create.AllItems;
 import com.simibubi.create.content.redstone.analogLever.AnalogLeverBlockEntity;
 import com.tterrag.registrate.util.entry.BlockEntry;
 import net.createmod.catnip.math.Pointing;
@@ -22,6 +23,7 @@ import net.createmod.ponder.api.scene.PonderStoryBoard;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -35,6 +37,9 @@ import org.patryk3211.powergrid.electricity.fuse.FuseState;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterBlockEntity;
+import org.patryk3211.powergrid.electricity.transformer.NetherTransformerBlock;
+import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
+import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
 import org.patryk3211.powergrid.kinetics.rheostat.RheostatBlockEntity;
 import org.patryk3211.powergrid.kinetics.variac.VariacBlockEntity;
 import org.patryk3211.powergrid.ponder.base.ElectricInstructions;
@@ -72,9 +77,9 @@ public class RelayScenes {
 
         electric.connectInvisible(util.grid().at(0, 2, 2), 0, source, 0);
         electric.connectInvisible(util.grid().at(4, 2, 2), 0, source, 1);
-        electric.connect(util.grid().at(0, 2, 2), 0, target, 1);
-        electric.connect(util.grid().at(4, 2, 2), 0, bulb, 0);
-        electric.connect(target, 0, bulb, 1);
+        electric.connect(util.grid().at(0, 2, 2), 0, target, 0);
+        electric.connect(util.grid().at(4, 2, 2), 0, bulb, 1);
+        electric.connect(target, 1, bulb, 0);
         scene.idle(10);
 
         scene.overlay().showText(80)
@@ -708,6 +713,173 @@ public class RelayScenes {
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(90);
+
+        scene.markAsFinished();
+    }
+
+    public static void transformerSizes(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("transformer_sizes", "Transformers");
+        scene.setNextUpEnabled(true);
+        scene.configureBasePlate(0, 0, 5);
+
+        scene.showBasePlate();
+        scene.idle(5);
+
+        var smallTr = util.grid().at(2, 1, 1);
+        scene.world().showSection(util.select().position(smallTr), Direction.DOWN);
+        scene.idle(20);
+
+        scene.overlay().showControls(util.vector().blockSurface(smallTr, Direction.NORTH), Pointing.RIGHT, 30)
+                .withItem(AllItems.WRENCH.asStack());
+        scene.idle(20);
+        scene.world().setBlock(smallTr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState().setValue(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X), false);
+        scene.idle(20);
+
+        var mediumTr = util.grid().at(2, 1, 3);
+        scene.world().showSection(util.select().fromTo(mediumTr, mediumTr.west().above()), Direction.DOWN);
+        scene.idle(20);
+
+        scene.overlay().showControls(util.vector().blockSurface(mediumTr.above(), Direction.NORTH), Pointing.RIGHT, 30)
+                .withItem(AllItems.WRENCH.asStack());
+        scene.idle(20);
+        scene.world().setBlock(mediumTr, ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
+                .setValue(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
+                .setValue(TransformerMediumBlock.PART, 1), false);
+        scene.world().setBlock(mediumTr.west(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
+                .setValue(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
+                .setValue(TransformerMediumBlock.PART, 0), false);
+        scene.world().setBlock(mediumTr.above(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
+                .setValue(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
+                .setValue(TransformerMediumBlock.PART, 3), false);
+        scene.world().setBlock(mediumTr.above().west(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
+                .setValue(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
+                .setValue(TransformerMediumBlock.PART, 2), false);
+        scene.idle(20);
+
+        scene.overlay().showText(80)
+                .text("Transformers come in different sizes, each of them offering different power capabilities and winding capacities")
+                .attachKeyFrame()
+                .placeNearTarget();
+        scene.idle(90);
+
+        scene.markAsFinished();
+    }
+
+    public static void transformerWinding(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("transformer_winding", "Winding a transformer");
+        scene.setNextUpEnabled(true);
+        scene.configureBasePlate(0, 0, 5);
+
+        scene.showBasePlate();
+        scene.idle(10);
+
+        var tr = util.grid().at(2, 1, 2);
+        scene.world().showSection(util.select().position(tr), Direction.DOWN);
+        scene.idle(15);
+
+        scene.overlay().showText(80)
+                .text("To wind a transformer, first select the starting terminal for your winding")
+                .attachKeyFrame()
+                .placeNearTarget();
+        scene.idle(90);
+
+        var stack = new ItemStack(ModdedItems.WIRE, 1);
+        scene.overlay().showControls(util.vector().of(2.8, 1.9, 2.0), Pointing.RIGHT, 30).withItem(stack);
+        scene.idle(30);
+
+        var side = util.vector().blockSurface(tr, Direction.NORTH);
+        scene.overlay().showText(80)
+                .text("Next, click on the transformer body and pick the number of turn you want to add")
+                .attachKeyFrame()
+                .pointAt(side)
+                .placeNearTarget();
+        scene.idle(50);
+        scene.overlay().showControls(side, Pointing.UP, 30).withItem(stack);
+        scene.idle(40);
+
+        scene.overlay().showText(80)
+                .text("Lastly, select the end terminal for your winding")
+                .attachKeyFrame()
+                .placeNearTarget();
+        scene.idle(90);
+
+        scene.overlay().showControls(util.vector().of(2.2, 1.9, 2.0), Pointing.LEFT, 30).withItem(stack);
+        scene.idle(20);
+        scene.world().setBlock(tr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState()
+                .setValue(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X)
+                .setValue(TransformerSmallBlock.COILS, 1), false);
+        scene.idle(10);
+
+        scene.effects().indicateSuccess(tr);
+        scene.idle(10);
+
+        scene.overlay().showText(60)
+                .text("Repeat for the secondary winding")
+                .placeNearTarget();
+        scene.idle(50);
+
+        scene.world().setBlock(tr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState()
+                .setValue(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X)
+                .setValue(TransformerSmallBlock.COILS, 2), false);
+        scene.effects().indicateSuccess(tr);
+        scene.idle(30);
+
+        scene.overlay().showText(80)
+                .text("Your transformer will now transform voltage with the ratio you wound")
+                .attachKeyFrame()
+                .placeNearTarget();
+        scene.idle(90);
+
+        scene.markAsFinished();
+    }
+
+    public static void transformerNether(SceneBuilder scene, SceneBuildingUtil util) {
+        scene.title("transformer_nether", "Interdimensional transformers");
+        scene.setNextUpEnabled(true);
+        scene.configureBasePlate(0, 0, 7);
+
+        scene.showBasePlate();
+        scene.world().showSection(util.select().fromTo(1, 1, 4, 5, 4, 4), Direction.UP);
+        scene.idle(10);
+
+        scene.overlay().showText(70)
+                .text("Assembling a transformer next to a nether portal...")
+                .attachKeyFrame()
+                .pointAt(util.vector().of(3.5, 2.5, 4))
+                .placeNearTarget();
+        scene.idle(60);
+
+        scene.world().showSection(util.select().position(3, 1, 3), Direction.DOWN);
+        scene.idle(15);
+        scene.world().showSection(util.select().position(3, 2, 3), Direction.DOWN);
+        scene.idle(15);
+
+        scene.overlay().showControls(util.vector().of(3, 2.5, 3.5), Pointing.DOWN, 30)
+                .withItem(AllItems.WRENCH.asStack())
+                .rightClick();
+        scene.idle(20);
+
+        var state = ModdedBlocks.NETHER_TRANSFORMER.getDefaultState()
+                .setValue(NetherTransformerBlock.HORIZONTAL_AXIS, Direction.Axis.Z);
+        scene.world().setBlock(util.grid().at(3, 1, 3), state.setValue(NetherTransformerBlock.PART, 0), false);
+        scene.world().setBlock(util.grid().at(3, 2, 3), state.setValue(NetherTransformerBlock.PART, 2), false);
+        scene.idle(20);
+
+        scene.overlay().showText(70)
+                .text("...will create a linked transformer on the other end.")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(80);
+
+        scene.rotateCameraY(360);
+        scene.world().hideSection(util.select().layers(0, 1), Direction.UP);
+        scene.idle(15);
+
+        var netherFloor = scene.world().showIndependentSection(util.select().layer(7), Direction.UP);
+        var netherFlora = scene.world().showIndependentSection(util.select().fromTo(0, 8, 0, 3, 8, 3), Direction.UP);
+        scene.world().moveSection(netherFloor, util.vector().of(0, -7, 0), 0);
+        scene.world().moveSection(netherFlora, util.vector().of(0, -7, 0), 0);
+        scene.idle(60);
 
         scene.markAsFinished();
     }

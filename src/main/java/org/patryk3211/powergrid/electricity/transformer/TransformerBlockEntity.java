@@ -36,6 +36,8 @@ import org.patryk3211.powergrid.collections.ModdedAdvancements;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.base.IHelperTerminal;
+import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
@@ -49,7 +51,7 @@ import java.util.List;
 
 import static org.patryk3211.powergrid.electricity.sim.special.SplitTransformerControllerWire.AVG_SAMPLE_COUNT;
 
-public abstract class TransformerBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
+public abstract class TransformerBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, IHelperTerminal {
     protected TransformerCoilParameters primaryCoil;
     protected TransformerCoilParameters secondaryCoil;
 
@@ -359,6 +361,34 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             this.mutualInductance = null;
             this.coupling = null;
         }
+    }
+
+    protected int connectedTerminalIndex(int index) {
+        if(primaryCoil != null) {
+            if(primaryCoil.getTerminal1() == index) {
+                return primaryCoil.getTerminal2();
+            } else if(primaryCoil.getTerminal2() == index) {
+                return primaryCoil.getTerminal1();
+            }
+        }
+        if(secondaryCoil != null) {
+            if(secondaryCoil.getTerminal1() == index) {
+                return secondaryCoil.getTerminal2();
+            } else if(secondaryCoil.getTerminal2() == index) {
+                return secondaryCoil.getTerminal1();
+            }
+        }
+        return -1;
+    }
+
+    @Override
+    public ITerminalPlacement connectedTerminal(BlockState state, int index) {
+        if(!(getBlockState().getBlock() instanceof TransformerBlock block))
+            return null;
+        int outIndex = connectedTerminalIndex(index);
+        if(outIndex >= 0)
+            return block.terminal(state, outIndex);
+        return null;
     }
 
     @Override

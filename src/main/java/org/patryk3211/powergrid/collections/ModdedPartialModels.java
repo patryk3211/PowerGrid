@@ -64,6 +64,8 @@ public class ModdedPartialModels {
     public static final PartialModel THERMOMETER_NEEDLE = block("thermometer/needle");
     public static final PartialModel THERMOMETER_NEEDLE_RED = block("thermometer/needle_red");
 
+    public static final PartialModel ENERGY_METER_NEEDLE = block("energy_meter/dial");
+
     public static final PartialModel MULTIMETER_NEEDLE = model("item/multimeter/indicator");
     public static final PartialModel COMPONENT_GAUGE_NEEDLE = model("component/gauge_needle");
 
@@ -71,6 +73,7 @@ public class ModdedPartialModels {
 
     public static final PartialModel PLOTTER_POINTER = block("plotter/pointer");
     public static final PartialModel PLOTTER_PAPER = block("plotter/paper");
+    public static final PartialModel PLOTTER_VIEWER = block("plotter/viewer");
     public static final PartialModel CRT_BACKGROUND = block("crt_background");
 
     public static final PartialModel HV_BREAKER_SIGNAL1 = block("switches/hv_breaker_signal1");

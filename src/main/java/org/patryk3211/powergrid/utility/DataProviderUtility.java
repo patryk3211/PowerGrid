@@ -208,6 +208,11 @@ public class DataProviderUtility {
     }
 
     @ExpectPlatform
+    public static <T extends Item> NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> blockItem() {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
     public static <T extends Item> NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> barrier() {
         throw new AssertionError();
     }
