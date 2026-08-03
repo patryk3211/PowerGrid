@@ -2,7 +2,7 @@ package org.patryk3211.powergrid.compat.cc.gauges;
 
 import dan200.computercraft.api.lua.LuaFunction;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.patryk3211.powergrid.electricity.gauge.GaugeBlockEntity;
 
 public class CurrentGaugePeripheral extends BaseGaugePeripheral {
@@ -11,7 +11,7 @@ public class CurrentGaugePeripheral extends BaseGaugePeripheral {
     }
 
     @Override
-    public @NotNull String getType() {
+    public @NonNull String getType() {
         return "powergrid_current_gauge";
     }
 

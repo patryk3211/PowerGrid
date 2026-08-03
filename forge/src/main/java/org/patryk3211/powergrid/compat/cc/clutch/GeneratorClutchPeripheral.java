@@ -4,7 +4,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollOp
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IPeripheral;
 import org.jetbrains.annotations.Nullable;
-import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBehaviour;
 
@@ -16,7 +16,7 @@ public class GeneratorClutchPeripheral implements IPeripheral {
     }
 
     @Override
-    public @NotNull String getType() {
+    public @NonNull String getType() {
         return "powergrid_generator_clutch";
     }
 

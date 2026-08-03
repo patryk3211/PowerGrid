@@ -239,7 +239,7 @@ public class Components {
             .item(ModdedItems.VARISTOR)
             .register();
 
-    public static final RegistryEntry<FuseHolderComponent> FUSE_HOLDER = REGISTRATE.component("fuse_holder", FuseHolderComponent::new)
+    public static final RegistryEntry<Component, FuseHolderComponent> FUSE_HOLDER = REGISTRATE.component("fuse_holder", FuseHolderComponent::new)
             .footprint(4, 3, b -> b
                     .addPad(0, 1, 0)
                     .addPad(3, 1, 1)

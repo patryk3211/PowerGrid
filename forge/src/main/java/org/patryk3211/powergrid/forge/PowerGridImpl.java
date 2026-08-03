@@ -112,10 +112,6 @@ public class PowerGridImpl {
             NeoForge.EVENT_BUS.register(ColdSweatBridge.class);
         }
 
-        if (Platform.isModLoaded("computercraft")) {
-            CCBridge.register();
-        }
-
         SubstituteItemProvider.INSTANCE.shadow(PortableBatteryItem.class, ForgePortableBatteryItem.class);
         SubstituteBlockEntityProvider.INSTANCE.register(PunchCardReaderBlockEntity.class, PunchCardReaderBlockEntityImpl::new);
         SubstituteBlockEntityProvider.INSTANCE.register(FEInverterBlockEntity.class, FEInverterBlockEntityImpl::new);
@@ -244,6 +240,10 @@ public class PowerGridImpl {
                 (be, side) -> ((PunchCardReaderBlockEntityImpl) be).getItemHandler(side));
         event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModdedBlockEntities.FE_INVERTER.get(),
                 (be, side) -> ((FEInverterBlockEntityImpl) be).getEnergyStorage(side));
+
+        if(Platform.isModLoaded("computercraft")) {
+            CCBridge.registerCapabilities(event);
+        }
     }
 
     @SubscribeEvent

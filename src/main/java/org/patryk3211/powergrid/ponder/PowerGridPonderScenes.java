@@ -22,7 +22,6 @@ import com.tterrag.registrate.util.entry.ItemProviderEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import net.createmod.ponder.api.registration.PonderSceneRegistrationHelper;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Items;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.ponder.scenes.*;
@@ -160,6 +159,6 @@ public class PowerGridPonderScenes {
                 .addStoryBoard("factory_light/factory_light_tall", DeviceScenes::factoryLightTall, PowerGridPonderTags.ELECTRIC_DEVICES, PowerGridPonderTags.CEILING_TILE_ATTACHMENTS)
                 .addStoryBoard("factory_light/factory_light_connect", DeviceScenes::factoryLightConnect, PowerGridPonderTags.ELECTRIC_DEVICES, PowerGridPonderTags.CEILING_TILE_ATTACHMENTS);
 
-        helper.addStoryBoard(new ResourceLocation("paper"), "circuit/label", CircuitScenes::label, PowerGridPonderTags.CIRCUIT_COMPONENTS);
+        helper.addStoryBoard(ResourceLocation.fromNamespaceAndPath(ResourceLocation.DEFAULT_NAMESPACE, "paper"), "circuit/label", CircuitScenes::label, PowerGridPonderTags.CIRCUIT_COMPONENTS);
     }
 }
