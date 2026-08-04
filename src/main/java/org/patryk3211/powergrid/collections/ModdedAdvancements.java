@@ -132,6 +132,12 @@ public class ModdedAdvancements implements DataProvider {
             .title("Wrong tool for the job")
             .description("Use shears to cut a wire")
             .special(SECRET)),
+    SHEEP_CUT = create("sheep_cut", b -> b
+            .after(WIRE_CUT)
+            .icon(ModdedItems.WIRE_CUTTER)
+            .title("An even worse tool for the job")
+            .description("Use wire cutters to shear a sheep")
+            .special(SECRET)),
     ELECTRIC_DAMAGE = create("electric_damage", b -> b
             .icon(ModdedItems.WIRE)
             .title("Yeouch")
