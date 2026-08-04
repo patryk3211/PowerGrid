@@ -17,6 +17,8 @@ package org.patryk3211.powergrid.kinetics.servo;
 
 import com.simibubi.create.api.stress.BlockStressValues;
 import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
+import com.simibubi.create.content.kinetics.transmission.sequencer.SequencedGearshiftBlockEntity;
+import com.simibubi.create.content.kinetics.transmission.sequencer.SequencerInstructions;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -44,20 +46,22 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
     @Nullable
     protected ThermalBehaviour thermalBehaviour;
     private float generatedSpeed;
-    private float currentAngle;
+    private int currentAngle;
 //    private float prevTarget;
     private float maxSpeed;
-    private float currentTarget;
+    private int currentTarget;
 
     private ElectricWire coil;
     private ElectricWire control;
 
     private float avgSpeed;
-    private float avgTarget;
+    private int prevTarget;
+
+    private int movingTicks;
 
     public ServoBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
-        setLazyTickRate(AVERAGING_TICKS);
+        setLazyTickRate(AVERAGING_TICKS - 1);
     }
 
     @Override
@@ -83,10 +87,6 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
         if(level.isClientSide)
             return;
 
-        // 5V is 360 degrees clock-wise. Servo has a [-5V, 5V] range
-        currentTarget = Mth.clamp((avgTarget / AVERAGING_TICKS) / 5.0f * 360.0f, -360f, 360f);
-        avgTarget = 0;
-
         maxSpeed = Math.min(avgSpeed / AVERAGING_TICKS, MAX_SPEED);
         avgSpeed = 0;
         if(maxSpeed == 0 && generatedSpeed != 0) {
@@ -101,31 +101,39 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
         if(!level.isClientSide || isVirtual()) {
             applyPower(coil);
             avgSpeed += (float) calculateSpeed(coil.power(), torque());
-            avgTarget += (float) control.potentialDifference();
+            // 5V is 360 degrees clock-wise. Servo has a [-5V, 5V] range
+            int ctrlTarget = Math.round(Mth.clamp((float) control.potentialDifference() / 5.0f * 360.0f, -360, 360));
+            if(prevTarget == ctrlTarget) {
+                // Commit to the move.
+                currentTarget = ctrlTarget;
+            }
+            prevTarget = ctrlTarget;
         }
         super.tick();
 
         if(!level.isClientSide || isVirtual()) {
-            float rotation = (currentTarget - currentAngle) / 360.0f;
-            // Precision of 0.25 degree
-            if(Math.abs(rotation) < 0.25 / 360)
+            // Precision of 1 degree (integer angles only)
+            int rotation = currentTarget - currentAngle;
+            if (Math.abs(rotation) < 1)
                 rotation = 0;
-
-            var dT = 0.05f;
-            var speed = Mth.clamp(rotation / dT * 60.0f, -maxSpeed, maxSpeed);
-            if (speed != generatedSpeed) {
-                generatedSpeed = speed;
+            if(movingTicks > 0) {
+                if(--movingTicks == 0) {
+                    generatedSpeed = 0;
+                    sequenceContext = null;
+                    updateGeneratedRotation();
+                    notifyUpdate();
+                }
+                return;
+            }
+            if(rotation != 0) {
+                generatedSpeed = (int) Mth.clamp(rotation / 0.05f / 6, -maxSpeed, maxSpeed);
+                sequenceContext = new SequencedGearshiftBlockEntity.SequenceContext(SequencerInstructions.TURN_ANGLE, rotation / generatedSpeed);
                 updateGeneratedRotation();
                 notifyUpdate();
-            }
-
-            if (generatedSpeed != 0) {
                 coil.setResistance(resistance("on"));
-            } else {
-                coil.setResistance(resistance("idle"));
+                currentAngle = currentTarget;
+                movingTicks = (int) Math.abs(rotation / convertToAngular(generatedSpeed)) + 5;
             }
-
-            currentAngle += generatedSpeed / 60.0f * dT * 360f;
         }
     }
 
@@ -153,7 +161,7 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
     protected void read(CompoundTag compound, boolean clientPacket) {
         super.read(compound, clientPacket);
         generatedSpeed = compound.getFloat("GeneratedSpeed");
-        currentAngle = compound.getFloat("Angle");
+        currentAngle = compound.getInt("Angle");
         if(generatedSpeed != 0) {
             coil.setResistance(resistance("on"));
         } else {
@@ -166,7 +174,7 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
     protected void write(CompoundTag compound, boolean clientPacket) {
         super.write(compound, clientPacket);
         compound.putFloat("GeneratedSpeed", generatedSpeed);
-        compound.putFloat("Angle", currentAngle);
+        compound.putInt("Angle", currentAngle);
     }
 
     @Override
