@@ -67,6 +67,6 @@ public class EnergyMeterScreen extends AbstractSimiContainerScreen<EnergyMeterMe
     }
 
     public static float getDialValue(double energy, double multiplier) {
-        return (float) ((energy / multiplier / 10.0) % 1);
+        return (float) ((energy / multiplier) % 1);
     }
 }

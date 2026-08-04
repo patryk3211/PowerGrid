@@ -43,6 +43,16 @@ public class EnergyMeterBlock extends HorizontalElectricBlock implements IBE<Ene
     }
 
     @Override
+    public boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
+
+    @Override
+    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+        return getBlockEntityOptional(level, pos).map(EnergyMeterBlockEntity::pulses).orElse(0);
+    }
+
+    @Override
     public Class<EnergyMeterBlockEntity> getBlockEntityClass() {
         return EnergyMeterBlockEntity.class;
     }

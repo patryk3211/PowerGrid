@@ -21,6 +21,11 @@ public class EnergyMeterBlockEntity extends ElectricBlockEntity implements MenuP
     double lastEnergy;
     double energy;
 
+    private int lastRedstoneEnergy;
+    private int redstoneTick;
+    private int impulses;
+    boolean measurementPrecision;
+
     public EnergyMeterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
@@ -35,7 +40,25 @@ public class EnergyMeterBlockEntity extends ElectricBlockEntity implements MenuP
     public void tick() {
         super.tick();
         lastEnergy = energy;
-        energy += series.current() * shunt.potentialDifference() * 0.05 / 3_600_000;
+        energy += series.current() * shunt.potentialDifference() * 0.05 / (measurementPrecision ? 3_600 : 3_600_000);
+        if(energy < 0) {
+            energy = 100000 + energy;
+        }
+        if(!level.isClientSide && ++redstoneTick >= 2) {
+            int impulses = (int) energy - lastRedstoneEnergy;
+            if (impulses < 0) impulses = 0;
+            if (impulses > 15) impulses = 15;
+            if (this.impulses != impulses) {
+                this.impulses = impulses;
+                level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+            }
+            lastRedstoneEnergy = (int) energy;
+            redstoneTick = 0;
+        }
+    }
+
+    public int pulses() {
+        return impulses;
     }
 
     @Override
@@ -54,12 +77,16 @@ public class EnergyMeterBlockEntity extends ElectricBlockEntity implements MenuP
     protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
         lastEnergy = energy = tag.getDouble("Energy");
+        measurementPrecision = tag.getBoolean("Wh");
+        lastRedstoneEnergy = tag.getInt("Redstone");
     }
 
     @Override
     protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         tag.putDouble("Energy", energy);
+        tag.putBoolean("Wh", measurementPrecision);
+        tag.putInt("Redstone", lastRedstoneEnergy);
     }
 
     @Override
