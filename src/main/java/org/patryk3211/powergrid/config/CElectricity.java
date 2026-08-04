@@ -71,6 +71,12 @@ public class CElectricity extends ConfigBase {
     public final ConfigFloat feInverterControlCapacitance = f(0.0001f, 0, 1, "feInverterControlCapacitance", Comments.feInverterControlCapacitance);
     public final ConfigInt feInverterBufferSize = i(20000, 0, "feInverterBufferSize", Comments.feInverterBufferSize);
 
+    public final ConfigFloat solarPanelVoc = f(26.4f, 0, 100, "solarPanelVocTarget", Comments.solarPanelVocTarget);
+    public final ConfigInt solarPanelCellCount = i(48, 0, 100, "solarPanelCellCount", Comments.solarPanelCellCount);
+    public final ConfigFloat solarPanelIsc = f(3.3f, 0, 100, "solarPanelIscTarget", Comments.solarPanelIscTarget);
+    public final ConfigFloat solarPanelVmp = f(21.12f, 0, 100, "solarPanelVmpTarget", Comments.solarPanelVmp);
+    public final ConfigFloat solarPanelImp = f(3.036f, 0, 100, "solarPanelImpTarget", Comments.solarPanelImp);
+    public final ConfigInt solarPanelNOCT = i(45, 0, 100, "solarPanelNOCT", Comments.solarPanelNOCT);
     public final ConfigInt solarPanelMaxSize = i(25, 1, "solarPanelMaxSize", Comments.solarPanelMaxSize);
 
     public final CSolver solver = nested(1, CSolver::new, Comments.solver);
@@ -142,6 +148,12 @@ public class CElectricity extends ConfigBase {
         public static final String feInverterControlCapacitance = "Capacitance of the FE Inverter control pin";
         public static final String feInverterBufferSize = "Controls the FE buffer size, and with it, the maximum generated voltage";
 
+        public static final String solarPanelVocTarget = "Target open circuit voltage for the solar panels";
+        public static final String solarPanelCellCount = "Controls the amount of cells in the solar panel (Should be left at 48 if your not trying to imitate a real panel)";
+        public static final String solarPanelIscTarget = "Target short circuit current for the solar panels";
+        public static final String solarPanelVmp = "Controls the voltage part of the max power point (should be around 80% of the Voc)";
+        public static final String solarPanelImp = "Controls the current part of the max power point, (should be around 92% of the Isc)";
+        public static final String solarPanelNOCT = "This is the Nominal Operating Cell Temp of the solar cells in the panel";
         public static final String solarPanelMaxSize = "Controls maximum number of solar panels in a single multiblock";
     }
 }
