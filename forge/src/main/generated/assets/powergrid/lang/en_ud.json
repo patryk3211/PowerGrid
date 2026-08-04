@@ -163,6 +163,8 @@
   "component.powergrid.vfet.1.short": "S",
   "component.powergrid.vfet.2": "ǝʇɐ⅁",
   "component.powergrid.vfet.2.short": "⅁",
+  "death.attack.acid": "ɥʇɐq pıɔɐ uɐ ʞooʇ %s",
+  "death.attack.acid.player": "%s ǝdɐɔsǝ oʇ buıʎɹʇ ʇsןıɥʍ ɥʇɐq pıɔɐ uɐ ʞooʇ %s",
   "death.attack.electrocution": "pǝʇnɔoɹʇɔǝןǝ sɐʍ %s",
   "death.attack.electrocution.player": "%s ǝdɐɔsǝ oʇ buıʎɹʇ ʇsןıɥʍ pǝʇnɔoɹʇɔǝןǝ sɐʍ %s",
   "death.attack.live_wire_cutting": "sǝɹıʍ buıʇʇnɔ uǝɥʍ ןnɟǝɹɐɔ ʇ,usɐʍ %s",

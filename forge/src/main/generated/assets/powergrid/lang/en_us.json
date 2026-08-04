@@ -163,6 +163,8 @@
   "component.powergrid.vfet.1.short": "S",
   "component.powergrid.vfet.2": "Gate",
   "component.powergrid.vfet.2.short": "G",
+  "death.attack.acid": "%s took an acid bath",
+  "death.attack.acid.player": "%s took an acid bath whilst trying to escape %s",
   "death.attack.electrocution": "%s was electrocuted",
   "death.attack.electrocution.player": "%s was electrocuted whilst trying to escape %s",
   "death.attack.live_wire_cutting": "%s wasn't careful when cutting wires",

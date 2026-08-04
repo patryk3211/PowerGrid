@@ -29,7 +29,8 @@ public enum ModdedDamageTypes {
     ZAP("zap"),
     LIVE_WIRE_CUTTING("live_wire_cutting"),
     ELECTROCUTION("electrocution"),
-    SPINNING_ROTOR("spinning_rotor");
+    SPINNING_ROTOR("spinning_rotor"),
+    ACID("acid");
 
     public final ResourceKey<DamageType> key;
 
