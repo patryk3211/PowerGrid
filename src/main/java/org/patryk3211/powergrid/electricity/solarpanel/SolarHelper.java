@@ -35,12 +35,6 @@ import java.util.Set;
 
 public class SolarHelper {
     public static final int SOLAR_CONSTANT = 1361;
-    //public static final int CELLS_IN_SERIES = 48;
-
-    //public static final double ISC_REF = 3.3;
-    //public static final double VOC_REF = 0.55 * CELLS_IN_SERIES;
-    //public static final double IMP_REF = ISC_REF * 0.92;
-    //public static final double VMP_REF = VOC_REF * 0.80;
     public static final double IDEALITY = 1.5;
 
     // STC constants
@@ -49,7 +43,6 @@ public class SolarHelper {
 
     public static final double ALPHA_ISC = 0.0005;
     public static final double BETA_VOC  = -0.0035;
-    //protected static final float NOCT = 45;
     public static final double RS = 0.05;
 
     public static final double DIFFUSE_FRAC = .12;
