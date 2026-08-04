@@ -6,7 +6,6 @@ import net.createmod.catnip.render.CachedBuffers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.util.Mth;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 
 public class EnergyMeterRenderer extends SafeBlockEntityRenderer<EnergyMeterBlockEntity> {
@@ -22,12 +21,7 @@ public class EnergyMeterRenderer extends SafeBlockEntityRenderer<EnergyMeterBloc
         var facing = state.getValue(EnergyMeterBlock.HORIZONTAL_FACING);
         var consumer = bufferSource.getBuffer(RenderType.solid());
         for(int i = 10000; i >= 1; i /= 10) {
-            float rotation = EnergyMeterScreen.getDialValue(be.energy, i);
-            float prevRotation = EnergyMeterScreen.getDialValue(be.lastEnergy, i);
-            if(prevRotation > rotation) {
-                rotation += 1;
-            }
-            float angle = (float) (Mth.lerp(pt, prevRotation, rotation) * Math.PI * 2);
+            float angle = EnergyMeterScreen.getDialAngle(be.energy, be.lastEnergy, i, pt);
             var model = CachedBuffers.partial(ModdedPartialModels.ENERGY_METER_NEEDLE, state);
 
             double y = index % 2 == 0 ? 11.5 / 16 : 7.5 / 16;

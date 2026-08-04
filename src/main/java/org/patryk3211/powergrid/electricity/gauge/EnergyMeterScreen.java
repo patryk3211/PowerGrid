@@ -37,13 +37,7 @@ public class EnergyMeterScreen extends AbstractSimiContainerScreen<EnergyMeterMe
         var ms = ctx.pose();
         int x = 0;
         for(int i = 10000; i >= 1; i /= 10) {
-            float rotation = getDialValue(menu.contentHolder.energy, i);
-            float prevRotation = getDialValue(menu.contentHolder.lastEnergy, i);
-            if(prevRotation > rotation) {
-                rotation += 1;
-            }
-            float angle = (float) Mth.lerp(partialTick, prevRotation * Math.PI * 2, rotation * Math.PI * 2);
-
+            float angle = getDialAngle(menu.contentHolder.energy, menu.contentHolder.lastEnergy, i, partialTick);
             ms.pushPose();
             ms.translate(leftPos + 18-2 + x, topPos + 37-6, 0);
             ms.rotateAround(new Quaternionf().rotateZ(angle), 2.5f, 6.5f, 0);
@@ -53,12 +47,7 @@ public class EnergyMeterScreen extends AbstractSimiContainerScreen<EnergyMeterMe
         }
 
         ms.pushPose();
-        float rotation = getDialValue(menu.contentHolder.energy, 0.1);
-        float prevRotation = getDialValue(menu.contentHolder.lastEnergy, 0.1);
-        if(prevRotation > rotation) {
-            rotation += 1;
-        }
-        float angle = AngleHelper.angleLerp(partialTick, prevRotation * Math.PI * 2, rotation * Math.PI * 2);
+        float angle = getDialAngle(menu.contentHolder.energy, menu.contentHolder.lastEnergy, 0.1, partialTick);
         ms.translate(leftPos + 168, topPos + 41, 0);
         ms.rotateAround(new Quaternionf().rotateZ(angle), 1.5f, 3.5f, 0);
         ctx.blit(BACKGROUND, 0, 0, 184, 14, 3, 5);
@@ -66,7 +55,15 @@ public class EnergyMeterScreen extends AbstractSimiContainerScreen<EnergyMeterMe
 
     }
 
-    public static float getDialValue(double energy, double multiplier) {
-        return (float) ((energy / multiplier) % 1);
+    public static float getDialAngle(double energy, double lastEnergy, double multiplier, double partialTick) {
+        float rotation = (float) ((energy / multiplier) % 1);
+        float prevRotation = (float) ((lastEnergy / multiplier) % 1);
+        if(energy > lastEnergy && rotation < prevRotation) {
+            rotation += 1;
+        }
+        if(energy < lastEnergy && rotation > prevRotation) {
+            rotation -= 1;
+        }
+        return  (float) Mth.lerp(partialTick, prevRotation * Math.PI * 2, rotation * Math.PI * 2);
     }
 }
