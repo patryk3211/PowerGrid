@@ -26,6 +26,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.joml.Vector3d;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedTags;
 
 import java.util.ArrayList;
@@ -34,12 +35,12 @@ import java.util.Set;
 
 public class SolarHelper {
     public static final int SOLAR_CONSTANT = 1361;
-    public static final int CELLS_IN_SERIES = 48;
+    //public static final int CELLS_IN_SERIES = 48;
 
-    public static final double ISC_REF = 3.3;
-    public static final double VOC_REF = 0.55 * CELLS_IN_SERIES;
-    public static final double IMP_REF = ISC_REF * 0.92;
-    public static final double VMP_REF = VOC_REF * 0.80;
+    //public static final double ISC_REF = 3.3;
+    //public static final double VOC_REF = 0.55 * CELLS_IN_SERIES;
+    //public static final double IMP_REF = ISC_REF * 0.92;
+    //public static final double VMP_REF = VOC_REF * 0.80;
     public static final double IDEALITY = 1.5;
 
     // STC constants
@@ -48,7 +49,7 @@ public class SolarHelper {
 
     public static final double ALPHA_ISC = 0.0005;
     public static final double BETA_VOC  = -0.0035;
-    protected static final float NOCT = 45;
+    //protected static final float NOCT = 45;
     public static final double RS = 0.05;
 
     public static final double DIFFUSE_FRAC = .12;
@@ -59,7 +60,7 @@ public class SolarHelper {
     public record DDAHit(BlockPos worldOrLocalPos, AbstractContraptionEntity contraption) {}
 
     public static double getCellTemp(double Irradiance, float AMBIENT_TEMP){
-        return AMBIENT_TEMP + (NOCT - 20) * (Irradiance / 800);
+        return AMBIENT_TEMP + (noct() - 20) * (Irradiance / 800);
     }
 
     public static double getAM(Level world){
@@ -211,15 +212,15 @@ public class SolarHelper {
         double q = 1.602176634e-19; // Elementary charge in C
         double dT = cellTempC - T_REF;
         double gRatio = Math.max(0, irradiance) / W_REF;
-        if (gRatio <= 1e-6) return new double[] {0, 1e-6};
-        double Isc = (gRatio * (ISC_REF + ALPHA_ISC * ISC_REF * dT)) * panelsInParallel;
+        if (gRatio <= 1e-6) return new double[] {0, 2e-2};
+        double Isc = (gRatio * (iscRef() + ALPHA_ISC * iscRef() * dT)) * panelsInParallel;
         double logG = Math.log(Math.max(gRatio, 1e-6));
         double tV = k * (cellTempC + 273.15) / q;
-        double delta = IDEALITY * CELLS_IN_SERIES * tV;
-        double Voc = (VOC_REF + BETA_VOC * VOC_REF * dT + delta * logG) * panelsInSeries;
-        double Imp = (gRatio * (IMP_REF + ALPHA_ISC * IMP_REF * dT)) * panelsInParallel;
-        double Vmp = (VMP_REF + BETA_VOC * VMP_REF * dT + delta * logG) * panelsInSeries;
-        if (Voc <= 0 || Isc <= 0) return new double[] {0, 1e-6};
+        double delta = IDEALITY * cellCount() * tV;
+        double Voc = (vocRef() + BETA_VOC * vocRef() * dT + delta * logG) * panelsInSeries;
+        double Imp = (gRatio * (imp() + ALPHA_ISC * imp() * dT)) * panelsInParallel;
+        double Vmp = (vmp() + BETA_VOC * vmp() * dT + delta * logG) * panelsInSeries;
+        if (Voc <= 0 || Isc <= 0) return new double[] {0, 2e-2};
 
         double ratio = Math.min(0.999, Imp / Isc);
         double C2 = (Vmp / Voc - 1.0) / Math.log(1.0 - ratio);
@@ -330,4 +331,24 @@ public class SolarHelper {
     private static void debugLines(ServerLevel serverLevel, BlockPos pos, SimpleParticleType particle) {
         debugLines(serverLevel, new Vec3(pos.getX() + .5, pos.getY() + .5, pos.getZ() + .5), particle);
     }
+
+    public static double vocRef() {
+        return ModdedConfigs.server().electricity.solarPanelVoc.get();
+    }
+    public static double iscRef() {
+        return ModdedConfigs.server().electricity.solarPanelIsc.get();
+    }
+    public static double vmp() {
+        return ModdedConfigs.server().electricity.solarPanelVmp.get();
+    }
+    public static double imp() {
+        return ModdedConfigs.server().electricity.solarPanelImp.get();
+    }
+    public static double cellCount() {
+        return ModdedConfigs.server().electricity.solarPanelCellCount.get();
+    }
+    public static double noct() {
+        return ModdedConfigs.server().electricity.solarPanelNOCT.get();
+    }
+
 }
