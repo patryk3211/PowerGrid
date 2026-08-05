@@ -1,13 +1,15 @@
 package org.patryk3211.powergrid.electricity.solarpanel;
 
+import com.simibubi.create.api.contraption.transformable.TransformableBlockEntity;
+import com.simibubi.create.content.contraptions.StructureTransform;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
-import net.minecraft.core.Vec3i;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -26,7 +28,7 @@ import java.util.*;
 
 import static org.patryk3211.powergrid.electricity.solarpanel.SolarHelper.*;
 
-public class SolarPanelBlockEntity extends ElectricBlockEntity  {
+public class SolarPanelBlockEntity extends ElectricBlockEntity implements TransformableBlockEntity {
     protected CurrentSourceWire currentSource;
     protected ElectricWire seriesResistor;
 
@@ -41,7 +43,6 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity  {
     private final Map<BlockPos, SolarPanelBlockEntity> connectedPanelBEs = new HashMap<>();
     private final Set<BlockPos> connectedPanels = new HashSet<>();
     private BlockPos controller;
-    private BlockPos lastKnownPos;
 
     private boolean valid = true;
 
@@ -256,57 +257,40 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity  {
     protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
         if(controller != null) {
-            tag.put("Controller", NbtUtils.writeBlockPos(controller));
+            tag.put("Controller", NbtUtils.writeBlockPos(controller.subtract(worldPosition)));
         } else {
             if(!connectedPanels.isEmpty()) {
                 var list = new ListTag();
                 for (var pos : connectedPanels) {
-                    list.add(NbtUtils.writeBlockPos(pos));
+                    list.add(NbtUtils.writeBlockPos(pos.subtract(worldPosition)));
                 }
                 tag.put("Connected", list);
             }
         }
-        if(lastKnownPos != null)
-            tag.put("LastKnownPos", NbtUtils.writeBlockPos(lastKnownPos));
     }
 
     @Override
     public void writeSafe(CompoundTag tag) {
         super.writeSafe(tag);
-        if(lastKnownPos != null) {
-            if (controller != null) {
-                tag.put("Controller", NbtUtils.writeBlockPos(controller));
-            } else {
-                if (!connectedPanels.isEmpty()) {
-                    var list = new ListTag();
-                    for (var pos : connectedPanels) {
-                        list.add(NbtUtils.writeBlockPos(pos));
-                    }
-                    tag.put("Connected", list);
+        if (controller != null) {
+            tag.put("Controller", NbtUtils.writeBlockPos(controller.subtract(worldPosition)));
+        } else {
+            if (!connectedPanels.isEmpty()) {
+                var list = new ListTag();
+                for (var pos : connectedPanels) {
+                    list.add(NbtUtils.writeBlockPos(pos.subtract(worldPosition)));
                 }
+                tag.put("Connected", list);
             }
-            tag.put("LastKnownPos", NbtUtils.writeBlockPos(lastKnownPos));
         }
     }
 
     @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
-        Vec3i offset = null;
-        if(tag.contains("LastKnownPos")) {
-            lastKnownPos = NbtUtils.readBlockPos(tag.getCompound("LastKnownPos"));
-            if(!worldPosition.equals(lastKnownPos)) {
-                offset = worldPosition.subtract(lastKnownPos);
-            }
-            lastKnownPos = worldPosition;
-        } else {
-            lastKnownPos = null;
-        }
         connectedPanels.clear();
         if(tag.contains("Controller")) {
-            controller = NbtUtils.readBlockPos(tag.getCompound("Controller"));
-            if(offset != null)
-                controller = controller.offset(offset);
+            controller = NbtUtils.readBlockPos(tag.getCompound("Controller")).offset(worldPosition);
             makeProxy();
         } else {
             controller = null;
@@ -314,9 +298,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity  {
                 var list = tag.getList("Connected", ListTag.TAG_COMPOUND);
                 for(int i = 0; i < list.size(); ++i) {
                     var pos = NbtUtils.readBlockPos(list.getCompound(i));
-                    if(offset != null)
-                        pos = pos.offset(offset);
-                    connectedPanels.add(pos);
+                    connectedPanels.add(pos.offset(worldPosition));
                 }
                 if(level != null)
                     discoverPanels();
@@ -328,8 +310,6 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity  {
     @Override
     public void initialize() {
         super.initialize();
-        if(lastKnownPos == null)
-            lastKnownPos = worldPosition;
         if(controller == null) {
             discoverPanels();
         } else {
@@ -536,5 +516,22 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity  {
 
         wires1.forEach(TransmissionLinePart::refreshEndpointNodes);
         wires2.forEach(TransmissionLinePart::refreshEndpointNodes);
+    }
+
+    @Override
+    public void transform(BlockEntity be, StructureTransform transform) {
+        if(controller != null) {
+            controller = transform
+                    .applyWithoutOffset(controller.subtract(worldPosition))
+                    .offset(worldPosition);
+        } else {
+            var positions = List.copyOf(connectedPanels);
+            connectedPanels.clear();
+            for(var pos : positions) {
+                connectedPanels.add(transform
+                        .applyWithoutOffset(pos.subtract(worldPosition))
+                        .offset(worldPosition));
+            }
+        }
     }
 }
