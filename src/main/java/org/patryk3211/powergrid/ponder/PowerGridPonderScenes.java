@@ -34,6 +34,7 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedBlocks.VOLTAGE_METER, "gauges", GaugeScenes::voltage);
         HELPER.addStoryBoard(ModdedBlocks.CURRENT_METER, "gauges", GaugeScenes::current);
         HELPER.addStoryBoard(ModdedBlocks.POWER_METER, "power_gauge", GaugeScenes::power);
+        HELPER.addStoryBoard(ModdedBlocks.ENERGY_METER, "energy_meter", GaugeScenes::energyMeter);
 
         HELPER.addStoryBoard(ModdedBlocks.PLOTTER, "plotter", DeviceScenes::plotter);
 
