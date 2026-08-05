@@ -447,6 +447,7 @@
   "powergrid.gui.device_connector.supplying.unit": "FE/t",
   "powergrid.gui.edit_scroll_box.scroll": "Scroll to Select or Type in a Name",
   "powergrid.gui.endpoint_distance": "Distance to starting point: ",
+  "powergrid.gui.energy_meter.measured": "Measured energy:",
   "powergrid.gui.heater.info_header": "Heating coil information",
   "powergrid.gui.heater.title": "Coil temperature",
   "powergrid.gui.hv_breaker.charged": "Charged",

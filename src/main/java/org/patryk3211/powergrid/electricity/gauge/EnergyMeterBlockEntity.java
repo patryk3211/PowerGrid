@@ -44,6 +44,9 @@ public class EnergyMeterBlockEntity extends ElectricBlockEntity implements MenuP
         if(energy < 0) {
             energy = 100000 + energy;
         }
+        if(energy > 100000) {
+            energy -= 100000;
+        }
         if(!level.isClientSide && ++redstoneTick >= 2) {
             int impulses = (int) energy - lastRedstoneEnergy;
             if (impulses < 0) impulses = 0;
@@ -92,5 +95,9 @@ public class EnergyMeterBlockEntity extends ElectricBlockEntity implements MenuP
     @Override
     public @Nullable AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
         return new EnergyMeterMenu(ModdedMenus.ENERGY_METER.get(), id, inventory, this);
+    }
+
+    public double getEnergy() {
+        return energy;
     }
 }
