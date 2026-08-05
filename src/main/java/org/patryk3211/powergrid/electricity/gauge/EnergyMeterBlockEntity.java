@@ -48,14 +48,20 @@ public class EnergyMeterBlockEntity extends ElectricBlockEntity implements MenuP
             energy -= 100000;
         }
         if(!level.isClientSide && ++redstoneTick >= 2) {
-            int impulses = (int) energy - lastRedstoneEnergy;
-            if (impulses < 0) impulses = 0;
-            if (impulses > 15) impulses = 15;
-            if (this.impulses != impulses) {
-                this.impulses = impulses;
+            if(this.impulses != 0) {
+                // Guarantee that the comparator output is always a pulse
+                this.impulses = 0;
                 level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+            } else {
+                int impulses = (int) energy - lastRedstoneEnergy;
+                if (impulses < 0) impulses = 0;
+                if (impulses > 15) impulses = 15;
+                if (this.impulses != impulses) {
+                    this.impulses = impulses;
+                    level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+                }
+                lastRedstoneEnergy = (int) energy;
             }
-            lastRedstoneEnergy = (int) energy;
             redstoneTick = 0;
         }
     }
