@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "powergrid:conductive_casing"
+    },
+    "C": {
+      "item": "create:cogwheel"
+    },
+    "D": {
+      "item": "create:display_board"
+    },
+    "P": {
+      "item": "powergrid:pins"
+    }
+  },
+  "pattern": [
+    "CPC",
+    "CDC",
+    "CAC"
+  ],
+  "result": {
+    "count": 1,
+    "id": "powergrid:energy_meter"
+  }
+}
