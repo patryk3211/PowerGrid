@@ -23,7 +23,8 @@ public class FactoryLightLightBlock extends Block {
                 .noOcclusion()
                 .replaceable()
                 .noParticlesOnBreak()
-                .pushReaction(PushReaction.DESTROY));
+                .pushReaction(PushReaction.DESTROY)
+                .air());
     }
 
     @Override
