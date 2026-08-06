@@ -4,21 +4,29 @@ import com.simibubi.create.foundation.block.IBE;
 import dev.architectury.registry.menu.MenuRegistry;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.config.ResistanceValues;
+import org.patryk3211.powergrid.config.ThermalValues;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.electricity.info.Current;
+import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 
-public class EnergyMeterBlock extends HorizontalElectricBlock implements IBE<EnergyMeterBlockEntity> {
+import java.util.List;
+
+public class EnergyMeterBlock extends HorizontalElectricBlock implements IBE<EnergyMeterBlockEntity>, IHaveElectricProperties {
     private static final TerminalBoundingBox[] TERMINALS_NORTH = new TerminalBoundingBox[] {
             new TerminalBoundingBox(IDecoratedTerminal.INPUT, 2, 16, 0, 5, 18, 2),
             new TerminalBoundingBox(IDecoratedTerminal.OUTPUT, 11, 16, 0, 14, 18, 2),
@@ -61,5 +69,13 @@ public class EnergyMeterBlock extends HorizontalElectricBlock implements IBE<Ene
     @Override
     public BlockEntityType<? extends EnergyMeterBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.ENERGY_METER.get();
+    }
+
+    @Override
+    public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
+        var resistance = ResistanceValues.get(this, "series");
+        var power = ThermalValues.getPower(this);
+        var current = Math.sqrt(power / resistance);
+        Current.max((float) Math.round(current * 10) / 10, player, tooltip);
     }
 }
