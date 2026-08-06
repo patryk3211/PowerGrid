@@ -1,5 +1,6 @@
 package org.patryk3211.powergrid.electricity.gauge;
 
+import com.simibubi.create.foundation.gui.AllIcons;
 import com.simibubi.create.foundation.gui.menu.AbstractSimiContainerScreen;
 import com.simibubi.create.foundation.gui.widget.IconButton;
 import com.simibubi.create.foundation.gui.widget.TooltipArea;
@@ -12,18 +13,23 @@ import net.minecraft.world.entity.player.Inventory;
 import org.joml.Quaternionf;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModIcons;
+import org.patryk3211.powergrid.collections.ModdedPackets;
+import org.patryk3211.powergrid.network.packets.EnergyMeterInteractionC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.List;
 
+import static org.patryk3211.powergrid.network.packets.EnergyMeterInteractionC2SPacket.Action.*;
+
 public class EnergyMeterScreen extends AbstractSimiContainerScreen<EnergyMeterMenu> {
     private static final ResourceLocation BACKGROUND = PowerGrid.texture("gui/energy_meter");
     private static final int WIDTH = 180;
-    private static final int HEIGHT = 60;
+    private static final int HEIGHT = 86;
 
     private IconButton wattHours;
     private IconButton kiloWattHours;
+    private IconButton reset;
     private TooltipArea valueHover;
 
     public EnergyMeterScreen(EnergyMeterMenu container, Inventory inv, Component title) {
@@ -37,11 +43,18 @@ public class EnergyMeterScreen extends AbstractSimiContainerScreen<EnergyMeterMe
 
         super.init();
 
-        wattHours = new IconButton(leftPos + 5, topPos + 60, ModIcons.I_Wh);
-        kiloWattHours = new IconButton(leftPos + 30, topPos + 60, ModIcons.I_kWh);
+        wattHours = new IconButton(leftPos + 7, topPos + 64, ModIcons.I_Wh)
+                .withCallback(() -> ModdedPackets.sendToServer(new EnergyMeterInteractionC2SPacket(PRECISION_WH, menu.contentHolder.getBlockPos())));
+        wattHours.setToolTip(Lang.translateDirect("gui.energy_meter.wh"));
+        kiloWattHours = new IconButton(leftPos + 25, topPos + 64, ModIcons.I_kWh)
+                .withCallback(() -> ModdedPackets.sendToServer(new EnergyMeterInteractionC2SPacket(PRECISION_KWH, menu.contentHolder.getBlockPos())));
+        kiloWattHours.setToolTip(Lang.translateDirect("gui.energy_meter.kwh"));
+        reset = new IconButton(leftPos + 156, topPos + 64, AllIcons.I_ROTATE_CCW)
+                .withCallback(() -> ModdedPackets.sendToServer(new EnergyMeterInteractionC2SPacket(ZERO, menu.contentHolder.getBlockPos())));
+        reset.setToolTip(Lang.translateDirect("gui.energy_meter.reset"));
         valueHover = new TooltipArea(leftPos + 5, topPos + 22, 170, 35);
 
-        addRenderableWidgets(wattHours, kiloWattHours, valueHover);
+        addRenderableWidgets(wattHours, kiloWattHours, reset, valueHover);
     }
 
     @Override
@@ -86,6 +99,8 @@ public class EnergyMeterScreen extends AbstractSimiContainerScreen<EnergyMeterMe
         ctx.blit(BACKGROUND, 0, 0, 184, 14, 3, 5);
         ms.popPose();
 
+        int indicatorOffset = menu.contentHolder.measurementPrecision ? 9 : 27;
+        ctx.blit(BACKGROUND, leftPos + indicatorOffset, topPos + 60, 182, 23, 15, 4);
     }
 
     public static float getDialAngle(double energy, double lastEnergy, double multiplier, double partialTick) {

@@ -106,4 +106,14 @@ public class EnergyMeterBlockEntity extends ElectricBlockEntity implements MenuP
     public double getEnergy() {
         return energy;
     }
+
+    public void zero() {
+        energy = 0;
+        notifyUpdate();
+    }
+
+    public void setPrecise(boolean value) {
+        measurementPrecision = value;
+        notifyUpdate();
+    }
 }

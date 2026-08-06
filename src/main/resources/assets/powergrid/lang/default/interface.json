@@ -76,6 +76,9 @@
   "powergrid.gui.portable.battery.depleted": "Portable battery empty",
 
   "powergrid.gui.energy_meter.measured": "Measured energy:",
+  "powergrid.gui.energy_meter.reset": "Reset measurement",
+  "powergrid.gui.energy_meter.wh": "Measure watt hours",
+  "powergrid.gui.energy_meter.kwh": "Measure kilowatt hours",
 
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",
