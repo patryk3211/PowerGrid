@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.patryk3211.powergrid.electricity.sim.special.SplitTransformerControllerWire.AVG_SAMPLE_COUNT;
+import static org.patryk3211.powergrid.electricity.transformer.NetherTransformerBlock.HORIZONTAL_AXIS;
+import static org.patryk3211.powergrid.electricity.transformer.NetherTransformerBlock.PART;
 
 public class NetherTransformerBlockEntity extends ElectricBlockEntity {
     private static final Map<UUID, TransformerEntry> TRANSFORMERS = new Object2ReferenceArrayMap<>();
@@ -32,6 +34,31 @@ public class NetherTransformerBlockEntity extends ElectricBlockEntity {
 
     public NetherTransformerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    @Override
+    public void initialize() {
+        super.initialize();
+        // Verify the portal exists.
+        var state = getBlockState();
+        int x = switch(state.getValue(PART)) {
+            case 0, 2 -> 1;
+            case 1, 3 -> -1;
+            default -> throw new IllegalStateException();
+        };
+        var axis = state.getValue(HORIZONTAL_AXIS);
+        var offsetPos = worldPosition.relative(axis, x);
+        var portalState = level.getBlockState(offsetPos);
+        if(!portalState.is(Blocks.NETHER_PORTAL)) {
+            // Destroy this transformer without drops (other side was *likely* already destroyed)
+            int y = switch(state.getValue(PART)) {
+                case 0, 1 -> 1;
+                case 2, 3 -> -1;
+                default -> throw new IllegalStateException();
+            };
+            level.setBlock(worldPosition.above(y), Blocks.AIR.defaultBlockState(), NetherTransformerBlock.UPDATE_KNOWN_SHAPE);
+            level.setBlock(worldPosition, Blocks.AIR.defaultBlockState(), NetherTransformerBlock.UPDATE_KNOWN_SHAPE);
+        }
     }
 
     @Override
@@ -98,8 +125,8 @@ public class NetherTransformerBlockEntity extends ElectricBlockEntity {
         super.destroy();
         if(this.level instanceof ServerLevel level) {
             var state = getBlockState();
-            var part = state.getValue(NetherTransformerBlock.PART);
-            var facing = Direction.fromAxisAndDirection(state.getValue(NetherTransformerBlock.HORIZONTAL_AXIS), switch(part) {
+            var part = state.getValue(PART);
+            var facing = Direction.fromAxisAndDirection(state.getValue(HORIZONTAL_AXIS), switch(part) {
                 case 0, 2 -> Direction.AxisDirection.POSITIVE;
                 case 1, 3 -> Direction.AxisDirection.NEGATIVE;
                 default -> throw new IllegalStateException();

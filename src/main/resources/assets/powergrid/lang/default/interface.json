@@ -75,6 +75,8 @@
   "powergrid.gui.portable.battery.low": "Portable battery low",
   "powergrid.gui.portable.battery.depleted": "Portable battery empty",
 
+  "powergrid.gui.energy_meter.measured": "Measured energy:",
+
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",
   "powergrid.generic.unit.ohm": "Ω",

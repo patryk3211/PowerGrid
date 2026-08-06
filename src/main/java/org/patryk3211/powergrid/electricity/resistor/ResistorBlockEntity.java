@@ -72,4 +72,12 @@ public class ResistorBlockEntity extends ElectricBlockEntity {
     public void electricalTick() {
         applyPower(wire);
     }
+
+    public void setValue(double value) {
+        wire.setResistance(value);
+    }
+
+    public double getValue() {
+        return wire.getResistance();
+    }
 }

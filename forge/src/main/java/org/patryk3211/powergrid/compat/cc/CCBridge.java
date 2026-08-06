@@ -30,5 +30,10 @@ public class CCBridge {
                 ModdedBlockEntities.GENERATOR_CLUTCH.get(),
                 (be, direction) -> new GeneratorClutchPeripheral(be)
         );
+        event.registerBlockEntity(
+                PeripheralCapability.get(),
+                ModdedBlockEntities.ENERGY_METER.get(),
+                (be, direction) -> new EnergyMeterPeripheral(be)
+        );
     }
 }

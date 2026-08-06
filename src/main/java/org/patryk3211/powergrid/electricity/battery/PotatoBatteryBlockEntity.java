@@ -54,6 +54,7 @@ public class PotatoBatteryBlockEntity extends BatteryBlockEntity {
     public void electricalTick() {
         if(getBlockState().getValue(PotatoBatteryBlock.BAKED)) {
             sourceCoupling.setVoltage(0);
+            sourceCoupling.setResistance(1e+6f);
             energy = 0;
             return;
         } else {

@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.battery;
 
-import com.simibubi.create.content.fluids.tank.FluidTankBlock;
 import com.tterrag.registrate.builders.BlockBuilder;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import net.minecraft.ChatFormatting;
@@ -140,7 +139,13 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
         var be = getBlockEntity(level, pos);
         if(be == null)
             return 0;
-        double fill = be.getEnergy() / be.getCapacity();
+        var controller = be.getControllerBE();
+        double fill;
+        if(controller == null) {
+            fill = be.getEnergy() / be.getCapacity();
+        } else {
+            fill = controller.getEnergy() / controller.getCapacity();
+        }
         return Mth.floor(fill * 14.0f) + (fill > 0.001 ? 1 : 0);
     }
 
@@ -149,7 +154,14 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
         var be = getBlockEntity(level, pos);
         if(be == null)
             return 0;
-        return (float) (be.getEnergy() / be.getCapacity());
+        var controller = be.getControllerBE();
+        double fill;
+        if(controller == null) {
+            fill = be.getEnergy() / be.getCapacity();
+        } else {
+            fill = controller.getEnergy() / controller.getCapacity();
+        }
+        return (float) fill;
     }
 
     @Override

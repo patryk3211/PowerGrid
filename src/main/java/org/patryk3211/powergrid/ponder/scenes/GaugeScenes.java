@@ -16,15 +16,19 @@
 package org.patryk3211.powergrid.ponder.scenes;
 
 import com.simibubi.create.AllItems;
+import com.simibubi.create.content.redstone.nixieTube.NixieTubeBlockEntity;
 import net.createmod.catnip.math.Pointing;
 import net.createmod.ponder.api.PonderPalette;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.electricity.creative.CreativeResistorBlockEntity;
+import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlockEntity;
 import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.ponder.base.PowerGridSceneBuilder;
@@ -226,6 +230,137 @@ public class GaugeScenes {
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(90);
+
+        scene.markAsFinished();
+    }
+
+    public static void energyMeter(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("energy_meter", "Monitoring Electricity usage with the Energy Meter");
+        scene.configureBasePlate(0, 0, 5);
+        scene.scaleSceneView(1.2f);
+
+        var meter = util.grid().at(2, 1, 2);
+        var source = util.grid().at(4, 1, 2);
+        var pillars = util.select().fromTo(util.grid().at(0, 1, 3), util.grid().at(0, 1, 2))
+                .add(util.select().position(4, 1, 1))
+                .add(util.select().position(4, 1, 3));
+        var connector1 = util.grid().at(4, 2, 1);
+        var connector2 = util.grid().at(4, 2, 3);
+        var connector3 = util.grid().at(0, 2, 3);
+        var connector4 = util.grid().at(0, 2, 2);
+        var comparator = util.grid().at(2, 1, 1);
+        var nixie = util.grid().at(2, 1, 0);
+        var resistor = util.grid().at(1, 1, 3);
+
+        scene.showBasePlate();
+        scene.addKeyframe();
+        scene.idle(5);
+        scene.world().showSection(util.select().position(meter), Direction.DOWN);
+        scene.idle(10);
+        scene.world().showSection(pillars, Direction.DOWN);
+        scene.idle(10);
+        scene.world().showSection(util.select().layer(2), Direction.DOWN);
+        scene.idle(15);
+
+        var mwire1 = scene.electric().connect(connector1, 0, meter, 0, DyeColor.RED);
+        scene.idle(10);
+        var mwire2 = scene.electric().connect(connector4, 0, meter, 1, DyeColor.RED);
+        scene.idle(10);
+        scene.electric().connect(connector2, 0, meter, 2, DyeColor.BLUE);
+        scene.electric().connect(connector2, 0, connector3, 0, DyeColor.BLUE);
+        scene.idle(10);
+        scene.electric().connectInvisible(source, 0, connector1, 0);
+        scene.electric().connectInvisible(source, 1, connector2, 0);
+        scene.world().modifyBlockEntity(source, CreativeSourceBlockEntity.class, b -> {
+            b.setValue(100000);
+        });
+        scene.world().modifyBlockEntity(resistor, CreativeResistorBlockEntity.class, b -> {
+            b.setValue(3000);
+        });
+        scene.electric().connectInvisible(connector3, 0, resistor, 0);
+        scene.electric().connectInvisible(connector4, 0, resistor, 1);
+        scene.electric().tickFor(60);
+
+        scene.overlay().showText(70)
+                .text("This energy meter measures energy used over time")
+                .pointAt(util.vector().blockSurface(meter, Direction.WEST))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(80);
+
+        scene.overlay().showControls(util.select().position(meter).getCenter().add(0,0.5,0), Pointing.DOWN, 40).rightClick();
+        scene.idle(10);
+
+        scene.overlay().showText(90)
+                .text("In the GUI you can see the usage in Wh or kWh by hovering over the gauges")
+                .attachKeyFrame();
+        scene.idle(100);
+
+        scene.world().showSection(util.select().position(comparator), Direction.DOWN);
+        scene.world().showSection(util.select().position(nixie), Direction.DOWN);
+        scene.idle(15);
+
+        scene.overlay().showText(110)
+                .text("The energy meter emits a redstone pulse through a comparator every 1 Wh or kWh depending on which mode it's set to")
+                .pointAt(util.vector().blockSurface(meter, Direction.WEST))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(120);
+
+        var delay = 20;
+        scene.addKeyframe();
+        scene.world().toggleRedstonePower(util.select().position(comparator));
+        scene.world().modifyBlockEntityNBT(util.select().position(nixie), NixieTubeBlockEntity.class,
+                nbt -> nbt.putInt("RedstoneStrength", 1));
+        scene.idle(1);
+        scene.world().toggleRedstonePower(util.select().position(comparator));
+        scene.world().modifyBlockEntityNBT(util.select().position(nixie), NixieTubeBlockEntity.class,
+                nbt -> nbt.putInt("RedstoneStrength", 0));
+        scene.idle(delay);
+
+        scene.world().toggleRedstonePower(util.select().position(comparator));
+        scene.world().modifyBlockEntityNBT(util.select().position(nixie), NixieTubeBlockEntity.class,
+                nbt -> nbt.putInt("RedstoneStrength", 1));
+        scene.idle(1);
+        scene.world().toggleRedstonePower(util.select().position(comparator));
+        scene.world().modifyBlockEntityNBT(util.select().position(nixie), NixieTubeBlockEntity.class,
+                nbt -> nbt.putInt("RedstoneStrength", 0));
+        scene.idle(delay);
+
+        scene.world().toggleRedstonePower(util.select().position(comparator));
+        scene.world().modifyBlockEntityNBT(util.select().position(nixie), NixieTubeBlockEntity.class,
+                nbt -> nbt.putInt("RedstoneStrength", 1));
+        scene.idle(1);
+        scene.world().toggleRedstonePower(util.select().position(comparator));
+        scene.world().modifyBlockEntityNBT(util.select().position(nixie), NixieTubeBlockEntity.class,
+                nbt -> nbt.putInt("RedstoneStrength", 0));
+        scene.idle(delay);
+
+        scene.world().toggleRedstonePower(util.select().position(comparator));
+        scene.world().modifyBlockEntityNBT(util.select().position(nixie), NixieTubeBlockEntity.class,
+                nbt -> nbt.putInt("RedstoneStrength", 1));
+        scene.idle(1);
+        scene.world().toggleRedstonePower(util.select().position(comparator));
+        scene.world().modifyBlockEntityNBT(util.select().position(nixie), NixieTubeBlockEntity.class,
+                nbt -> nbt.putInt("RedstoneStrength", 0));
+        scene.idle(delay);
+
+        scene.world().hideSection(util.select().position(nixie), Direction.UP);
+        scene.world().hideSection(util.select().position(comparator), Direction.UP);
+        scene.idle(10);
+        scene.electric().removeWire(mwire1);
+        scene.electric().removeWire(mwire2);
+        scene.idle(10);
+        scene.electric().connect(connector1, 0, meter, 1, DyeColor.RED);
+        scene.idle(10);
+        scene.electric().connect(connector4, 0, meter, 0, DyeColor.RED);
+        scene.idle(10);
+
+        scene.overlay().showText(90)
+                .text("You can also reverse the power and it will count backwards")
+                .attachKeyFrame();
+        scene.idle(100);
 
         scene.markAsFinished();
     }

@@ -172,7 +172,7 @@ public class VerticalCommutatorBlock extends AbstractRotorBlock implements IBE<C
         var facing = state.getValue(HORIZONTAL_FACING);
         if(!state.getValue(UP))
             facing = facing.getOpposite();
-        return new Vec3(-3.5 / 16, 2 / 16f, 0)
+        return new Vec3(-3.5 / 16, 1 / 16f, 0)
                 .yRot((float) Math.PI * (facing.toYRot() - 180) / 180f);
     }
 

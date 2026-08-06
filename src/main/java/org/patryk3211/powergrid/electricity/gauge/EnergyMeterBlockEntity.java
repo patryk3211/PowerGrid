@@ -22,6 +22,11 @@ public class EnergyMeterBlockEntity extends ElectricBlockEntity implements MenuP
     double lastEnergy;
     double energy;
 
+    private int lastRedstoneEnergy;
+    private int redstoneTick;
+    private int impulses;
+    boolean measurementPrecision;
+
     public EnergyMeterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
     }
@@ -36,7 +41,34 @@ public class EnergyMeterBlockEntity extends ElectricBlockEntity implements MenuP
     public void tick() {
         super.tick();
         lastEnergy = energy;
-        energy += series.current() * shunt.potentialDifference() * 0.05 / 3_600_000;
+        energy += series.current() * shunt.potentialDifference() * 0.05 / (measurementPrecision ? 3_600 : 3_600_000);
+        if(energy < 0) {
+            energy = 100000 + energy;
+        }
+        if(energy > 100000) {
+            energy -= 100000;
+        }
+        if(!level.isClientSide && ++redstoneTick >= 2) {
+            if(this.impulses != 0) {
+                // Guarantee that the comparator output is always a pulse
+                this.impulses = 0;
+                level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+            } else {
+                int impulses = (int) energy - lastRedstoneEnergy;
+                if (impulses < 0) impulses = 0;
+                if (impulses > 15) impulses = 15;
+                if (this.impulses != impulses) {
+                    this.impulses = impulses;
+                    level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
+                }
+                lastRedstoneEnergy = (int) energy;
+            }
+            redstoneTick = 0;
+        }
+    }
+
+    public int pulses() {
+        return impulses;
     }
 
     @Override
@@ -55,16 +87,24 @@ public class EnergyMeterBlockEntity extends ElectricBlockEntity implements MenuP
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
         lastEnergy = energy = tag.getDouble("Energy");
+        measurementPrecision = tag.getBoolean("Wh");
+        lastRedstoneEnergy = tag.getInt("Redstone");
     }
 
     @Override
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
         tag.putDouble("Energy", energy);
+        tag.putBoolean("Wh", measurementPrecision);
+        tag.putInt("Redstone", lastRedstoneEnergy);
     }
 
     @Override
     public @Nullable AbstractContainerMenu createMenu(int id, Inventory inventory, Player player) {
         return new EnergyMeterMenu(ModdedMenus.ENERGY_METER.get(), id, inventory, this);
+    }
+
+    public double getEnergy() {
+        return energy;
     }
 }

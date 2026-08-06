@@ -3,10 +3,16 @@ package org.patryk3211.powergrid.electricity.solarpanel;
 import dev.ryanhcode.sable.companion.SableCompanion;
 import dev.ryanhcode.sable.companion.math.JOMLConversion;
 import net.minecraft.core.*;
+import com.simibubi.create.api.contraption.transformable.TransformableBlockEntity;
+import com.simibubi.create.content.contraptions.StructureTransform;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -25,7 +31,7 @@ import java.util.*;
 
 import static org.patryk3211.powergrid.electricity.solarpanel.SolarHelper.*;
 
-public class SolarPanelBlockEntity extends ElectricBlockEntity  {
+public class SolarPanelBlockEntity extends ElectricBlockEntity implements TransformableBlockEntity {
     protected CurrentSourceWire currentSource;
     protected ElectricWire seriesResistor;
 
@@ -40,7 +46,6 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity  {
     private final Map<BlockPos, SolarPanelBlockEntity> connectedPanelBEs = new HashMap<>();
     private final Set<BlockPos> connectedPanels = new HashSet<>();
     private BlockPos controller;
-    private BlockPos lastKnownPos;
 
     private boolean valid = true;
 
@@ -268,59 +273,42 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity  {
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
         if(controller != null) {
-            tag.put("Controller", NbtUtils.writeBlockPos(controller));
+            tag.put("Controller", NbtUtils.writeBlockPos(controller.subtract(worldPosition)));
         } else {
             if(!connectedPanels.isEmpty()) {
                 var list = new ListTag();
                 for (var pos : connectedPanels) {
-                    list.add(NbtUtils.writeBlockPos(pos));
+                    list.add(NbtUtils.writeBlockPos(pos.subtract(worldPosition)));
                 }
                 tag.put("Connected", list);
             }
         }
-        if(lastKnownPos != null)
-            tag.put("LastKnownPos", NbtUtils.writeBlockPos(lastKnownPos));
     }
 
     @Override
     public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
         super.writeSafe(tag, registries);
-        if(lastKnownPos != null) {
-            if (controller != null) {
-                tag.put("Controller", NbtUtils.writeBlockPos(controller));
-            } else {
-                if (!connectedPanels.isEmpty()) {
-                    var list = new ListTag();
-                    for (var pos : connectedPanels) {
-                        list.add(NbtUtils.writeBlockPos(pos));
-                    }
-                    tag.put("Connected", list);
+        if (controller != null) {
+            tag.put("Controller", NbtUtils.writeBlockPos(controller.subtract(worldPosition)));
+        } else {
+            if (!connectedPanels.isEmpty()) {
+                var list = new ListTag();
+                for (var pos : connectedPanels) {
+                    list.add(NbtUtils.writeBlockPos(pos.subtract(worldPosition)));
                 }
+                tag.put("Connected", list);
             }
-            tag.put("LastKnownPos", NbtUtils.writeBlockPos(lastKnownPos));
         }
     }
 
     @Override
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
-        Vec3i offset = null;
-        if(tag.contains("LastKnownPos")) {
-            lastKnownPos = NbtUtils.readBlockPos(tag, "LastKnownPos").orElse(worldPosition);
-            if(!worldPosition.equals(lastKnownPos)) {
-                offset = worldPosition.subtract(lastKnownPos);
-            }
-            lastKnownPos = worldPosition;
-        } else {
-            lastKnownPos = null;
-        }
         connectedPanels.clear();
         if(tag.contains("Controller")) {
             var opt = NbtUtils.readBlockPos(tag, "Controller");
             if(opt.isPresent()) {
-                controller = opt.get();
-                if (offset != null)
-                    controller = controller.offset(offset);
+                controller = opt.get().offset(worldPosition);
                 makeProxy();
             }
         } else {
@@ -332,9 +320,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity  {
                     if(ints.length != 3)
                         continue;
                     var pos = new BlockPos(ints[0], ints[1], ints[2]);
-                    if(offset != null)
-                        pos = pos.offset(offset);
-                    connectedPanels.add(pos);
+                    connectedPanels.add(pos.offset(worldPosition));
                 }
                 if(level != null)
                     discoverPanels();
@@ -346,8 +332,6 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity  {
     @Override
     public void initialize() {
         super.initialize();
-        if(lastKnownPos == null)
-            lastKnownPos = worldPosition;
         if(controller == null) {
             discoverPanels();
         } else {
@@ -554,5 +538,22 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity  {
 
         wires1.forEach(TransmissionLinePart::refreshEndpointNodes);
         wires2.forEach(TransmissionLinePart::refreshEndpointNodes);
+    }
+
+    @Override
+    public void transform(BlockEntity be, StructureTransform transform) {
+        if(controller != null) {
+            controller = transform
+                    .applyWithoutOffset(controller.subtract(worldPosition))
+                    .offset(worldPosition);
+        } else {
+            var positions = List.copyOf(connectedPanels);
+            connectedPanels.clear();
+            for(var pos : positions) {
+                connectedPanels.add(transform
+                        .applyWithoutOffset(pos.subtract(worldPosition))
+                        .offset(worldPosition));
+            }
+        }
     }
 }

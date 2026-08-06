@@ -91,9 +91,10 @@ public class CircuitDesignTableLoadScreen extends AbstractSimiContainerScreen<Ci
         }
 
         try {
-            var file = Path.of("circuits", fileNameInput.getValue());
-            if(!file.toString().endsWith(".nbt"))
-                file = Path.of(file + ".nbt");
+            var filename = fileNameInput.getValue();
+            if (filename.endsWith(".nbt"))
+                filename = filename.substring(0, filename.length() - 4);
+            var file = Path.of("circuits", filename.replaceAll("\\W+", "_") + ".nbt");
             Files.createDirectories(file.getParent());
             if(Files.exists(file) && !confirm) {
                 confirm = true;

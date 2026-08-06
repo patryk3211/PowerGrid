@@ -17,6 +17,7 @@
     "LightningAccessor",
     "PlayerMixin",
     "RecipeApplierMixin",
+    "SheepMixin",
     "SoundEntryBuilderMixin",
     "sable.SubLevelAssemblerMixin",
     "simulated.GimbalSensorScrollMixin"
