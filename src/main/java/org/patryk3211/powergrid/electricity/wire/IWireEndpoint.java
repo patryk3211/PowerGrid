@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
+import dev.ryanhcode.sable.api.SubLevelAssemblyHelper;
 import dev.ryanhcode.sable.companion.SableCompanion;
 import dev.ryanhcode.sable.companion.SubLevelAccess;
 import net.minecraft.core.BlockPos;
@@ -73,6 +74,12 @@ public interface IWireEndpoint {
 
     default IWireEndpoint makeOffset(BlockPos blockOffset, Vec3 offset) {
         return makeOffset(blockOffset);
+    }
+
+    default IWireEndpoint makeOffset(Level level, SubLevelAssemblyHelper.AssemblyTransform transform) {
+        var pos = getExactPosition(level);
+        var blockPos = BlockPos.containing(pos);
+        return makeOffset(transform.apply(blockPos).subtract(blockPos), transform.apply(pos).subtract(pos));
     }
 
     default SubLevelAccess getSubLevel(Level world) {

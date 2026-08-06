@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.wire.powercord;
 
+import dev.ryanhcode.sable.api.SubLevelAssemblyHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.SectionPos;
@@ -62,6 +63,12 @@ public class AutoCordEndpoint implements ICordEndpoint {
     public IWireEndpoint makeOffset(BlockPos blockOffset, Vec3 offset) {
         return new AutoCordEndpoint(pos.offset(blockOffset), terminal1, terminal2,
                 placement.add(offset.x, offset.y, offset.z), plugFacing);
+    }
+
+    @Override
+    public IWireEndpoint makeOffset(Level level, SubLevelAssemblyHelper.AssemblyTransform transform) {
+        return new AutoCordEndpoint(transform.apply(pos), terminal1, terminal2,
+                transform.apply(placement), plugFacing);
     }
 
     @Override

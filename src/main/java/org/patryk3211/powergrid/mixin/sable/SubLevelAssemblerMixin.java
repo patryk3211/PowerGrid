@@ -30,9 +30,7 @@ public class SubLevelAssemblerMixin {
     private static IWireEndpoint powerGrid$offsetEndpoint(Level level, IWireEndpoint endpoint, SubLevelAssemblyHelper.AssemblyTransform transform) {
         if(endpoint == null)
             return null;
-        var pos = endpoint.getExactPosition(level);
-        var blockPos = BlockPos.containing(pos);
-        return endpoint.makeOffset(transform.apply(blockPos).subtract(blockPos), transform.apply(pos).subtract(pos));
+        return endpoint.makeOffset(level, transform);
     }
 
     @Unique
