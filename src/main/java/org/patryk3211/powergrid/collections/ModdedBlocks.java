@@ -961,7 +961,6 @@ public class ModdedBlocks {
 
     public static BlockEntry<SolarPanelBlock> SOLAR_PANEL = REGISTRATE.block("solar_panel", SolarPanelBlock::new)
             .initialProperties(SharedProperties::softMetal)
-            .addLayer(() -> RenderType::translucent)
             .blockstate(alternateDirectionalBlock("block/solar_panel/inline_solar_panel"))
             .onRegister(CreateRegistrate.connectedTextures(SolarPanelCTBehaviour::new))
             .item()
@@ -981,7 +980,6 @@ public class ModdedBlocks {
     public static final BlockEntry<CeilingTileSolarBlock> CEILING_TILE_SOLAR = REGISTRATE.block("ceiling_tile_solar", CeilingTileSolarBlock::new)
             .blockstate(simple("block/ceiling_tile/ceiling_tile_solar_panel"))
             .initialProperties(SharedProperties::stone)
-            .addLayer(() -> RenderType::translucent)
             .transform(axeOrPickaxe())
             .onRegister(CreateRegistrate.connectedTextures(CeilingTileSolarBlockCTBehaviour::new))
             .loot((tables, block) -> {
