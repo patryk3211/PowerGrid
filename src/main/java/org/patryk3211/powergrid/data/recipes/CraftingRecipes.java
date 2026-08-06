@@ -39,6 +39,18 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('A', andesiteAlloy())
             ),
 
+    ENERGY_METER = create(ModdedBlocks.ENERGY_METER)
+            .unlockedBy(AllItems.ANDESITE_ALLOY::get)
+            .viaShaped(b -> b
+                    .pattern("CPC")
+                    .pattern("CDC")
+                    .pattern("CAC")
+                    .define('C', AllBlocks.COGWHEEL)
+                    .define('A', ModdedBlocks.CONDUCTIVE_CASING)
+                    .define('D', AllBlocks.DISPLAY_BOARD)
+                    .define('P', ModdedItems.PINS)
+            ),
+
     SOLAR_PANEL_BEARING = create(ModdedBlocks.SOLAR_PANEL_BEARING)
             .unlockedBy(AllItems.ANDESITE_ALLOY::get)
             .viaShaped(b -> b
