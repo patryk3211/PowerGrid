@@ -203,7 +203,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             setYRot(facingAngle);
             updateCurveParams();
         }
-        if(curveParams != null && !curveParams.valid) {
+        if(!world.isClientSide && curveParams != null && !curveParams.valid) {
             kill();
             return;
         }
