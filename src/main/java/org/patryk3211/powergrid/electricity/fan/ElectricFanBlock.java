@@ -69,7 +69,7 @@ public class ElectricFanBlock extends DirectionalElectricBlock implements IBE<El
                     case UP -> terminal;
                     case DOWN -> terminal.rotateAroundX(180);
                     case NORTH -> terminal.rotateAroundX(90);
-                    case SOUTH -> terminal.rotateAroundX(-90);
+                    case SOUTH -> terminal.rotateAroundX(90).rotateAroundY(180);
                     case EAST -> terminal.rotateAroundX(90).rotateAroundY(90);
                     case WEST -> terminal.rotateAroundX(90).rotateAroundY(-90);
                 }))

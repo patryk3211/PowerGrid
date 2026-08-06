@@ -34,7 +34,6 @@ import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
@@ -90,14 +89,14 @@ public class LightFixtureBlock extends DirectionalElectricBlock implements IBE<L
                     var facing = state.getValue(FACING);
                     terminal = switch(facing) {
                         case UP -> terminal;
-                        case DOWN -> terminal.rotateAroundX(Rotation.CLOCKWISE_180);
-                        case NORTH -> terminal.rotateAroundX(Rotation.CLOCKWISE_90);
-                        case SOUTH -> terminal.rotateAroundX(Rotation.COUNTERCLOCKWISE_90);
-                        case EAST -> terminal.rotateAroundX(Rotation.CLOCKWISE_90).rotateAroundY(Rotation.CLOCKWISE_90);
-                        case WEST -> terminal.rotateAroundX(Rotation.CLOCKWISE_90).rotateAroundY(Rotation.COUNTERCLOCKWISE_90);
+                        case DOWN -> terminal.rotateAroundX(180);
+                        case NORTH -> terminal.rotateAroundX(90);
+                        case SOUTH -> terminal.rotateAroundX(90).rotateAroundY(180);
+                        case EAST -> terminal.rotateAroundX(90).rotateAroundY(90);
+                        case WEST -> terminal.rotateAroundX(90).rotateAroundY(-90);
                     };
                     if(!state.getValue(ALONG_FIRST_AXIS)) {
-                        terminal = terminal.rotate(facing.getAxis(), Rotation.CLOCKWISE_90);
+                        terminal = terminal.rotate(facing.getAxis(), 90);
                     }
                     return terminal;
                 }), POWER)

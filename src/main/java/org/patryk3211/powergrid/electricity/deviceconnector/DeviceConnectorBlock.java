@@ -94,7 +94,7 @@ public class DeviceConnectorBlock extends Rotation4ElectricBlock implements IBE<
                             terminal = switch(facing) {
                                 case DOWN -> terminal;
                                 case UP -> terminal.rotateAroundX(180);
-                                case EAST -> terminal.rotateAroundZ(-90);
+                                case EAST -> terminal.rotateAroundZ(90).rotateAroundY(180);
                                 case WEST -> terminal.rotateAroundZ(90);
                                 case NORTH -> terminal.rotateAroundZ(90).rotateAroundY(90);
                                 case SOUTH -> terminal.rotateAroundZ(90).rotateAroundY(-90);

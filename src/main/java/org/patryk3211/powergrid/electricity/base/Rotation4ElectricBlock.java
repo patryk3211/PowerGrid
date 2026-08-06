@@ -35,7 +35,7 @@ public abstract class Rotation4ElectricBlock extends DirectionalElectricBlock {
                             terminal = switch(facing) {
                                 case DOWN -> terminal;
                                 case UP -> terminal.rotateAroundX(180);
-                                case EAST -> terminal.rotateAroundZ(-90);
+                                case EAST -> terminal.rotateAroundZ(90).rotateAroundY(180);
                                 case WEST -> terminal.rotateAroundZ(90);
                                 case NORTH -> terminal.rotateAroundZ(90).rotateAroundY(90);
                                 case SOUTH -> terminal.rotateAroundZ(90).rotateAroundY(-90);
@@ -44,7 +44,7 @@ public abstract class Rotation4ElectricBlock extends DirectionalElectricBlock {
                             if(facing == Direction.SOUTH) {
                                 terminal = terminal.rotate(facing.getAxis(), -(90 * rotation - 90));
                             } else if(facing == Direction.EAST) {
-                                terminal = terminal.rotate(facing.getAxis(), 180 - (90 * rotation - 90));
+                                terminal = terminal.rotate(facing.getAxis(), -(90 * rotation - 90));
                             } else {
                                 terminal = terminal.rotate(facing.getAxis(), 90 * rotation - 90);
                             }
