@@ -334,7 +334,7 @@ public class ModdedBlocks {
             .blockstate(horizontalBlock("block/energy_meter/block"))
             .initialProperties(SharedProperties::softMetal)
             .addLayer(() -> RenderType::cutoutMipped)
-            .transform(CResistance.setResistances("series", 0.05f, "shunt", 2e6))
+            .transform(CResistance.setResistances("series", 0.025f, "shunt", 2e6))
             .transform(CThermal.maxPower(100, 2.0f))
             .transform(pickaxeOnly())
             .item()

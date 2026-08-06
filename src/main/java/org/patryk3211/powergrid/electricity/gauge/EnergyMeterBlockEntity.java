@@ -12,6 +12,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedMenus;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 
 public class EnergyMeterBlockEntity extends ElectricBlockEntity implements MenuProvider {
@@ -33,21 +34,7 @@ public class EnergyMeterBlockEntity extends ElectricBlockEntity implements MenuP
     @Override
     public void electricalTick() {
         super.electricalTick();
-        setUnsaved();
-    }
-
-    @Override
-    public void tick() {
-        super.tick();
-        lastEnergy = energy;
-        energy += series.current() * shunt.potentialDifference() * 0.05 / (measurementPrecision ? 3_600 : 3_600_000);
-        if(energy < 0) {
-            energy = 100000 + energy;
-        }
-        if(energy > 100000) {
-            energy -= 100000;
-        }
-        if(!level.isClientSide && ++redstoneTick >= 2) {
+        if(++redstoneTick >= 2) {
             if(this.impulses != 0) {
                 // Guarantee that the comparator output is always a pulse
                 this.impulses = 0;
@@ -64,6 +51,26 @@ public class EnergyMeterBlockEntity extends ElectricBlockEntity implements MenuP
             }
             redstoneTick = 0;
         }
+        setUnsaved();
+    }
+
+    @Override
+    public void tick() {
+        applyPower(series);
+        lastEnergy = energy;
+        energy += series.current() * shunt.potentialDifference() * 0.05 / (measurementPrecision ? 3_600 : 3_600_000);
+        if(energy < 0) {
+            energy = 100000 + energy;
+        }
+        if(energy > 100000) {
+            energy -= 100000;
+        }
+        super.tick();
+    }
+
+    @Override
+    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+        return ThermalBehaviour.fromConfig(this);
     }
 
     public int pulses() {
