@@ -5,6 +5,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Shearable;
 import net.minecraft.world.entity.animal.Animal;
 import net.minecraft.world.entity.animal.Sheep;
@@ -56,7 +57,7 @@ public abstract class SheepMixin extends Animal implements Shearable {
                     }
                 }
                 gameEvent(GameEvent.SHEAR, player);
-                itemStack.hurtAndBreak(1, player, player1 -> player1.broadcastBreakEvent(hand));
+                itemStack.hurtAndBreak(1, player, hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND);
                 cir.setReturnValue(InteractionResult.SUCCESS);
             } else {
                 cir.setReturnValue(InteractionResult.CONSUME);

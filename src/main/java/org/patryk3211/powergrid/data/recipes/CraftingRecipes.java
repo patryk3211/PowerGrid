@@ -280,18 +280,19 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .requires(resistiveCoil())
                     .requires(coal())
                     .requires(redstone())),
-            CIRCUIT_DESIGN_TABLE = create(ModdedBlocks.CIRCUIT_DESIGN_TABLE::get)
-                    .unlockedBy(() -> ModdedBlocks.CONDUCTIVE_CASING)
-                    .viaShaped(b -> b
-                            .pattern("ES")
-                            .pattern("OP")
-                            .pattern(" C")
-                            .define('E', AllItems.ELECTRON_TUBE)
-                            .define('S', AllItems.EMPTY_SCHEMATIC)
-                            .define('O', ModdedBlocks.SOCKET)
-                            .define('P', ModdedBlocks.COPPER_PLATING)
-                            .define('C', ModdedBlocks.CONDUCTIVE_CASING)
-                    ),
+
+    CIRCUIT_DESIGN_TABLE = create(ModdedBlocks.CIRCUIT_DESIGN_TABLE::get)
+            .unlockedBy(() -> ModdedBlocks.CONDUCTIVE_CASING)
+            .viaShaped(b -> b
+                    .pattern("ES")
+                    .pattern("OP")
+                    .pattern(" C")
+                    .define('E', AllItems.ELECTRON_TUBE)
+                    .define('S', AllItems.EMPTY_SCHEMATIC)
+                    .define('O', ModdedBlocks.SOCKET)
+                    .define('P', ModdedBlocks.COPPER_PLATING)
+                    .define('C', ModdedBlocks.CONDUCTIVE_CASING)
+            ),
 
     GENERATOR_HOUSING = create(ModdedBlocks.GENERATOR_HOUSING)
             .unlockedBy(() -> ModdedBlocks.CONDUCTIVE_CASING)
