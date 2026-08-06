@@ -55,6 +55,9 @@ public class ModIcons extends AllIcons {
     public static final ModIcons I_GENERATOR = next();
     public static final ModIcons I_PREFIXES = next();
 
+    public static final ModIcons I_Wh = newRow();
+    public static final ModIcons I_kWh = next();
+
     // Unfortunately we need these since AllIcons has them private, and we need them in render function.
     private final int iconX;
     private final int iconY;

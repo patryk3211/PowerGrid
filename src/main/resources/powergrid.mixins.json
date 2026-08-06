@@ -16,6 +16,7 @@
     "LightningAccessor",
     "PlayerMixin",
     "RecipeApplierMixin",
+    "SheepMixin",
     "SoundEntryBuilderMixin"
   ],
   "injectors": {

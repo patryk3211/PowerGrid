@@ -85,7 +85,7 @@ public class SocketBlock extends Rotation4ElectricBlock implements IBE<SocketBlo
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if(hand != InteractionHand.MAIN_HAND)
             return InteractionResult.PASS;
-        var endpoint = (SocketEndpoint) socket(state);
+        var endpoint = new SocketEndpoint(pos);
         var cord = endpoint.getConnection(level);
         if(cord == null)
             return InteractionResult.PASS;

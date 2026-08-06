@@ -6,6 +6,8 @@ import net.createmod.catnip.math.VoxelShaper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.Block;
@@ -21,6 +23,7 @@ import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
@@ -106,9 +109,24 @@ public class NetherTransformerBlock extends ElectricBlock implements IAcceptConn
             case 2, 3 -> -1;
             default -> throw new IllegalStateException();
         };
-        if(TransformerMediumBlock.updateShapeVerifyPart(0, y, pos, neighborPos, state, level))
-            return state;
-        return Blocks.AIR.defaultBlockState();
+        int x = switch(state.getValue(PART)) {
+            case 0, 2 -> 1;
+            case 1, 3 -> -1;
+            default -> throw new IllegalStateException();
+        };
+        var axis = state.getValue(HORIZONTAL_AXIS);
+        var offsetPos = pos.relative(axis, x);
+        if(!TransformerMediumBlock.updateShapeVerifyPart(0, y, pos, neighborPos, state, level))
+            return Blocks.AIR.defaultBlockState();
+        var portalState = level.getBlockState(offsetPos);
+        if(!portalState.is(Blocks.NETHER_PORTAL))
+            return Blocks.AIR.defaultBlockState();
+        return state;
+    }
+
+    @Override
+    public ItemStack getCloneItemStack(BlockGetter level, BlockPos pos, BlockState state) {
+        return ModdedBlocks.TRANSFORMER_CORE.asStack();
     }
 
     @Override

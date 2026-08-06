@@ -178,8 +178,8 @@ public class CommutatorBlock extends AbstractRotorBlock implements IBE<Commutato
     @Override
     public Vec3 brushOffset(BlockState state) {
         return switch (state.getValue(HORIZONTAL_FACING).getAxis()) {
-            case Z -> new Vec3(3.5 / 16f, 0, 2 / 16f);
-            case X -> new Vec3(-2 / 16f, 0, 3.5 / 16);
+            case Z -> new Vec3(3.5 / 16f, 0, 1 / 16f);
+            case X -> new Vec3(-1 / 16f, 0, 3.5 / 16);
             default -> throw new IllegalStateException();
         };
     }

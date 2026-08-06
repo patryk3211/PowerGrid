@@ -6,8 +6,10 @@ import net.minecraftforge.common.util.LazyOptional;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.compat.cc.clutch.GeneratorClutchPeripheral;
 import org.patryk3211.powergrid.compat.cc.gauges.CurrentGaugePeripheral;
+import org.patryk3211.powergrid.compat.cc.gauges.EnergyMeterPeripheral;
 import org.patryk3211.powergrid.compat.cc.gauges.PowerGaugePeripheral;
 import org.patryk3211.powergrid.compat.cc.gauges.VoltageGaugePeripheral;
+import org.patryk3211.powergrid.electricity.gauge.EnergyMeterBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlockEntity;
 
 public class CCBridge {
@@ -25,6 +27,8 @@ public class CCBridge {
                 return LazyOptional.of(() -> PowerGaugePeripheral.of(be));
             } else if (type == ModdedBlockEntities.GENERATOR_CLUTCH.get()) {
                 return LazyOptional.of(() -> new GeneratorClutchPeripheral((GeneratorClutchBlockEntity) be));
+            } else if (type == ModdedBlockEntities.ENERGY_METER.get()) {
+                return LazyOptional.of(() -> new EnergyMeterPeripheral((EnergyMeterBlockEntity) be));
             }
             return LazyOptional.empty();
         });
