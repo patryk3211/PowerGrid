@@ -5,7 +5,7 @@ import org.patryk3211.powergrid.network.PacketSet;
 import org.patryk3211.powergrid.network.packets.*;
 
 public class ModPackets {
-    public static final PacketSet PACKETS = PacketSet.builder(PowerGrid.MOD_ID, 16) // increment version on changes
+    public static final PacketSet PACKETS = PacketSet.builder(PowerGrid.MOD_ID, 17) // increment version on changes
 
             // Client to Server
             .c2s(AlternatePlacementStatusC2SPacket.class, AlternatePlacementStatusC2SPacket::new)
@@ -21,6 +21,7 @@ public class ModPackets {
             .c2s(MultimeterDataC2SPacket.class, MultimeterDataC2SPacket::new)
             .c2s(UpdateComponentBiPacket.class, UpdateComponentBiPacket::new)
             .c2s(NegotiateSyncC2SPacket.class, NegotiateSyncC2SPacket::new)
+            .c2s(EnergyMeterInteractionC2SPacket.class, EnergyMeterInteractionC2SPacket::new)
 
             // Server to Client
             .s2c(ZapProjectileS2CPacket.class, ZapProjectileS2CPacket::new)
