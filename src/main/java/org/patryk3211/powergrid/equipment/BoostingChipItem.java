@@ -1,6 +1,5 @@
 package org.patryk3211.powergrid.equipment;
 
-import com.simibubi.create.AllSoundEvents;
 import com.simibubi.create.foundation.item.CustomUseEffectsItem;
 import net.createmod.catnip.data.TriState;
 import net.minecraft.sounds.SoundEvent;
@@ -16,6 +15,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.collections.ModdedAdvancements;
+import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 
 public class BoostingChipItem extends Item implements CustomUseEffectsItem {
     public BoostingChipItem(Properties properties) {
@@ -52,8 +52,8 @@ public class BoostingChipItem extends Item implements CustomUseEffectsItem {
 
     @Override
     public SoundEvent getEatingSound() {
-        return AllSoundEvents.SANDING_SHORT.getMainEvent();
-    } //todo needs it own sound
+        return ModdedSoundEvents.BOOSTING.getMainEvent();
+    }
 
     @Override
     public UseAnim getUseAnimation(ItemStack stack) {
