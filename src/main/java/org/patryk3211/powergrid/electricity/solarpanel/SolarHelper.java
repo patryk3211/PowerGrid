@@ -48,7 +48,7 @@ public class SolarHelper {
     public static final double DIFFUSE_FRAC = .12;
     public static final double ALBEDO_FRAC = .08;
 
-    private static boolean showDebugLines = true;
+    private static boolean showDebugLines = false;
 
     public record DDAHit(BlockPos worldOrLocalPos, AbstractContraptionEntity contraption) {}
 
