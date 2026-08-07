@@ -103,14 +103,14 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         var stack = user.getItemInHand(hand);
         boolean boosted = ItemBoostUtils.useBoost(stack, user);
-        if(world.isClientSide) {
-            clientUse(hand);
-            return InteractionResultHolder.success(stack);
-        }
         if(!boosted) {
             var otherStack = user.getItemInHand(hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
             if(otherStack.getItem() instanceof BoostingChipItem)
                 return InteractionResultHolder.pass(stack);
+        }
+        if(world.isClientSide) {
+            clientUse(hand);
+            return InteractionResultHolder.success(stack);
         }
 
         float power = BatteryUtils.drawEnergy(user, energyPerUse());
