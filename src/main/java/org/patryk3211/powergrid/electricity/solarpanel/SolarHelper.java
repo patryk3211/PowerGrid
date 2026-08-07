@@ -48,7 +48,7 @@ public class SolarHelper {
     public static final double DIFFUSE_FRAC = .12;
     public static final double ALBEDO_FRAC = .08;
 
-    private static boolean showDebugLines = false;
+    private static boolean showDebugLines = true;
 
     public record DDAHit(BlockPos worldOrLocalPos, AbstractContraptionEntity contraption) {}
 
@@ -270,32 +270,63 @@ public class SolarHelper {
             var worldPos = BlockPos.containing(JOMLConversion.toMojang(SableCompanion.INSTANCE.projectOutOfSubLevel(world,
                     new Vector3d(pos.getX(), pos.getY(), pos.getZ()))));
             if (world.canSeeSky(worldPos) && world.canSeeSky(pos)) return true;
-            var topY = world.getHeight(Heightmap.Types.MOTION_BLOCKING, worldPos.getX(), worldPos.getZ());
-            var list = DDA(world, pos.getCenter(), pos.getCenter().add(0, topY - pos.getY(), 0));
+            var topYWorld = world.getHeight(Heightmap.Types.MOTION_BLOCKING, worldPos.getX(), worldPos.getZ());
+            var topYSubLevel = world.getHeight(Heightmap.Types.MOTION_BLOCKING, pos.getX(), pos.getZ());
             boolean hit = false;
-            for (DDAHit result : list) {
-                BlockState blockState;
-                if (result.contraption() != null) {
-                    blockState = result.contraption().getContraption().getBlocks().get(result.worldOrLocalPos()).state();
-                } else {
-                    blockState = world.getBlockState(result.worldOrLocalPos());
-                }
-
-                if (blockState.is(ModdedBlocks.SOLAR_PANEL.get())) {
-                    if (result.worldOrLocalPos().equals(pos)) {
-                        continue;
+            if (topYSubLevel > pos.getY()) {
+                var list = DDA(world, pos.getCenter(), pos.getCenter().add(0, topYSubLevel - pos.getY(), 0));
+                for (DDAHit result : list) {
+                    BlockState blockState;
+                    if (result.contraption() != null) {
+                        blockState = result.contraption().getContraption().getBlocks().get(result.worldOrLocalPos()).state();
                     } else {
-                        hit = true;
-                        break;
+                        blockState = world.getBlockState(result.worldOrLocalPos());
                     }
-                }
 
-                if (blockState.is(ModdedTags.Block.SOLAR_QUARTER_LIGHT.tag)) continue;
-                if (blockState.is(ModdedTags.Block.SOLAR_HALF_LIGHT.tag)) continue;
-                if (blockState.is(ModdedTags.Block.SOLAR_3QUARTER_LIGHT.tag)) continue;
-                if (blockState.is(ModdedTags.Block.SOLAR_FULL_LIGHT.tag)) continue;
-                hit = true;
-                break;
+                    if (blockState.is(ModdedBlocks.SOLAR_PANEL.get())) {
+                        if (result.worldOrLocalPos().equals(pos)) {
+                            continue;
+                        } else {
+                            hit = true;
+                            break;
+                        }
+                    }
+
+                    if (blockState.is(ModdedTags.Block.SOLAR_QUARTER_LIGHT.tag)) continue;
+                    if (blockState.is(ModdedTags.Block.SOLAR_HALF_LIGHT.tag)) continue;
+                    if (blockState.is(ModdedTags.Block.SOLAR_3QUARTER_LIGHT.tag)) continue;
+                    if (blockState.is(ModdedTags.Block.SOLAR_FULL_LIGHT.tag)) continue;
+                    hit = true;
+                    break;
+                }
+            }
+
+            if (topYWorld > worldPos.getY()) {
+                var list = DDA(world, worldPos.getCenter(), worldPos.getCenter().add(0, topYWorld - worldPos.getY(), 0));
+                for (DDAHit result : list) {
+                    BlockState blockState;
+                    if (result.contraption() != null) {
+                        blockState = result.contraption().getContraption().getBlocks().get(result.worldOrLocalPos()).state();
+                    } else {
+                        blockState = world.getBlockState(result.worldOrLocalPos());
+                    }
+
+                    if (blockState.is(ModdedBlocks.SOLAR_PANEL.get())) {
+                        if (result.worldOrLocalPos().equals(pos)) {
+                            continue;
+                        } else {
+                            hit = true;
+                            break;
+                        }
+                    }
+
+                    if (blockState.is(ModdedTags.Block.SOLAR_QUARTER_LIGHT.tag)) continue;
+                    if (blockState.is(ModdedTags.Block.SOLAR_HALF_LIGHT.tag)) continue;
+                    if (blockState.is(ModdedTags.Block.SOLAR_3QUARTER_LIGHT.tag)) continue;
+                    if (blockState.is(ModdedTags.Block.SOLAR_FULL_LIGHT.tag)) continue;
+                    hit = true;
+                    break;
+                }
             }
             return !hit;
         }

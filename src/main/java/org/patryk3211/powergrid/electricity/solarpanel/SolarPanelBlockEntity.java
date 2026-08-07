@@ -162,6 +162,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements Transf
             } else {
                 if (controller == null){
                     var multiBlockCenter = getSolarPanelCenter(this.getBlockPos(), connectedPanels);
+                    SableCompanion.INSTANCE.projectOutOfSubLevel(level, JOMLConversion.toJOML(multiBlockCenter));
                     sunVisibility = sunRaycast(world, multiBlockCenter);
                     rayCastDelay = world.random.nextInt(41) + 10;
                     skyVisible = skyCheck(world, BlockPos.containing(multiBlockCenter));
@@ -214,7 +215,11 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements Transf
         }
 
         Vec3 centerBlockPos;
-        centerBlockPos = Objects.requireNonNullElseGet(raycastPos, () -> getBlockPos().getCenter().add(0, 0, 0));
+        if (raycastPos == null) {
+            centerBlockPos = blockPos.getCenter().add(0, 0, 0);
+        } else {
+            centerBlockPos = raycastPos;
+        }
         var end = centerBlockPos.add(new Vec3(sunX, sunY, 0).scale(castLength));
         var results = DDA(world, centerBlockPos, end);
         float returnValue = 1;
