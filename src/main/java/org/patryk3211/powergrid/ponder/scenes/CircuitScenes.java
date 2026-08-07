@@ -292,7 +292,6 @@ public class CircuitScenes {
 
         scene.electric().addSource(util.grid().at(1, 1, 1), 3, 0);
         scene.electric().addSource(util.grid().at(1, 1, 1), 0, 50);
-        scene.electric().addSource(util.grid().at(1, 1, 1), 5, 50);
         scene.electric().tickFor(10);
         scene.idle(10);
 
@@ -322,7 +321,7 @@ public class CircuitScenes {
         scene.idle(90);
 
         scene.overlay().showText(80)
-                .text("Both the control grid and screen grid influence plate current, the screen must be positively biased for normal operation")
+                .text("Both the control grid and screen grid influence plate current; the screen must be positively biased for normal operation")
                 .pointAt(util.vector().of(1.25, 1.25, 1.875))
                 .placeNearTarget()
                 .attachKeyFrame();
