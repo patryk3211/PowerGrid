@@ -824,6 +824,7 @@
   "powergrid.redconv.inverting": "Inverting",
   "powergrid.redconv.noninverting": "Non-Inverting",
   "powergrid.subtitle.alarm_bell": "Alarm bell rings",
+  "powergrid.subtitle.boosting": "Boosting noises",
   "powergrid.subtitle.breaker_off": "Breaker disconnects",
   "powergrid.subtitle.breaker_on": "Breaker connects",
   "powergrid.subtitle.component_explode": "Component pops",

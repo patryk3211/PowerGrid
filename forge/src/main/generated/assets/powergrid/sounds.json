@@ -16,6 +16,19 @@
       }
     ]
   },
+  "boosting": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:boosting"
+      },
+      {
+        "type": "file",
+        "name": "powergrid:boosting_1"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.boosting"
+  },
   "breaker_off": {
     "sounds": [
       {

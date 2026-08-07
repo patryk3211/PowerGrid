@@ -175,7 +175,12 @@ public class ModdedSoundEvents {
     WIRE_BURNED = create("wire_burned").subtitle("Wire burned")
             .playExisting(SoundEvents.FIRE_EXTINGUISH, 0.2f, 2.0f)
             .category(SoundSource.NEUTRAL)
-            .build()
+            .build(),
+
+    BOOSTING = create("boosting").subtitle("Boosting noises")
+			.addVariant("boosting_1")
+			.category(SoundSource.BLOCKS)
+			.build()
 
             ;
 
