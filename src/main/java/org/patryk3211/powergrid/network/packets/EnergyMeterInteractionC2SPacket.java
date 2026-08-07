@@ -1,5 +1,6 @@
 package org.patryk3211.powergrid.network.packets;
 
+import dev.architectury.networking.NetworkManager;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;

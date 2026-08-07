@@ -341,13 +341,15 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
             endpoint2 = WireEndpointType.deserialize(nbt.getCompound("Endpoint2"));
         }
 
-        var currentPos = blockPosition();
-        if(lastPos != null && !lastPos.equals(currentPos)) {
-            var diff = currentPos.subtract(lastPos);
-            if(endpoint1 != null)
-                endpoint1 = endpoint1.makeOffset(diff);
-            if(endpoint2 != null)
-                endpoint2 = endpoint2.makeOffset(diff);
+        if(!level().isClientSide) {
+            var currentPos = blockPosition();
+            if (lastPos != null && !lastPos.equals(currentPos)) {
+                var diff = currentPos.subtract(lastPos);
+                if (endpoint1 != null)
+                    endpoint1 = endpoint1.makeOffset(diff);
+                if (endpoint2 != null)
+                    endpoint2 = endpoint2.makeOffset(diff);
+            }
         }
 
         setEndpoint1(endpoint1);

@@ -3,6 +3,7 @@ package org.patryk3211.powergrid.electricity.gauge;
 import com.simibubi.create.foundation.block.IBE;
 import dev.architectury.registry.menu.MenuRegistry;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;

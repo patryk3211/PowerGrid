@@ -21,7 +21,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.FloatTag;
+import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.InteractionHand;
@@ -250,12 +250,12 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
 
                 var tag = new CompoundTag();
                 var list = new ListTag();
-                list.add(FloatTag.valueOf((float) terminalPos1.x));
-                list.add(FloatTag.valueOf((float) terminalPos1.y));
-                list.add(FloatTag.valueOf((float) terminalPos1.z));
-                list.add(FloatTag.valueOf((float) terminalPos2.x));
-                list.add(FloatTag.valueOf((float) terminalPos2.y));
-                list.add(FloatTag.valueOf((float) terminalPos2.z));
+                list.add(DoubleTag.valueOf(terminalPos1.x));
+                list.add(DoubleTag.valueOf(terminalPos1.y));
+                list.add(DoubleTag.valueOf(terminalPos1.z));
+                list.add(DoubleTag.valueOf(terminalPos2.x));
+                list.add(DoubleTag.valueOf(terminalPos2.y));
+                list.add(DoubleTag.valueOf(terminalPos2.z));
                 tag.putBoolean("D", isDynamic);
                 tag.put("V", list);
                 var packet = new EntityDataS2CPacket(this, tag);
@@ -357,9 +357,9 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     @Override
     public void onEntityDataPacket(CompoundTag data) {
         if(data.contains("V")) {
-            var list = data.getList("V", Tag.TAG_FLOAT);
-            terminalPos1 = new Vec3(list.getFloat(0), list.getFloat(1), list.getFloat(2));
-            terminalPos2 = new Vec3(list.getFloat(3), list.getFloat(4), list.getFloat(5));
+            var list = data.getList("V", Tag.TAG_DOUBLE);
+            terminalPos1 = new Vec3(list.getDouble(0), list.getDouble(1), list.getDouble(2));
+            terminalPos2 = new Vec3(list.getDouble(3), list.getDouble(4), list.getDouble(5));
             isDynamic = data.getBoolean("D");
             updateRenderParams();
         } else {
