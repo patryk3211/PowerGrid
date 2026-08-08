@@ -206,6 +206,8 @@ public class StringLightCordEntity extends CordEntity {
     public void setLightBlocks(BlockState state) {
         var pos1 = endpoint1.getExactPosition(level());
         var pos2 = endpoint2.getExactPosition(level());
+        if(SableCompanion.INSTANCE.getContaining(level(), pos1) != SableCompanion.INSTANCE.getContaining(level(), pos2))
+            return;
         var delta = pos2.subtract(pos1);
         var length = delta.length();
         int count = (int) (length / 0.9f) + 1;
