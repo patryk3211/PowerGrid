@@ -21,8 +21,11 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.*;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -44,7 +47,8 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     private boolean isDynamic = false;
     Vec3 baseTerminalPos1;
     Vec3 baseTerminalPos2;
-    private float placedLength;
+    float placedLength;
+    int overlayTicks = 0;
 
     private boolean particlesSpawned = false;
 
@@ -56,7 +60,14 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
 
     public void updateCurveParams() {
         var item = getWireEntry();
-        curveParams = new CurveParameters(terminalPos1, terminalPos2, placedLength, item.wireThickness());
+        double L = placedLength;
+        double d = terminalPos1.distanceTo(terminalPos2);
+        if(d > L && d < L + 1) {
+            L = d + .01;
+        }
+        if(curveParams != null && L > curveParams.L)
+            overlayTicks = 20;
+        curveParams = new CurveParameters(terminalPos1, terminalPos2, L, item.wireThickness());
         this.setBoundingBox(this.makeBoundingBox());
     }
 
@@ -167,6 +178,8 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
 
     @Override
     public void tick() {
+        if(overlayTicks > 0)
+            --overlayTicks;
         var beginFlags = deferEndpointResolution;
         if(sublevelMove) {
             refreshTerminalPositions();
@@ -361,6 +374,37 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     public void flipEndpoints() {
         super.flipEndpoints();
         refreshTerminalPositions();
+    }
+
+    @Override
+    public InteractionResult interact(Player player, InteractionHand hand) {
+        InteractionResult result = super.interact(player, hand);
+        if(result != InteractionResult.PASS)
+            return result;
+        var stack = player.getItemInHand(hand);
+        if(stack.getItem() == getItem()) {
+            int l0 = (int) placedLength;
+            if(player.isShiftKeyDown()) {
+                double d = terminalPos1.distanceTo(terminalPos2);
+                if(placedLength - 0.1f <= d)
+                    return InteractionResult.FAIL;
+                placedLength -= 0.1f;
+                if (l0 != (int) placedLength && !player.isCreative() && getWireCount() > 1) {
+                    player.addItem(new ItemStack(getItem(), 1));
+                    setItem(getItem(), getWireCount() - 1);
+                }
+                return InteractionResult.SUCCESS_NO_ITEM_USED;
+            } else {
+                placedLength += 0.1f;
+                if (l0 != (int) placedLength && !player.isCreative()) {
+                    stack.shrink(1);
+                    setItem(getItem(), getWireCount() + 1);
+                    return InteractionResult.SUCCESS;
+                }
+                return InteractionResult.SUCCESS_NO_ITEM_USED;
+            }
+        }
+        return InteractionResult.PASS;
     }
 
     public void grabEndpointPositions() {

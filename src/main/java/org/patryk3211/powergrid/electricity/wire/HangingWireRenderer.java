@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.electricity.wire;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.ryanhcode.sable.companion.SableCompanion;
+import net.createmod.catnip.theme.Color;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
@@ -82,7 +83,10 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
         // To introduce some subtle variety into the wires.
         var thicknessOffset = entity.getId() / 16f;
 
-        int color = entity.getColor() | 0xFF000000;
+        int color = Color.mixColors(
+                entity.getColor() | 0xFF000000,
+                0xFFFF0000,
+                (float) Math.max(0, (rp.L - entity.placedLength) * entity.overlayTicks / 20f));
         if(RAINBOW_WIRES) {
             var line = GlobalElectricNetworks.getLine(entity);
             if(line != null) {
@@ -129,7 +133,12 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
                 moved = true;
             }
             if (moved) {
-                rp.nudge(pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z);
+                double L = entity.placedLength;
+                double d = pos1.distanceTo(pos2);
+                if(d > L && d < L + 1) {
+                    L = d + .01;
+                }
+                rp.nudge(pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z, L);
             }
         }
         rp.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {

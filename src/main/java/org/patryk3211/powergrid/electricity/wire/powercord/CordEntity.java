@@ -60,6 +60,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     Vec3 baseTerminalPos1;
     Vec3 baseTerminalPos2;
     protected float placedLength;
+    int overlayTicks = 0;
 
     protected ElectricWire wire1;
     protected ElectricWire wire2;
@@ -111,7 +112,14 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
 
     public void updateRenderParams() {
         var item = getWireEntry();
-        curveParams = new CurveParameters(terminalPos1, terminalPos2, placedLength, item.wireThickness());
+        double L = placedLength;
+        double d = terminalPos1.distanceTo(terminalPos2);
+        if(d > L && d < L + 1) {
+            L = d + .01;
+        }
+        if(curveParams != null && L > curveParams.L)
+            overlayTicks = 20;
+        curveParams = new CurveParameters(terminalPos1, terminalPos2, L, item.wireThickness());
         this.setBoundingBox(this.makeBoundingBox());
     }
 
@@ -266,6 +274,8 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
 
     @Override
     public void tick() {
+        if(overlayTicks > 0)
+            --overlayTicks;
         var beginFlags = deferEndpointResolution;
         if(sublevelMove) {
             refreshTerminalPositions();
@@ -375,9 +385,34 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
 
     @Override
     public InteractionResult interact(Player player, InteractionHand hand) {
-        var result = super.interact(player, hand);
-        if(hand != InteractionHand.MAIN_HAND || result != InteractionResult.PASS)
+        InteractionResult result = super.interact(player, hand);
+        if(result != InteractionResult.PASS)
             return result;
+        var stack = player.getItemInHand(hand);
+        if(stack.getItem() == getItem()) {
+            int l0 = (int) placedLength;
+            if(player.isShiftKeyDown()) {
+                double d = terminalPos1.distanceTo(terminalPos2);
+                if(placedLength - 0.1f <= d)
+                    return InteractionResult.FAIL;
+                placedLength -= 0.1f;
+                if (l0 != (int) placedLength && !player.isCreative() && getWireCount() > 1) {
+                    player.addItem(new ItemStack(getItem(), 1));
+                    setItem(getItem(), getWireCount() - 1);
+                }
+                return InteractionResult.SUCCESS_NO_ITEM_USED;
+            } else {
+                placedLength += 0.1f;
+                if (l0 != (int) placedLength && !player.isCreative()) {
+                    stack.shrink(1);
+                    setItem(getItem(), getWireCount() + 1);
+                    return InteractionResult.SUCCESS;
+                }
+                return InteractionResult.SUCCESS_NO_ITEM_USED;
+            }
+        }
+        if(hand != InteractionHand.MAIN_HAND)
+            return InteractionResult.PASS;
         return level().isClientSide
                 ? ClientWireInteractions.cordInteraction(this)
                 : InteractionResult.CONSUME;
