@@ -88,6 +88,7 @@ import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightBlock
 import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightLightBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.light.string.StringLightBlock;
+import org.patryk3211.powergrid.electricity.modulardisplay.ModularDisplayBlock;
 import org.patryk3211.powergrid.electricity.pump.ElectricPumpBlock;
 import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterBlock;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlock;
@@ -986,6 +987,16 @@ public class ModdedBlocks {
                 tables.dropOther(block, SOLAR_PANEL);
                 tables.dropOther(block, CEILING_TILE);
             })
+            .register();
+
+    public static BlockEntry<ModularDisplayBlock> MODULAR_DISPLAY = REGISTRATE.block("modular_display", ModularDisplayBlock::new)
+            .initialProperties(SharedProperties::stone)
+            .blockstate(horizontalBlock("block/modular_display/block"))
+            .transform(pickaxeOnly())
+            .defaultLoot()
+            .item()
+            .model(itemWithParent("block/modular_display/block"))
+            .build()
             .register();
 
     public static BlockEntry<StringLightBlock> STRING_LIGHT_BLOCK = REGISTRATE.block("string_light_block", StringLightBlock::new)

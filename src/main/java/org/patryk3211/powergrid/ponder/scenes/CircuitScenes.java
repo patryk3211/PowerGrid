@@ -18,10 +18,13 @@ package org.patryk3211.powergrid.ponder.scenes;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.minecraft.core.Direction;
+import net.minecraft.world.item.DyeColor;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.components.IRedstoneComponent;
+import org.patryk3211.powergrid.circuits.components.ModularDisplayComponent;
 import org.patryk3211.powergrid.circuits.components.PotentiometerComponent;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
+import org.patryk3211.powergrid.electricity.modulardisplay.DisplayModuleType;
 import org.patryk3211.powergrid.ponder.base.PowerGridSceneBuilder;
 
 public class CircuitScenes {
@@ -515,6 +518,362 @@ public class CircuitScenes {
         scene.effects().indicateSuccess(util.grid().at(1, 1, 1));
         scene.idle(20);
 
+        scene.markAsFinished();
+    }
+
+    public static void displayModule(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("circuit_display_module", "Display Module");
+        scene.configureBasePlate(0, 0, 5);
+        scene.scaleSceneView(2.25f);
+
+        var pos = util.grid().at(3, 1, 4);
+        var neg = util.grid().at(1, 1, 4);
+        var reset = util.grid().at(0, 1, 2);
+        var board = util.grid().at(2, 1, 2);
+
+
+
+
+        scene.showBasePlate();
+        scene.idle(5);
+        scene.world().showSection(util.select().position(pos), Direction.DOWN);
+        scene.world().showSection(util.select().position(neg), Direction.DOWN);
+        scene.world().showSection(util.select().position(board), Direction.DOWN);
+        scene.idle(10);
+        scene.electric().connect(pos, 0, board, 0, DyeColor.RED);
+        scene.electric().connect(neg, 0, board, 1, DyeColor.BLACK);
+        scene.idle(30);
+
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 1);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(4);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+        });
+
+        scene.idle(15);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 2);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(4);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+        });
+
+        scene.idle(15);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 3);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(4);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+        });
+
+        scene.idle(15);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 4);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(4);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+        });
+
+        scene.idle(15);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 5);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(4);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+        });
+
+        scene.overlay().showText(70)
+                .text("When power is applied, the module will rotate half a number")
+                .pointAt(util.vector().of(2.375, 1.45, 2.375))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(40);
+
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 6);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+
+        scene.idle(40);
+
+        scene.overlay().showText(70)
+                .text("When power is removed, it will finish rotating to the next number")
+                .pointAt(util.vector().of(2.5, 1.45, 2.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(40);
+
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+        });
+
+        scene.idle(40);
+
+        scene.idle(5);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 7);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(2);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+        });
+
+        scene.idle(5);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 8);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(2);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+        });
+
+        scene.idle(5);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 9);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(2);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+        });
+
+        scene.overlay().showText(70)
+                .text("When the module reaches the end of its numbers/characters")
+                .pointAt(util.vector().of(2.5, 1.45, 2.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(40);
+
+        scene.idle(15);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 10);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(5);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+        });
+
+        scene.idle(20);
+        scene.overlay().showText(70)
+                .text("It will stop on a \"Blanking page\" and wont go past it")
+                .pointAt(util.vector().of(2.5, 1.45, 2.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(80);
+
+
+
+        scene.overlay().showText(90)
+                .text("The way to reset the module is to ground the reset line and then pulse the power again")
+                .pointAt(util.vector().of(2.5, 1.45, 2.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(40);
+        scene.world().showSection(util.select().position(reset), Direction.DOWN);
+        scene.idle(10);
+        var resetwire = scene.electric().connect(reset, 0, board, 2, DyeColor.BLACK);
+        scene.idle(10);
+
+        scene.idle(15);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 11);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(5);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 0);
+        });
+        scene.idle(20);
+        scene.electric().removeWire(resetwire);
+
+        scene.idle(20);
+
+        scene.overlay().showText(60)
+                .text("The module has multiple display options")
+                .pointAt(util.vector().of(2.5, 1.45, 2.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+
+        scene.idle(70);
+
+        scene.overlay().showText(60)
+                .text("You can change them in the circuit design table")
+                .pointAt(util.vector().of(2.5, 1.45, 2.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+
+        scene.idle(10);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 1);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(5);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+        });
+
+        scene.idle(10);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 2);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(5);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+        });
+
+        scene.idle(10);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 3);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(5);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+        });
+
+        scene.idle(20);
+        scene.effects().indicateSuccess(board);
+        scene.addKeyframe();
+
+
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.CURRENT_MODULE, DisplayModuleType.SYMBOLS);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 0);
+        });
+
+        scene.idle(10);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 1);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(5);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+        });
+
+        scene.idle(10);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 2);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(5);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+        });
+
+        scene.idle(10);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 3);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(5);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+        });
+
+        scene.idle(20);
+        scene.effects().indicateSuccess(board);
+        scene.addKeyframe();
+
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.CURRENT_MODULE, DisplayModuleType.ALPHABET);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 0);
+        });
+
+        scene.idle(10);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 1);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(5);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+        });
+
+        scene.idle(10);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 2);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(5);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+        });
+
+        scene.idle(10);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 3);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(5);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+        });
+
+        scene.idle(20);
+
+        scene.overlay().showText(60)
+                .text("You can also change the color of the display in the circuit design table")
+                .pointAt(util.vector().of(2.5, 1.45, 2.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+
+        scene.idle(70);
+
+
+
+        scene.idle(20);
+        scene.effects().indicateSuccess(board);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.CURRENT_COLOR, DyeColor.GREEN);
+            be.getSchematic().components().get(0).stateUpdated();
+        });
+
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 4);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(5);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+        });
+
+        scene.idle(10);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 5);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(5);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+        });
+
+        scene.idle(10);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 6);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(5);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+        });
         scene.markAsFinished();
     }
 }

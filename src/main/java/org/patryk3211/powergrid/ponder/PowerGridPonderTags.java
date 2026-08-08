@@ -117,7 +117,8 @@ public class PowerGridPonderTags {
                 .add(ModdedBlocks.CRT)
                 .add(ModdedBlocks.PUNCH_CARD_READER)
                 .add(ModdedBlocks.SOLAR_PANEL)
-                .add(ModdedBlocks.SOLAR_PANEL_BEARING);
+                .add(ModdedBlocks.SOLAR_PANEL_BEARING)
+                .add(ModdedBlocks.MODULAR_DISPLAY);
 
         HELPER.addToTag(CIRCUIT_COMPONENTS)
                 .add(ModdedBlocks.WIRE_CONNECTOR)
@@ -142,7 +143,8 @@ public class PowerGridPonderTags {
                 .add(ModdedItems.VARISTOR)
                 .add(ModdedItems.VFET)
                 .add(ModdedItems.BJT_NPN)
-                .add(ModdedItems.BJT_PNP);
+                .add(ModdedItems.BJT_PNP)
+                .add(ModdedItems.DISPLAY_MODULE);
 
         HELPER.addToTag(AllCreatePonderTags.KINETIC_APPLIANCES)
                 .add(ModdedBlocks.GENERATOR_CLUTCH)

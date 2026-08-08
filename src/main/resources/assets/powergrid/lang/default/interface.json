@@ -102,6 +102,7 @@
   "powergrid.tooltip.resistance.maximum": "Maximum resistance:",
   "powergrid.tooltip.voltage.max": "Maximum voltage:",
   "powergrid.tooltip.current.max": "Maximum current:",
+  "powergrid.tooltip.current.min": "Minimum current:",
   "powergrid.tooltip.range.max": "Maximum range:",
   "powergrid.tooltip.power.max": "Maximum power:",
 
@@ -155,6 +156,8 @@
   "powergrid.generic.cord": "Cord Connector",
   "powergrid.generic.input": "Input",
   "powergrid.generic.output": "Output",
+  "powergrid.generic.reset": "Reset",
+  "powergrid.generic.case_ground": "Case Ground",
 
   "powergrid.contactor.switch1": "Switch 1",
   "powergrid.contactor.switch2": "Switch 2",
@@ -181,6 +184,8 @@
   "powergrid.devices.gauge.current": "Maximum current",
   "powergrid.devices.gauge.power": "Maximum power",
   "powergrid.devices.motor.speed": "Speed",
+  "powergrid.devices.modular_display.module_type": "Module Type",
+  "powergrid.devices.display_module.module_type": "Module Type",
 
   "powergrid.recipe.assembly.magnetizing": "Magnetizing",
   "powergrid.recipe.magnetizing": "Magnetizing",
@@ -215,6 +220,13 @@
   "powergrid.gui.custom_display.expr": "Display expression",
   "powergrid.gui.custom_display.unit": "Display unit",
   "powergrid.gui.custom_display.prefix": "Auto unit prefix",
+
+  "powergrid.gui.modular_display.0 - 9": "0 - 9",
+  "powergrid.gui.modular_display.9 - 0": "9 - 0",
+  "powergrid.gui.modular_display.1 - 0": "1 - 0",
+  "powergrid.gui.modular_display.hexadecimal": "Hexadecimal",
+  "powergrid.gui.modular_display.symbols": "Symbols",
+  "powergrid.gui.modular_display.alphabet": "Alphabet",
 
   "powergrid.recipe.category.circuit_design": "Circuit Designing",
   "powergrid.recipe.category.circuit_assembly": "Circuit Assembly",
