@@ -41,6 +41,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -96,9 +97,26 @@ public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE
     }
 
     @Override
-    public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
-        var stacks = super.getDrops(state, builder);
-        return stacks;
+    public List<ItemStack> getDrops(BlockState pState, LootParams.Builder pBuilder) {
+        List<ItemStack> stacks = super.getDrops(pState, pBuilder);
+        BlockEntity blockEntity = pBuilder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
+        if(blockEntity instanceof PortableBatteryBlockEntity be) {
+            CompoundTag vanillaTag = be.getVanillaTag();
+            return vanillaTag == null ? stacks : stacks.stream().map((stack) -> {
+                if (!(stack.getItem() instanceof PortableBatteryItem)) {
+                    return stack;
+                } else {
+                    ItemStack modifiedStack = new ItemStack(stack.getItem(), stack.getCount());
+                    var charge = be.getCharge();
+                    var tag = vanillaTag.copy();
+                    tag.putInt("Charge", charge);
+                    modifiedStack.setTag(tag);
+                    return modifiedStack;
+                }
+            }).toList();
+        } else {
+            return stacks;
+        }
     }
 
     /**
