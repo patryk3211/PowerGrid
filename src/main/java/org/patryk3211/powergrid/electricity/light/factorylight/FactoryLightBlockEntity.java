@@ -16,7 +16,6 @@ import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 
 import java.util.function.Consumer;
 
-import static net.minecraft.world.level.block.Block.UPDATE_ALL;
 import static net.minecraft.world.level.block.Block.UPDATE_ALL_IMMEDIATE;
 import static org.patryk3211.powergrid.electricity.base.HorizontalAxisElectricBlock.HORIZONTAL_AXIS;
 import static org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightBlock.PART;
@@ -210,7 +209,7 @@ public class FactoryLightBlockEntity extends AbstractLightFixtureBlockEntity imp
                     level.setBlock(pos, state.setValue(FactoryLightLightBlock.POWER, bulbPower - 1), UPDATE_ALL_IMMEDIATE);
                 } else if(state.isAir()) {
                     level.setBlock(pos, ModdedBlocks.FACTORY_LIGHT_LIGHT.getDefaultState()
-                            .setValue(FactoryLightLightBlock.POWER, bulbPower - 1), UPDATE_ALL);
+                            .setValue(FactoryLightLightBlock.POWER, bulbPower - 1), UPDATE_ALL_IMMEDIATE);
                 } else {
                     if (!lastHitBlock.equals(pos)){
                         lastHitBlock = pos;
@@ -238,7 +237,9 @@ public class FactoryLightBlockEntity extends AbstractLightFixtureBlockEntity imp
             var pos = worldPosition.below(i);
             var state = level.getBlockState(pos);
             if(state.getBlock() instanceof FactoryLightLightBlock) {
-                level.setBlock(pos, Blocks.AIR.defaultBlockState(), UPDATE_ALL_IMMEDIATE);
+                if(level.getBlockEntity(pos) instanceof FactoryLightLightBlockEntity be) {
+                    be.onDelete();
+                }
             }
             if (state.getBlock() instanceof FactoryLightBlock) {
                 if (this.getBlockPos().equals(pos)) {
