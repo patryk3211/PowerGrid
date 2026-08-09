@@ -34,25 +34,27 @@ public class ZapParticleData implements ParticleOptions, ICustomParticleData<Zap
     public static final Deserializer<ZapParticleData> FACTORY = new Deserializer<>() {
         @Override
         public ZapParticleData fromCommand(ParticleType<ZapParticleData> type, StringReader reader) throws CommandSyntaxException {
-            return new ZapParticleData(DustParticleOptionsBase.readVector3f(reader), true, 1, -1);
+            return new ZapParticleData(DustParticleOptionsBase.readVector3f(reader), true, 1, -1, 1);
         }
 
         @Override
         public ZapParticleData fromNetwork(ParticleType<ZapParticleData> type, FriendlyByteBuf buf) {
-            return new ZapParticleData(buf.readVector3f(), buf.readBoolean(), buf.readInt(), buf.readInt());
+            return new ZapParticleData(buf.readVector3f(), buf.readBoolean(), buf.readInt(), buf.readInt(), buf.readFloat());
         }
     };
     private static final Codec<ZapParticleData> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             ExtraCodecs.VECTOR3F.fieldOf("end").forGetter(ZapParticleData::getEnd),
             Codec.BOOL.fieldOf("anchor").forGetter(ZapParticleData::isAnchored),
             Codec.INT.fieldOf("life").forGetter(ZapParticleData::getLife),
-            Codec.INT.fieldOf("segments").forGetter(ZapParticleData::getSegmentCount)
+            Codec.INT.fieldOf("segments").forGetter(ZapParticleData::getSegmentCount),
+            Codec.FLOAT.fieldOf("factor").forGetter(ZapParticleData::getFactor)
     ).apply(instance, ZapParticleData::new));
 
     private final Vector3f end;
     private final boolean anchor;
     private int life;
     private int segmentCount;
+    private float factor;
 
     public ZapParticleData() {
         this(null, false, 1);
@@ -67,6 +69,14 @@ public class ZapParticleData implements ParticleOptions, ICustomParticleData<Zap
         this.anchor = anchor;
         this.life = life;
         this.segmentCount = segmentCount;
+    }
+
+    public ZapParticleData(Vector3f end, boolean anchor, int life, int segmentCount, float factor) {
+        this.end = end;
+        this.anchor = anchor;
+        this.life = life;
+        this.segmentCount = segmentCount;
+        this.factor = factor;
     }
 
     public ZapParticleData(float x, float y, float z, boolean anchor) {
@@ -103,6 +113,10 @@ public class ZapParticleData implements ParticleOptions, ICustomParticleData<Zap
         return segmentCount;
     }
 
+    public float getFactor() {
+        return factor;
+    }
+
     @Override
     public Deserializer<ZapParticleData> getDeserializer() {
         return FACTORY;
@@ -129,6 +143,7 @@ public class ZapParticleData implements ParticleOptions, ICustomParticleData<Zap
         buf.writeBoolean(anchor);
         buf.writeInt(life);
         buf.writeInt(segmentCount);
+        buf.writeFloat(factor);
     }
 
     @Override
