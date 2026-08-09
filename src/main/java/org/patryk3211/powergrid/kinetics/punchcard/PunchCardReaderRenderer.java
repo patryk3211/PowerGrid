@@ -21,6 +21,7 @@ import net.createmod.catnip.render.CachedBuffers;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 
@@ -44,7 +45,7 @@ public class PunchCardReaderRenderer extends KineticBlockEntityRenderer<PunchCar
                 .center()
                 .rotateToFace(facing)
                 .uncenter()
-                .translate(0, 0, -be.progress.getValue(partialTicks) * 6 / 16f)
+                .translate(0, 0, -Mth.lerp(partialTicks, be.prevAngle, be.angle) * 6 / 16f / 16f)
                 .renderInto(ms, buffer.getBuffer(RenderType.solid()));
     }
 
