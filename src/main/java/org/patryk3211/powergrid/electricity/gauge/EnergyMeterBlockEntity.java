@@ -60,9 +60,11 @@ public class EnergyMeterBlockEntity extends ElectricBlockEntity implements MenuP
         lastEnergy = energy;
         energy += series.current() * shunt.potentialDifference() * 0.05 / (measurementPrecision ? 3_600 : 3_600_000);
         if(energy < 0) {
+            lastEnergy += 100000;
             energy = 100000 + energy;
         }
         if(energy > 100000) {
+            lastEnergy -= 100000;
             energy -= 100000;
         }
         super.tick();
