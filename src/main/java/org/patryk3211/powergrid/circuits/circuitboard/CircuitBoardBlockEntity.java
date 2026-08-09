@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.circuits.circuitboard;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.kinetics.fan.AirCurrent;
+import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
@@ -45,6 +46,7 @@ import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.ISchematicHolder;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.*;
@@ -364,6 +366,12 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     }
 
     @Override
+    public void writeSafe(CompoundTag tag) {
+        super.writeSafe(tag);
+        tag.put("Schematic", schematic.serializeSafeNbt());
+    }
+
+    @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
         if(!tag.contains("Schematic")) {
             if(level != null)
@@ -537,5 +545,14 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         for(var unit : baked.thermalUnits) {
             unit.setTemperature(buffer.readFloat());
         }
+    }
+
+    @Override
+    public ItemRequirement getRequiredItems(BlockState state) {
+        var stack = ModdedBlocks.CIRCUIT_BOARD.asStack();
+        var tag = new CompoundTag();
+        tag.put("Schematic", schematic.serializeSafeNbt());
+        stack.setTag(tag);
+        return new ItemRequirement(ItemRequirement.ItemUseType.CONSUME, stack);
     }
 }

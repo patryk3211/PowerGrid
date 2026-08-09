@@ -41,7 +41,7 @@ import org.patryk3211.powergrid.utility.Lang;
 import java.util.List;
 
 public abstract class GaugeComponent extends OrientableComponent implements IRedstoneComponent, IRenderedComponent, IComponentGoggleInformation {
-    public static final IntProperty LEVEL = new IntProperty(PowerGrid.MOD_ID, "redstone_level", 0, 0, 15).hidden().cast();
+    public static final IntProperty LEVEL = new IntProperty(PowerGrid.MOD_ID, "redstone_level", 0, 0, 15).hidden().unsafe().cast();
     public static final StringProperty EQUATION = new StringProperty(PowerGrid.MOD_ID, "gauge_equation", "x");
 
     public GaugeComponent(ComponentFootprint footprint) {

@@ -27,8 +27,8 @@ import java.util.Collection;
 import java.util.List;
 
 public class FuseHolderComponent extends OrientableComponent implements IInteractableComponent, IGoggleLabel {
-    public static final EnumProperty<FuseState> STATE = new EnumProperty<>(PowerGrid.MOD_ID, "fuse_state", FuseState.class).hidden().cast();
-    public static final EnumProperty<FuseState> PREV_STATE = new EnumProperty<>(PowerGrid.MOD_ID, "fuse_state_prev", FuseState.class).hidden().cast();
+    public static final EnumProperty<FuseState> STATE = new EnumProperty<>(PowerGrid.MOD_ID, "fuse_state", FuseState.class).hidden().unsafe().cast();
+    public static final EnumProperty<FuseState> PREV_STATE = new EnumProperty<>(PowerGrid.MOD_ID, "fuse_state_prev", FuseState.class).hidden().unsafe().cast();
     public static final FloatProperty MAX_CURRENT = new FloatProperty(PowerGrid.MOD_ID, "current_fuse_max", 10, 1, 20);
 
     public FuseHolderComponent(ComponentFootprint footprint) {
