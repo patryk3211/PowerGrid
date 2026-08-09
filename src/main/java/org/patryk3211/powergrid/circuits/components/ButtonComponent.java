@@ -24,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
+import org.patryk3211.powergrid.circuits.components.properties.BooleanProperty;
 import org.patryk3211.powergrid.circuits.components.properties.ComponentProperty;
 import org.patryk3211.powergrid.circuits.components.properties.IntProperty;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
@@ -36,6 +37,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class ButtonComponent extends OrientableComponent implements IInteractableComponent, IGoggleLabel {
+    public static final BooleanProperty NC = new BooleanProperty(PowerGrid.MOD_ID, "button_nc");
     public static final IntProperty STATE = (IntProperty) new IntProperty(PowerGrid.MOD_ID, "button_state", 0, 0, 10).hidden();
 
     public ButtonComponent(ComponentFootprint footprint) {
@@ -45,7 +47,7 @@ public class ButtonComponent extends OrientableComponent implements IInteractabl
     @Override
     protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
         super.addProperties(properties);
-        properties.add(STATE, LABEL, current(16));
+        properties.add(STATE, NC, LABEL, current(16));
     }
 
     @Override
@@ -71,7 +73,7 @@ public class ButtonComponent extends OrientableComponent implements IInteractabl
         }
         if(!placed.wires.isEmpty()) {
             var wire = (SwitchedWire) placed.wires.get(0);
-            wire.setState(state != 0);
+            wire.setState((state == 0) == placed.get(NC));
         }
         return true;
     }

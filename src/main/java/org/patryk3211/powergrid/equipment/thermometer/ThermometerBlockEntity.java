@@ -46,7 +46,7 @@ public class ThermometerBlockEntity extends SmartBlockEntity implements IHaveGog
         super(type, pos, state);
     }
 
-    private float temperature() {
+    public float temperature() {
         var facing = getBlockState().getValue(ThermometerBlock.FACING);
         var thermal = BlockEntityBehaviour.get(level, worldPosition.relative(facing), ThermalBehaviour.TYPE);
         if(thermal != null) {

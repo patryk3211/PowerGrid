@@ -243,5 +243,13 @@
   "powergrid.display_source.battery": "Battery",
   "powergrid.display_source.battery.bar": "Progress Bar",
   "powergrid.display_source.battery.value": "Value",
-  "powergrid.display_source.battery.mode": "Display mode"
+  "powergrid.display_source.battery.mode": "Display mode",
+
+  "powergrid.display_source.thermometer": "Thermometer",
+  "powergrid.display_source.thermometer.vs_absolute_max_bar" : "vs 175º bar",
+  "powergrid.display_source.thermometer.vs_measured_max_bar" : "vs Max Measured bar",
+  "powergrid.display_source.thermometer.vs_absolute_max" : "vs 175º percent",
+  "powergrid.display_source.thermometer.vs_measured_max" : "vs Max Measured percent",
+  "powergrid.display_source.thermometer.current" : "Temperature",
+  "powergrid.display_source.thermometer.measured_max" : "Max Temperature"
 }

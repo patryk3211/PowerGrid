@@ -35,6 +35,7 @@
   "powergrid.component.property.bjt_gain": "Gain",
 
   "powergrid.component.property.switch_state": "State",
+  "powergrid.component.property.button_nc": "Normally Closed",
 
   "powergrid.component.property.relay_threshold": "Threshold Voltage",
   "powergrid.component.property.relay_threshold.summary": "Voltage above which the relay triggers",
