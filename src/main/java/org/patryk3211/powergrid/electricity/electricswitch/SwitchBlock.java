@@ -17,7 +17,11 @@ package org.patryk3211.powergrid.electricity.electricswitch;
 
 import com.simibubi.create.AllItems;
 import com.simibubi.create.foundation.block.IBE;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
@@ -32,13 +36,15 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.electricity.base.ElectricBlock;
 import org.patryk3211.powergrid.electricity.info.Current;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.electricity.info.Voltage;
-import org.patryk3211.powergrid.electricity.wire.IWire;
+import org.patryk3211.powergrid.utility.Lang;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.List;
@@ -123,5 +129,25 @@ public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlo
         Resistance.series(resistance(), player, tooltip);
         Current.max(stack, player, tooltip);
         Voltage.max(maxVoltage, player, tooltip);
+    }
+
+    @Nullable
+    @Environment(EnvType.CLIENT)
+    public static Component overlayText(Player player) {
+        if(!AllItems.WRENCH.isIn(player.getItemInHand(InteractionHand.MAIN_HAND)))
+            return null;
+        HitResult hit = Minecraft.getInstance().hitResult;
+        if(!(hit instanceof BlockHitResult blockHit) || blockHit.getType() == HitResult.Type.MISS)
+            return null;
+        var state = Minecraft.getInstance().level.getBlockState(blockHit.getBlockPos());
+        if(!(state.getBlock() instanceof SwitchBlock switchBlock) || !switchBlock.isButton())
+            return null;
+        boolean nc = switchBlock.getBlockEntityOptional(Minecraft.getInstance().level, blockHit.getBlockPos())
+                .map(SwitchBlockEntity::isNormallyClosed).orElse(false);
+        return Lang.translate("gui.button_overlay.mode")
+                .add(Lang.translate("gui.button_overlay." + (nc ? "nc" : "no"))
+                        .style(ChatFormatting.BLUE))
+                .style(ChatFormatting.GRAY)
+                .component();
     }
 }

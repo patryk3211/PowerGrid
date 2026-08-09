@@ -216,6 +216,10 @@
   "powergrid.gui.custom_display.unit": "Display unit",
   "powergrid.gui.custom_display.prefix": "Auto unit prefix",
 
+  "powergrid.gui.button_overlay.mode": "Button mode: ",
+  "powergrid.gui.button_overlay.nc": "Normally closed",
+  "powergrid.gui.button_overlay.no": "Normally open",
+
   "powergrid.recipe.category.circuit_design": "Circuit Designing",
   "powergrid.recipe.category.circuit_assembly": "Circuit Assembly",
 
