@@ -20,6 +20,7 @@ import net.createmod.catnip.animation.LerpedFloat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -29,6 +30,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.particles.ZapParticleData;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
@@ -42,6 +44,8 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
     // Only used for audio
     private int state = 1;
     private int splitCooldown;
+
+    private boolean sparking;
 
     public HvSwitchBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -94,6 +98,10 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
         }
     }
 
+    private float extinguishRPM() {
+        return wire == null ? 0 : (float) wire.current();
+    }
+
     @Override
     public void tick() {
         applyPower(wire);
@@ -101,9 +109,33 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
         super.tick();
         rod.tickChaser();
 
-        if(!rod.settled()) {
-            // Setting switch to false is needed to prevent imprecision
-            // messing with the conductance matrix.
+        boolean wasSparking = sparking;
+        if((getSwitchState() != isClosed() && !isClosed()) || getResistance() > 5) {
+            // Has disconnected.
+            if(Math.abs(getSpeed()) < extinguishRPM()) {
+                sparking = true;
+            }
+        }
+        if(sparking) {
+            if(wire == null)
+                electricBehaviour.rebuildCircuit(false);
+            float openness = 1 - rod.getValue();
+            // 0.5-5 Ohms for the arc resistance
+            wire.setResistance(0.5 + level.random.nextFloat() * 4.5);
+            if(wasSparking && !level.isClientSide) {
+                if (isClosed() && wire.getResistance() > getResistance()) {
+                    // The switch has closed with a better contact than the spark.
+                    sparking = false;
+                } else if (level.random.nextFloat() < openness * 0.9 - 0.1) {
+                    // Random chance for the arc to go away.
+                    sparking = false;
+                }
+                if(!sparking) {
+                    wire.setResistance(getResistance());
+                    wire.setState(isClosed());
+                }
+            }
+        } else if(!rod.settled()) {
             if(getSwitchState() != isClosed() || (wire != null && wire.getResistance() != getResistance())) {
                 if(isClosed()) {
                     if(wire == null)
@@ -123,6 +155,29 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
                 electricBehaviour.rebuildCircuit(false);
             }
         }
+        if(sparking && level.isClientSide) {
+            var facing = getBlockState().getValue(HvSwitchBlock.HORIZONTAL_FACING);
+            double angle = rod.getValue() * Math.PI * 0.5;
+            var origin = worldPosition.getCenter()
+                    .add(facing.getStepX() * Math.sin(angle) * 1.5, Math.cos(angle) * 1.5, facing.getStepZ() * Math.sin(angle) * 1.5)
+                    .offsetRandom(level.random, 0.1f);
+            var end = worldPosition.getCenter()
+                    .relative(facing, 1.2)
+                    .subtract(0, 0.125, 0)
+                    .offsetRandom(level.random, 0.1f);
+            level.addAlwaysVisibleParticle(new ZapParticleData(end.toVector3f(), true, 2, 10, 0.1f),
+                    true, origin.x, origin.y, origin.z, 0, 0, 0);
+            double dist = origin.distanceTo(end);
+            int sparks = (int) (dist / 0.2f);
+            for(int i = 0; i < sparks + 1; ++i) {
+                double x = Mth.lerp((float) i / sparks, origin.x, end.x);
+                double y = Mth.lerp((float) i / sparks, origin.y, end.y);
+                double z = Mth.lerp((float) i / sparks, origin.z, end.z);
+                level.addParticle(ParticleTypes.ELECTRIC_SPARK, x, y, z, 0, 0, 0);
+            }
+        }
+        if(wasSparking != sparking && !level.isClientSide)
+            notifyUpdate();
     }
 
     @Override
@@ -163,6 +218,7 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
     protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(compound, registries, clientPacket);
         compound.put("Rod", rod.writeNBT());
+        compound.putBoolean("Sparking", sparking);
     }
 
     @Override
@@ -183,12 +239,13 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
             wire.setResistance(getResistance());
             wire.setState(isClosed());
         }
+        sparking = compound.getBoolean("Sparking");
     }
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        if(isClosed()) {
+        if(isClosed() || sparking) {
             splitCooldown = 0;
             wire = builder.connectSwitch(getResistance(), builder.terminalNode(0), builder.terminalNode(1), isClosed());
         } else {

@@ -297,6 +297,12 @@ public class GaugeScenes {
                 .attachKeyFrame();
         scene.idle(100);
 
+        scene.overlay().showText(100)
+                .text("Caution, changing out the unit of measurement does not affect the previously measured value and only affects future measurements")
+                .colored(PonderPalette.RED)
+                .attachKeyFrame();
+        scene.idle(110);
+
         scene.world().showSection(util.select().position(comparator), Direction.DOWN);
         scene.world().showSection(util.select().position(nixie), Direction.DOWN);
         scene.idle(15);

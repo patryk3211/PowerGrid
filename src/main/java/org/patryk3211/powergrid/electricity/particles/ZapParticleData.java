@@ -35,7 +35,8 @@ public class ZapParticleData implements ParticleOptions, ICustomParticleData<Zap
             ExtraCodecs.VECTOR3F.fieldOf("end").forGetter(ZapParticleData::getEnd),
             Codec.BOOL.fieldOf("anchor").forGetter(ZapParticleData::isAnchored),
             Codec.INT.fieldOf("life").forGetter(ZapParticleData::getLife),
-            Codec.INT.fieldOf("segments").forGetter(ZapParticleData::getSegmentCount)
+            Codec.INT.fieldOf("segments").forGetter(ZapParticleData::getSegmentCount),
+            Codec.FLOAT.fieldOf("factor").forGetter(ZapParticleData::getFactor)
     ).apply(instance, ZapParticleData::new));
 
     public static final MapCodec<ZapParticleData> MAP_CODEC = CODEC.fieldOf("zap");
@@ -45,6 +46,7 @@ public class ZapParticleData implements ParticleOptions, ICustomParticleData<Zap
     private final boolean anchor;
     private int life;
     private int segmentCount;
+    private float factor;
 
     public ZapParticleData() {
         this(null, false, 1);
@@ -59,6 +61,14 @@ public class ZapParticleData implements ParticleOptions, ICustomParticleData<Zap
         this.anchor = anchor;
         this.life = life;
         this.segmentCount = segmentCount;
+    }
+
+    public ZapParticleData(Vector3f end, boolean anchor, int life, int segmentCount, float factor) {
+        this.end = end;
+        this.anchor = anchor;
+        this.life = life;
+        this.segmentCount = segmentCount;
+        this.factor = factor;
     }
 
     public ZapParticleData(float x, float y, float z, boolean anchor) {
@@ -93,6 +103,10 @@ public class ZapParticleData implements ParticleOptions, ICustomParticleData<Zap
 
     public int getSegmentCount() {
         return segmentCount;
+    }
+
+    public float getFactor() {
+        return factor;
     }
 
     @Override

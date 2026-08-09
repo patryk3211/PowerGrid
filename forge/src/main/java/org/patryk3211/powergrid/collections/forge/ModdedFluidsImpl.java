@@ -44,6 +44,11 @@ public class ModdedFluidsImpl {
                             ResourceLocation.tryBuild("powergrid", "block/acid_flow"),
                             AcidFluidType::new)
                     .tag(FluidTags.create(PowerGrid.asResource("acid")))
+                    .lang("Blazing Acid")
+                    .source(ForgeFlowingFluid.Source::new)
+                        .bucket()
+                        .lang("Blazing Acid Bucket")
+                        .build()
                     .transform(translucent())
                     .register();
 

@@ -22,6 +22,8 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.util.Tuple;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 
@@ -34,6 +36,7 @@ public class ZapParticle extends Particle {
     private final Vector3f cross2;
     private final boolean anchorEnd;
     private final int segmentCount;
+    private final float factorMultiplier;
 
     private final List<Tuple<Vector3f, Vector3f>> segments = new ArrayList<>();
 
@@ -44,6 +47,7 @@ public class ZapParticle extends Particle {
         lifetime = data.getLife();
         segmentCount = data.getSegmentCount();
         bCol = 0.5f;
+        factorMultiplier = data.getFactor();
 
         delta = new Vector3f((float) (end.x - this.x), (float) (end.y - this.y), (float) (end.z - this.z));
         var vec = new Vector3f(1 - delta.x, 1 - delta.y, 1 - delta.z);
@@ -51,6 +55,9 @@ public class ZapParticle extends Particle {
         vec.cross(delta, cross1).normalize().mul(0.02f);
         cross2 = new Vector3f();
         cross1.cross(delta, cross2).normalize().mul(0.02f);
+
+        float radius = delta.length();
+        setBoundingBox(AABB.ofSize(new Vec3(x, y, z), radius, radius, radius));
 
         makeNewSegments();
     }
@@ -84,6 +91,7 @@ public class ZapParticle extends Particle {
             } else {
                 factor = (float) i / middle;
             }
+            factor *= factorMultiplier;
             float invFactor = 1.0f - factor;
             endPos.mul(factor).add(straightEndPos.x * invFactor, straightEndPos.y * invFactor, straightEndPos.z * invFactor);
 

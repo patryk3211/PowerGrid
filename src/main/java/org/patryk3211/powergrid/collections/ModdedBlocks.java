@@ -494,7 +494,7 @@ public class ModdedBlocks {
             .transform(axeOrPickaxe())
             .transform(CStress.setImpact(2))
             .transform(CResistance.setResistance(0.1))
-            .transform(CThermal.maxPower(153.6, 2.0f))
+            .transform(CThermal.maxPower(1000, 5.0f))
             .loot((tables, block) ->
                     tables.add(block, LootTable.lootTable()
                             .withPool(LootPool.lootPool()
@@ -872,6 +872,7 @@ public class ModdedBlocks {
             .blockstate(northFacing("block/thermometer/base"))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
+            .transform(DisplaySource.displaySource(ModdedDisplaySources.THERMOMETER))
             .item(ThermometerItem::new)
                 .model(itemWithParent("block/thermometer/base"))
                 .transform(ModdedItems.customRenderer(() -> ThermometerItemRenderer::new))

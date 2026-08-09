@@ -242,7 +242,8 @@ public class ComponentPropertiesWidget extends AbstractSimiWidget {
 
         boolean result = false;
         for(var widget : propertyWidgets) {
-            result |= widget.mouseScrolled(mouseX, mouseY, deltaX, deltaY);
+            if(widget.isMouseOver(mouseX, mouseY))
+                result |= widget.mouseScrolled(mouseX, mouseY, deltaX, deltaY);
         }
         return result;
     }

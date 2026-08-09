@@ -39,6 +39,7 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
     private boolean switchState;
     private Float overvoltResistance;
     private boolean isButton;
+    private boolean isNormallyClosed;
     private int buttonTimeout = 0;
     private boolean playEffect = false;
 
@@ -90,19 +91,27 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
     public void setState(boolean state) {
         switchState = state;
         if(overvoltResistance == null)
-            wire.setState(state);
+            wire.setState(state != isNormallyClosed);
         if(isButton && state)
             buttonTimeout = 10;
         if(!level.isClientSide)
             notifyUpdate();
     }
 
+    public void setNormallyClosed(boolean normallyClosed) {
+        isNormallyClosed = normallyClosed;
+    }
+
+    public boolean isNormallyClosed() {
+        return isNormallyClosed;
+    }
+
     @Override
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
-        if(clientPacket) {
-            switchState = tag.getBoolean("State");
-            wire.setState(switchState);
+        if(isButton) {
+            buttonTimeout = tag.getByte("Timeout");
+            isNormallyClosed = tag.getBoolean("NormallyClosed");
         }
         if(tag.contains("Overvolted")) {
             overvoltResistance = tag.getFloat("Overvolted");
@@ -112,9 +121,10 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
             wire.setState(true);
             if(tag.getBoolean("Effect"))
                 overvoltEffect();
+        } else {
+            switchState = tag.getBoolean("State");
+            wire.setState(switchState != isNormallyClosed);
         }
-        if(isButton)
-            buttonTimeout = tag.getByte("Timeout");
     }
 
     @Override
@@ -130,8 +140,10 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
                 playEffect = false;
             }
         }
-        if(isButton)
+        if(isButton) {
             tag.putByte("Timeout", (byte) buttonTimeout);
+            tag.putBoolean("NormallyClosed", isNormallyClosed);
+        }
     }
 
     @Override

@@ -34,6 +34,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.GameType;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
 import org.patryk3211.powergrid.electricity.info.TerminalHandler;
 import org.patryk3211.powergrid.electricity.transformer.TransformerBlock;
 import org.patryk3211.powergrid.electricity.wire.WirePreview;
@@ -60,6 +61,7 @@ public class PlacementOverlay {
         overlayProviders.add(WirePreview::distanceOverlay);
         overlayProviders.add(TerminalHandler::overlayText);
         overlayProviders.add(ThermometerItemRenderer::overlayText);
+        overlayProviders.add(SwitchBlock::overlayText);
     }
 
     public static void setItemRequirement(Item item, int count, boolean hasItems) {
