@@ -37,7 +37,7 @@ public class ModdedDisplaySources {
             REGISTRATE.displaySource("battery", BatteryDisplaySource::new)
                     .register();
 
-    public static final RegistryEntry<ThermometerDisplaySource> THERMOMETER =
+    public static final RegistryEntry<DisplaySource, ThermometerDisplaySource> THERMOMETER =
             REGISTRATE.displaySource("thermometer", ThermometerDisplaySource::new)
                     .register();
 

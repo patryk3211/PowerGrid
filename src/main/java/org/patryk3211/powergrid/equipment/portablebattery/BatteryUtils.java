@@ -18,9 +18,8 @@ package org.patryk3211.powergrid.equipment.portablebattery;
 import com.simibubi.create.AllEnchantments;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.ChatFormatting;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -32,9 +31,9 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.equipment.ItemBoostUtils;
 import org.patryk3211.powergrid.utility.ClientSideAccess;
@@ -60,12 +59,7 @@ public class BatteryUtils {
     }
 
     public static int getCurrentCharge(ItemStack stack) {
-        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
-        if(data == null)
-            return 0;
-
-        CompoundTag tag = data.copyTag();
-        return tag.getInt("Charge");
+        return stack.getOrDefault(ModdedDataComponents.PORTABLE_BATTERY_CHARGE.get(), 0);
     }
 
     public static float drawEnergy(Player player, int energy) {
@@ -83,15 +77,11 @@ public class BatteryUtils {
             if(outputPercent < 0.25f)
                 outputPercent = 0.25f;
         }
-        CustomData data = stack.get(DataComponents.CUSTOM_DATA);
-        if(energy == 0 || data == null)
+        if(charge < energy) {
+            stack.remove(ModdedDataComponents.PORTABLE_BATTERY_CHARGE.get());
             return 0.0f;
-        CompoundTag newTag = data.copyTag();
-
-        newTag.putInt("Charge", Math.max(charge - energy, 0));
-        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(newTag));
-        if(charge < energy)
-            return 0.0f;
+        }
+        stack.set(ModdedDataComponents.PORTABLE_BATTERY_CHARGE.get(), Math.max(charge - energy, 0));
         if(player instanceof ServerPlayer serverPlayer) {
             float maxCharge = getMaxCharge(stack);
             sendWarning(serverPlayer, charge, charge - energy, (maxCharge / 10));
@@ -117,7 +107,7 @@ public class BatteryUtils {
             if(outputPercent < 0.25f)
                 outputPercent = 0.25f;
         }
-        if(energy == 0 || !battery.has(DataComponents.CUSTOM_DATA))
+        if(energy == 0 || !battery.has(ModdedDataComponents.PORTABLE_BATTERY_CHARGE.get()))
             return 0.0f;
         if(charge < energy)
             return 0.0f;

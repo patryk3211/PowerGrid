@@ -36,6 +36,8 @@ public class ModdedDataComponents {
 
     public static final RegistrySupplier<DataComponentType<BlockPos>> WINDING_CONNECTION = persistent("winding_connection", BlockPos.CODEC);
 
+    public static final RegistrySupplier<DataComponentType<Integer>> PORTABLE_BATTERY_CHARGE = persistent("portable_battery_charge", Codec.INT);
+
     public static <T> RegistrySupplier<DataComponentType<T>> persistent(String id, Codec<T> codec) {
         return REGISTER.register(id, () -> DataComponentType.<T>builder().persistent(codec).build());
     }

@@ -30,8 +30,8 @@ import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.BaseFlowingFluid;
+import net.neoforged.neoforge.fluids.FluidStack;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedDamageTypes;
 
@@ -45,7 +45,7 @@ public class ModdedFluidsImpl {
                             AcidFluidType::new)
                     .tag(FluidTags.create(PowerGrid.asResource("acid")))
                     .lang("Blazing Acid")
-                    .source(ForgeFlowingFluid.Source::new)
+                    .source(BaseFlowingFluid.Source::new)
                         .bucket()
                         .lang("Blazing Acid Bucket")
                         .build()
