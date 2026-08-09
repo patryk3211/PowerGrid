@@ -104,7 +104,7 @@ public class ElectricInstructions {
         var link = new ElementLinkImpl<>(WireElement.class);
         var element = new WireElement(level -> {
             var wire = CordEntity.create(level, endpoint1, endpoint2, ModdedItems.CORD.asStack(), resistance);
-            wire.updateRenderParams();
+            wire.updateCurveParams();
             return wire;
         });
         builder.addInstruction(new CreateWireInstruction(15, Direction.DOWN, element));
@@ -120,7 +120,7 @@ public class ElectricInstructions {
                 stack.set(ModdedDataComponents.LIGHT_PATTERN.get(), PatternData.of(List.of(colorPattern)));
             }
             var wire = StringLightCordEntity.create(level, endpoint1, endpoint2, stack, null);
-            wire.updateRenderParams();
+            wire.updateCurveParams();
             return wire;
         });
         builder.addInstruction(new CreateWireInstruction(15, Direction.DOWN, element));

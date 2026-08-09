@@ -175,7 +175,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                             rp.thickness * 0.5f, thicknessOffset, (float) (length * 2), (float) offset, simpleModel);
                     return;
                 } else if(endpoint instanceof SocketEndpoint socket) {
-                    var sublevel = entity.isDynamic ? SableCompanion.INSTANCE.getContainingClient(socket.getPosition()) : null;
+                    var sublevel = entity.dynamic != 0 ? SableCompanion.INSTANCE.getContainingClient(socket.getPosition()) : null;
                     if(sublevel != null) {
                         matrices.pushPose();
                         var pose = sublevel.renderPose(AnimationTickHolder.getPartialTicks());
@@ -190,7 +190,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                 } else if(endpoint instanceof AutoCordEndpoint auto) {
                     var facing = auto.getPlugFacing();
                     if(facing != null) {
-                        var sublevel = entity.isDynamic ? SableCompanion.INSTANCE.getContainingClient(auto.getPosition()) : null;
+                        var sublevel = entity.dynamic != 0 ? SableCompanion.INSTANCE.getContainingClient(auto.getPosition()) : null;
                         if(sublevel != null) {
                             matrices.pushPose();
                             var pose = sublevel.renderPose(AnimationTickHolder.getPartialTicks());
@@ -236,7 +236,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                             rp.thickness * 0.5f, thicknessOffset, (float) (length * 2), (float) offset, simpleModel);
                     return;
                 } else if(endpoint instanceof SocketEndpoint socket) {
-                    var sublevel = entity.isDynamic ? SableCompanion.INSTANCE.getContainingClient(socket.getPosition()) : null;
+                    var sublevel = entity.dynamic != 0 ? SableCompanion.INSTANCE.getContainingClient(socket.getPosition()) : null;
                     if(sublevel != null) {
                         matrices.pushPose();
                         var pose = sublevel.renderPose(AnimationTickHolder.getPartialTicks());
@@ -251,7 +251,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                 } else if(endpoint instanceof AutoCordEndpoint auto) {
                     var facing = auto.getPlugFacing();
                     if(facing != null) {
-                        var sublevel = entity.isDynamic ? SableCompanion.INSTANCE.getContainingClient(auto.getPosition()) : null;
+                        var sublevel = entity.dynamic != 0 ? SableCompanion.INSTANCE.getContainingClient(auto.getPosition()) : null;
                         if(sublevel != null) {
                             matrices.pushPose();
                             var pose = sublevel.renderPose(AnimationTickHolder.getPartialTicks());

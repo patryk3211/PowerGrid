@@ -56,7 +56,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     public Vec3 terminalPos1;
     public Vec3 terminalPos2;
     public AABB deSabledBB;
-    boolean isDynamic = false;
+    protected byte dynamic;
     Vec3 baseTerminalPos1;
     Vec3 baseTerminalPos2;
     protected float placedLength;
@@ -110,7 +110,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
         return wire2;
     }
 
-    public void updateRenderParams() {
+    public void updateCurveParams() {
         var item = getWireEntry();
         double L = placedLength;
         double d = terminalPos1.distanceTo(terminalPos2);
@@ -250,7 +250,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             );
             setYRot(facingAngle);
 
-            updateRenderParams();
+            updateCurveParams();
             if(!world.isClientSide) {
                 // I guess we have to do position update like that because otherwise,
                 // the update method would have to go into the tick function
@@ -264,7 +264,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
                 list.add(DoubleTag.valueOf(terminalPos2.x));
                 list.add(DoubleTag.valueOf(terminalPos2.y));
                 list.add(DoubleTag.valueOf(terminalPos2.z));
-                tag.putBoolean("D", isDynamic);
+                tag.putByte("D", dynamic);
                 tag.put("V", list);
                 var packet = new EntityDataS2CPacket(this, tag);
                 ModdedPackets.sendToClientsTracking(packet, this);
@@ -282,11 +282,15 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
         }
         super.tick();
         var world = level();
-        if(beginFlags != deferEndpointResolution) {
+        if((dynamic & 1) != 0 && SableCompanion.INSTANCE.getContaining(world, endpoint1.getExactPosition(world)) == null)
+            deferEndpointResolution |= 1;
+        if((dynamic & 2) != 0 && SableCompanion.INSTANCE.getContaining(world, endpoint2.getExactPosition(world)) == null)
+            deferEndpointResolution |= 2;
+        if(beginFlags != deferEndpointResolution && deferEndpointResolution == 0) {
             grabEndpointPositions();
-            updateRenderParams();
+            updateCurveParams();
         }
-        if(isDynamic && baseTerminalPos1 != null && baseTerminalPos2 != null) {
+        if(dynamic != 0 && baseTerminalPos1 != null && baseTerminalPos2 != null) {
             var sublevel1 = SableCompanion.INSTANCE.getContaining(world, baseTerminalPos1);
             var sublevel2 = SableCompanion.INSTANCE.getContaining(world, baseTerminalPos2);
             terminalPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, baseTerminalPos1);
@@ -307,7 +311,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
                     (terminalPos1.z + terminalPos2.z) * 0.5
             );
             setYRot(facingAngle);
-            updateRenderParams();
+            updateCurveParams();
         }
         if(curveParams != null && !curveParams.valid) {
             kill();
@@ -370,8 +374,8 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             var list = data.getList("V", Tag.TAG_DOUBLE);
             terminalPos1 = new Vec3(list.getDouble(0), list.getDouble(1), list.getDouble(2));
             terminalPos2 = new Vec3(list.getDouble(3), list.getDouble(4), list.getDouble(5));
-            isDynamic = data.getBoolean("D");
-            updateRenderParams();
+            dynamic = data.getByte("D");
+            updateCurveParams();
         } else {
             super.onEntityDataPacket(data);
         }
@@ -381,6 +385,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     protected void addAdditionalSaveData(CompoundTag nbt) {
         super.addAdditionalSaveData(nbt);
         nbt.putFloat("PlacedLength", placedLength);
+        nbt.putByte("Dynamic", dynamic);
     }
 
     @Override
@@ -450,9 +455,19 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             return;
         }
 
+        dynamic = nbt.getByte("Dynamic");
         var world = level();
         if(!world.isClientSide) {
-            refreshTerminalPositions();
+            var terminalPos1 = getEndpoint1().getExactPosition(world);
+            var sublevel1 = SableCompanion.INSTANCE.getContaining(world, terminalPos1);
+            if((dynamic & 1) != 0 && sublevel1 == null)
+                deferEndpointResolution |= 1;
+            var terminalPos2 = getEndpoint2().getExactPosition(world);
+            var sublevel2 = SableCompanion.INSTANCE.getContaining(world, terminalPos2);
+            if((dynamic & 2) != 0 && sublevel2 == null)
+                deferEndpointResolution |= 2;
+            if(deferEndpointResolution == 0)
+                refreshTerminalPositions();
         } else {
             grabEndpointPositions();
         }
@@ -466,24 +481,27 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             var hL = dX * dX + dZ * dZ;
             placedLength = (float) Math.sqrt(getWireEntry().horizontalCoefficient() * hL + getWireEntry().verticalCoefficient() * dY * dY);
         }
-        updateRenderParams();
+        if(terminalPos1 != null)
+            updateCurveParams();
     }
 
     public void grabEndpointPositions() {
         var world = level();
         terminalPos1 = getEndpoint1().getExactPosition(world);
         terminalPos2 = getEndpoint2().getExactPosition(world);
-        if(getEndpoint1().getSubLevel(world) != null || getEndpoint2().getSubLevel(world) != null) {
+        var sublevel1 = SableCompanion.INSTANCE.getContaining(world, terminalPos1);
+        var sublevel2 = SableCompanion.INSTANCE.getContaining(world, terminalPos2);
+        if(sublevel1 != null || sublevel2 != null) {
             // Make outside of sublevels
             baseTerminalPos1 = terminalPos1;
             baseTerminalPos2 = terminalPos2;
-            isDynamic = true;
+            dynamic = (byte) ((sublevel1 != null ? 1 : 0) | (sublevel2 != null ? 2 : 0));
             terminalPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, terminalPos1);
             terminalPos2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, terminalPos2);
         } else {
             baseTerminalPos1 = null;
             baseTerminalPos2 = null;
-            isDynamic = false;
+            dynamic = 0;
         }
     }
 
