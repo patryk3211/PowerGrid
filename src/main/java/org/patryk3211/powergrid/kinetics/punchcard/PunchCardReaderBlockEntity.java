@@ -16,7 +16,6 @@
 package org.patryk3211.powergrid.kinetics.punchcard;
 
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import net.createmod.catnip.animation.LerpedFloat;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -39,12 +38,13 @@ import java.util.List;
 public class PunchCardReaderBlockEntity extends ElectricKineticBlockEntity {
     private SwitchedWire[] wires;
 
-    protected final LerpedFloat progress = LerpedFloat.linear();
+    protected float prevAngle;
+    protected float angle;
+    private Float maxAngle;
     private int oldIndex = -1;
 
     public PunchCardReaderBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
-        progress.chase(0, 0, LerpedFloat.Chaser.LINEAR);
     }
 
     public ItemStack currentItem() {
@@ -63,23 +63,27 @@ public class PunchCardReaderBlockEntity extends ElectricKineticBlockEntity {
     }
 
     private float getChaseSpeed() {
-        return Mth.clamp(Math.abs(getSpeed()) / (80 * 10 * 16), 0, 1);
+        float speed = getSpeed();
+        var facing = getBlockState().getValue(HvSwitchBlock.HORIZONTAL_FACING);
+        if(facing == Direction.NORTH || facing == Direction.EAST)
+            speed = -speed;
+        return speed / 256f;
     }
 
     @Override
     public void onSpeedChanged(float previousSpeed) {
         super.onSpeedChanged(previousSpeed);
-        float speed = getSpeed();
-        var facing = getBlockState().getValue(HvSwitchBlock.HORIZONTAL_FACING);
-        if(facing == Direction.NORTH || facing == Direction.EAST)
-            speed = -speed;
-        progress.chase(speed > 0 ? 1 : 0, getChaseSpeed(), LerpedFloat.Chaser.LINEAR);
+        if(sequenceContext != null) {
+            maxAngle = (float) (angle + Math.abs(sequenceContext.getEffectiveValue(getSpeed()) / 72f) * Math.signum(getChaseSpeed()));
+        } else {
+            maxAngle = null;
+        }
         sendData();
     }
 
     public int getRedstoneOutput() {
         var item = currentItem();
-        return item.isEmpty() ? 0 : Math.min(Mth.floor(progress.getValue() * 16), 15);
+        return item.isEmpty() ? 0 : Math.min(Mth.floor(angle), 15);
     }
 
     @Override
@@ -89,7 +93,7 @@ public class PunchCardReaderBlockEntity extends ElectricKineticBlockEntity {
         for(int i = 0; i < 8; ++i)
             applyPower(wires[i]);
         var item = currentItem();
-        var index = item.isEmpty() ? -1 : Math.min(Mth.floor(progress.getValue() * 16), 15);
+        var index = item.isEmpty() ? -1 : Math.min(Mth.floor(angle), 15);
         if(index != oldIndex) {
             byte value = 0;
             if(!item.isEmpty() && item.has(DataComponents.CUSTOM_DATA)) {
@@ -110,21 +114,37 @@ public class PunchCardReaderBlockEntity extends ElectricKineticBlockEntity {
 
     @Override
     public void tick() {
-        progress.tickChaser();
         super.tick();
+        if(!currentItem().isEmpty()) {
+            prevAngle = angle;
+            double speed = getChaseSpeed();
+            angle += speed;
+            if(maxAngle != null) {
+                if(speed > 0 && angle > maxAngle)
+                    angle = maxAngle;
+                if(speed < 0 && angle < maxAngle)
+                    angle = maxAngle;
+            }
+            if (angle > 16) angle = 16;
+            if (angle < 0) angle = 0;
+        }
     }
 
     @Override
     protected void read(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(compound, registries, clientPacket);
         // Always sync
-        progress.readNBT(compound.getCompound("Progress"), false);
+        prevAngle = angle = compound.getFloat("Angle");
+        if(clientPacket)
+            maxAngle = compound.contains("MaxAngle") ? compound.getFloat("MaxAngle") : null;
     }
 
     @Override
     protected void write(CompoundTag compound, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(compound, registries, clientPacket);
-        compound.put("Progress", progress.writeNBT());
+        compound.putFloat("Angle", angle);
+        if(clientPacket && maxAngle != null)
+            compound.putFloat("MaxAngle", maxAngle);
     }
 
     @Override

@@ -81,9 +81,9 @@ public class PunchCardReaderBlockEntityImpl extends PunchCardReaderBlockEntity {
             return false;
         inventory.insertItem(0, stack, false);
         if(side == Direction.UP) {
-            progress.setValue(0);
+            prevAngle = angle = 0;
         } else {
-            progress.setValue(1);
+            prevAngle = angle = 16;
         }
         notifyUpdate();
         return true;
@@ -118,9 +118,10 @@ public class PunchCardReaderBlockEntityImpl extends PunchCardReaderBlockEntity {
             var current = getStackInSlot(slot);
             if(!current.isEmpty())
                 return stack;
-            var remaining = super.insertItem(slot, stack, simulate);
+            var remaining = super.insertItem(slot, stack.copyWithCount(1), simulate);
             if(remaining.isEmpty() && !simulate) {
-                progress.setValue(top ? 0 : 1);
+                remaining = stack.copyWithCount(stack.getCount() - 1);
+                prevAngle = angle = top ? 0 : 16;
                 notifyUpdate();
             }
             return remaining;
@@ -129,9 +130,9 @@ public class PunchCardReaderBlockEntityImpl extends PunchCardReaderBlockEntity {
         @NotNull
         @Override
         public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            if(top && progress.getValue() > 0)
+            if(top && angle > 0)
                 return ItemStack.EMPTY;
-            if(!top && progress.getValue() < 1)
+            if(!top && angle < 16)
                 return ItemStack.EMPTY;
             var extracted = super.extractItem(slot, amount, simulate);
             if(!simulate)

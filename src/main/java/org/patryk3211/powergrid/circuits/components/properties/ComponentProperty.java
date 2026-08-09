@@ -23,15 +23,22 @@ public abstract class ComponentProperty<T> {
     private final String namespace;
     private final String name;
     private boolean hidden;
+    private boolean unsafe;
 
     public ComponentProperty(String namespace, String name) {
         this.namespace = namespace;
         this.name = name;
         this.hidden = false;
+        this.unsafe = false;
     }
 
     public ComponentProperty<T> hidden() {
         this.hidden = true;
+        return this;
+    }
+
+    public ComponentProperty<T> unsafe() {
+        this.unsafe = true;
         return this;
     }
 
@@ -49,6 +56,10 @@ public abstract class ComponentProperty<T> {
 
     public boolean isHidden() {
         return hidden;
+    }
+
+    public boolean isUnsafe() {
+        return unsafe;
     }
 
     public abstract T parse(String value) throws RuntimeException;

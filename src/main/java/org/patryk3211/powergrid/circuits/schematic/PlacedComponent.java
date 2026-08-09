@@ -19,6 +19,7 @@ import net.createmod.catnip.math.VecHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -61,7 +62,7 @@ public class PlacedComponent {
     public boolean destroyed;
 
     public PlacedComponent(CompoundTag tag) {
-        this(get(tag.getString("Id")), tag.getInt("X"), tag.getInt("Y"), tag.getUUID("UUID"));
+        this(get(tag.getString("Id")), tag.getInt("X"), tag.getInt("Y"), tag.contains("UUID") ? tag.getUUID("UUID") : null);
         component.dataFixup(tag);
         var propertyMap = tag.getCompound("Properties");
         for(var entry : properties) {
@@ -96,7 +97,7 @@ public class PlacedComponent {
         this.component = component;
         this.x = x;
         this.y = y;
-        this.uuid = uuid;
+        this.uuid = uuid == null ? UUID.randomUUID() : uuid;
         for(var property : component.getProperties()) {
             properties.add(PropertyEntry.makeFor(property, this));
         }
@@ -139,6 +140,27 @@ public class PlacedComponent {
         if(!properties.isEmpty()) {
             var propertyMap = new CompoundTag();
             for(var entry : properties) {
+                entry.write(propertyMap);
+            }
+            tag.put("Properties", propertyMap);
+        }
+
+        return tag;
+    }
+
+    public Tag serializeSafeNbt() {
+        var tag = new CompoundTag();
+
+        var id = ComponentRegistry.getId(component);
+        tag.putString("Id", id.toString());
+        tag.putInt("X", x);
+        tag.putInt("Y", y);
+
+        if(!properties.isEmpty()) {
+            var propertyMap = new CompoundTag();
+            for(var entry : properties) {
+                if(entry.property.isUnsafe())
+                    continue;
                 entry.write(propertyMap);
             }
             tag.put("Properties", propertyMap);

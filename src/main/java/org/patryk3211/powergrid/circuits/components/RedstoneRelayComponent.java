@@ -32,7 +32,7 @@ import java.util.List;
 
 public class RedstoneRelayComponent extends EdgeComponent implements IRedstoneComponent {
     public static final float RESISTANCE = 0.1f;
-    public static final BooleanProperty POWERED = (BooleanProperty) new BooleanProperty(PowerGrid.MOD_ID, "redstone_relay_powered").hidden();
+    public static final BooleanProperty POWERED = (BooleanProperty) new BooleanProperty(PowerGrid.MOD_ID, "redstone_relay_powered").hidden().unsafe();
 
     public RedstoneRelayComponent(ComponentFootprint footprint) {
         super(footprint);

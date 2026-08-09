@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.circuits.circuitboard;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.kinetics.fan.AirCurrent;
+import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import dev.architectury.utils.Env;
 import dev.architectury.utils.EnvExecutor;
@@ -27,8 +28,10 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
@@ -46,6 +49,7 @@ import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.ISchematicHolder;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.*;
@@ -365,6 +369,12 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     }
 
     @Override
+    public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
+        super.writeSafe(tag, registries);
+        tag.put("Schematic", schematic.serializeSafeNbt());
+    }
+
+    @Override
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         if(!tag.contains("Schematic")) {
             if(level != null)
@@ -538,5 +548,14 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         for(var unit : baked.thermalUnits) {
             unit.setTemperature(buffer.readFloat());
         }
+    }
+
+    @Override
+    public ItemRequirement getRequiredItems(BlockState state) {
+        var stack = ModdedBlocks.CIRCUIT_BOARD.asStack();
+        var tag = new CompoundTag();
+        tag.put("Schematic", schematic.serializeSafeNbt());
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+        return new ItemRequirement(ItemRequirement.ItemUseType.CONSUME, stack);
     }
 }

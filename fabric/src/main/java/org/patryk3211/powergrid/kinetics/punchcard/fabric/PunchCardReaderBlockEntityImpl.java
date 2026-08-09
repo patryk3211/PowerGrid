@@ -80,9 +80,9 @@ public class PunchCardReaderBlockEntityImpl extends PunchCardReaderBlockEntity i
         if(TransferUtil.insertItem(inventory, stack) == 0)
             return false;
         if(side == Direction.UP) {
-            progress.setValue(0);
+            prevAngle = angle = 0;
         } else {
-            progress.setValue(1);
+            prevAngle = angle = 16;
         }
         notifyUpdate();
         return true;
@@ -120,7 +120,7 @@ public class PunchCardReaderBlockEntityImpl extends PunchCardReaderBlockEntity i
                 var inserted = inventory.insert(resource, maxAmount, transaction);
                 if(inserted == 1) {
                     TransactionCallback.onSuccess(transaction, () -> {
-                        progress.setValue(top ? 0 : 1);
+                        prevAngle = angle = top ? 0 : 16;
                         notifyUpdate();
                     });
                 }
@@ -131,9 +131,9 @@ public class PunchCardReaderBlockEntityImpl extends PunchCardReaderBlockEntity i
 
         @Override
         public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
-            if(top && progress.getValue() > 0)
+            if(top && angle > 0)
                 return 0;
-            if(!top && progress.getValue() < 1)
+            if(!top && angle < 16)
                 return 0;
             var extracted = inventory.extract(resource, maxAmount, transaction);
             if(extracted > 0) {
