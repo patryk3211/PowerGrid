@@ -40,11 +40,11 @@ public class DisplayBurnoutS2CPacket implements SimplePacket {
         var world = ClientSideAccess.world();
         if (world == null) return;
 
-        int col = slotIndex % 4;
-        int row = slotIndex / 4;
+        int col = slotIndex % 2;
+        int row = slotIndex / 2;
 
-        float cellX = (col * 4 + 2) / 16f;
-        float cellY = ((3 - row) * 4 + 2) / 16f;
+        float cellX = (col * 8 + 4) / 16f;
+        float cellY = ((1 - row) * 8 + 4) / 16f;
 
         BlockState state = world.getBlockState(pos);
         Direction facing = state.getValue(ModularDisplayBlock.HORIZONTAL_FACING);

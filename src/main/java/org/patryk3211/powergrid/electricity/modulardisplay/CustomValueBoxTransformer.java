@@ -18,14 +18,18 @@ public class CustomValueBoxTransformer extends ValueBoxTransform {
     @Override
     public Vec3 getLocalOffset(LevelAccessor level, BlockPos pos, BlockState state) {
         int slot = blockEntity.lastHitSlot;
+        int col = slot % 2;
+        int row = slot / 2;
 
-        double x = 0, y = 0, z = 1;
-        switch (slot) {
-            case 0:x = .75 + (-.5/16); y = .75 + (-.5/16);break;
-            case 1:x = .25 + (.5/16); y = .75 + (-.5/16);break;
-            case 2:x = .75 + (-.5/16); y = .25 + (.5/16);break;
-            case 3:x = .25 + (.5/16); y = .25 + (.5/16);break;
-        }
+        double pixel = 1.0 / 16.0;
+
+        double x = 1.0 - (col * 8 + 4) / 16.0;
+        double y = ((1 - row) * 8 + 4) / 16.0;
+
+        x += (x > 0.5) ? -pixel / 2.0 : pixel / 2.0;
+        y += (y > 0.5) ? -pixel / 2.0 : pixel / 2.0;
+
+        double z = 1.0;
 
         return rotateHorizontally(state, new Vec3(x, y, z-0.015));
     }
@@ -47,8 +51,8 @@ public class CustomValueBoxTransformer extends ValueBoxTransform {
             int row = i / 2;
 
             double slotX, slotY, slotZ;
-            double u = (col * 2 + 1) / 4.0;
-            double v = ((1 - row) * 2 + 1) / 4.0;
+            double u = (col * 8 + 4) / 16f;
+            double v = ((1 - row) * 8 + 4) / 16f;
 
             switch (facing) {
                 case NORTH -> { slotX = u;        slotY = v; slotZ = 0.0;}

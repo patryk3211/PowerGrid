@@ -14,6 +14,8 @@ import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 
 import java.util.Collection;
 
+import static org.patryk3211.powergrid.electricity.modulardisplay.ModularDisplayBlockEntity.SLOT_COUNT;
+
 public class DisplaySlotThermal extends BlockEntityBehaviour {
 
     public static final BehaviourType<DisplaySlotThermal>[] TYPES;
@@ -36,8 +38,8 @@ public class DisplaySlotThermal extends BlockEntityBehaviour {
     private final float dissipationFactor;
 
     static {
-        TYPES = new BehaviourType[16];
-        for (int i = 0; i < 16; i++) {
+        TYPES = new BehaviourType[SLOT_COUNT];
+        for (int i = 0; i < SLOT_COUNT; i++) {
             TYPES[i] = new BehaviourType<>("display_slot_thermal_" + i);
         }
     }
@@ -117,11 +119,11 @@ public class DisplaySlotThermal extends BlockEntityBehaviour {
     }
 
     private void spawnSmokeParticles(Level world, BlockPos pos, RandomSource random) {
-        int col = slotIndex % 4;
-        int row = slotIndex / 4;
+        int col = slotIndex % 2;
+        int row = slotIndex / 2;
 
-        float cellX = (col * 4 + 2) / 16f;
-        float cellY = ((3 - row) * 4 + 2) / 16f;
+        float cellX = (col * 8 + 4) / 16f;
+        float cellY = ((1 - row) * 8 + 4) / 16f;
 
         float chance = (temperature - SMOKE_START_TEMPERATURE) / 50f;
         if (random.nextFloat() > chance) return;
@@ -131,22 +133,23 @@ public class DisplaySlotThermal extends BlockEntityBehaviour {
 
         float x, y, z;
         y = pos.getY() + cellY + random.nextFloat() * 0.1f;
+        float offset = 2/16f;
 
         switch (facing) {
             case NORTH -> {
                 x = pos.getX() + cellX;
-                z = pos.getZ() + random.nextFloat() * 0.05f;
+                z = pos.getZ() - offset + random.nextFloat() * 0.05f;
             }
             case SOUTH -> {
                 x = pos.getX() + (1 - cellX);
-                z = pos.getZ() + 1 - random.nextFloat() * 0.05f;
+                z = pos.getZ() + offset + 1 - random.nextFloat() * 0.05f;
             }
             case WEST -> {
-                x = pos.getX() + random.nextFloat() * 0.05f;
+                x = pos.getX() - offset + random.nextFloat() * 0.05f;
                 z = pos.getZ() + (1 - cellX);
             }
             case EAST -> {
-                x = pos.getX() + 1 - random.nextFloat() * 0.05f;
+                x = pos.getX() + offset + 1 - random.nextFloat() * 0.05f;
                 z = pos.getZ() + cellX;
             }
             default -> {
