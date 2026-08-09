@@ -141,7 +141,7 @@ public class ModularDisplayComponent extends OrientableComponent implements IRen
         var module = placed.get(CURRENT_MODULE);
 
         pStack.pushPose();
-        pStack.translate(0.5, 8f/16f, 0.5);
+        pStack.translate(0.5, 6f/16f, 0.5);
 
         Boolean halfClick = false;
 
