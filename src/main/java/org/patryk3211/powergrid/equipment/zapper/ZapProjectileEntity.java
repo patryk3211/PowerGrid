@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.equipment.zapper;
 
+import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
@@ -33,6 +34,7 @@ import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.*;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedDamageTypes;
 import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.collections.ModdedPackets;
@@ -70,6 +72,16 @@ public class ZapProjectileEntity extends AbstractHurtingProjectile {
 
     public static void playLaunchSound(Level world, Vec3 location, float pitch) {
         ModdedSoundEvents.ELECTROZAPPER_SHOOT.playAt(world, location, 1, pitch, true);
+    }
+
+    @Override
+    protected boolean shouldBurn() {
+        return false;
+    }
+
+    @Override
+    protected @Nullable ParticleOptions getTrailParticle() {
+        return null;
     }
 
     @Override
@@ -187,7 +199,6 @@ public class ZapProjectileEntity extends AbstractHurtingProjectile {
 //        float damage = projectileType.getDamage() * additionalDamageMult;
 //        float knockback = projectileType.getKnockback() + additionalKnockback;
     }
-
 
     @Override
     public void addAdditionalSaveData(CompoundTag compound) {
