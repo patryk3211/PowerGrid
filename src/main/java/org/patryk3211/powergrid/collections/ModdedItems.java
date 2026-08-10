@@ -32,6 +32,7 @@ import org.patryk3211.powergrid.electricity.light.bulb.GrowthLamp;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
 import org.patryk3211.powergrid.electricity.light.bulb.LvLightBulb;
 import org.patryk3211.powergrid.electricity.light.string.StringLightCordItem;
+import org.patryk3211.powergrid.electricity.modulardisplay.DisplayModuleItem;
 import org.patryk3211.powergrid.electricity.sim.DebugItem;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.powercord.CordItem;
@@ -254,6 +255,10 @@ public class ModdedItems {
             .register();
 
     public static final ItemEntry<PunchCardItem> PUNCH_CARD = REGISTRATE.item("punch_card", PunchCardItem::new)
+            .register();
+
+    public static final ItemEntry<DisplayModuleItem> DISPLAY_MODULE = REGISTRATE.item("display_module", DisplayModuleItem::new)
+            .lang("Display Module")
             .register();
 
     @SuppressWarnings("EmptyMethod")

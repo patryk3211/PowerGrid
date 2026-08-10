@@ -571,6 +571,27 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('S', resistiveCoil())
                     .define('I', ironSheet())),
 
+    DISPLAY_MODULE = create(ModdedItems.DISPLAY_MODULE)
+            .unlockedBy(() -> ModdedBlocks.MODULAR_DISPLAY)
+            .viaShaped(b -> b
+                    .pattern(" A ")
+                    .pattern("ICI")
+                    .pattern(" P ")
+                    .define('A', andesiteAlloy())
+                    .define('P', paper())
+                    .define('C', copperCoil())
+                    .define('I', ironSheet())),
+
+    MODULAR_DISPLAY = create(ModdedBlocks.MODULAR_DISPLAY)
+            .unlockedBy(() -> ModdedItems.DISPLAY_MODULE)
+            .viaShaped(b -> b
+                    .pattern("PPP")
+                    .pattern(" C ")
+                    .pattern(" I ")
+                    .define('P', pins())
+                    .define('C', conductiveCasing())
+                    .define('I', ironSheet())),
+
     INSULATED_COPPER_WIRE = create(ModdedItems.INSULATED_COPPER_WIRE)
             .unlockedBy(() -> ModdedItems.WIRE)
             .viaShapeless(b -> b
