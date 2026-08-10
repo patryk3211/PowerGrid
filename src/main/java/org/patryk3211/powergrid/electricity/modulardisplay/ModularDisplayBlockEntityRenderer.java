@@ -78,7 +78,7 @@ public class ModularDisplayBlockEntityRenderer extends SafeBlockEntityRenderer<M
                 float vMin = 0f;
                 float vMax = FRAME_HEIGHT / SHEET_HEIGHT;
 
-                float[] rgb = slot.getModule().getColor().getTextureDiffuseColors();
+                int rgb = slot.getModule().getColor().getTextureDiffuseColor();
 
                 renderQuad(matrix, buffer,
                         slot.getModule().getDisplayTexture(),
@@ -94,33 +94,29 @@ public class ModularDisplayBlockEntityRenderer extends SafeBlockEntityRenderer<M
 
     private void renderQuad(Matrix4f matrix, MultiBufferSource bufferSource, ResourceLocation texture,
                             float x, float y, float width, float height, float uMin, float vMin, float uMax, float vMax,
-                            int packedLight, int packedOverlay, float[] rgb) {
+                            int packedLight, int packedOverlay, int rgb) {
 
         VertexConsumer vc = bufferSource.getBuffer(RenderType.text(texture));
 
-        float r = rgb[0];
-        float g = rgb[1];
-        float b = rgb[2];
+        int r = (rgb >> 16) & 0xFF;
+        int g = (rgb >> 8)  & 0xFF;
+        int b =  rgb        & 0xFF;
 
-        vc.vertex(matrix, x + width, y, 0f).color(r, g, b, 1)
-                .uv(uMin, vMax).overlayCoords(packedOverlay).uv2(packedLight)
-                .normal(0f, 0f, -1f)
-                .endVertex();
+        vc.addVertex(matrix, x + width, y, 0f).setColor(r, g, b, 255)
+                .setUv(uMin, vMax).setOverlay(packedOverlay).setLight(packedLight)
+                .setNormal(0f, 0f, -1f);
 
-        vc.vertex(matrix, x, y, 0f).color(r, g, b, 1)
-                .uv(uMax, vMax).overlayCoords(packedOverlay).uv2(packedLight)
-                .normal(0f, 0f, -1f)
-                .endVertex();
+        vc.addVertex(matrix, x, y, 0f).setColor(r, g, b, 255)
+                .setUv(uMax, vMax).setOverlay(packedOverlay).setLight(packedLight)
+                .setNormal(0f, 0f, -1f);
 
-        vc.vertex(matrix, x, y + height, 0f).color(r, g, b, 1)
-                .uv(uMax, vMin).overlayCoords(packedOverlay).uv2(packedLight)
-                .normal(0f, 0f, -1f)
-                .endVertex();
+        vc.addVertex(matrix, x, y + height, 0f).setColor(r, g, b, 255)
+                .setUv(uMax, vMin).setOverlay(packedOverlay).setLight(packedLight)
+                .setNormal(0f, 0f, -1f);
 
-        vc.vertex(matrix,x + width, y + height, 0f).color(r, g, b, 1)
-                .uv(uMin, vMin).overlayCoords(packedOverlay).uv2(packedLight)
-                .normal(0f, 0f, -1f)
-                .endVertex();
+        vc.addVertex(matrix,x + width, y + height, 0f).setColor(r, g, b, 255)
+                .setUv(uMin, vMin).setOverlay(packedOverlay).setLight(packedLight)
+                .setNormal(0f, 0f, -1f);
 
     }
 }

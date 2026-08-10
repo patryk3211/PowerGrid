@@ -248,7 +248,7 @@ public class Components {
             .item(ModdedBlocks.FUSE_HOLDER)
             .register();
 
-    public static final RegistryEntry<ModularDisplayComponent> DISPLAY_MODULE = REGISTRATE.component("display_module", ModularDisplayComponent::new)
+    public static final RegistryEntry<Component, ModularDisplayComponent> DISPLAY_MODULE = REGISTRATE.component("display_module", ModularDisplayComponent::new)
             .footprint(4, 4, b -> b
                     .addPadSharedText(0, 1, 0, "generic.positive", "generic.positive.short")
                     .addPadSharedText(3, 2, 1, "generic.negative", "generic.negative.short")

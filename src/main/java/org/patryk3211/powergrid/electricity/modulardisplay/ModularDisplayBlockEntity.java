@@ -3,6 +3,7 @@ package org.patryk3211.powergrid.electricity.modulardisplay;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollOptionBehaviour;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -175,13 +176,13 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
     }
 
     @Override
-    public CompoundTag getUpdateTag() {
-        return saveWithoutMetadata();
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return saveWithoutMetadata(registries);
     }
 
     @Override
-    public void write(CompoundTag tag, boolean clientPacket) {
-        super.write(tag, clientPacket);
+    public void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.write(tag, registries, clientPacket);
 
         ListTag slotList = new ListTag();
         for (int i = 0; i < SLOT_COUNT; i++) {
@@ -192,8 +193,8 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
     }
 
     @Override
-    public void writeSafe(CompoundTag tag) {
-        super.writeSafe(tag);
+    public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
+        super.writeSafe(tag, registries);
 
         ListTag slotList = new ListTag();
         for (int i = 0; i < SLOT_COUNT; i++) {
@@ -204,8 +205,8 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
     }
 
     @Override
-    public void read(CompoundTag tag, boolean clientPacket) {
-        super.read(tag, clientPacket);
+    public void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
+        super.read(tag, registries, clientPacket);
 
         if (tag.contains("slots", Tag.TAG_LIST)) {
             ListTag slotList = tag.getList("slots", Tag.TAG_STRING);

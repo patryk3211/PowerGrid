@@ -1,6 +1,6 @@
 package org.patryk3211.powergrid.network.packets;
 
-import dev.architectury.networking.NetworkManager;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.FriendlyByteBuf;
@@ -9,12 +9,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.modulardisplay.ModularDisplayBlock;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
-import org.patryk3211.powergrid.network.SimplePacket;
-import org.patryk3211.powergrid.utility.ClientSideAccess;
+import org.patryk3211.powergrid.network.S2CPacket;
 
-import java.util.function.Supplier;
-
-public class DisplayBurnoutS2CPacket implements SimplePacket {
+public class DisplayBurnoutS2CPacket implements S2CPacket {
 
     private final BlockPos pos;
     private final int slotIndex;
@@ -30,14 +27,14 @@ public class DisplayBurnoutS2CPacket implements SimplePacket {
     }
 
     @Override
-    public void encode(FriendlyByteBuf buf) {
+    public void write(FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);
         buf.writeInt(slotIndex);
     }
 
     @Override
-    public void handle(Supplier<NetworkManager.PacketContext> context) {
-        var world = ClientSideAccess.world();
+    public void handle(Minecraft mc) {
+        var world = mc.level;
         if (world == null) return;
 
         int col = slotIndex % 2;
