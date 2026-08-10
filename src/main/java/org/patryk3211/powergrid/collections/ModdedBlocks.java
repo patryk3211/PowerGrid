@@ -686,6 +686,7 @@ public class ModdedBlocks {
             .blockstate(northFacing("block/thermometer/base"))
             .initialProperties(SharedProperties::softMetal)
             .transform(pickaxeOnly())
+            .transform(DisplaySource.displaySource(ModdedDisplaySources.THERMOMETER))
             .item(ThermometerItem::new)
                 .model(itemWithParent("block/thermometer/base"))
                 .transform(ModdedItems.customRenderer(() -> ThermometerItemRenderer::new))

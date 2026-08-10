@@ -1,1 +1,24 @@
-{}
+{
+  "block.powergrid.acid": "Syre",
+  "block.powergrid.alarm_bell": "Alarmklokke",
+  "block.powergrid.battery": "Batteri",
+  "block.powergrid.carbon_pile": "Karbonstabel",
+  "block.powergrid.carbon_pile_coil": "Karbonstabelspole",
+  "block.powergrid.circuit_board": "Kretskort",
+  "block.powergrid.circuit_design_table": "Designbord for kretskort",
+  "block.powergrid.circuit_design_table.tooltip.behaviour1": "Lagrer det nåværende designet i en kretskortmal",
+  "block.powergrid.circuit_design_table.tooltip.condition1": "Når gitt en tom Kretskortmal",
+  "block.powergrid.circuit_design_table.tooltip.summary": "Design og skriv ut maler for _Kretskort_. Hvis du ønsker å plassere komponenter, må du ha de i inventaret.",
+  "block.powergrid.conductive_casing": "Strømledende Innfatning",
+  "block.powergrid.constant_speed_motor": "Konstant-farts motor",
+  "block.powergrid.contactor": "Kontaktor",
+  "block.powergrid.creative_current_source": "Kreativ Strømforsyning",
+  "block.powergrid.creative_resistor": "Kreativ Motstand",
+  "block.powergrid.creative_voltage_source": "Kreativ Spenningskilde",
+  "block.powergrid.crt": "Katodestrålerør",
+  "block.powergrid.current_gauge": "Strømmåler",
+  "block.powergrid.electric_fan": "Elektrisk Vifte",
+  "block.powergrid.electric_motor": "Elektrisk Motor",
+  "block.powergrid.electromagnet": "Elektromagnet",
+  "block.powergrid.fuse_holder": "Sikringsholder"
+}
