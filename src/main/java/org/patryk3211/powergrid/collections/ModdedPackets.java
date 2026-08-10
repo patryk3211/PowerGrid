@@ -57,6 +57,7 @@ public enum ModdedPackets {
     NEGOTIATE_SYNC(NegotiateSyncC2SPacket.class, NegotiateSyncC2SPacket::new),
     CORD_DETACH(CordDetachC2SPacket.class, CordDetachC2SPacket::new),
     ENERGY_METER_INTERACTION(EnergyMeterInteractionC2SPacket.class, EnergyMeterInteractionC2SPacket::new),
+    DISPLAY_BURNOUT(DisplayBurnoutS2CPacket.class, DisplayBurnoutS2CPacket::new),
 
     UPDATE_COMPONENT(UpdateComponentBiPacket.class, UpdateComponentBiPacket::new),
     ;

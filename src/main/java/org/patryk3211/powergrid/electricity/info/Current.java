@@ -50,6 +50,16 @@ public class Current {
         }
     }
 
+    public static void min(float value, Player player, List<Component> tooltip) {
+
+        Lang.translate("tooltip.current.min")
+                .style(ChatFormatting.GRAY).addTo(tooltip);
+        Lang.builder()
+                .add(Component.nullToEmpty(" ")).add(Lang.number(value))
+                .add(Component.nullToEmpty(" ")).add(Unit.CURRENT.get())
+                .style(ChatFormatting.RED).addTo(tooltip);
+    }
+
     public static void max(float resistance, float power, Player player, List<Component> tooltip) {
         var current = Math.sqrt(power / resistance);
         max((float) Math.round(current * 10) / 10, player, tooltip);

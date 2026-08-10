@@ -51,6 +51,9 @@ import org.patryk3211.powergrid.electricity.electromagnet.MagnetizingBehaviour;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
+import org.patryk3211.powergrid.electricity.modulardisplay.ModularDisplayBlockEntity;
+import org.patryk3211.powergrid.electricity.modulardisplay.modules.AlphabetLetterModule;
+import org.patryk3211.powergrid.electricity.modulardisplay.modules.ZeroToNineNumberModule;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlock;
 import org.patryk3211.powergrid.kinetics.plotter.PlotterBlockEntity;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlockEntity;
@@ -1636,4 +1639,111 @@ public class DeviceScenes {
 
         scene.markAsFinished();
     }
+
+    public static void modularDisplay(SceneBuilder builder, SceneBuildingUtil util){
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("modular_display", "Modular Display");
+        scene.configureBasePlate(0, 0, 5);
+        scene.scaleSceneView(1.75f);
+
+        var pos = util.grid().at(3, 1, 4);
+        var neg = util.grid().at(1, 1, 4);
+        var reset = util.grid().at(0, 1, 3);
+        var block = util.grid().at(2, 1, 2);
+
+
+        scene.showBasePlate();
+        scene.idle(5);
+        scene.world().showSection(util.select().position(pos), Direction.DOWN);
+        scene.world().showSection(util.select().position(neg), Direction.DOWN);
+        scene.world().showSection(util.select().position(block), Direction.DOWN);
+        scene.world().showSection(util.select().position(reset), Direction.DOWN);
+        scene.idle(30);
+
+        scene.overlay().showText(70)
+                .text("You can place modules in by clicking a display module on a empty slot")
+                .pointAt(util.vector().of(2.25, 1.75, 2))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(40);
+
+        scene.world().modifyBlockEntity(block, ModularDisplayBlockEntity.class, be -> {
+            be.modules[0] = new ZeroToNineNumberModule(0, false, DyeColor.WHITE);
+        });
+        scene.effects().indicateSuccess(block);
+        scene.idle(40);
+
+        scene.overlay().showText(60)
+                .text("You can remove them by shift clicking")
+                .pointAt(util.vector().of(2.25, 1.75, 2))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.overlay().showControls(util.vector().of(2.25, 1.75, 2), Pointing.DOWN, 40).rightClick().whileSneaking();
+        scene.idle(40);
+
+        scene.world().modifyBlockEntity(block, ModularDisplayBlockEntity.class, be -> {
+            be.modules[0] = null;
+        });
+
+        scene.idle(20);
+
+        scene.rotateCameraY(-135);
+        scene.idle(20);
+
+        scene.overlay().showText(110)
+                .text("There is a case ground in the center and a positive and reset pin for every slot")
+                .pointAt(util.vector().of(2.5, 1.75, 3))
+                .placeNearTarget()
+                .attachKeyFrame();
+
+        scene.world().modifyBlockEntity(block, ModularDisplayBlockEntity.class, be -> {
+            be.modules[0] = new ZeroToNineNumberModule(0, false, DyeColor.WHITE);
+        });
+        scene.idle(30);
+        scene.electric().connect(neg, 0, block, 8, DyeColor.BLACK);
+        scene.idle(30);
+        scene.electric().connect(pos, 0, block, 0, DyeColor.RED);
+        scene.idle(30);
+        scene.electric().connect(reset, 0, block, 1, DyeColor.BLACK);
+        scene.idle(30);
+
+        scene.rotateCameraY(135);
+        scene.idle(10);
+
+        scene.overlay().showText(70)
+                .text("See display module ponder for instructions on how to use the modules")
+                .pointAt(util.vector().of(2.25, 1.75, 2))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(80);
+
+        scene.overlay().showText(80)
+                .text("You can click and hold on a slot that has a module to change what the module displays")
+                .placeNearTarget()
+                .attachKeyFrame();
+
+        scene.overlay().showControls(util.vector().of(2.25, 1.75, 2), Pointing.DOWN, 20).rightClick();
+        scene.idle(20);
+
+        scene.world().modifyBlockEntity(block, ModularDisplayBlockEntity.class, be -> {
+            be.modules[0] = new AlphabetLetterModule(0, false, DyeColor.WHITE);
+        });
+        scene.idle(70);
+
+        scene.overlay().showText(70)
+                .text("You can dye modules by clicking the slot with dye")
+                .placeNearTarget()
+                .attachKeyFrame();
+
+        scene.overlay().showControls(util.vector().of(2.25, 1.75, 2), Pointing.DOWN, 20)
+                .withItem(Items.RED_DYE.getDefaultInstance()).rightClick();
+        scene.idle(20);
+
+        scene.world().modifyBlockEntity(block, ModularDisplayBlockEntity.class, be -> {
+            be.modules[0] = new AlphabetLetterModule(0, false, DyeColor.RED);
+        });
+        scene.idle(20);
+        scene.markAsFinished();
+    }
+
 }

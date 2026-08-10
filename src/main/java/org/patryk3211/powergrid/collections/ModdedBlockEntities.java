@@ -46,6 +46,8 @@ import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightBlock
 import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightRenderer;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureRenderer;
+import org.patryk3211.powergrid.electricity.modulardisplay.ModularDisplayBlockEntity;
+import org.patryk3211.powergrid.electricity.modulardisplay.ModularDisplayBlockEntityRenderer;
 import org.patryk3211.powergrid.electricity.pump.ElectricPumpBlockEntity;
 import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterBlockEntity;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlockEntity;
@@ -429,6 +431,12 @@ public class ModdedBlockEntities {
                     .visual(() -> SolarPanelBearingVisual::new)
                     .validBlock(ModdedBlocks.SOLAR_PANEL_BEARING)
                     .renderer(() -> SolarPanelBearingRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<ModularDisplayBlockEntity> MODULAR_DISPLAY =
+            REGISTRATE.<ModularDisplayBlockEntity>blockEntity("modular_display", ModularDisplayBlockEntity::new)
+                    .validBlock(ModdedBlocks.MODULAR_DISPLAY)
+                    .renderer(() -> ModularDisplayBlockEntityRenderer::new)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

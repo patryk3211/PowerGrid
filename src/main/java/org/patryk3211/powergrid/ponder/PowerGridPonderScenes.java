@@ -108,6 +108,8 @@ public class PowerGridPonderScenes {
                 .addStoryBoard("solar_panel/solar_panel_power_creation", DeviceScenes::solarPanel2, PowerGridPonderTags.ELECTRIC_DEVICES, PowerGridPonderTags.CEILING_TILE_ATTACHMENTS);
         HELPER.addStoryBoard(ModdedBlocks.SOLAR_PANEL_BEARING, "solar_panel_bearing", DeviceScenes::solarPanelBearing, PowerGridPonderTags.ELECTRIC_DEVICES, AllCreatePonderTags.KINETIC_SOURCES);
 
+        HELPER.addStoryBoard(ModdedBlocks.MODULAR_DISPLAY, "modular_display", DeviceScenes::modularDisplay, PowerGridPonderTags.ELECTRIC_DEVICES);
+
         HELPER.addStoryBoard(ModdedBlocks.CEILING_TILE, "ceiling_tile", DeviceScenes::ceilingTile, PowerGridPonderTags.CEILING_TILE_ATTACHMENTS);
 
         HELPER.forComponents(ModdedItems.MAGNET)
@@ -162,5 +164,6 @@ public class PowerGridPonderScenes {
                 .addStoryBoard("factory_light/factory_light_connect", DeviceScenes::factoryLightConnect, PowerGridPonderTags.ELECTRIC_DEVICES, PowerGridPonderTags.CEILING_TILE_ATTACHMENTS);
 
         helper.addStoryBoard(new ResourceLocation("paper"), "circuit/label", CircuitScenes::label, PowerGridPonderTags.CIRCUIT_COMPONENTS);
+        HELPER.addStoryBoard(ModdedItems.DISPLAY_MODULE, "circuit/display_module", CircuitScenes::displayModule, PowerGridPonderTags.CIRCUIT_COMPONENTS);
     }
 }
