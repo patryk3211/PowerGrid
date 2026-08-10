@@ -1644,7 +1644,7 @@ public class DeviceScenes {
         var scene = new PowerGridSceneBuilder(builder);
         scene.title("modular_display", "Modular Display");
         scene.configureBasePlate(0, 0, 5);
-        scene.scaleSceneView(2.25f);
+        scene.scaleSceneView(1.75f);
 
         var pos = util.grid().at(3, 1, 4);
         var neg = util.grid().at(1, 1, 4);
@@ -1658,14 +1658,10 @@ public class DeviceScenes {
         scene.world().showSection(util.select().position(neg), Direction.DOWN);
         scene.world().showSection(util.select().position(block), Direction.DOWN);
         scene.world().showSection(util.select().position(reset), Direction.DOWN);
-        scene.idle(10);
-        scene.electric().connect(pos, 0, block, 1, DyeColor.RED);
-        scene.electric().connect(neg, 0, block, 0, DyeColor.BLACK);
-        scene.electric().connect(reset, 0, block, 2, DyeColor.BLACK);
         scene.idle(30);
 
         scene.overlay().showText(70)
-                .text("You can place modules in by clicking a Display Module on a empty slot")
+                .text("You can place modules in by clicking a display module on a empty slot")
                 .pointAt(util.vector().of(2.25, 1.75, 2))
                 .placeNearTarget()
                 .attachKeyFrame();
@@ -1694,33 +1690,39 @@ public class DeviceScenes {
         scene.rotateCameraY(-135);
         scene.idle(20);
 
-        scene.overlay().showText(100)
-                .text("There is a case ground on the back and a positive and reset pin for every slot")
-                .pointAt(util.vector().of(2.25, 1.75, 3))
+        scene.overlay().showText(110)
+                .text("There is a case ground in the center and a positive and reset pin for every slot")
+                .pointAt(util.vector().of(2.5, 1.75, 3))
                 .placeNearTarget()
                 .attachKeyFrame();
 
         scene.world().modifyBlockEntity(block, ModularDisplayBlockEntity.class, be -> {
             be.modules[0] = new ZeroToNineNumberModule(0, false, DyeColor.WHITE);
         });
-        scene.idle(90);
+        scene.idle(30);
+        scene.electric().connect(neg, 0, block, 8, DyeColor.BLACK);
+        scene.idle(30);
+        scene.electric().connect(pos, 0, block, 0, DyeColor.RED);
+        scene.idle(30);
+        scene.electric().connect(reset, 0, block, 1, DyeColor.BLACK);
+        scene.idle(30);
 
         scene.rotateCameraY(135);
         scene.idle(10);
 
         scene.overlay().showText(70)
-                .text("See Display module Ponder for instructions on how to use the modules")
+                .text("See display module ponder for instructions on how to use the modules")
                 .pointAt(util.vector().of(2.25, 1.75, 2))
                 .placeNearTarget()
                 .attachKeyFrame();
-        scene.idle(70);
+        scene.idle(80);
 
         scene.overlay().showText(80)
                 .text("You can click and hold on a slot that has a module to change what the module displays")
                 .placeNearTarget()
                 .attachKeyFrame();
 
-        scene.overlay().showControls(util.vector().of(2.25, 1.75, 2), Pointing.DOWN, 20).leftClick();
+        scene.overlay().showControls(util.vector().of(2.25, 1.75, 2), Pointing.DOWN, 20).rightClick();
         scene.idle(20);
 
         scene.world().modifyBlockEntity(block, ModularDisplayBlockEntity.class, be -> {

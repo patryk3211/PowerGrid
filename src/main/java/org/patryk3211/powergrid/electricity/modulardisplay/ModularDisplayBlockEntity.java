@@ -192,6 +192,17 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
         tag.put("slots", slotList);
     }
 
+    @Override
+    public void writeSafe(CompoundTag tag) {
+        super.writeSafe(tag);
+
+        ListTag slotList = new ListTag();
+        for (int i = 0; i < SLOT_COUNT; i++) {
+            IDisplayModule module = modules[i];
+            slotList.add(StringTag.valueOf(module != null ? module.serialize() : ""));
+        }
+        tag.put("slots", slotList);
+    }
 
     @Override
     public void read(CompoundTag tag, boolean clientPacket) {
