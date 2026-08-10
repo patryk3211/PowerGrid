@@ -60,7 +60,7 @@ public class DisplayBurnoutS2CPacket implements SimplePacket {
             default    -> { x = pos.getX() + 0.5f;          z = pos.getZ() + 0.5f; }
         }
 
-        RandomSource random = RandomSource.create();
+        RandomSource random = world.random;
         SparkParticleData.explodeParticles(world, x, y, z, facing, 10);
         ModdedSoundEvents.COMPONENT_EXPLODE.playAt(world, pos, 1.0f, random.nextFloat() * 0.1f + 0.9f, true);
     }

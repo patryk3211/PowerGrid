@@ -24,9 +24,6 @@ public class ModularDisplayBlockEntityRenderer extends SafeBlockEntityRenderer<M
     private static final int GRID_ROWS = 2;
 
     private static final float PIXEL = 1f / 16f;
-    private static final float CELL_SIZE = 5f * PIXEL;
-    private static final float INNER_OFFSET = 2 * PIXEL;
-    private static final float INNER_UD_OFFSET = 1 * PIXEL;
     private static final float INNER_UD_SIZE = 5f * PIXEL;
     private static final float INNER_RL_SIZE = 4.25f * PIXEL;
 
@@ -61,8 +58,6 @@ public class ModularDisplayBlockEntityRenderer extends SafeBlockEntityRenderer<M
 
                 if (slot.isEmpty()) continue;
 
-                //if (slot.getModule().isDamaged()) continue;
-
                 var halfClick = slot.getModule().getHalfClick();
                 float innerX = 0, innerY = 0;
                 switch (slotIndex){
@@ -71,14 +66,6 @@ public class ModularDisplayBlockEntityRenderer extends SafeBlockEntityRenderer<M
                     case 2:innerX = 2 * PIXEL + (.375f/16); innerY = 2 * PIXEL;break;
                     case 3:innerX = 9 * PIXEL + (.375f/16); innerY = 2 * PIXEL;break;
                 }
-
-//                float cellX = col * CELL_SIZE;
-//                float cellY = (GRID_ROWS - 1 - row) * CELL_SIZE;
-//
-//                float innerX = cellX + INNER_OFFSET;
-//                float innerY = cellY + INNER_UD_OFFSET;
-//
-//                if (row > 0) innerY += PIXEL;
 
                 float frameIndex = slot.getIndex();
                 if (halfClick){

@@ -111,14 +111,14 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
         return new SlotData(modules[index]);
     }
 
-    public boolean interact(int slotIndex, Player player){
-        if (slotIndex < 0 || slotIndex >= SLOT_COUNT) return false;
+    public void interact(int slotIndex, Player player){
+        if (slotIndex < 0 || slotIndex >= SLOT_COUNT) return;
 
         ItemStack held = player.getMainHandItem();
         IDisplayModule heldModule = resolveModule(held);
         IDisplayModule current = modules[slotIndex];
         if (held.isEmpty() && player.isCrouching()) {
-            if (current == null) return false;
+            if (current == null) return;
             if (!player.getInventory().add(new ItemStack(ModdedItems.DISPLAY_MODULE.get()))) {
                 player.drop(new ItemStack(ModdedItems.DISPLAY_MODULE.get()), false);
             }
@@ -126,17 +126,16 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
             slotThermals[slotIndex].resetTemperature();
             emptySlotWires(slotIndex);
             markUpdated();
-            return true;
+            return;
         }
 
         if (heldModule == null)
-            return false;
+            return;
 
         modules[slotIndex] = heldModule;
         if (!player.isCreative()) held.shrink(1);
         defaultSlotWires(slotIndex);
         markUpdated();
-        return true;
     }
 
     public void setColor(int slotIndex, DyeColor color) {
