@@ -1,5 +1,6 @@
 package org.patryk3211.powergrid.electricity.gauge;
 
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -10,10 +11,13 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedAdvancements;
 import org.patryk3211.powergrid.collections.ModdedMenus;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+
+import java.util.List;
 
 public class EnergyMeterBlockEntity extends ElectricBlockEntity implements MenuProvider {
     private ElectricWire series;
@@ -29,6 +33,12 @@ public class EnergyMeterBlockEntity extends ElectricBlockEntity implements MenuP
 
     public EnergyMeterBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    @Override
+    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+        super.addBehaviours(behaviours);
+        registerAwardables(behaviours, ModdedAdvancements.ENERGY_METER_ROLLOVER);
     }
 
     @Override
@@ -66,6 +76,7 @@ public class EnergyMeterBlockEntity extends ElectricBlockEntity implements MenuP
         if(energy > 100000) {
             lastEnergy -= 100000;
             energy -= 100000;
+            award(ModdedAdvancements.ENERGY_METER_ROLLOVER);
         }
         super.tick();
     }

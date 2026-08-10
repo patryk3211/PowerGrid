@@ -4,6 +4,7 @@
     "powergrid:current_gauge",
     "powergrid:barretter_tube",
     "powergrid:copper_coil",
+    "powergrid:display_module",
     "create:electron_tube",
     "powergrid:bjt_npn",
     "powergrid:bjt_pnp",

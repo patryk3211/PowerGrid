@@ -143,6 +143,12 @@ public class ModdedAdvancements implements DataProvider {
             .title("Yeouch")
             .description("Become part of an electrical circuit")
             .after(ELECTRICAL_AGE)
+            .special(SECRET)),
+    ENERGY_METER_ROLLOVER = create("energy_meter_rollover", b -> b
+            .icon(ModdedBlocks.ENERGY_METER)
+            .title("ITS OVER 99999!")
+            .description("Rollover an energy meter")
+            .after(ELECTRICAL_AGE)
             .special(SECRET))
 
     ;

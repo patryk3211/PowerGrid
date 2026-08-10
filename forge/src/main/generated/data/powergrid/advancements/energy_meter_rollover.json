@@ -1,0 +1,31 @@
+{
+  "parent": "powergrid:conductive_casing",
+  "criteria": {
+    "0": {
+      "conditions": {},
+      "trigger": "create:energy_meter_rollover_builtin"
+    }
+  },
+  "display": {
+    "announce_to_chat": true,
+    "description": {
+      "color": "#DBA213",
+      "translate": "advancement.powergrid.energy_meter_rollover.desc"
+    },
+    "frame": "goal",
+    "hidden": true,
+    "icon": {
+      "item": "powergrid:energy_meter"
+    },
+    "show_toast": true,
+    "title": {
+      "translate": "advancement.powergrid.energy_meter_rollover"
+    }
+  },
+  "requirements": [
+    [
+      "0"
+    ]
+  ],
+  "sends_telemetry_event": true
+}
