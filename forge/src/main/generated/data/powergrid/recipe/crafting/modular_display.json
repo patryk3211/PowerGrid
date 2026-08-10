@@ -6,7 +6,7 @@
       "item": "powergrid:conductive_casing"
     },
     "I": {
-      "tag": "forge:plates/iron"
+      "tag": "c:plates/iron"
     },
     "P": {
       "item": "powergrid:pins"
@@ -18,7 +18,7 @@
     " I "
   ],
   "result": {
-    "item": "powergrid:modular_display"
-  },
-  "show_notification": true
+    "count": 1,
+    "id": "powergrid:modular_display"
+  }
 }

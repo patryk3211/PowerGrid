@@ -6,10 +6,10 @@
       "item": "create:andesite_alloy"
     },
     "C": {
-      "tag": "forge:copper_coils"
+      "tag": "c:copper_coils"
     },
     "I": {
-      "tag": "forge:plates/iron"
+      "tag": "c:plates/iron"
     },
     "P": {
       "item": "minecraft:paper"
@@ -21,7 +21,7 @@
     " P "
   ],
   "result": {
-    "item": "powergrid:display_module"
-  },
-  "show_notification": true
+    "count": 1,
+    "id": "powergrid:display_module"
+  }
 }

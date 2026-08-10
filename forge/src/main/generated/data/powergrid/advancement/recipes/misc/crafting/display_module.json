@@ -5,9 +5,7 @@
       "conditions": {
         "items": [
           {
-            "items": [
-              "powergrid:modular_display"
-            ]
+            "items": "powergrid:modular_display"
           }
         ]
       },
@@ -22,14 +20,13 @@
   },
   "requirements": [
     [
-      "has_item",
-      "has_the_recipe"
+      "has_the_recipe",
+      "has_item"
     ]
   ],
   "rewards": {
     "recipes": [
       "powergrid:crafting//display_module"
     ]
-  },
-  "sends_telemetry_event": false
+  }
 }
