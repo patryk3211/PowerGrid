@@ -399,7 +399,7 @@
   "powergrid.electrozapper.bolt": "Lightning Bolt",
   "powergrid.electrozapper.bolt.damage": "%1$s Attack Damage",
   "powergrid.electrozapper.bolt.reload": "%1$s Reload Ticks",
-  "powergrid.generic.case_ground": "Case Ground",
+  "powergrid.generic.case_common": "Case Common",
   "powergrid.generic.common": "Common",
   "powergrid.generic.control_terminal": "Control",
   "powergrid.generic.cord": "Cord Connector",
