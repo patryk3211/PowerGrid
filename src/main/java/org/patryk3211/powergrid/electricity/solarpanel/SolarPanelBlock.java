@@ -5,6 +5,7 @@ import net.createmod.catnip.math.VoxelShaper;
 import net.createmod.catnip.placement.IPlacementHelper;
 import net.createmod.catnip.placement.PlacementHelpers;
 import net.createmod.catnip.placement.PlacementOffset;
+import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -29,7 +30,10 @@ import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.electricity.base.DirectionalElectricBlock;
 import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
+import org.patryk3211.powergrid.electricity.info.Current;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
+import org.patryk3211.powergrid.electricity.info.Voltage;
+import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 import java.util.function.Predicate;
@@ -51,7 +55,11 @@ public class SolarPanelBlock extends DirectionalElectricBlock implements IBE<Sol
 
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
-        //todo once diode is implemented add Voc, Isc, Imp?, Vmp?, Pmax?
+        Voltage.voc(24.1f, player, tooltip);
+        Current.isc(3.56f, player, tooltip);
+        Voltage.vmp(19.26f, player, tooltip);
+        Current.imp(3.26f, player, tooltip);
+        Lang.translate("tooltip.solar.disclaimer").style(ChatFormatting.GRAY).addTo(tooltip);
     }
 
     @Override

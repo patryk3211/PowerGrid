@@ -106,6 +106,12 @@
   "powergrid.tooltip.range.max": "Maximum range:",
   "powergrid.tooltip.power.max": "Maximum power:",
 
+  "powergrid.tooltip.solar.voc": "Voc:",
+  "powergrid.tooltip.solar.isc": "Isc:",
+  "powergrid.tooltip.solar.vmp": "Vmp:",
+  "powergrid.tooltip.solar.imp": "Imp:",
+  "powergrid.tooltip.solar.disclaimer": "Tested at 18C and Y level 70",
+
   "powergrid.tooltip.voltage.rated": "Rated voltage:",
   "powergrid.tooltip.voltage.min": "Minimum voltage:",
   "powergrid.tooltip.power.rated": "Rated power:",

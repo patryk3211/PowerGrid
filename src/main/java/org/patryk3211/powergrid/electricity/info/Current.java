@@ -64,4 +64,22 @@ public class Current {
         var current = Math.sqrt(power / resistance);
         max((float) Math.round(current * 10) / 10, player, tooltip);
     }
+
+    public static void isc(float value, Player player, List<Component> tooltip) {
+        Lang.translate("tooltip.solar.isc")
+                .style(ChatFormatting.GRAY).addTo(tooltip);
+        Lang.builder()
+                .add(Component.nullToEmpty(" ")).add(Lang.number(value))
+                .add(Component.nullToEmpty(" ")).add(Unit.CURRENT.get())
+                .style(ChatFormatting.GRAY).addTo(tooltip);
+    }
+    public static void imp(float value, Player player, List<Component> tooltip) {
+        Lang.translate("tooltip.solar.imp")
+                .style(ChatFormatting.GRAY).addTo(tooltip);
+        Lang.builder()
+                .add(Component.nullToEmpty(" ")).add(Lang.number(value))
+                .add(Component.nullToEmpty(" ")).add(Unit.CURRENT.get())
+                .style(ChatFormatting.GRAY).addTo(tooltip);
+    }
+
 }

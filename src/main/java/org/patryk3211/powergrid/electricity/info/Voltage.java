@@ -56,4 +56,12 @@ public class Voltage {
 //                .add(Text.of(" RPM/V"))
                 .style(ChatFormatting.DARK_AQUA).addTo(tooltip);
     }
+
+    public static void voc(float value, Player player, List<Component> tooltip) {
+        voltage("tooltip.solar.voc", ChatFormatting.GRAY, value, player, tooltip);
+    }
+
+    public static void vmp(float value, Player player, List<Component> tooltip) {
+        voltage("tooltip.solar.vmp", ChatFormatting.GRAY, value, player, tooltip);
+    }
 }
