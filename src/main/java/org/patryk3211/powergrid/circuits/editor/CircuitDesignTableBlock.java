@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.circuits.editor;
 
+import com.simibubi.create.AllItems;
 import com.simibubi.create.foundation.block.IBE;
 import dev.architectury.registry.menu.MenuRegistry;
 import net.createmod.catnip.math.VoxelShaper;
@@ -27,6 +28,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -91,6 +94,8 @@ public class CircuitDesignTableBlock extends HorizontalElectricBlock implements 
 
     @Override
     public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (AllItems.WRENCH.isIn(player.getItemInHand(hand)))
+            return InteractionResult.PASS;
         if(world.isClientSide)
             return InteractionResult.SUCCESS;
         withBlockEntityDo(world, pos, be -> {
@@ -122,5 +127,10 @@ public class CircuitDesignTableBlock extends HorizontalElectricBlock implements 
         float P = 30;
         Voltage.rated(Math.round(Math.sqrt(P * R)), player, tooltip);
         Power.rated(P, player, tooltip);
+    }
+
+    @Override
+    public InteractionResult onWrenched(BlockState state, UseOnContext context) {
+        return super.onWrenched(state, context);
     }
 }
