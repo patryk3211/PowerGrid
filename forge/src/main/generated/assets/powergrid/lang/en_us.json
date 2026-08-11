@@ -893,6 +893,7 @@
   "powergrid.subtitle.magnetizing": "Magnetizing",
   "powergrid.subtitle.mv_switch_click": "Switch clicks",
   "powergrid.subtitle.relay_click": "Relay clicks",
+  "powergrid.subtitle.spark": "Electric arc",
   "powergrid.subtitle.transformer": "Transformer hum",
   "powergrid.subtitle.ubutton_off": "Button clicks",
   "powergrid.subtitle.ubutton_on": "Button clicks",

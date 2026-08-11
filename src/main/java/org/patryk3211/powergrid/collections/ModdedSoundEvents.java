@@ -155,6 +155,10 @@ public class ModdedSoundEvents {
             .category(SoundSource.BLOCKS)
             .build(),
 
+    SPARK = create("spark").subtitle("Electric arc")
+            .category(SoundSource.BLOCKS)
+            .build(),
+
     GENERATOR = create("generator").subtitle("Generator spinning")
             .category(SoundSource.BLOCKS)
             .build(),
