@@ -59,7 +59,6 @@ public class SolarPanelBlock extends DirectionalElectricBlock implements IBE<Sol
         Current.isc(3.56f, player, tooltip);
         Voltage.vmp(19.26f, player, tooltip);
         Current.imp(3.26f, player, tooltip);
-        Lang.translate("tooltip.solar.disclaimer").style(ChatFormatting.GRAY).addTo(tooltip);
     }
 
     @Override
