@@ -10,6 +10,7 @@ import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.modulardisplay.ModularDisplayBlock;
 import org.patryk3211.powergrid.electricity.particles.SparkParticleData;
 import org.patryk3211.powergrid.network.S2CPacket;
+import org.patryk3211.powergrid.utility.ClientSideAccess;
 
 public class DisplayBurnoutS2CPacket implements S2CPacket {
 
@@ -34,7 +35,7 @@ public class DisplayBurnoutS2CPacket implements S2CPacket {
 
     @Override
     public void handle(Minecraft mc) {
-        var world = mc.level;
+        var world = ClientSideAccess.world();
         if (world == null) return;
 
         int col = slotIndex % 2;
