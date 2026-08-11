@@ -168,6 +168,15 @@
     ],
     "subtitle": "powergrid.subtitle.relay_click"
   },
+  "spark": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:spark"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.spark"
+  },
   "transformer": {
     "sounds": [
       {
