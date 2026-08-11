@@ -66,9 +66,9 @@ public interface IDecoratedTerminal {
             .translate("generic.reset")
             .style(ChatFormatting.GRAY)
             .component();
-    Component CASE_GROUND = Lang.builder()
-            .translate("generic.case_ground")
-            .style(ChatFormatting.GRAY)
+    Component CASE_COMMON = Lang.builder()
+            .translate("generic.case_common")
+            .style(ChatFormatting.BLUE)
             .component();
 
     int RED = 0xFF3B3B;

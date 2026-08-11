@@ -162,7 +162,7 @@
   "powergrid.generic.input": "Input",
   "powergrid.generic.output": "Output",
   "powergrid.generic.reset": "Reset",
-  "powergrid.generic.case_ground": "Case Ground",
+  "powergrid.generic.case_common": "Case Common",
 
   "powergrid.contactor.switch1": "Switch 1",
   "powergrid.contactor.switch2": "Switch 2",
