@@ -110,7 +110,6 @@
   "powergrid.tooltip.solar.isc": "Isc:",
   "powergrid.tooltip.solar.vmp": "Vmp:",
   "powergrid.tooltip.solar.imp": "Imp:",
-  "powergrid.tooltip.solar.disclaimer": "Tested at 18C and Y level 70",
 
   "powergrid.tooltip.voltage.rated": "Rated voltage:",
   "powergrid.tooltip.voltage.min": "Minimum voltage:",
