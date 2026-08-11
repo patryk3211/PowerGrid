@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.circuits.editor;
 
+import com.simibubi.create.AllItems;
 import com.simibubi.create.foundation.block.IBE;
 import dev.architectury.registry.menu.MenuRegistry;
 import net.createmod.catnip.math.VoxelShaper;
@@ -24,6 +25,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -91,6 +93,8 @@ public class CircuitDesignTableBlock extends HorizontalElectricBlock implements 
 
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+        if (AllItems.WRENCH.isIn(player.getItemInHand(InteractionHand.MAIN_HAND)))
+            return InteractionResult.PASS;
         if(level.isClientSide)
             return InteractionResult.SUCCESS;
         withBlockEntityDo(level, pos, be -> {
