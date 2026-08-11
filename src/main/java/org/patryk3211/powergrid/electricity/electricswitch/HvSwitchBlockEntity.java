@@ -16,9 +16,9 @@
 package org.patryk3211.powergrid.electricity.electricswitch;
 
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
-import dev.architectury.utils.Env;
-import dev.architectury.utils.EnvExecutor;
 import net.createmod.catnip.animation.LerpedFloat;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -282,10 +282,13 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
         boolean wasSparking = sparking;
         sparking = compound.getBoolean("Sparking");
         if(clientPacket && !wasSparking && sparking) {
-            EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
-                Minecraft.getInstance().getSoundManager().play(new HvSparkSoundInstance(this));
-            });
+            makeSparkSound();
         }
+    }
+
+    @Environment(EnvType.CLIENT)
+    public void makeSparkSound() {
+        Minecraft.getInstance().getSoundManager().play(new HvSparkSoundInstance(this));
     }
 
     @Override
