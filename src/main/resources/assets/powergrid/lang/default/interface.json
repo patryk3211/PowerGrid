@@ -106,10 +106,10 @@
   "powergrid.tooltip.range.max": "Maximum range:",
   "powergrid.tooltip.power.max": "Maximum power:",
 
-  "powergrid.tooltip.solar.voc": "Voc:",
-  "powergrid.tooltip.solar.isc": "Isc:",
-  "powergrid.tooltip.solar.vmp": "Vmp:",
-  "powergrid.tooltip.solar.imp": "Imp:",
+  "powergrid.tooltip.solar.voc": "Open circuit voltage (Voc):",
+  "powergrid.tooltip.solar.isc": "Short circuit current (Isc):",
+  "powergrid.tooltip.solar.vmp": "Max power voltage (Vmp):",
+  "powergrid.tooltip.solar.imp": "Max power current (Imp):",
 
   "powergrid.tooltip.voltage.rated": "Rated voltage:",
   "powergrid.tooltip.voltage.min": "Minimum voltage:",
