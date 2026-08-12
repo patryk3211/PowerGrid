@@ -196,11 +196,12 @@ public class ClientWireInteractions {
     public static void alternatePlacementCheck(Minecraft client, int action) {
         var stack = client.player.getMainHandItem();
         if(!IWire.isWire(client.level, stack.getItem()) || !stack.has(ModdedDataComponents.CONNECTION_DATA.get())) {
-            if(alternatePlacementStatus) {
+            if (alternatePlacementStatus) {
                 alternatePlacementStatus = false;
                 ModdedPackets.sendToServer(new AlternatePlacementStatusC2SPacket(false));
             }
             return;
+        }
         // Update alternate placement status
         if(action == GLFW.GLFW_PRESS || action == GLFW.GLFW_RELEASE) {
             alternatePlacementStatus = action == GLFW.GLFW_PRESS;
