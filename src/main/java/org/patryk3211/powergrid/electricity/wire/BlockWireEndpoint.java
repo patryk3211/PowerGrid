@@ -178,4 +178,13 @@ public class BlockWireEndpoint implements IWireEndpoint {
     public IWireEndpoint makeOffset(BlockPos offset) {
         return new BlockWireEndpoint(pos.offset(offset), terminal);
     }
+
+    @Override
+    public MoveAction shouldMove(Level level, Iterable<BlockPos> allBlocks) {
+        for(var block : allBlocks) {
+            if(block.equals(pos))
+                return MoveAction.MOVE;
+        }
+        return MoveAction.STAY;
+    }
 }

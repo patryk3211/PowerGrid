@@ -180,4 +180,13 @@ public class SocketEndpoint implements ICordEndpoint {
         }
         return false;
     }
+
+    @Override
+    public MoveAction shouldMove(Level level, Iterable<BlockPos> allBlocks) {
+        for(var block : allBlocks) {
+            if(block.equals(pos))
+                return MoveAction.MOVE;
+        }
+        return MoveAction.STAY;
+    }
 }

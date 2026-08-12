@@ -114,12 +114,23 @@ public class SubLevelAssemblerMixin {
                         linePart.remove();
                         powerGrid$handleJunction(level, global, transform, junction, checked, altered, abandonedLines);
                     } else {
-                        endpoint1 = powerGrid$offsetEndpoint(level, endpoint1, transform);
-                        endpoint2 = powerGrid$offsetEndpoint(level, endpoint2, transform);
+                        var move1 = endpoint1.shouldMove(level, blocks);
+                        var move2 = endpoint2.shouldMove(level, blocks);
+                        if(move1 == IWireEndpoint.MoveAction.MOVE)
+                            endpoint1 = powerGrid$offsetEndpoint(level, endpoint1, transform);
+                        if(move2 == IWireEndpoint.MoveAction.MOVE)
+                            endpoint2 = powerGrid$offsetEndpoint(level, endpoint2, transform);
+                        if(move1 == IWireEndpoint.MoveAction.BREAK || move2 == IWireEndpoint.MoveAction.BREAK) {
+                            owner.dropWire();
+                            linePart.remove();
+                            owner.kill();
+                        }
                     }
-                    owner.sublevelMove(endpoint1, endpoint2);
-                    if(transform.getRotation() != Rotation.NONE) {
-                        owner.sublevelRotate(transform.getRotation());
+                    if(!owner.isRemoved()) {
+                        owner.sublevelMove(endpoint1, endpoint2);
+                        if (transform.getRotation() != Rotation.NONE) {
+                            owner.sublevelRotate(transform.getRotation());
+                        }
                     }
                 }
                 if(linePart.owner != null)

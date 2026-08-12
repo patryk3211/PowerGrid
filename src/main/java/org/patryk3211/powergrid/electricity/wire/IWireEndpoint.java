@@ -85,4 +85,14 @@ public interface IWireEndpoint {
     default SubLevelAccess getSubLevel(Level world) {
         return SableCompanion.INSTANCE.getContaining(world, getExactPosition(world));
     }
+
+    default MoveAction shouldMove(Level level, Iterable<BlockPos> allBlocks) {
+        return MoveAction.BREAK;
+    }
+
+    enum MoveAction {
+        MOVE,
+        STAY,
+        BREAK
+    }
 }

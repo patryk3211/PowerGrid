@@ -101,4 +101,13 @@ public class SplitCordEndpoint implements ICordEndpoint {
     public BlockWireEndpoint getEndpoint2() {
         return endpoint2;
     }
+
+    @Override
+    public MoveAction shouldMove(Level level, Iterable<BlockPos> allBlocks) {
+        var move1 = endpoint1.shouldMove(level, allBlocks);
+        var move2 = endpoint2.shouldMove(level, allBlocks);
+        if(move1 == move2)
+            return move1;
+        return MoveAction.BREAK;
+    }
 }

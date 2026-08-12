@@ -168,4 +168,13 @@ public class AutoCordEndpoint implements ICordEndpoint {
     public AutoCordEndpoint rotate(Rotation rotation) {
         return new AutoCordEndpoint(pos, terminal1, terminal2, placement, plugFacing == null ? null : rotation.rotate(plugFacing));
     }
+
+    @Override
+    public MoveAction shouldMove(Level level, Iterable<BlockPos> allBlocks) {
+        for(var block : allBlocks) {
+            if(block.equals(pos))
+                return MoveAction.MOVE;
+        }
+        return MoveAction.STAY;
+    }
 }
