@@ -124,12 +124,12 @@ public class ModularDisplayBlock extends HorizontalElectricBlock implements IBE<
             new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 11, 12, 10, 13, 13, 11).withColor(IDecoratedTerminal.RED),
             new TerminalBoundingBox(IDecoratedTerminal.RESET, 11, 10, 10, 13, 11, 11),
 
-            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 11, 5, 10, 13, 6, 11).withColor(IDecoratedTerminal.RED),
-            new TerminalBoundingBox(IDecoratedTerminal.RESET, 11, 3, 10, 13, 4, 11),
-
             new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 3, 5, 10, 5, 6, 11).withColor(IDecoratedTerminal.RED),
             new TerminalBoundingBox(IDecoratedTerminal.RESET, 3, 3, 10, 5, 4, 11),
 
-            new TerminalBoundingBox(IDecoratedTerminal.CASE_GROUND, 7, 7, 10, 9, 9, 11).withColor(IDecoratedTerminal.BLUE),
+            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 11, 5, 10, 13, 6, 11).withColor(IDecoratedTerminal.RED),
+            new TerminalBoundingBox(IDecoratedTerminal.RESET, 11, 3, 10, 13, 4, 11),
+
+            new TerminalBoundingBox(IDecoratedTerminal.CASE_COMMON, 7, 7, 10, 9, 9, 11).withColor(IDecoratedTerminal.BLUE),
     };
 }

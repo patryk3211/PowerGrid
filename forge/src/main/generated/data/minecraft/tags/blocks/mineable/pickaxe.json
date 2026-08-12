@@ -67,6 +67,7 @@
     "powergrid:andesite_encased_crt",
     "powergrid:brass_encased_crt",
     "powergrid:punch_card_reader",
-    "powergrid:ceiling_tile_solar"
+    "powergrid:ceiling_tile_solar",
+    "powergrid:modular_display"
   ]
 }

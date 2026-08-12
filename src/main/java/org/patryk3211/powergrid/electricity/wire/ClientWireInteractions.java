@@ -48,6 +48,8 @@ public class ClientWireInteractions {
 
     private static final RandomSource r = RandomSource.create();
 
+    private static boolean alternatePlacementStatus = false;
+
     public static void clientTick() {
         var mc = Minecraft.getInstance();
         var target = mc.hitResult;
@@ -185,14 +187,17 @@ public class ClientWireInteractions {
 
     public static void alternatePlacementCheck(Minecraft client, int action) {
         var stack = client.player.getMainHandItem();
-        if(!IWire.isWire(client.level, stack.getItem()))
+        if(!IWire.isWire(client.level, stack.getItem()) || stack.getTagElement("Connection") == null) {
+            if(alternatePlacementStatus) {
+                alternatePlacementStatus = false;
+                ModdedPackets.sendToServer(new AlternatePlacementStatusC2SPacket(false));
+            }
             return;
-        var tag = stack.getTagElement("Connection");
-        if(tag == null)
-            return;
+        }
         // Update alternate placement status
         if(action == GLFW.GLFW_PRESS || action == GLFW.GLFW_RELEASE) {
-            ModdedPackets.sendToServer(new AlternatePlacementStatusC2SPacket(action == GLFW.GLFW_PRESS));
+            alternatePlacementStatus = action == GLFW.GLFW_PRESS;
+            ModdedPackets.sendToServer(new AlternatePlacementStatusC2SPacket(alternatePlacementStatus));
         }
     }
 

@@ -79,8 +79,10 @@ public class DisplaySlotThermal extends BlockEntityBehaviour {
             return;
 
         if (!getWorld().isClientSide) {
-
-
+            if (blockEntity instanceof ModularDisplayBlockEntity be) {
+                SlotData slot = be.getSlot(slotIndex);
+                if (slot.isEmpty()) return;
+            } else return;
             float power = -dissipationFactor * (temperature - BASE_TEMPERATURE);
             for (var source : heatSources) {
                 if (!source.isConverged())

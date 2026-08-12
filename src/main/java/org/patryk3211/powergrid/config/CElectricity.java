@@ -79,6 +79,10 @@ public class CElectricity extends ConfigBase {
     public final ConfigInt solarPanelNOCT = i(45, 0, 100, "solarPanelNOCT", Comments.solarPanelNOCT);
     public final ConfigInt solarPanelMaxSize = i(25, 1, "solarPanelMaxSize", Comments.solarPanelMaxSize);
 
+    public final ConfigFloat hvSwitchSparkExtinguishRPMFactor = f(1, 0, "hvSwitchSparkExtinguishRPMFactor", Comments.hvSwitchSparkExtinguishRPMFactor);
+    public final ConfigFloat hvSwitchSparkMinimumCurrent = f(0.1f, 0, "hvSwitchSparkMinimumCurrent", Comments.hvSwitchSparkMinimumCurrent);
+    public final ConfigFloat hvSwitchSparkPotentialFactor = f(1000, 0, "hvSwitchSparkPotentialFactor", Comments.hvSwitchSparkPotentialFactor);
+
     public final CSolver solver = nested(1, CSolver::new, Comments.solver);
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
     public final CThermal thermal = nested(1, CThermal::new, Comments.thermal);
@@ -155,5 +159,9 @@ public class CElectricity extends ConfigBase {
         public static final String solarPanelImp = "Controls the current part of the max power point, (should be around 92% of the Isc)";
         public static final String solarPanelNOCT = "This is the Nominal Operating Cell Temp of the solar cells in the panel";
         public static final String solarPanelMaxSize = "Controls maximum number of solar panels in a single multiblock";
+
+        public static final String hvSwitchSparkExtinguishRPMFactor = "RPM required to cleanly turn off a HV switch for a given current flowing through it";
+        public static final String hvSwitchSparkMinimumCurrent = "Minimum current for a HV switch spark to continue existing";
+        public static final String hvSwitchSparkPotentialFactor = "Voltage required to spark when the switch is turning on, scales with contact distance";
     }
 }

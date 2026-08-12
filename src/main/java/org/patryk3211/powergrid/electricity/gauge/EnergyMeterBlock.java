@@ -1,5 +1,6 @@
 package org.patryk3211.powergrid.electricity.gauge;
 
+import com.simibubi.create.AllItems;
 import com.simibubi.create.foundation.block.IBE;
 import dev.architectury.registry.menu.MenuRegistry;
 import net.minecraft.core.BlockPos;
@@ -42,6 +43,8 @@ public class EnergyMeterBlock extends HorizontalElectricBlock implements IBE<Ene
 
     @Override
     public InteractionResult use(BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (AllItems.WRENCH.isIn(player.getItemInHand(hand)))
+            return InteractionResult.PASS;
         if(level.isClientSide)
             return InteractionResult.SUCCESS;
         withBlockEntityDo(level, pos, be -> {
