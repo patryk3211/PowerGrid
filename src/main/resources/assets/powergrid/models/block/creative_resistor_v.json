@@ -4,7 +4,8 @@
 	"parent": "block/block",
 	"texture_size": [32, 32],
 	"textures": {
-		"0": "powergrid:block/creative_resistor"
+		"0": "powergrid:block/creative_resistor",
+		"particle": "powergrid:block/creative_resistor"
 	},
 	"elements": [
 		{

@@ -22,7 +22,7 @@ public class HvSparkSoundInstance extends AbstractTickableSoundInstance {
 
     @Override
     public void tick() {
-        if(!be.isSparking()) {
+        if(be.isRemoved() || !be.isSparking()) {
             stop();
             return;
         }
