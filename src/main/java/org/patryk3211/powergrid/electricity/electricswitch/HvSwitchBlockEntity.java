@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.electricity.electricswitch;
 
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import dev.ryanhcode.sable.companion.SableCompanion;
 import net.createmod.catnip.animation.LerpedFloat;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -205,6 +206,11 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
                     .relative(facing, 1.2)
                     .subtract(0, 0.125, 0)
                     .offsetRandom(level.random, 0.1f);
+            var sublevel = SableCompanion.INSTANCE.getContaining(level, worldPosition);
+            if(sublevel != null) {
+                origin = sublevel.lastPose().transformPosition(origin);
+                end = sublevel.lastPose().transformPosition(end);
+            }
             level.addAlwaysVisibleParticle(new ZapParticleData(end, true, 2, 10, 0.1f),
                     true, origin.x, origin.y, origin.z, 0, 0, 0);
             double dist = origin.distanceTo(end);
