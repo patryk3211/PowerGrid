@@ -70,7 +70,7 @@ public class SparkGapBlockEntity extends ElectricBlockEntity {
             var axis = getBlockState().getValue(SparkGapBlock.HORIZONTAL_AXIS);
             var end = center.relative(Direction.fromAxisAndDirection(axis, Direction.AxisDirection.POSITIVE), offset);
             var start = center.relative(Direction.fromAxisAndDirection(axis, Direction.AxisDirection.NEGATIVE), offset);
-            level.addParticle(new ZapParticleData(end.x, end.y, end.z, true)
+            level.addParticle(new ZapParticleData(end, true)
                             .withLife(1)
                             .withSegments(5),
                     start.x, start.y, start.z, 0, 0, 0);

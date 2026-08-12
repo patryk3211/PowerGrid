@@ -158,7 +158,7 @@ public class LightningRodMovementBehaviour implements MovementBehaviour {
             chance = r.nextFloat() * charge * 0.1f;
             while(r.nextFloat() < chance) {
                 var dir = pos1.offsetRandom(r, 8.0f);
-                context.world.addParticle(new ZapParticleData(dir.x, dir.y, dir.z, false).withLife(0), pos1.x, pos1.y, pos1.z, 0, 0, 0);
+                context.world.addParticle(new ZapParticleData(dir, false).withLife(0), pos1.x, pos1.y, pos1.z, 0, 0, 0);
                 chance -= 1.0f;
             }
         }

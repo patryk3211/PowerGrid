@@ -204,7 +204,7 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
                     .relative(facing, 1.2)
                     .subtract(0, 0.125, 0)
                     .offsetRandom(level.random, 0.1f);
-            level.addAlwaysVisibleParticle(new ZapParticleData(end.toVector3f(), true, 2, 10, 0.1f),
+            level.addAlwaysVisibleParticle(new ZapParticleData(end, true, 2, 10, 0.1f),
                     true, origin.x, origin.y, origin.z, 0, 0, 0);
             double dist = origin.distanceTo(end);
             int sparks = (int) (dist / 0.2f);
