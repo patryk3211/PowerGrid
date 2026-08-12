@@ -207,12 +207,12 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
                     .subtract(0, 0.125, 0)
                     .offsetRandom(level.random, 0.1f);
             var sublevel = SableCompanion.INSTANCE.getContaining(level, worldPosition);
-            if(sublevel != null) {
-                origin = sublevel.logicalPose().transformPosition(origin);
-                end = sublevel.logicalPose().transformPosition(end);
-            }
             level.addAlwaysVisibleParticle(new ZapParticleData(end, true, 2, 10, 0.1f),
                     true, origin.x, origin.y, origin.z, 0, 0, 0);
+            if(sublevel != null) {
+                origin = sublevel.lastPose().transformPosition(origin);
+                end = sublevel.lastPose().transformPosition(end);
+            }
             double dist = origin.distanceTo(end);
             int sparks = (int) (dist / 0.2f);
             for(int i = 0; i < sparks + 1; ++i) {

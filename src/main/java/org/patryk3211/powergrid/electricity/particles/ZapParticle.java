@@ -16,6 +16,9 @@
 package org.patryk3211.powergrid.electricity.particles;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import dev.ryanhcode.sable.companion.ClientSubLevelAccess;
+import dev.ryanhcode.sable.companion.SableCompanion;
+import dev.ryanhcode.sable.companion.math.Pose3dc;
 import net.createmod.catnip.render.DefaultSuperRenderTypeBuffer;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -24,6 +27,7 @@ import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.util.Tuple;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedRenderLayers;
 
 import java.util.ArrayList;
@@ -39,8 +43,12 @@ public class ZapParticle extends Particle {
 
     private final List<Tuple<Vec3, Vec3>> segments = new ArrayList<>();
 
+    @Nullable
+    private final ClientSubLevelAccess sublevel;
+
     public ZapParticle(ZapParticleData data, ClientLevel world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) {
         super(world, x, y, z, velocityX, velocityY, velocityZ);
+        sublevel = SableCompanion.INSTANCE.getContainingClient(new Vec3(x, y, z));
         Vec3 end = data.getEnd();
         anchorEnd = data.isAnchored();
         lifetime = data.getLife();
@@ -140,9 +148,16 @@ public class ZapParticle extends Particle {
 
         int argbColor = ((int) (alpha * 255) << 24) | ((int) (rCol * 255) << 16) | ((int) (gCol * 255) << 8) | (int) (bCol * 255);
 
+        Pose3dc pose = null;
+        if(sublevel != null)
+            pose = sublevel.renderPose(tickDelta);
         for(var segment : segments) {
             var a = segment.getA();
             var b = segment.getB();
+            if(pose != null) {
+                a = pose.transformPosition(a);
+                b = pose.transformPosition(b);
+            }
             renderSegment(buffer,
                     a.x - camPos.x, a.y - camPos.y, a.z - camPos.z,
                     b.x - camPos.x, b.y - camPos.y, b.z - camPos.z,
