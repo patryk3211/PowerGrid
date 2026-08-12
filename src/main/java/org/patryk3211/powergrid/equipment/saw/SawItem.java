@@ -19,7 +19,7 @@ import java.util.List;
 
 public class SawItem extends AxeItem {
     public SawItem(Properties properties) {
-        super(Tiers.IRON, properties.durability(250));
+        super(Tiers.IRON, properties);
     }
 
     @Override

@@ -9,17 +9,13 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DiggerItem;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Tiers;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.Tool;
-import net.minecraft.world.item.DiggerItem;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Tiers;
-import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.equipment.ItemBoostUtils;
+import org.patryk3211.powergrid.equipment.PGToolMaterials;
 import org.patryk3211.powergrid.equipment.portablebattery.BatteryUtils;
 
 import java.util.List;
@@ -29,8 +25,7 @@ public class DrillItem extends DiggerItem {
     public static final int TICKS_PER_SPEED_LEVEL = 20;
 
     public DrillItem(Properties properties) {
-        super(Tiers.DIAMOND, BlockTags.MINEABLE_WITH_PICKAXE, properties.stacksTo(1));
-//        1.0f, -3.0f, Tiers.DIAMOND, BlockTags.MINEABLE_WITH_PICKAXE, properties.stacksTo(1).durability(250));
+        super(PGToolMaterials.ZINC_DRILL, BlockTags.MINEABLE_WITH_PICKAXE, properties.stacksTo(1));
     }
 
     public static boolean canMine(BlockState state) {

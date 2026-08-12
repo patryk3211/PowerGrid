@@ -30,8 +30,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.SwordItem;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.equipment.ItemBoostUtils;
+import org.patryk3211.powergrid.equipment.PGToolMaterials;
 import org.patryk3211.powergrid.equipment.portablebattery.BatteryUtils;
-import org.patryk3211.powergrid.equipment.ZincToolMaterial;
 
 import java.util.UUID;
 
@@ -41,7 +41,7 @@ public class ElectroBatonItem extends SwordItem {
     private final Multimap<Attribute, AttributeModifier> modifiers;
 
     public ElectroBatonItem(Properties settings) {
-        super(ZincToolMaterial.INSTANCE, settings.attributes(SwordItem.createAttributes(ZincToolMaterial.INSTANCE, -1, -2.6f)));
+        super(PGToolMaterials.ZINC, settings.attributes(SwordItem.createAttributes(PGToolMaterials.ZINC, -1, -2.6f)));
 
         float attackDamage = -1;
         float attackSpeed = -2.6f;
