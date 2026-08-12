@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.kinetics.generator.rotor;
 
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
+import dev.ryanhcode.sable.companion.SableCompanion;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
@@ -366,7 +367,11 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> implement
         var axis = state.getValue(AXIS);
         for(var e : entities) {
             var pos = getPos();
+            var sublevel = SableCompanion.INSTANCE.getContaining(level, pos);
             var ePos = e.position();
+            if(sublevel != null) {
+                ePos = sublevel.logicalPose().transformPositionInverse(ePos);
+            }
             var direction = new Vec3(
                     axis == Direction.Axis.X ? 0 : ePos.x - pos.getX() - 0.5,
                     axis == Direction.Axis.Y ? 0 : ePos.y - pos.getY() - 0.5,
@@ -377,6 +382,9 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> implement
                     axis == Direction.Axis.Y ? 1 : 0,
                     axis == Direction.Axis.Z ? 1 : 0
             ));
+            if(sublevel != null) {
+                heading = sublevel.logicalPose().transformNormal(heading);
+            }
             var velocity = heading.scale(-getAngularVelocityRadians() * 0.025);
             e.addDeltaMovement(velocity);
             float d = (float) (velocity.length() / 0.16);
