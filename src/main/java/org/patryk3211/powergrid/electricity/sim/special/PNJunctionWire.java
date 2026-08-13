@@ -72,14 +72,24 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         }
     }
 
+    public static double WrightOmega4(double z) {
+        // D'Angelo, Gabrielli and Turchet (2019) approximation
+        double w3 = WrightOmega(z);
+        return w3 - (w3 - Math.exp(z - w3)) / (w3 + 1);
+    }
+
     public double pnLim(double V1, double V0, double Vcrit, double V_T) {
         if(V0 < 0 && V1 > Vcrit)
-            return 0;
+            return Vcrit;
         if(V0 >= 0 && V0 < Vcrit && V1 > Vcrit)
             return Vcrit;
-        var dV = V1 - V0;
-        if(V1 > Vcrit && dV > V_T * 2)
-            return V0 + idealityFactor * V_T * Math.log1p(dV / (idealityFactor * V_T));
+        double dV = V1 - V0;
+        if(V1 > Vcrit && Math.abs(dV) > V_T * 2) {
+            double arg = dV / (idealityFactor * V_T);
+            if(arg + 1 < 0)
+                return Vcrit;
+            return V0 + idealityFactor * V_T * Math.log1p(arg);
+        }
         return V1;
     }
 
@@ -118,7 +128,7 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         // Banwell and Jayakumar (2000)
         double IsRs = I_s2 * R_s;
         double Omega_arg = Math.log(IsRs / n / V_T) + (IsRs + V) / (n * V_T);
-        double WTerm = WrightOmega(Omega_arg);
+        double WTerm = WrightOmega4(Omega_arg);
         double G = Math.max(WTerm / (R_s * (1 + WTerm)), ElectricalNetwork.G_MIN);
 
         double I = V_T * n * WTerm / R_s - I_s2;
@@ -127,7 +137,7 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
             double V_over = -breakdownVoltage - V; //so only when in reverse bias
             double B_IsRs = breakdownSaturationCurrent * R_s;
             double B_Omega_arg = Math.log(B_IsRs / n / V_T) + (B_IsRs + V_over) / (n * V_T);
-            double B_WTerm = WrightOmega(B_Omega_arg);
+            double B_WTerm = WrightOmega4(B_Omega_arg);
             G += Math.max(B_WTerm / (R_s * (1 + B_WTerm)), ElectricalNetwork.G_MIN);
             I -= V_T * n * B_WTerm / R_s - breakdownSaturationCurrent;
         }

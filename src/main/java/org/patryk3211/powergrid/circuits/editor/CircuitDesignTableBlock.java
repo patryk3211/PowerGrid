@@ -58,10 +58,10 @@ public class CircuitDesignTableBlock extends HorizontalElectricBlock implements 
     private static final VoxelShaper SHAPER = VoxelShaper.forHorizontal(Shapes.or(
             box(3, 0, 3, 13, 12, 13),
             box(0, 11, 2, 16, 14, 14),
-            box(4, 3, 12, 12, 11, 16)
+            box(4, 3, 12, 12, 11, 14)
     ), Direction.NORTH);
 
-    private static final TerminalBoundingBox SOCKET_NORTH = new TerminalBoundingBox(IDecoratedTerminal.SOCKET, 6, 5, 14, 10, 9, 18);
+    private static final TerminalBoundingBox SOCKET_NORTH = new TerminalBoundingBox(IDecoratedTerminal.SOCKET, 6, 5, 12, 10, 9, 16);
     private static final TerminalBoundingBox SOCKET_SOUTH = SOCKET_NORTH.rotateAroundY(180);
     private static final TerminalBoundingBox SOCKET_EAST = SOCKET_NORTH.rotateAroundY(90);
     private static final TerminalBoundingBox SOCKET_WEST = SOCKET_NORTH.rotateAroundY(-90);

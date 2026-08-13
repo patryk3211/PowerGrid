@@ -509,23 +509,32 @@ public class DataProviderUtilityImpl {
                     surfaceFacingTransforms(state, (x, y, vertical) -> {
                         var part = builder.part();
                         if (vertical) {
-                            part.modelFile(modModel(prov, "block/fuse_holder"));
+                            part.modelFile(modModel(prov, "block/fuse_holder/fuse_holder_v"));
                         } else {
-                            part.modelFile(modModel(prov, "block/fuse_holder_h"));
+                            part.modelFile(modModel(prov, "block/fuse_holder/fuse_holder_h"));
                         }
                         part.rotationX(x).rotationY(y);
                         part.addModel().condition(FACING, facing).condition(ALONG_FIRST_AXIS, axis);
+
+                        part = builder.part();
+                        if (vertical) {
+                            part.modelFile(modModel(prov, "block/fuse_holder/fuse_v"));
+                        } else {
+                            part.modelFile(modModel(prov, "block/fuse_holder/fuse_h"));
+                        }
+                        part.rotationX(x).rotationY(y);
+                        part.addModel().condition(FACING, facing).condition(FuseHolderBlock.STATE, FuseState.CLOSED).condition(ALONG_FIRST_AXIS, axis);
+
+                        part = builder.part();
+                        if (vertical) {
+                            part.modelFile(modModel(prov, "block/fuse_holder/fuse_blown_v"));
+                        } else {
+                            part.modelFile(modModel(prov, "block/fuse_holder/fuse_blown_h"));
+                        }
+                        part.rotationX(x).rotationY(y);
+                        part.addModel().condition(FACING, facing).condition(FuseHolderBlock.STATE, FuseState.BLOWN).condition(ALONG_FIRST_AXIS, axis);
                     });
                 }
-                var part = builder.part();
-                part.modelFile(modModel(prov, "block/fuse"));
-                rotateDownFacingModel(part, facing);
-                part.addModel().condition(FACING, facing).condition(FuseHolderBlock.STATE, FuseState.CLOSED);
-
-                part = builder.part();
-                part.modelFile(modModel(prov, "block/fuse_blown"));
-                rotateDownFacingModel(part, facing);
-                part.addModel().condition(FACING, facing).condition(FuseHolderBlock.STATE, FuseState.BLOWN);
             }
         };
     }

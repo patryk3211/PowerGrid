@@ -492,12 +492,13 @@ public class CraftingRecipes extends StandardRecipeProvider {
 
     FUSE_HOLDER = create(ModdedBlocks.FUSE_HOLDER)
             .unlockedBy(() -> ModdedItems.RESISTIVE_COIL)
+            .returns(2)
             .viaShaped(b -> b
                     .pattern("I")
-                    .pattern("A")
+                    .pattern("E")
                     .pattern("C")
                     .define('I', ironSheet())
-                    .define('A', andesiteCasing())
+                    .define('E', conductiveCasing())
                     .define('C', copperSheet())),
 
     DEVICE_CONNECTOR = create(ModdedBlocks.DEVICE_CONNECTOR)

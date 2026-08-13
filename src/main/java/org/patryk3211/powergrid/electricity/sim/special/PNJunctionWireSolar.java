@@ -21,7 +21,7 @@ import org.patryk3211.powergrid.electricity.sim.node.IElectricNode;
 import org.patryk3211.powergrid.electricity.sim.solver.IResidualAdder;
 import org.patryk3211.powergrid.electricity.sim.solver.ISolverHook;
 
-import static org.patryk3211.powergrid.electricity.sim.special.PNJunctionWire.WrightOmega;
+import static org.patryk3211.powergrid.electricity.sim.special.PNJunctionWire.WrightOmega4;
 
 public class PNJunctionWireSolar extends AbstractElectricWire implements ISolverHook {
     private double temperatureCelsius;
@@ -96,7 +96,7 @@ public class PNJunctionWireSolar extends AbstractElectricWire implements ISolver
         // Banwell and Jayakumar (2000)
         double IsRs = I_s2 * R_s;
         double Omega_arg = Math.log(IsRs / n / V_T) + (IsRs + V) / (n * V_T);
-        double WTerm = WrightOmega(Omega_arg);
+        double WTerm = WrightOmega4(Omega_arg);
         double G = Math.max(WTerm / (R_s * (1 + WTerm)), ElectricalNetwork.G_MIN);
 
         double I = V_T * n * WTerm / R_s - I_s2;
@@ -105,7 +105,7 @@ public class PNJunctionWireSolar extends AbstractElectricWire implements ISolver
             double V_over = -breakdownVoltage - V; //so only when in reverse bias
             double B_IsRs = breakdownSaturationCurrent * R_s;
             double B_Omega_arg = Math.log(B_IsRs / n / V_T) + (B_IsRs + V_over) / (n * V_T);
-            double B_WTerm = WrightOmega(B_Omega_arg);
+            double B_WTerm = WrightOmega4(B_Omega_arg);
             G += Math.max(B_WTerm / (R_s * (1 + B_WTerm)), ElectricalNetwork.G_MIN);
             I -= V_T * n * B_WTerm / R_s - breakdownSaturationCurrent;
         }
