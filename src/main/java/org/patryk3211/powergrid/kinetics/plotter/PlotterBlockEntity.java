@@ -164,6 +164,7 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
     @Override
     public void tick() {
         super.tick();
+        prevHeadPosition = headPosition;
         if(!isSpeedRequirementFulfilled())
             return;
         if(!wire.isConverged() && !ModdedConfigs.server().electricity.plotterRecordNonconvergence.get())
@@ -172,7 +173,6 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
         int newSize = (int) (128 / Math.abs(getSpeed()) * 40 * ticks);
         if(newSize != sampleBuffer.length)
             resample(newSize);
-        prevHeadPosition = headPosition;
 
         headTarget = 0;
         for(int i = 0; i < ticks; ++i) {
