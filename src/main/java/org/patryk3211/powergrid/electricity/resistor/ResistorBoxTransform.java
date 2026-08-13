@@ -27,6 +27,6 @@ public class ResistorBoxTransform extends CenteredSideValueBoxTransform {
 
     @Override
     protected Vec3 getSouthLocation() {
-        return VecHelper.voxelSpace(8.0f, 8.0f, 8.5f);
+        return VecHelper.voxelSpace(8.0f, 8.0f, 7.6f);
     }
 }
