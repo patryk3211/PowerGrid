@@ -15,7 +15,6 @@ import net.createmod.catnip.math.BlockFace;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.BlockAndTintGetter;
@@ -45,7 +44,6 @@ public class ElectricPumpBlockEntity extends ElectricBlockEntity implements IHav
 
     Couple<MutableBoolean> sidesToUpdate = Couple.create(MutableBoolean::new);
     boolean pressureUpdate;
-    boolean scheduleFlip;
 
     public ElectricPumpBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -72,12 +70,10 @@ public class ElectricPumpBlockEntity extends ElectricBlockEntity implements IHav
     public void tick() {
         super.tick();
         if(!level.isClientSide || isVirtual()) {
-            if(scheduleFlip) {
-                level.setBlockAndUpdate(worldPosition, getBlockState()
-                        .setValue(FACING, getBlockState().getValue(FACING).getOpposite()));
-                scheduleFlip = false;
+            if(sidesToUpdate.either(MutableBoolean::booleanValue)) {
+                // If either one is true, we wipe pressure
+                getBehaviour(FluidTransportBehaviour.TYPE).wipePressure();
             }
-
             sidesToUpdate.forEachWithContext((update, isFront) -> {
                 if(!update.isFalse()) {
                     update.setFalse();
@@ -117,14 +113,6 @@ public class ElectricPumpBlockEntity extends ElectricBlockEntity implements IHav
         }
 
         this.sidesToUpdate.forEach(MutableBoolean::setTrue);
-    }
-
-    @Override
-    protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
-        super.read(tag, registries, clientPacket);
-        if(tag.getBoolean("Reversed")) {
-            this.scheduleFlip = true;
-        }
     }
 
     protected void distributePressureTo(Direction side) {
@@ -265,7 +253,6 @@ public class ElectricPumpBlockEntity extends ElectricBlockEntity implements IHav
     public void updatePipesOnSide(Direction side) {
         if(isSideAccessible(side)) {
             updatePipeNetwork(isFront(side));
-            getBehaviour(FluidTransportBehaviour.TYPE).wipePressure();
         }
     }
 

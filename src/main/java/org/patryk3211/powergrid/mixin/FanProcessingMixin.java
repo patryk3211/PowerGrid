@@ -16,10 +16,13 @@
 package org.patryk3211.powergrid.mixin;
 
 import com.llamalad7.mixinextras.sugar.Local;
+import com.simibubi.create.content.kinetics.belt.behaviour.TransportedItemStackHandlerBehaviour;
+import com.simibubi.create.content.kinetics.belt.transport.TransportedItemStack;
 import com.simibubi.create.content.kinetics.fan.processing.FanProcessing;
 import com.simibubi.create.content.kinetics.fan.processing.FanProcessingType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.electricity.heater.IProcessingTypeModifier;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -37,11 +40,24 @@ public class FanProcessingMixin {
                     shift = At.Shift.AFTER
             )
     )
-    private static void powerGrid$modifyProcessingTime(ItemEntity entity, FanProcessingType type, CallbackInfoReturnable<Integer> cir, @Local(ordinal = 2) CompoundTag processing) {
+    private static void powerGrid$modifyProcessingTimeEntity(ItemEntity entity, FanProcessingType type, CallbackInfoReturnable<Integer> cir, @Local(ordinal = 2) CompoundTag processing) {
         if(type instanceof IProcessingTypeModifier modifier) {
             int time = processing.getInt("Time");
             time = modifier.modifyTime(time);
             processing.putInt("Time", time);
+        }
+    }
+
+    @Inject(
+            method = "applyProcessing(Lcom/simibubi/create/content/kinetics/belt/transport/TransportedItemStack;Lnet/minecraft/world/level/Level;Lcom/simibubi/create/content/kinetics/fan/processing/FanProcessingType;)Lcom/simibubi/create/content/kinetics/belt/behaviour/TransportedItemStackHandlerBehaviour$TransportedResult;",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lcom/simibubi/create/content/kinetics/fan/processing/FanProcessingType;canProcess(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/level/Level;)Z"
+            )
+    )
+    private static void powerGrid$modifyProcessingTimeDepot(TransportedItemStack transported, Level world, FanProcessingType type, CallbackInfoReturnable<TransportedItemStackHandlerBehaviour.TransportedResult> cir) {
+        if(type instanceof IProcessingTypeModifier modifier) {
+            transported.processingTime = modifier.modifyTime(transported.processingTime);
         }
     }
 }

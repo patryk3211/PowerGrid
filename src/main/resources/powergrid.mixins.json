@@ -13,6 +13,7 @@
     "ChuteBlockEntityMixin",
     "EntityMixin",
     "FanProcessingMixin",
+    "FluidPropagatorMixin",
     "KineticBlockEntityAccessor",
     "LightningAccessor",
     "PlayerMixin",
