@@ -858,7 +858,9 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::wooden)
             .transform(axeOrPickaxe())
             .transform(CResistance.setResistance(0.2))
-            .simpleItem()
+            .item()
+                .model(itemWithParent("block/fuse_holder/item"))
+                .build()
             .register();
 
     public static final BlockEntry<AlarmBellBlock> ALARM_BELL = REGISTRATE.block("alarm_bell", AlarmBellBlock::new)

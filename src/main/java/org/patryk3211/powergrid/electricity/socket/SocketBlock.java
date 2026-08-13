@@ -45,14 +45,14 @@ public class SocketBlock extends Rotation4ElectricBlock implements IBE<SocketBlo
                     .withColor(IDecoratedTerminal.BLUE)
     };
 
-    private final TerminalBoundingBox SOCKET_DOWN = new TerminalBoundingBox(IDecoratedTerminal.SOCKET, 6, 3, 6, 10, 5, 10);
+    private final TerminalBoundingBox SOCKET_DOWN = new TerminalBoundingBox(IDecoratedTerminal.SOCKET, 6, 2, 6, 10, 4, 10);
     private final TerminalBoundingBox SOCKET_UP = SOCKET_DOWN.rotateAroundX(180);
     private final TerminalBoundingBox SOCKET_NORTH = SOCKET_DOWN.rotateAroundX(-90);
     private final TerminalBoundingBox SOCKET_SOUTH = SOCKET_DOWN.rotateAroundX(90);
     private final TerminalBoundingBox SOCKET_EAST = SOCKET_DOWN.rotateAroundX(90).rotateAroundY(-90);
     private final TerminalBoundingBox SOCKET_WEST = SOCKET_DOWN.rotateAroundX(90).rotateAroundY(90);
 
-    private static final VoxelShape SHAPE_DOWN = box(4, 0, 4, 12, 4, 12);
+    private static final VoxelShape SHAPE_DOWN = box(4, 0, 4, 12, 3, 12);
 
     public SocketBlock(Properties settings) {
         super(settings);
