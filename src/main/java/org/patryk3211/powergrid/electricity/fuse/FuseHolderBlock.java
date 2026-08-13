@@ -29,7 +29,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedTags;
@@ -41,18 +40,12 @@ public class FuseHolderBlock extends SurfaceElectricBlock implements IBE<FuseHol
     public static final EnumProperty<FuseState> STATE = EnumProperty.create("state", FuseState.class);
 
     private static final TerminalBoundingBox[] TERMINALS_DOWN = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6.5, 0, 0, 9.5, 3, 1),
-            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6.5, 0, 15, 9.5, 3, 16)
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 7, 1, 2.5, 9, 3, 3.5),
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 7, 1, 12.5, 9, 3, 13.5)
     };
 
-    private static final VoxelShape SHAPE_DOWN_1 = Shapes.or(
-            box(4, 0, 1, 12, 6, 15),
-            box(4, 6, 4, 12, 8, 12)
-    );
-    private static final VoxelShape SHAPE_DOWN_2 = Shapes.or(
-            box(1, 0, 4, 15, 6, 12),
-            box(4, 6, 4, 12, 8, 12)
-    );
+    private static final VoxelShape SHAPE_DOWN_1 = box(6.5, 0, 3.5, 9.5, 4, 12.5);
+    private static final VoxelShape SHAPE_DOWN_2 = box(3.5, 0, 6.5, 12.5, 4, 9.5);
 
     public FuseHolderBlock(Properties settings) {
         super(settings);

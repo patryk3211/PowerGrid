@@ -1,12 +1,12 @@
 {
-	"format_version": "1.21.11",
+	"format_version": "1.9.0",
 	"credit": "Made with Blockbench",
 	"parent": "block/block",
 	"texture_size": [64, 64],
 	"textures": {
 		"0": "powergrid:block/power_plug",
 		"1": "powergrid:block/circuit_design_table",
-		"particle": "powergrid:block/wire_connector"
+		"particle": "powergrid:block/power_plug"
 	},
 	"elements": [
 		{
@@ -72,40 +72,14 @@
 			}
 		},
 		{
-			"from": [12, 5, 12],
-			"to": [13, 9, 14],
-			"rotation": {"angle": 0, "axis": "y", "origin": [12, 5, 12]},
-			"faces": {
-				"north": {"uv": [8, 1, 12, 2], "rotation": 90, "texture": "#0", "cullface": "down"},
-				"east": {"uv": [8, 0, 12, 2], "rotation": 90, "texture": "#0"},
-				"south": {"uv": [8, 0, 12, 1], "rotation": 90, "texture": "#0"},
-				"up": {"uv": [8, 0, 9, 2], "texture": "#0"},
-				"down": {"uv": [11, 0, 12, 2], "rotation": 180, "texture": "#0"}
-			}
-		},
-		{
-			"from": [3, 5, 12],
-			"to": [4, 9, 14],
-			"rotation": {"angle": 0, "axis": "y", "origin": [3, 5, 12]},
-			"faces": {
-				"north": {"uv": [8, 1, 12, 2], "rotation": 90, "texture": "#0", "cullface": "down"},
-				"south": {"uv": [8, 0, 12, 1], "rotation": 90, "texture": "#0"},
-				"west": {"uv": [8, 0, 12, 2], "rotation": 90, "texture": "#0"},
-				"up": {"uv": [8, 0, 9, 2], "rotation": 180, "texture": "#0"},
-				"down": {"uv": [11, 0, 12, 2], "texture": "#0"}
-			}
-		},
-		{
 			"from": [4, 3, 12],
-			"to": [12, 11, 16],
-			"rotation": {"angle": 0, "axis": "y", "origin": [0, -1, 12]},
+			"to": [12, 11, 14],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 7.5, 12]},
 			"faces": {
-				"north": {"uv": [8, 8, 16, 16], "texture": "#0", "cullface": "down"},
-				"east": {"uv": [0, 8, 8, 12], "rotation": 270, "texture": "#0"},
-				"south": {"uv": [0, 0, 8, 8], "texture": "#0"},
-				"west": {"uv": [0, 8, 8, 12], "rotation": 90, "texture": "#0"},
-				"up": {"uv": [0, 8, 8, 12], "rotation": 180, "texture": "#0"},
-				"down": {"uv": [0, 8, 8, 12], "texture": "#0"}
+				"east": {"uv": [8, 3, 16, 5], "rotation": 270, "texture": "#0"},
+				"south": {"uv": [8, 8, 0, 0], "texture": "#0"},
+				"west": {"uv": [8, 9, 16, 11], "rotation": 90, "texture": "#0"},
+				"down": {"uv": [8, 6, 16, 8], "texture": "#0"}
 			}
 		}
 	],
@@ -117,10 +91,10 @@
 			"children": [0, 1, 2, 3, 4]
 		},
 		{
-			"name": "Plug",
+			"name": "power_plug_h",
 			"origin": [8, 8, 8],
 			"color": 0,
-			"children": [5, 6, 7]
+			"children": [5]
 		}
 	]
 }
