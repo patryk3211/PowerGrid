@@ -122,10 +122,12 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
         super.write(tag, clientPacket);
         if(overwrite)
             tag.putBoolean("Overwrite", true);
-        tag.putFloat("NodeValue", getValue());
         if(frequency != 0) {
+            tag.putFloat("NodeValue", amplitude);
             tag.putFloat("Freq", frequency);
             tag.putFloat("DC", dc);
+        } else {
+            tag.putFloat("NodeValue", getValue());
         }
     }
 
@@ -134,10 +136,12 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
         super.writeSafe(tag);
         if(overwrite)
             tag.putBoolean("Overwrite", true);
-        tag.putFloat("NodeValue", getValue());
         if(frequency != 0) {
+            tag.putFloat("NodeValue", amplitude);
             tag.putFloat("Freq", frequency);
             tag.putFloat("DC", dc);
+        } else {
+            tag.putFloat("NodeValue", getValue());
         }
     }
 
@@ -150,6 +154,7 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
         } else {
             currentSourceNode.setCurrent(value);
         }
+        setChanged();
     }
 
     public void setValue(float amplitude, float frequency, float dc) {
@@ -161,6 +166,7 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
         } else {
             throw new UnsupportedOperationException("Current source doesn't support frequency argument");
         }
+        setChanged();
     }
 
     public float getValue() {
