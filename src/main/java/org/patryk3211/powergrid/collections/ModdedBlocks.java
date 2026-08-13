@@ -569,6 +569,7 @@ public class ModdedBlocks {
             .blockstate(surfaceBlock("block/resistor"))
             .initialProperties(SharedProperties::stone)
             .transform(pickaxeOnly())
+            .addLayer(() -> RenderType::cutoutMipped)
             .transform(CThermal.maxPower(1000, 2.0f))
             .item()
                 .model(itemWithParent("block/resistor_v"))
