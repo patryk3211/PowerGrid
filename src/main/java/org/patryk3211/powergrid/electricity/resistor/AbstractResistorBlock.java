@@ -33,23 +33,12 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 public class AbstractResistorBlock extends SurfaceElectricBlock {
     private static final TerminalBoundingBox[] TERMINALS = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6, 7, 0, 10, 9, 2),
-            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6, 7, 14, 10, 9, 16)
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 7, 4, 0.5, 9, 6, 3),
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 7, 4, 13, 9, 6, 15.5)
     };
 
-    private static final VoxelShape SHAPE1 = Shapes.or(
-            box(4, 0, 0, 12, 2, 16),
-            box(5, 3, 3, 11, 9, 13),
-            box(6, 2, 0, 10, 9, 3),
-            box(6, 2, 13, 10, 9, 16)
-    );
-
-    private static final VoxelShape SHAPE2 = Shapes.or(
-            box(0, 0, 4, 16, 2, 12),
-            box(3, 3, 5, 13, 9, 11),
-            box(0, 2, 6, 3, 9, 10),
-            box(13, 2, 6, 16, 9, 10)
-    );
+    private static final VoxelShape SHAPE1 = box(5, 2, 3, 11, 8, 13);
+    private static final VoxelShape SHAPE2 = box(3, 2, 5, 13, 8, 11);
 
     public AbstractResistorBlock(Properties settings) {
         super(settings);
