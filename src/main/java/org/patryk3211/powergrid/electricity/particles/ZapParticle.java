@@ -86,7 +86,7 @@ public class ZapParticle extends Particle {
         for(int i = 0; i < segmentCount; ++i) {
             var straightEndPos = segmentVector.add(straightPos);
             var endPos = segmentVector.add(pos);
-            endPos
+            endPos = endPos
                     .add(cross1.scale((random.nextFloat() - 0.5f) * totalLength * 50))
                     .add(cross2.scale((random.nextFloat() - 0.5f) * totalLength * 50));
             var middle = segmentCount / 2;
@@ -98,7 +98,7 @@ public class ZapParticle extends Particle {
             }
             factor *= factorMultiplier;
             float invFactor = 1.0f - factor;
-            endPos.scale(factor).add(straightEndPos.x * invFactor, straightEndPos.y * invFactor, straightEndPos.z * invFactor);
+            endPos = endPos.scale(factor).add(straightEndPos.x * invFactor, straightEndPos.y * invFactor, straightEndPos.z * invFactor);
 
             addSegment(pos, endPos);
             if(i != 0 && random.nextFloat() < 0.2f) {

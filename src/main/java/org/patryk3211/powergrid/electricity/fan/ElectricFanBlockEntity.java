@@ -35,7 +35,6 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 
 import java.util.List;
 
-import static com.simibubi.create.content.kinetics.base.KineticBlockEntity.convertToDirection;
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.FACING;
 
 /**
@@ -111,7 +110,6 @@ public class ElectricFanBlockEntity extends ElectricBlockEntity implements IAirC
         if(speed == 0)
             return null;
         Direction facing = getBlockState().getValue(FACING);
-        speed = convertToDirection(speed, facing);
         return speed > 0 ? facing : facing.getOpposite();
     }
 

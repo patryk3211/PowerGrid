@@ -54,11 +54,11 @@ public class ZapParticleData implements ParticleOptions, ICustomParticleData<Zap
     }
 
     public ZapParticleData(Vec3 end, boolean anchor) {
-        this(end, anchor, 1, -1);
+        this(end, anchor, 1, -1, 1);
     }
 
     public ZapParticleData(Vec3 end, boolean anchor, int life) {
-        this(end, anchor, life, -1);
+        this(end, anchor, life, -1, 1);
     }
 
     public ZapParticleData(Vec3 end, boolean anchor, int life, int segmentCount) {
@@ -66,6 +66,7 @@ public class ZapParticleData implements ParticleOptions, ICustomParticleData<Zap
         this.anchor = anchor;
         this.life = life;
         this.segmentCount = segmentCount;
+        this.factor = 1;
     }
 
     public ZapParticleData(Vec3 end, boolean anchor, int life, int segmentCount, float factor) {

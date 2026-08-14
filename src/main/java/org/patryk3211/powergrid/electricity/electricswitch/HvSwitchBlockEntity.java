@@ -35,13 +35,15 @@ import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.particles.HvSparkSoundInstance;
+import org.patryk3211.powergrid.electricity.particles.SparkSoundOwner;
 import org.patryk3211.powergrid.electricity.particles.ZapParticleData;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
 import java.util.List;
 
-public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
+public class HvSwitchBlockEntity extends ElectricKineticBlockEntity implements SparkSoundOwner {
     protected LerpedFloat rod;
     @Nullable
     private SwitchedWire wire;
@@ -117,6 +119,7 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity {
         return ModdedConfigs.server().electricity.hvSwitchSparkMinimumCurrent.getF();
     }
 
+    @Override
     public boolean isSparking() {
         return sparking;
     }

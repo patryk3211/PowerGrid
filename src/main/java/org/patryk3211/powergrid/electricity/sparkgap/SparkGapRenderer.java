@@ -32,7 +32,7 @@ public class SparkGapRenderer extends SafeBlockEntityRenderer<SparkGapBlockEntit
         var state = be.getBlockState();
         var buffer = CachedBuffers.partial(ModdedPartialModels.SPARK_GAP_ARM, state);
         var facing = Direction.fromAxisAndDirection(state.getValue(SparkGapBlock.HORIZONTAL_AXIS), Direction.AxisDirection.POSITIVE);
-        float offset = be.setting.getValue() / 18f * (3 / 16f);
+        float offset = be.setting.getValue() / 18f * (1.5f / 18f);
 
         var consumer = bufferSource.getBuffer(RenderType.solid());
         buffer
