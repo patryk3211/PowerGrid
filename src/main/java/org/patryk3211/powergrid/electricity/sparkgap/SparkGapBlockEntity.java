@@ -65,7 +65,7 @@ public class SparkGapBlockEntity extends ElectricBlockEntity {
         super.tick();
         if(level.isClientSide && plasmaChannel.getState()) {
             var center = worldPosition.getCenter().subtract(0, 0.125f, 0);
-            float offset = (1 + setting.getValue() * 3 / 18f) / 16f;
+            float offset = (1 + setting.getValue() * 2.8f / 18f) / 33f;
 
             var axis = getBlockState().getValue(SparkGapBlock.HORIZONTAL_AXIS);
             var end = center.relative(Direction.fromAxisAndDirection(axis, Direction.AxisDirection.POSITIVE), offset);
