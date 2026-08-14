@@ -36,6 +36,7 @@ public class WireScenes {
         var electric = ElectricInstructions.of(scene);
         scene.title("wire_simple", "Transferring electricity using wires");
         scene.configureBasePlate(0, 0, 7);
+        scene.setNextUpEnabled(true);
 
         var sourcePos = util.grid().at(0, 1, 0);
         var lightPos = util.grid().at(6, 1, 3);
@@ -79,6 +80,7 @@ public class WireScenes {
         var electric = ElectricInstructions.of(scene);
         scene.title("wire_voltage_drop", "Transfer losses");
         scene.configureBasePlate(0, 0, 7);
+        scene.setNextUpEnabled(true);
 
         var sourcePos = util.grid().at(0, 1, 0);
         electric.connectInvisible(util.grid().at(0, 1, 2), 0, sourcePos, 0);
@@ -94,8 +96,8 @@ public class WireScenes {
         electric.connect(util.grid().at(0, 1, 2), 0, util.grid().at(5, 1, 2), 0, 5.0f);
         electric.connect(util.grid().at(0, 1, 4), 0, util.grid().at(5, 1, 4), 0, 5.0f);
 
-        electric.connect(util.grid().at(5, 1, 2), 0, util.grid().at(6, 1, 3), 1);
-        electric.connect(util.grid().at(5, 1, 4), 0, util.grid().at(6, 1, 3), 0);
+        electric.connect(util.grid().at(5, 1, 2), 0, util.grid().at(6, 1, 3), 0);
+        electric.connect(util.grid().at(5, 1, 4), 0, util.grid().at(6, 1, 3), 1);
 
         electric.connect(util.grid().at(5, 1, 2), 0, util.grid().at(5, 1, 3), 0);
         electric.connect(util.grid().at(5, 1, 4), 0, util.grid().at(5, 1, 3), 1);
@@ -185,8 +187,55 @@ public class WireScenes {
         electric.connect(positions[5], 0, positions[7], 0);
         scene.idle(70);
 
+        scene.overlay().showText(70)
+                .text("They serve no purpose other than routing wires")
+                .attachKeyFrame()
+                .placeNearTarget();
+        scene.idle(80);
+
         scene.markAsFinished();
         electric.unload();
+    }
+
+    public static void wireLoop(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("wire_loop", "Current loops");
+        scene.configureBasePlate(0, 0, 7);
+        scene.setNextUpEnabled(true);
+
+        scene.showBasePlate();
+        scene.idle(10);
+
+        var light = util.grid().at(5, 1, 3);
+        var source = util.grid().at(1, 1, 3);
+
+        scene.world().showSection(util.select().position(source), Direction.DOWN);
+        scene.idle(5);
+        scene.world().showSection(util.select().position(3, 1, 4), Direction.DOWN);
+        scene.world().showSection(util.select().position(3, 1, 2), Direction.DOWN);
+        scene.idle(5);
+        scene.world().showSection(util.select().position(light), Direction.DOWN);
+        scene.idle(5);
+
+        scene.electric().connect(source, 0, util.grid().at(3, 1, 2), 0);
+        scene.electric().connect(light, 0, util.grid().at(3, 1, 2), 0);
+        scene.idle(10);
+
+        scene.overlay().showText(70)
+                .text("Current will not flow unless the circuit forms a complete loop")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(80);
+
+        scene.electric().connect(source, 1, util.grid().at(3, 1, 4), 0);
+        scene.electric().connect(light, 1, util.grid().at(3, 1, 4), 0);
+        scene.electric().tickForever();
+        scene.idle(20);
+        scene.world().modifyBlock(light, state -> state.setValue(LightFixtureBlock.POWER, 2), false);
+        scene.effects().indicateSuccess(light);
+        scene.idle(40);
+
+        scene.markAsFinished();
     }
 
     public static void grounding(SceneBuilder builder, SceneBuildingUtil util) {

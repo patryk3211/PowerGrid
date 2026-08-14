@@ -93,6 +93,18 @@ public class GaugeScenes {
             scene.idle(40);
             scene.effects().indicateSuccess(gaugePos);
             scene.idle(10);
+
+            scene.overlay().showText(60)
+                    .text("It connects in parallel to your circuit")
+                    .attachKeyFrame()
+                    .placeNearTarget();
+            scene.idle(70);
+            scene.overlay().showText(80)
+                    .text("If you were to connect it in series, virtually no current would be able to flow")
+                    .placeNearTarget()
+                    .attachKeyFrame()
+                    .colored(PonderPalette.RED);
+            scene.idle(90);
         } else {
             scene.overlay().showText(60)
                     .text("The " + component + " displays the current flowing through it's terminals")
@@ -130,6 +142,13 @@ public class GaugeScenes {
             scene.electric().setSource(sourcePos, 10);
             scene.electric().tickFor(10);
             scene.idle(50);
+
+            scene.overlay().showText(90)
+                    .text("If you were to connect it in parallel, huge currents might flow which can potentially damage the meter or nearby equipment")
+                    .placeNearTarget()
+                    .attachKeyFrame()
+                    .colored(PonderPalette.RED);
+            scene.idle(100);
         }
 
         scene.overlay().showText(60)

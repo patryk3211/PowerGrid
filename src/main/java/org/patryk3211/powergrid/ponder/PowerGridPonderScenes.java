@@ -22,7 +22,6 @@ import com.tterrag.registrate.util.entry.ItemProviderEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import net.createmod.ponder.api.registration.PonderSceneRegistrationHelper;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Items;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.ponder.scenes.*;
@@ -68,6 +67,7 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedItems.INSULATED_COPPER_WIRE, "wire/insulated_wire", WireScenes::insulatedWire);
         HELPER.forComponents(ModdedItems.WIRE, ModdedItems.IRON_WIRE, ModdedItems.GOLDEN_WIRE, ModdedItems.INSULATED_COPPER_WIRE)
                 .addStoryBoard("wire/simple", WireScenes::simple)
+                .addStoryBoard("wire/wire_loop", WireScenes::wireLoop)
                 .addStoryBoard("wire/voltage_drop", WireScenes::voltageDrop);
         HELPER.forComponents(ModdedItems.CORD, ModdedItems.STRING_LIGHT_CORD)
                 .addStoryBoard("wire/cord", WireScenes::cord);
