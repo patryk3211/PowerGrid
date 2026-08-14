@@ -27,7 +27,8 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 public class SparkGapBlock extends HorizontalAxisElectricBlock implements IBE<SparkGapBlockEntity> {
     public static final VoxelShape SHAPE_NORTH = Shapes.or(
             box(3, 0, 2, 13, 3, 14),
-            box(5, 3, 2.5, 11, 9, 13.5)
+            box(5, 3, 2.5, 11, 9, 5.5),
+            box(5, 3, 10.5, 11, 9, 13.5)
     );
 
     public static final TerminalBoundingBox[] TERMINALS_NORTH = new TerminalBoundingBox[] {
