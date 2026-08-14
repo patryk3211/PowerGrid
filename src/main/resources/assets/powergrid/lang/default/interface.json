@@ -67,7 +67,18 @@
 
   "powergrid.gui.invalid_equation": "Invalid display equation",
 
+  "powergrid.gui.pump.info_header": "Pump Information:",
+  "powergrid.gui.pump.speed_header": "Pump Speed:",
+
   "powergrid.gui.solar_panel_bearing.slider": "Strings in Parallel × Panels in String",
+
+  "powergrid.gui.portable.battery.low": "Portable battery low",
+  "powergrid.gui.portable.battery.depleted": "Portable battery empty",
+
+  "powergrid.gui.energy_meter.measured": "Measured energy:",
+  "powergrid.gui.energy_meter.reset": "Reset measurement",
+  "powergrid.gui.energy_meter.wh": "Measure watt hours",
+  "powergrid.gui.energy_meter.kwh": "Measure kilowatt hours",
 
   "powergrid.generic.unit.volt": "V",
   "powergrid.generic.unit.amp": "A",
@@ -91,8 +102,14 @@
   "powergrid.tooltip.resistance.maximum": "Maximum resistance:",
   "powergrid.tooltip.voltage.max": "Maximum voltage:",
   "powergrid.tooltip.current.max": "Maximum current:",
+  "powergrid.tooltip.current.min": "Minimum current:",
   "powergrid.tooltip.range.max": "Maximum range:",
   "powergrid.tooltip.power.max": "Maximum power:",
+
+  "powergrid.tooltip.solar.voc": "Open circuit voltage (Voc):",
+  "powergrid.tooltip.solar.isc": "Short circuit current (Isc):",
+  "powergrid.tooltip.solar.vmp": "Max power voltage (Vmp):",
+  "powergrid.tooltip.solar.imp": "Max power current (Imp):",
 
   "powergrid.tooltip.voltage.rated": "Rated voltage:",
   "powergrid.tooltip.voltage.min": "Minimum voltage:",
@@ -105,6 +122,9 @@
   "powergrid.tooltip.device_connector.fe_w": "FE/W",
   "powergrid.tooltip.device_connector.max_rate": "Max transfer rate:",
   "powergrid.tooltip.device_connector.fe_v": "FE/t/V",
+
+  "powergrid.tooltip.fe_inverter.voltage": "Output voltage:",
+  "powergrid.tooltip.fe_inverter.fe_v": "FE/V",
 
   "powergrid.tooltip.voltage.rpm": "RPM per Volt:",
 
@@ -129,6 +149,8 @@
 
   "powergrid.tooltip.string_light_cord_pattern": "Pattern: ",
 
+  "powergrid.tooltip.boosted": "Boosted",
+
   "powergrid.generic.positive_terminal": "Positive",
   "powergrid.generic.negative_terminal": "Negative",
   "powergrid.generic.terminal": "Connector",
@@ -139,6 +161,8 @@
   "powergrid.generic.cord": "Cord Connector",
   "powergrid.generic.input": "Input",
   "powergrid.generic.output": "Output",
+  "powergrid.generic.reset": "Reset",
+  "powergrid.generic.case_common": "Case Common",
 
   "powergrid.contactor.switch1": "Switch 1",
   "powergrid.contactor.switch2": "Switch 2",
@@ -165,6 +189,8 @@
   "powergrid.devices.gauge.current": "Maximum current",
   "powergrid.devices.gauge.power": "Maximum power",
   "powergrid.devices.motor.speed": "Speed",
+  "powergrid.devices.modular_display.module_type": "Module Type",
+  "powergrid.devices.display_module.module_type": "Module Type",
 
   "powergrid.recipe.assembly.magnetizing": "Magnetizing",
   "powergrid.recipe.magnetizing": "Magnetizing",
@@ -199,6 +225,17 @@
   "powergrid.gui.custom_display.expr": "Display expression",
   "powergrid.gui.custom_display.unit": "Display unit",
   "powergrid.gui.custom_display.prefix": "Auto unit prefix",
+
+  "powergrid.gui.modular_display.0 - 9": "0 - 9",
+  "powergrid.gui.modular_display.9 - 0": "9 - 0",
+  "powergrid.gui.modular_display.1 - 0": "1 - 0",
+  "powergrid.gui.modular_display.hexadecimal": "Hexadecimal",
+  "powergrid.gui.modular_display.symbols": "Symbols",
+  "powergrid.gui.modular_display.alphabet": "Alphabet",
+
+  "powergrid.gui.button_overlay.mode": "Button mode: ",
+  "powergrid.gui.button_overlay.nc": "Normally closed",
+  "powergrid.gui.button_overlay.no": "Normally open",
 
   "powergrid.recipe.category.circuit_design": "Circuit Designing",
   "powergrid.recipe.category.circuit_assembly": "Circuit Assembly",

@@ -7,7 +7,7 @@
 		"0": "powergrid:block/switches/hv_breaker",
 		"1": "create:block/axis_top",
 		"2": "create:block/axis",
-		"particle": "powergrid:block/switches/hv_breaker"
+		"particle": "powergrid:block/conductive_casing"
 	},
 	"elements": [
 		{

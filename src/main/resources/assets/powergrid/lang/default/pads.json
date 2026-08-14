@@ -3,6 +3,10 @@
   "component.powergrid.generic.anode.short": "+",
   "component.powergrid.generic.cathode": "Cathode",
   "component.powergrid.generic.cathode.short": "-",
+  "component.powergrid.generic.positive": "Positive",
+  "component.powergrid.generic.positive.short": "P",
+  "component.powergrid.generic.negative": "Negative",
+  "component.powergrid.generic.negative.short": "N",
 
   "component.powergrid.relay.coil": "Coil",
   "component.powergrid.relay.cc": "Common",
@@ -10,5 +14,7 @@
   "component.powergrid.relay.nc": "Normally Closed",
   "component.powergrid.relay.nc.short": "NC",
   "component.powergrid.relay.no": "Normally Open",
-  "component.powergrid.relay.no.short": "NO"
+  "component.powergrid.relay.no.short": "NO",
+  "component.powergrid.display_module.reset": "Reset",
+  "component.powergrid.display_module.reset.short": "R"
 }

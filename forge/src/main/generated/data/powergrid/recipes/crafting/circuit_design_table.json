@@ -2,20 +2,26 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
+    "C": {
+      "item": "powergrid:conductive_casing"
+    },
     "E": {
       "item": "create:electron_tube"
     },
+    "O": {
+      "item": "powergrid:socket"
+    },
+    "P": {
+      "item": "powergrid:copper_plating"
+    },
     "S": {
       "item": "create:empty_schematic"
-    },
-    "W": {
-      "tag": "minecraft:planks"
     }
   },
   "pattern": [
     "ES",
-    "WW",
-    "WW"
+    "OP",
+    " C"
   ],
   "result": {
     "item": "powergrid:circuit_design_table"

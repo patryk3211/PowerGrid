@@ -82,6 +82,11 @@ public class CapacitorComponent extends OrientableComponent {
         }
 
         @Override
+        public boolean isUnsafe() {
+            return true;
+        }
+
+        @Override
         protected float limit(float value) {
             return value;
         }

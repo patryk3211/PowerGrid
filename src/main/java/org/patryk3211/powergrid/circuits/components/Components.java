@@ -21,6 +21,7 @@ import net.minecraft.world.item.Items;
 import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.collections.ModdedTags;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
@@ -28,7 +29,7 @@ import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 public class Components {
     public static final RegistryEntry<ViaComponent> VIA = REGISTRATE.component("via", ViaComponent::new)
             .footprint(1, 1, b -> b.addPad(0, 0))
-            .item(AllItems.COPPER_NUGGET)
+            .item(AllItems.COPPER_NUGGET, ModdedTags.nuggets("copper"))
             .register();
 
     public static final RegistryEntry<LabelComponent> LABEL = REGISTRATE.component("label", LabelComponent::new)
@@ -257,6 +258,16 @@ public class Components {
                     .withItem().withOutline()
             )
             .item(ModdedBlocks.FUSE_HOLDER)
+            .register();
+
+    public static final RegistryEntry<ModularDisplayComponent> DISPLAY_MODULE = REGISTRATE.component("display_module", ModularDisplayComponent::new)
+            .footprint(4, 4, b -> b
+                    .addPadSharedText(0, 1, 0, "generic.positive", "generic.positive.short")
+                    .addPadSharedText(3, 2, 1, "generic.negative", "generic.negative.short")
+                    .addPadSharedText(2, 0, 2, "display_module.reset", "display_module.reset.short")
+                    .withItem().withOutline()
+            )
+            .item(ModdedItems.DISPLAY_MODULE)
             .register();
 
     @SuppressWarnings("EmptyMethod")

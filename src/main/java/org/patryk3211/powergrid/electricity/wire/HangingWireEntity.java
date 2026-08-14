@@ -15,33 +15,25 @@
  */
 package org.patryk3211.powergrid.electricity.wire;
 
-import dev.architectury.utils.Env;
-import dev.architectury.utils.EnvExecutor;
 import net.createmod.ponder.api.level.PonderLevel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.FloatTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
-import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.apache.commons.lang3.mutable.MutableFloat;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
-import org.patryk3211.powergrid.utility.BlockTrace;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
 
 public class HangingWireEntity extends WireEntity implements IComplexRaycast {
-    public static final int CLEARANCE_CHECK_INTERVAL = 20;
-
     private static final Vec3 UP = new Vec3(0, 1, 0);
 
     public Vec3 terminalPos1;
@@ -49,30 +41,15 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
 
     private boolean particlesSpawned = false;
 
-    public Object renderParams;
-
-    private int clearanceCheck = 0;
+    public CurveParameters curveParams;
 
     public HangingWireEntity(EntityType<?> type, Level world) {
         super(type, world);
     }
 
-    public static boolean checkClearance(Level world, Vec3 start, Vec3 end) {
-        var result = BlockTrace.raycast(world, start, end);
-        if(result.getType() == HitResult.Type.BLOCK) {
-            if(world.isClientSide) {
-                WirePreview.notifyOfBlock(result.getBlockPos());
-            }
-            return false;
-        }
-        return true;
-    }
-
-    public void updateRenderParams() {
-        if(!level().isClientSide)
-            return;
+    public void updateCurveParams() {
         var item = getWireEntry();
-        renderParams = new CurveParameters(terminalPos1, terminalPos2,
+        curveParams = new CurveParameters(terminalPos1, terminalPos2,
                 item.horizontalCoefficient(), item.verticalCoefficient(), item.wireThickness());
         this.setBoundingBox(this.makeBoundingBox());
     }
@@ -80,13 +57,15 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     @Nullable
     @Environment(EnvType.CLIENT)
     public AABB calculateClientBoundingBox() {
-        if(renderParams == null)
+        if(curveParams == null)
             return null;
-        var curve = (CurveParameters) renderParams;
         var box = new AABB(terminalPos1, terminalPos2);
+        if(curveParams.isVertical()) {
+            return box.inflate(getWireEntry().wireThickness());
+        }
         var minY = new MutableFloat(box.minY);
         final float eY = (float) position().y;
-        curve.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
+        curveParams.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
             double y = (y1 + y2) * 0.5 + eY;
             if(y < minY.getValue())
                 minY.setValue(y);
@@ -130,6 +109,35 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             return super.makeBoundingBox();
     }
 
+    protected boolean isConnectedTo(LivingEntity entity) {
+        if(!super.isConnectedTo(entity))
+            return false;
+        if(curveParams == null)
+            return false;
+        if(curveParams.isVertical())
+            return true;
+
+        var bb = entity.getBoundingBox();
+        Vec3 entityPos = bb.getCenter();
+        Vec3 planeOrigin = position();
+        Vec3 planeNormal = getViewVector(1);
+        Vec3 planeOriginVector = planeOrigin.subtract(entityPos);
+
+        var planeYVector = new Vec3(0, 1, 0);
+        var planeXVector = planeNormal.cross(planeYVector);
+
+        double planeDistance = planeOriginVector.dot(planeNormal);
+        Vec3 hit = entityPos.add(planeNormal.scale(planeDistance));
+
+        var hitOriginVector = hit.subtract(planeOrigin);
+        double x = planeXVector.dot(hitOriginVector);
+        double span = curveParams.getCurveSpan() / 2;
+        x = Math.min(Math.max(x, -span), span);
+        double y = curveParams.apply((float) x);
+        Vec3 closestPoint = planeOrigin.add(planeXVector.x * x, y, planeXVector.z * x);
+        return bb.contains(closestPoint);
+    }
+
     @Override
     public void tick() {
         var beginFlags = deferEndpointResolution;
@@ -138,7 +146,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         if(beginFlags != deferEndpointResolution) {
             terminalPos1 = getEndpoint1().getExactPosition(world);
             terminalPos2 = getEndpoint2().getExactPosition(world);
-            updateRenderParams();
+            updateCurveParams();
         }
 
         var temperature = getTemperature();
@@ -146,8 +154,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         var pos = position();
         if(isOverheated()) {
             if(world.isClientSide && !particlesSpawned) {
-                var curveParams = (CurveParameters) renderParams;
-                var dx = curveParams.getCurveSpan();
+                double dx = curveParams.getCurveSpan();
                 int pointCount = (int) Math.round(dx / 0.25f);
                 curveParams.runForPoints(pointCount, (x, y, z) -> {
                     world.addParticle(ParticleTypes.FLAME,
@@ -156,27 +163,12 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
                 });
                 particlesSpawned = true;
             }
-        } else if(temperature >= overheatTemperature - 50 && world.isClientSide && renderParams != null) {
-            var curvePoint = ((CurveParameters) renderParams).getRandomPoint(random);
+        } else if(temperature >= overheatTemperature - 50 && world.isClientSide && curveParams != null) {
+            var curvePoint = curveParams.getRandomPoint(random);
             double x = curvePoint.x + pos.x;
             double y = curvePoint.y + pos.y;
             double z = curvePoint.z + pos.z;
             world.addParticle(ParticleTypes.SMOKE, x, y, z, 0.0f, 0.05f, 0.0f);
-        }
-
-        if(!world.isClientSide && clearanceCheck++ >= CLEARANCE_CHECK_INTERVAL && terminalPos1 != null && terminalPos2 != null) {
-            clearanceCheck = 0;
-            var result = BlockTrace.raycast(world, terminalPos1, terminalPos2);
-            if(result.getType() == HitResult.Type.BLOCK) {
-                if(getEndpoint1() instanceof BlockWireEndpoint block) {
-                    if(block.getPos().equals(result.getBlockPos()))
-                        return;
-                } else if(getEndpoint2() instanceof BlockWireEndpoint block) {
-                    if(block.getPos().equals(result.getBlockPos()))
-                        return;
-                }
-                kill();
-            }
         }
     }
 
@@ -189,23 +181,16 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
     @Override
     public boolean isPickable() {
         // Hits get handled by IComplexRaycast
-        return EnvExecutor.getInEnv(Env.CLIENT, () -> () -> {
-            if(renderParams instanceof CurveParameters rp) {
-                // Use Vanilla AABB based picking
-                return rp.isVertical();
-            } else {
-                return false;
-            }
-        }).orElse(false);
+        return curveParams != null && curveParams.isVertical();
     }
 
     @Override
     public void onEntityDataPacket(CompoundTag data) {
         if(data.contains("V")) {
-            var list = data.getList("V", Tag.TAG_FLOAT);
-            terminalPos1 = new Vec3(list.getFloat(0), list.getFloat(1), list.getFloat(2));
-            terminalPos2 = new Vec3(list.getFloat(3), list.getFloat(4), list.getFloat(5));
-            updateRenderParams();
+            var list = data.getList("V", Tag.TAG_DOUBLE);
+            terminalPos1 = new Vec3(list.getDouble(0), list.getDouble(1), list.getDouble(2));
+            terminalPos2 = new Vec3(list.getDouble(3), list.getDouble(4), list.getDouble(5));
+            updateCurveParams();
         } else {
             super.onEntityDataPacket(data);
         }
@@ -226,8 +211,8 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         } else {
             terminalPos1 = getEndpoint1().getExactPosition(world);
             terminalPos2 = getEndpoint2().getExactPosition(world);
-            updateRenderParams();
         }
+        updateCurveParams();
     }
 
     @Override
@@ -237,7 +222,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
         if(getWireEntry() == null)
             return null;
         var thickness = getWireEntry().wireThickness() * 2;
-        if(renderParams instanceof CurveParameters params) {
+        if(curveParams != null) {
             Vec3 ray = max.subtract(min);
             var rayLength = ray.lengthSqr();
             ray = ray.normalize();
@@ -259,7 +244,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
                     var parallelDistance = Math.abs(planeXVector.dot(hitOriginVector));
                     var perpendicularDistance = Math.abs(planeNormal.dot(hitOriginVector));
 
-                    if(parallelDistance < params.getCurveSpan() / 2 && perpendicularDistance < thickness / 2) {
+                    if(parallelDistance < curveParams.getCurveSpan() / 2 && perpendicularDistance < thickness / 2) {
                         // Hit
                         return hit;
                     } else {
@@ -279,12 +264,12 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
                     // We can do that since the entity never has any pitch.
                     double y = hitOriginVector.y;
 
-                    double closeX = params.findClosestPoint(x, y);
-                    double span = params.getCurveSpan() / 2;
+                    double closeX = curveParams.findClosestPoint(x, y);
+                    double span = curveParams.getCurveSpan() / 2;
                     closeX = Math.min(Math.max(closeX, -span), span);
 
                     double dX = x - closeX;
-                    double dY = y - params.apply((float) closeX);
+                    double dY = y - curveParams.apply((float) closeX);
 
                     double squareDistance = dX * dX + dY * dY;
                     if(squareDistance < thickness * thickness) {
@@ -323,6 +308,7 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
             );
             setYRot(facingAngle);
 
+            updateCurveParams();
             if(!world.isClientSide) {
                 // I guess we have to do position update like that because otherwise,
                 // the update method would have to go into the tick function
@@ -330,12 +316,12 @@ public class HangingWireEntity extends WireEntity implements IComplexRaycast {
 
                 var tag = new CompoundTag();
                 var list = new ListTag();
-                list.add(FloatTag.valueOf((float) terminalPos1.x));
-                list.add(FloatTag.valueOf((float) terminalPos1.y));
-                list.add(FloatTag.valueOf((float) terminalPos1.z));
-                list.add(FloatTag.valueOf((float) terminalPos2.x));
-                list.add(FloatTag.valueOf((float) terminalPos2.y));
-                list.add(FloatTag.valueOf((float) terminalPos2.z));
+                list.add(DoubleTag.valueOf(terminalPos1.x));
+                list.add(DoubleTag.valueOf(terminalPos1.y));
+                list.add(DoubleTag.valueOf(terminalPos1.z));
+                list.add(DoubleTag.valueOf(terminalPos2.x));
+                list.add(DoubleTag.valueOf(terminalPos2.y));
+                list.add(DoubleTag.valueOf(terminalPos2.z));
                 tag.put("V", list);
                 var packet = new EntityDataS2CPacket(this, tag);
                 ModdedPackets.sendToClientsTracking(packet, this);

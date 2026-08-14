@@ -20,6 +20,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.patryk3211.powergrid.kinetics.generator.IRotorAssemblyPart;
 
 import java.util.List;
 
@@ -30,13 +31,14 @@ public abstract class RotorBlockEntity extends SmartBlockEntity {
         super(typeIn, pos, state);
     }
 
-    public abstract float inertia();
-
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
-        rotorBehaviour = new RotorBehaviour(this, inertia());
+        assert getBlockState().getBlock() instanceof IRotorAssemblyPart;
+        rotorBehaviour = new RotorBehaviour(this, ((IRotorAssemblyPart) getBlockState().getBlock()).getInertia(), damageRadius());
         behaviours.add(rotorBehaviour);
     }
+
+    protected abstract float damageRadius();
 
     @Override
     public void remove() {

@@ -28,9 +28,10 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceNode;
-import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
+import org.patryk3211.powergrid.electricity.sim.node.ProvidedVoltageSourceCoupling;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
@@ -40,13 +41,24 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
     private CreativeSourceValueBehaviour value;
 
     private CurrentSourceNode currentSourceNode;
-    private VoltageSourceCoupling voltageSourceNode;
+    private ProvidedVoltageSourceCoupling voltageSourceNode;
 
     private boolean overwrite = false;
     private boolean voltageSource;
 
+    private float dc = 0;
+    private float amplitude = 0;
+    private float frequency = 0;
+    private float time;
+
     public CreativeSourceBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+    }
+
+    private float sine() {
+        float out = (float) (Math.sin(2 * Math.PI * frequency * time) * amplitude) + dc;
+        time += 0.05f / ModdedConfigs.server().electricity.solver.multiTicks.get();
+        return out;
     }
 
     @Override
@@ -81,7 +93,8 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
 
         if(getBlockState().is(ModdedBlocks.CREATIVE_VOLTAGE_SOURCE.get())) {
             voltageSource = true;
-            voltageSourceNode = builder.addInternalNode(VoltageSourceCoupling.class, positive, negative, 1e-4f);
+            voltageSourceNode = new ProvidedVoltageSourceCoupling(positive, negative, 1e-4f);
+            builder.add(voltageSourceNode);
         } else if(getBlockState().is(ModdedBlocks.CREATIVE_CURRENT_SOURCE.get())) {
             voltageSource = false;
             currentSourceNode = builder.addInternalNode(CurrentSourceNode.class);
@@ -97,7 +110,11 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
         super.read(tag, clientPacket);
         if(tag.contains("Overwrite"))
             overwrite = tag.getBoolean("Overwrite");
-        setValue(tag.getFloat("NodeValue"));
+        if(tag.contains("Freq")) {
+            setValue(tag.getFloat("NodeValue"), tag.getFloat("Freq"), tag.getFloat("DC"));
+        } else {
+            setValue(tag.getFloat("NodeValue"));
+        }
     }
 
     @Override
@@ -105,7 +122,13 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
         super.write(tag, clientPacket);
         if(overwrite)
             tag.putBoolean("Overwrite", true);
-        tag.putFloat("NodeValue", getValue());
+        if(frequency != 0) {
+            tag.putFloat("NodeValue", amplitude);
+            tag.putFloat("Freq", frequency);
+            tag.putFloat("DC", dc);
+        } else {
+            tag.putFloat("NodeValue", getValue());
+        }
     }
 
     @Override
@@ -113,15 +136,37 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
         super.writeSafe(tag);
         if(overwrite)
             tag.putBoolean("Overwrite", true);
-        tag.putFloat("NodeValue", getValue());
+        if(frequency != 0) {
+            tag.putFloat("NodeValue", amplitude);
+            tag.putFloat("Freq", frequency);
+            tag.putFloat("DC", dc);
+        } else {
+            tag.putFloat("NodeValue", getValue());
+        }
     }
 
     public void setValue(float value) {
         if(voltageSource) {
+            frequency = 0;
+            amplitude = 0;
+            voltageSourceNode.setVoltageProvider(null);
             voltageSourceNode.setVoltage(value);
         } else {
             currentSourceNode.setCurrent(value);
         }
+        setChanged();
+    }
+
+    public void setValue(float amplitude, float frequency, float dc) {
+        if(voltageSource) {
+            this.frequency = frequency;
+            this.amplitude = amplitude;
+            this.dc = dc;
+            voltageSourceNode.setVoltageProvider(this::sine);
+        } else {
+            throw new UnsupportedOperationException("Current source doesn't support frequency argument");
+        }
+        setChanged();
     }
 
     public float getValue() {
@@ -139,7 +184,7 @@ public class CreativeSourceBlockEntity extends ElectricBlockEntity implements IH
                 .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
 
-        var voltage = (voltageSource ? voltageSourceNode.getVoltage() : currentSourceNode.getVoltage());
+        var voltage = (voltageSource ? voltageSourceNode.getPositive().getVoltage() - voltageSourceNode.getNegative().getVoltage() : currentSourceNode.getVoltage());
         var voltageText = String.format("%.2f", voltage);
         Lang.builder()
                 .text(voltageText)

@@ -26,6 +26,7 @@ import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.config.ResistanceValues;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Resistance;
@@ -46,6 +47,11 @@ public class InductionRotorBlock extends AbstractRotorBlock implements IBE<Induc
     @Override
     public BlockEntityType<? extends InductionRotorBlockEntity> getBlockEntityType() {
         return ModdedBlockEntities.GENERATOR_INDUCTION_ROTOR.get();
+    }
+
+    @Override
+    public float getInertia() {
+        return ModdedConfigs.server().kinetics.generatorControls.generatorInductionRotorInertia.getF();
     }
 
     @Override

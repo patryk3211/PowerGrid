@@ -1,0 +1,25 @@
+{
+	"format_version": "1.9.0",
+	"credit": "Made with Blockbench",
+	"parent": "block/block",
+	"texture_size": [64, 64],
+	"textures": {
+		"1": "powergrid:block/plotter",
+		"particle": "powergrid:block/conductive_casing"
+	},
+	"elements": [
+		{
+			"name": "Viewer2",
+			"from": [1, 17.45, 3.35],
+			"to": [15, 18.45, 13.35],
+			"rotation": {"angle": -22.5, "axis": "x", "origin": [0, 15.5, 16.25]},
+			"faces": {
+				"north": {"uv": [12, 1.5, 15.5, 1.75], "texture": "#1"},
+				"east": {"uv": [4.25, 11.5, 6.75, 11.75], "texture": "#1"},
+				"south": {"uv": [12, 1.75, 15.5, 2], "texture": "#1"},
+				"west": {"uv": [4.25, 11.75, 6.75, 12], "texture": "#1"},
+				"up": {"uv": [3.5, 13, 0, 10.5], "texture": "#1"}
+			}
+		}
+	]
+}

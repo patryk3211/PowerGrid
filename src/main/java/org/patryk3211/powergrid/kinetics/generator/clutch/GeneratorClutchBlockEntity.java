@@ -30,6 +30,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang3.mutable.MutableFloat;
 import org.patryk3211.powergrid.collections.ModIcons;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.kinetics.generator.IRotorAssemblyPart;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorBehaviour;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -70,7 +71,7 @@ public class GeneratorClutchBlockEntity extends GeneratingKineticBlockEntity imp
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         super.addBehaviours(behaviours);
-        rotorBehaviour = new RotorBehaviour(this, ModdedConfigs.server().kinetics.generatorControls.generatorClutchInertia.getF());
+        rotorBehaviour = new RotorBehaviour(this, ((IRotorAssemblyPart) getBlockState().getBlock()).getInertia(), 0);
         rotorBehaviour.forceSource(this);
         rotorBehaviour.setChangeCallback(this::assemblyChanged);
         behaviours.add(rotorBehaviour);
@@ -142,7 +143,7 @@ public class GeneratorClutchBlockEntity extends GeneratingKineticBlockEntity imp
     @Override
     public void updateFromNetwork(float maxStress, float currentStress, int networkSize) {
         super.updateFromNetwork(maxStress, currentStress, networkSize);
-        motorLoad = currentStress / maxStress;
+        motorLoad = maxStress == 0 ? 0 : currentStress / maxStress;
     }
 
     @Override

@@ -114,7 +114,7 @@ public class ZapProjectileS2CPacket implements SimplePacket {
                         if(entity == null)
                             continue;
                         var end = entity.getBoundingBox().getCenter();
-                        world.addAlwaysVisibleParticle(new ZapParticleData((float) end.x, (float) end.y, (float) end.z, true), true, origin.x, origin.y, origin.z, 0, 0, 0);
+                        world.addAlwaysVisibleParticle(new ZapParticleData(end, true), true, origin.x, origin.y, origin.z, 0, 0, 0);
                         var r = world.random;
                         for(int i = 0; i < 10; ++i) {
                             float pos = r.nextFloat();

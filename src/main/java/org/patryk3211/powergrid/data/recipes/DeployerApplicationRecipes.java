@@ -15,11 +15,17 @@
  */
 package org.patryk3211.powergrid.data.recipes;
 
+import com.simibubi.create.AllBlocks;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.api.data.recipe.DeployingRecipeGen;
+import com.simibubi.create.content.processing.recipe.ProcessingRecipeBuilder;
+import com.tterrag.registrate.util.entry.ItemEntry;
 import net.minecraft.data.PackOutput;
+import net.minecraft.world.item.Items;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.equipment.BoostRecipe;
 
 @SuppressWarnings("unused")
 public class DeployerApplicationRecipes extends DeployingRecipeGen {
@@ -36,9 +42,37 @@ public class DeployerApplicationRecipes extends DeployingRecipeGen {
             .require(ModdedItems.CORD)
             .require(ModdedItems.LIGHT_BULB)
             .output(ModdedItems.STRING_LIGHT_CORD)
-    );
+    ),
+
+    COPPER_PLATING = create("copper_plating", b -> b
+            .require(Items.COPPER_BLOCK)
+            .require(RecipeTags.copperSheet())
+            .output(ModdedBlocks.COPPER_PLATING)
+    ),
+
+    CEILING_TILE = create("ceiling_tile", b -> b
+            .require(AllBlocks.COPYCAT_PANEL)
+            .require(AllItems.CARDBOARD)
+            .output(ModdedBlocks.CEILING_TILE)
+    ),
+
+    BOOST_DRILL = boost(ModdedItems.PORTABLE_DRILL),
+    BOOST_SAW = boost(ModdedItems.PORTABLE_SAW),
+    BOOST_ZAPPER = boost(ModdedItems.ELECTROZAPPER),
+    BOOST_BATON = boost(ModdedItems.ELECTROBATON);
 
     public DeployerApplicationRecipes(PackOutput generator) {
         super(generator, PowerGrid.MOD_ID);
+    }
+
+    private GeneratedRecipe boost(ItemEntry<?> boostItem) {
+        GeneratedRecipe generatedRecipe =
+                c -> new ProcessingRecipeBuilder<>(BoostRecipe::new, boostItem.getId().withSuffix("_boosting"))
+                        .require(boostItem)
+                        .require(ModdedItems.INTEGRATED_CIRCUIT)
+                        .output(boostItem)
+                        .build(c);
+        all.add(generatedRecipe);
+        return generatedRecipe;
     }
 }

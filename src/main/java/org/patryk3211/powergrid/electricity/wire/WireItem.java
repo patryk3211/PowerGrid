@@ -67,11 +67,11 @@ public class WireItem extends Item implements IWire {
     public static <I extends Item, R extends AbstractRegistrate<?>> NonNullUnaryOperator<ItemBuilder<I, R>> properties(
             float resistance, float maxLength, float itemUseMultiplier, float thermalMass, float maxCurrent,
             ResourceLocation texture, float horizontalCoeff, float verticalCoeff, float thickness,
-            boolean colorable, boolean cord) {
+            boolean colorable, boolean cord, boolean insulated) {
         return b -> b.addMiscData(AbstractPowerGridRegistrate.WIRE_ITEMS, prov -> {
             prov.add(b.getName(), new WireItemEntry(
                     resistance, itemUseMultiplier, maxLength, thermalMass, maxCurrent,
-                    texture, horizontalCoeff, verticalCoeff, thickness, colorable, cord
+                    texture, horizontalCoeff, verticalCoeff, thickness, colorable, cord, insulated
             ));
         });
     }

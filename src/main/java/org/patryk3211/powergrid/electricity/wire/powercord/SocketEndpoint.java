@@ -74,6 +74,8 @@ public class SocketEndpoint implements ICordEndpoint {
         var state = world.getBlockState(pos);
         if(state.hasProperty(BlockStateProperties.FACING))
             return state.getValue(BlockStateProperties.FACING);
+        if(state.hasProperty(BlockStateProperties.HORIZONTAL_FACING))
+            return state.getValue(BlockStateProperties.HORIZONTAL_FACING);
         return Direction.NORTH;
     }
 
@@ -142,6 +144,29 @@ public class SocketEndpoint implements ICordEndpoint {
             }
         }
         return false;
+    }
+
+    @Nullable
+    public CordEntity getConnection(Level world) {
+        var behaviour = getElectricBehaviour(world);
+        if(behaviour == null)
+            return null;
+        var connections1 = behaviour.getConnections().get(getEndpoint1());
+        var connections2 = behaviour.getConnections().get(getEndpoint2());
+        if(connections1 == null || connections2 == null)
+            return null;
+        for(var wire : connections2) {
+            if(!(wire instanceof CordEntity cord))
+                continue;
+            if(connections1.contains(wire)) {
+                // Same wire connected to both endpoints,
+                // if either endpoint of this wire is this endpoint,
+                // then this socket is occupied.
+                if(equals(wire.getEndpoint1()) || equals(wire.getEndpoint2()))
+                    return cord;
+            }
+        }
+        return null;
     }
 
     @Override

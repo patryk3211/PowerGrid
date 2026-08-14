@@ -96,6 +96,23 @@ public class CircuitSchematic {
         return tag;
     }
 
+    public CompoundTag serializeSafeNbt() {
+        var tag = new CompoundTag();
+        tag.put("Front", front.serializeNbt());
+        tag.put("Back", back.serializeNbt());
+        tag.putBoolean("FullPixelTraces", false);
+
+        var list = new ListTag();
+        for(var component : components) {
+            list.add(component.serializeSafeNbt());
+        }
+        tag.put("Components", list);
+        if(name != null) {
+            tag.putString("Name", name);
+        }
+        return tag;
+    }
+
     public void deserializeNbt(CompoundTag tag) {
         try {
             // Default to legacy full pixel traces
@@ -204,7 +221,7 @@ public class CircuitSchematic {
     public ItemStack toItemStack() {
         var stack = ModdedItems.CIRCUIT_SCHEMATIC.asStack();
         var tag = new CompoundTag();
-        tag.put("Schematic", serializeNbt());
+        tag.put("Schematic", serializeSafeNbt());
         stack.setTag(tag);
         if(name != null)
             stack.setHoverName(Component.literal(name));

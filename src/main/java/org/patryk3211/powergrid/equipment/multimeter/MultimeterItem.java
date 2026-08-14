@@ -126,7 +126,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
     public void inventoryTick(ItemStack stack, Level level, Entity entity, int slotId, boolean isSelected) {
         super.inventoryTick(stack, level, entity, slotId, isSelected);
         var data = getModeData(stack);
-        var maxDistance = ModdedConfigs.server().electricity.multimeterDistance.getF();
+        float maxDistance = ModdedConfigs.server().equipment.multimeterDistance.getF();
         switch(getMode(stack)) {
             case 0 -> {
                 var pos = WireEndpointType.deserialize(data.getCompound("Pos"));
@@ -294,7 +294,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
         return switch(getMode(stack)) {
             case 0 -> {
                 var voltage = Unit.VOLTAGE.formatWithPrefixes(measurement);
-                var maxVolt = ModdedConfigs.server().electricity.multimeterVoltage.getF();
+                float maxVolt = ModdedConfigs.server().equipment.multimeterVoltage.getF();
                 if(measurement > maxVolt) {
                     voltage = Lang.text(">" + maxVolt + " ").add(Unit.VOLTAGE.get());
                 } else if(measurement < -maxVolt) {
@@ -307,7 +307,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
             }
             case 1 -> {
                 var current = Unit.CURRENT.formatWithPrefixes(measurement);
-                var maxAmp = ModdedConfigs.server().electricity.multimeterCurrent.getF();
+                float maxAmp = ModdedConfigs.server().equipment.multimeterCurrent.getF();
                 if(measurement > maxAmp) {
                     current = Lang.text(">" + maxAmp + " ").add(Unit.CURRENT.get());
                 } else if(measurement < -maxAmp) {
@@ -323,10 +323,10 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
     }
 
     public float getDial(Level level, ItemStack stack) {
-        var measurement = getMeasurement(level, stack);
-        var value = Math.abs(switch(getMode(stack)) {
-            case 0 -> measurement / ModdedConfigs.server().electricity.multimeterVoltage.getF();
-            case 1 -> measurement / ModdedConfigs.server().electricity.multimeterCurrent.getF();
+        float measurement = getMeasurement(level, stack);
+        float value = Math.abs(switch(getMode(stack)) {
+            case 0 -> measurement / ModdedConfigs.server().equipment.multimeterVoltage.getF();
+            case 1 -> measurement / ModdedConfigs.server().equipment.multimeterCurrent.getF();
             default -> 0;
         });
         if(value > 1)
@@ -336,7 +336,7 @@ public class MultimeterItem extends Item implements IHaveElectricProperties {
 
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
-        Voltage.max(ModdedConfigs.server().electricity.multimeterVoltage.getF(), player, tooltip);
-        Current.max(ModdedConfigs.server().electricity.multimeterCurrent.getF(), player, tooltip);
+        Voltage.max(ModdedConfigs.server().equipment.multimeterVoltage.getF(), player, tooltip);
+        Current.max(ModdedConfigs.server().equipment.multimeterCurrent.getF(), player, tooltip);
     }
 }

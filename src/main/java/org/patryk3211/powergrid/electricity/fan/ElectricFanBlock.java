@@ -50,13 +50,13 @@ import java.util.List;
  */
 public class ElectricFanBlock extends DirectionalElectricBlock implements IBE<ElectricFanBlockEntity>, IHaveElectricProperties {
     private static final TerminalBoundingBox[] UP_TERMINALS = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 5, 6, 7, 6, 7, 9).withColor(IDecoratedTerminal.RED),
-            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 10, 6, 7, 11, 7, 9).withColor(IDecoratedTerminal.BLUE)
+            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 4.5, 1, 6.5, 6.5, 3, 9.5).withColor(IDecoratedTerminal.RED),
+            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 9.5, 1, 6.5, 11.5, 3, 9.5).withColor(IDecoratedTerminal.BLUE)
     };
 
     private static final VoxelShape SHAPE_UP = Shapes.or(
-            box(0, 10, 0, 16, 16, 16),
-            box(5, 7, 5, 11, 10, 11)
+            box(0, 4, 0, 16, 12, 16),
+            box(5.5, 2, 5.5, 10.5, 4, 10.5)
     );
 
     public ElectricFanBlock(Properties settings) {
@@ -69,7 +69,7 @@ public class ElectricFanBlock extends DirectionalElectricBlock implements IBE<El
                     case UP -> terminal;
                     case DOWN -> terminal.rotateAroundX(180);
                     case NORTH -> terminal.rotateAroundX(90);
-                    case SOUTH -> terminal.rotateAroundX(-90);
+                    case SOUTH -> terminal.rotateAroundX(90).rotateAroundY(180);
                     case EAST -> terminal.rotateAroundX(90).rotateAroundY(90);
                     case WEST -> terminal.rotateAroundX(90).rotateAroundY(-90);
                 }))

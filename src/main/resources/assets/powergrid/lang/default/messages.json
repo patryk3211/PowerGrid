@@ -31,11 +31,27 @@
   "powergrid.message.config_reset_ok": "Configuration successfully reset",
   "powergrid.message.config_ignore_ok": "This message will not be shown again",
 
+  "powergrid.message.nether.transformer_fail": "<!> Cannot assemble portal transformer:",
+  "powergrid.message.nether.no_other_side": "Target portal not generated yet",
+  "powergrid.message.nether.blocked": "Target location blocked (%d,%d,%d)",
+
+  "powergrid.message.circuit_table.no_power": "This device needs power",
+
   "death.attack.overloaded_machine": "%s was killed by an overloaded %s",
   "death.attack.overloaded_machine.player": "%s was killed by an overloaded %s whilst trying to escape %s",
   "death.attack.zap": "%1$s was zapped by %2$s",
   "death.attack.zap.item": "%1$s was zapped by %2$s using %3$s",
   "death.attack.zap.player": "%1$s was zapped by %2$s whilst trying to escape %3$s",
+
+  "death.attack.live_wire_cutting": "%s wasn't careful when cutting wires",
+  "death.attack.electrocution": "%s was electrocuted",
+  "death.attack.electrocution.player": "%s was electrocuted whilst trying to escape %s",
+
+  "death.attack.spinning_rotor": "%s was killed in a generator accident",
+  "death.attack.spinning_rotor.player": "%s was killed in a generator accident whilst trying to escape %s",
+
+  "death.attack.acid": "%s took an acid bath",
+  "death.attack.acid.player": "%s took an acid bath whilst trying to escape %s",
 
   "powergrid.contraption.assembly.mismatched_panel_facing": "All Solar Panels need to be facing the same direction",
   "powergrid.contraption.assembly.not_enough_panels": "Attached structure does not include enough Solar Panels, a minimum of 1 is required",

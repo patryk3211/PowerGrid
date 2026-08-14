@@ -23,6 +23,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.advancements.PGAdvancementBehaviour;
+import org.patryk3211.powergrid.collections.ModdedAdvancements;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
@@ -83,11 +85,16 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
         electricBehaviour = new ElectricBehaviour(this);
         behaviours.add(electricBehaviour);
 
+        var awards = new PGAdvancementBehaviour(this, ModdedAdvancements.ELECTRIC_MOTOR);
+        behaviours.add(awards);
+
         var maxPower = maxRPM() * torque() / CONVERSION_CONSTANT;
         var baseFactor = ThermalBehaviour.dissipationFactor(maxPower, 150);
         thermalBehaviour = ThermalBehaviour.simple(this, 3.5f, baseFactor);
-        if(thermalBehaviour != null)
+        if(thermalBehaviour != null) {
             behaviours.add(thermalBehaviour);
+            awards.add(ModdedAdvancements.BLOW_UP);
+        }
     }
 
     protected void applyPower(AbstractElectricWire wire) {
@@ -133,6 +140,11 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
             if(newSpeed != generatedSpeed) {
                 generatedSpeed = newSpeed;
                 updateGeneratedRotation();
+                if(newSpeed != 0) {
+                    var awards = getBehaviour(PGAdvancementBehaviour.TYPE);
+                    if(awards != null)
+                        awards.awardPlayer(ModdedAdvancements.ELECTRIC_MOTOR);
+                }
             }
         }
     }

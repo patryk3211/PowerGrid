@@ -15,15 +15,13 @@
  */
 package org.patryk3211.powergrid.equipment.zapper;
 
-import net.minecraft.core.Registry;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.damagesource.DamageSource;
-import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -43,17 +41,20 @@ import org.patryk3211.powergrid.network.packets.ZapProjectileS2CPacket;
 import java.util.ArrayList;
 
 public class ZapProjectileEntity extends Projectile {
+    private float power;
+
     public ZapProjectileEntity(EntityType<? extends Projectile> type, Level world) {
         super(type, world);
     }
 
-    public static ZapProjectileEntity create(Level world, Vec3 position, Vec3 velocity, float yaw, float pitch) {
+    public static ZapProjectileEntity create(Level world, Vec3 position, Vec3 velocity, float power) {
         var entity = new ZapProjectileEntity(ModdedEntities.ZAP_PROJECTILE.get(), world);
         entity.setPosRaw(position.x, position.y, position.z);
         entity.setDeltaMovement(velocity);
         ProjectileUtil.rotateTowardsMovement(entity, 1.0f);
         entity.setOldPosAndRot();
         entity.reapplyPosition();
+        entity.power = power;
         return entity;
     }
 
@@ -100,8 +101,7 @@ public class ZapProjectileEntity extends Projectile {
     }
 
     private DamageSource causeZapDamage() {
-        Registry<DamageType> registry = level().registryAccess().registryOrThrow(Registries.DAMAGE_TYPE);
-        return new DamageSource(registry.getHolder(ModdedDamageTypes.ZAP).get(), this, getOwner());
+        return new DamageSource(ModdedDamageTypes.ZAP.holder(level()), this, getOwner());
     }
 
     @Override
@@ -123,7 +123,7 @@ public class ZapProjectileEntity extends Projectile {
         if(target instanceof WitherBoss wither && wither.isPowered())
             return;
 
-        float damage = 8;
+        float damage = 8 * power;
 
         var effectBB = new AABB(target.blockPosition()).inflate(2);
         var world = level();
@@ -137,7 +137,7 @@ public class ZapProjectileEntity extends Projectile {
             return;
         }
 
-        if(onServer) {
+        if(onServer && power > 0.6f) {
             var damagedEntities = new ArrayList<Entity>();
             for(var entity : affectedEntities) {
                 if(entity.hurt(source, damage))
@@ -185,6 +185,18 @@ public class ZapProjectileEntity extends Projectile {
 
 //        float damage = projectileType.getDamage() * additionalDamageMult;
 //        float knockback = projectileType.getKnockback() + additionalKnockback;
+    }
+
+    @Override
+    protected void addAdditionalSaveData(CompoundTag compound) {
+        super.addAdditionalSaveData(compound);
+        compound.putFloat("Power", power);
+    }
+
+    @Override
+    protected void readAdditionalSaveData(CompoundTag compound) {
+        super.readAdditionalSaveData(compound);
+        power = compound.getFloat("Power");
     }
 
     @Override

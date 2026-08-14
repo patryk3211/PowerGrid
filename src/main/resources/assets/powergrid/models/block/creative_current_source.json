@@ -1,6 +1,49 @@
 {
-  "parent": "powergrid:block/creative_source",
-  "textures": {
-    "0": "powergrid:block/creative_current_source"
-  }
+	"format_version": "1.21.11",
+	"credit": "Made with Blockbench",
+	"parent": "block/block",
+	"texture_size": [64, 64],
+	"textures": {
+		"0": "powergrid:block/creative_source",
+		"particle": "create:block/creative_casing"
+	},
+	"elements": [
+		{
+			"from": [1, 0, 2],
+			"to": [15, 14, 14],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 7, 8]},
+			"faces": {
+				"north": {"uv": [0, 7.75, 3.5, 11.25], "texture": "#0"},
+				"east": {"uv": [3.5, 3.5, 6.5, 7], "texture": "#0"},
+				"south": {"uv": [0, 0, 3.5, 3.5], "texture": "#0"},
+				"west": {"uv": [3.5, 0, 6.5, 3.5], "texture": "#0"},
+				"up": {"uv": [10, 3, 6.5, 0], "rotation": 180, "texture": "#0"},
+				"down": {"uv": [10, 3, 6.5, 6], "rotation": 180, "texture": "#0"}
+			}
+		},
+		{
+			"from": [3.5, 14, 6.5],
+			"to": [6.5, 16, 9.5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [13.5, 13, 5.5]},
+			"faces": {
+				"north": {"uv": [3, 7, 3.75, 7.5], "texture": "#0"},
+				"east": {"uv": [3.75, 7, 4.5, 7.5], "texture": "#0"},
+				"south": {"uv": [1.5, 7, 2.25, 7.5], "texture": "#0"},
+				"west": {"uv": [2.25, 7, 3, 7.5], "texture": "#0"},
+				"up": {"uv": [7.25, 6.75, 6.5, 6], "rotation": 180, "texture": "#0"}
+			}
+		},
+		{
+			"from": [9.5, 14, 6.5],
+			"to": [12.5, 16, 9.5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [19.5, 13, 5.5]},
+			"faces": {
+				"north": {"uv": [7.25, 6, 8, 6.5], "texture": "#0"},
+				"east": {"uv": [7.25, 6.5, 8, 7], "texture": "#0"},
+				"south": {"uv": [4.5, 7, 5.25, 7.5], "texture": "#0"},
+				"west": {"uv": [5.25, 7, 6, 7.5], "texture": "#0"},
+				"up": {"uv": [0.75, 7.75, 0, 7], "rotation": 180, "texture": "#0"}
+			}
+		}
+	]
 }

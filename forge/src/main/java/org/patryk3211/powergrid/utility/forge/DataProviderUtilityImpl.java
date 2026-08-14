@@ -36,9 +36,12 @@ import org.patryk3211.powergrid.electricity.carbonpile.CarbonPileBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseState;
+import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
+import org.patryk3211.powergrid.electricity.transformer.NetherTransformerBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
+import org.patryk3211.powergrid.general.ceilingtile.lamp.CeilingTileLampBlock;
 import org.patryk3211.powergrid.kinetics.generator.housing.GeneratorHousing;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.VerticalCommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
@@ -329,6 +332,21 @@ public class DataProviderUtilityImpl {
                 .condition(TransformerMediumBlock.PART, part);
     }
 
+    public static NonNullBiConsumer<DataGenContext<Block, NetherTransformerBlock>, RegistrateBlockstateProvider> transformerNether() {
+        return (ctx, prov) ->
+                prov.getVariantBuilder(ctx.getEntry()).forAllStates(state -> {
+                    int y = 0;
+                    if(state.getValue(HORIZONTAL_AXIS) == Direction.Axis.X)
+                        y -= 90;
+                    var builder = ConfiguredModel.builder();
+                    builder.modelFile(modModel(prov, "block/transformer/nether"));
+                    if(state.getValue(NetherTransformerBlock.PART) % 2 == 1)
+                        y += 180;
+                    builder.rotationY(y);
+                    return builder.build();
+                });
+    }
+
     public static <T extends WindingBlock> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> windingModel() {
         return (ctx, prov) -> {
             var builder = prov.getMultipartBuilder(ctx.getEntry());
@@ -491,25 +509,66 @@ public class DataProviderUtilityImpl {
                     surfaceFacingTransforms(state, (x, y, vertical) -> {
                         var part = builder.part();
                         if (vertical) {
-                            part.modelFile(modModel(prov, "block/fuse_holder"));
+                            part.modelFile(modModel(prov, "block/fuse_holder/fuse_holder_v"));
                         } else {
-                            part.modelFile(modModel(prov, "block/fuse_holder_h"));
+                            part.modelFile(modModel(prov, "block/fuse_holder/fuse_holder_h"));
                         }
                         part.rotationX(x).rotationY(y);
                         part.addModel().condition(FACING, facing).condition(ALONG_FIRST_AXIS, axis);
+
+                        part = builder.part();
+                        if (vertical) {
+                            part.modelFile(modModel(prov, "block/fuse_holder/fuse_v"));
+                        } else {
+                            part.modelFile(modModel(prov, "block/fuse_holder/fuse_h"));
+                        }
+                        part.rotationX(x).rotationY(y);
+                        part.addModel().condition(FACING, facing).condition(FuseHolderBlock.STATE, FuseState.CLOSED).condition(ALONG_FIRST_AXIS, axis);
+
+                        part = builder.part();
+                        if (vertical) {
+                            part.modelFile(modModel(prov, "block/fuse_holder/fuse_blown_v"));
+                        } else {
+                            part.modelFile(modModel(prov, "block/fuse_holder/fuse_blown_h"));
+                        }
+                        part.rotationX(x).rotationY(y);
+                        part.addModel().condition(FACING, facing).condition(FuseHolderBlock.STATE, FuseState.BLOWN).condition(ALONG_FIRST_AXIS, axis);
                     });
                 }
-                var part = builder.part();
-                part.modelFile(modModel(prov, "block/fuse"));
-                rotateDownFacingModel(part, facing);
-                part.addModel().condition(FACING, facing).condition(FuseHolderBlock.STATE, FuseState.CLOSED);
-
-                part = builder.part();
-                part.modelFile(modModel(prov, "block/fuse_blown"));
-                rotateDownFacingModel(part, facing);
-                part.addModel().condition(FACING, facing).condition(FuseHolderBlock.STATE, FuseState.BLOWN);
             }
         };
+    }
+
+    public static NonNullBiConsumer<DataGenContext<Block, FactoryLightBlock>, RegistrateBlockstateProvider> factoryLight(String baseFolder) {
+        return (ctx, prov) -> prov.getVariantBuilder(ctx.get()).forAllStates(state -> {
+            var builder = ConfiguredModel.builder();
+            var part = state.getValue(FactoryLightBlock.PART);
+            var baseName = baseFolder + (state.getValue(FactoryLightBlock.POWER) == 0 ? "/empty" : "") + "/factorylight";
+            builder.modelFile(modModel(prov, baseName + switch(part) {
+                case 0 -> "";
+                case 1 -> "northedge";
+                case 2 -> "centerns";
+                case 3 -> "southedge";
+                case 4 -> "westedge";
+                case 5 -> "centerew";
+                case 6 -> "eastedge";
+
+                default -> throw new IllegalStateException();
+            }));
+            return builder.build();
+        });
+    }
+
+    public static NonNullBiConsumer<DataGenContext<Block, CeilingTileLampBlock>, RegistrateBlockstateProvider> ceilingTileLamp(String baseFolder) {
+        return (ctx, prov) -> prov.getVariantBuilder(ctx.get()).forAllStates(state -> {
+            var builder = ConfiguredModel.builder();
+            var lampState = state.getValue(CeilingTileLampBlock.STATE);
+            builder.modelFile(modModel(prov, baseFolder + "/ceiling_tile" + switch(lampState) {
+                case EMPTY -> "_light_empty";
+                case LAMP, LAMP_LOW_POWER, LAMP_ON -> "_light";
+            }));
+            return builder.build();
+        });
     }
 
     public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> cubeColumn(String side, String end) {
@@ -555,6 +614,10 @@ public class DataProviderUtilityImpl {
     public static <T extends Item> NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> itemWithParent(String parent) {
         return (ctx, prov) ->
                 prov.withExistingParent(ctx.getName(), prov.modLoc(parent));
+    }
+
+    public static <T extends Item> NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> blockItem() {
+        return (ctx, prov) -> prov.blockItem(ctx);
     }
 
     public static <T extends Item> NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> barrier() {

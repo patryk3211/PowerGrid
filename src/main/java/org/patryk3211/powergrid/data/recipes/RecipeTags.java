@@ -48,6 +48,10 @@ public class RecipeTags {
         return wires("copper");
     }
 
+    public static ItemLike copperPlating() {
+        return ModdedBlocks.COPPER_PLATING;
+    }
+
     public static TagKey<Item> ironNugget() {
         return nuggets("iron");
     }
@@ -104,6 +108,14 @@ public class RecipeTags {
         return AllBlocks.SHAFT;
     }
 
+    public static ItemLike cardboard() {
+        return AllItems.CARDBOARD;
+    }
+
+    public static TagKey<Item> woodenSlab() {
+        return ItemTags.WOODEN_SLABS;
+    }
+
     public static ItemLike andesiteAlloy() {
         return AllItems.ANDESITE_ALLOY;
     }
@@ -118,6 +130,10 @@ public class RecipeTags {
 
     public static ItemLike electricalGizmo() {
         return ModdedItems.ELECTRICAL_GIZMO;
+    }
+
+    public static ItemLike electricMotor() {
+        return ModdedBlocks.ELECTRIC_MOTOR;
     }
 
     public static ItemLike coalBlock() {
@@ -176,7 +192,15 @@ public class RecipeTags {
         return Items.REDSTONE;
     }
 
+    public static ItemLike diamond() {
+        return Items.DIAMOND;
+    }
+
     public static ItemLike slimeball() {
         return Items.SLIME_BALL;
+    }
+
+    public static ItemLike pins() {
+        return ModdedItems.PINS;
     }
 }

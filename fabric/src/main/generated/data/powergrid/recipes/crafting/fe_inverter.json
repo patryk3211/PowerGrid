@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "create:cardboard"
+    },
+    "G": {
+      "item": "powergrid:electrical_gizmo"
+    },
+    "M": {
+      "tag": "c:copper_coils"
+    },
+    "P": {
+      "item": "powergrid:pins"
+    }
+  },
+  "pattern": [
+    " G ",
+    "MCP"
+  ],
+  "result": {
+    "item": "powergrid:fe_inverter"
+  },
+  "show_notification": true
+}

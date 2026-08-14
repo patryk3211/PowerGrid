@@ -1,0 +1,221 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Made with Blockbench",
+	"parent": "block/block",
+	"texture_size": [64, 64],
+	"textures": {
+		"1": "powergrid:block/energy_meter",
+		"particle": "powergrid:block/zinc_plate"
+	},
+	"elements": [
+		{
+			"name": "body",
+			"from": [1, 0, 10],
+			"to": [15, 16, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 0, 8]},
+			"faces": {
+				"north": {"uv": [0, 0, 3.5, 4], "texture": "#1"},
+				"east": {"uv": [0, 4, 1.5, 8], "texture": "#1"},
+				"south": {"uv": [3.5, 0, 7, 4], "texture": "#1"},
+				"west": {"uv": [0, 4, 1.5, 8], "texture": "#1"},
+				"up": {"uv": [5, 5.5, 1.5, 4], "texture": "#1"},
+				"down": {"uv": [8.5, 4, 5, 5.5], "texture": "#1"}
+			}
+		},
+		{
+			"name": "gauges",
+			"from": [2.5, 6, 9.9],
+			"to": [13.5, 13, 9.9],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 6, 8]},
+			"faces": {
+				"north": {"uv": [1.5, 5.5, 4.25, 7.25], "texture": "#1"},
+				"east": {"uv": [0, 0, 0, 1.75], "texture": "#1"},
+				"south": {"uv": [4.25, 5.5, 7, 7.25], "texture": "#1"},
+				"west": {"uv": [0, 0, 0, 1.75], "texture": "#1"},
+				"up": {"uv": [2.75, 0, 0, 0], "texture": "#1"},
+				"down": {"uv": [0, 0, 2.75, 0], "texture": "#1"}
+			}
+		},
+		{
+			"name": "Dial",
+			"from": [3.5, 11, 9.8],
+			"to": [4.5, 13, 9.8],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 11.5, 8]},
+			"faces": {
+				"north": {"uv": [7, 1, 7.25, 1.5], "texture": "#1"},
+				"east": {"uv": [0, 0, 0, 0.5], "texture": "#1"},
+				"south": {"uv": [7, 1, 7.25, 1.5], "texture": "#1"},
+				"west": {"uv": [0, 0, 0, 0.5], "texture": "#1"},
+				"up": {"uv": [0.25, 0, 0, 0], "texture": "#1"},
+				"down": {"uv": [0, 0, 0.25, 0], "texture": "#1"}
+			}
+		},
+		{
+			"name": "Dial",
+			"from": [5.5, 7, 9.8],
+			"to": [6.5, 9, 9.8],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 7.5, 8]},
+			"faces": {
+				"north": {"uv": [7, 1, 7.25, 1.5], "texture": "#1"},
+				"east": {"uv": [0, 0, 0, 0.5], "texture": "#1"},
+				"south": {"uv": [7, 1, 7.25, 1.5], "texture": "#1"},
+				"west": {"uv": [0, 0, 0, 0.5], "texture": "#1"},
+				"up": {"uv": [0, 0, 0.25, 0], "texture": "#1"},
+				"down": {"uv": [0, 0, 0.25, 0], "texture": "#1"}
+			}
+		},
+		{
+			"name": "Dial",
+			"from": [7.5, 11, 9.8],
+			"to": [8.5, 13, 9.8],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 11.5, 8]},
+			"faces": {
+				"north": {"uv": [7, 1, 7.25, 1.5], "texture": "#1"},
+				"east": {"uv": [0, 0, 0, 0.5], "texture": "#1"},
+				"south": {"uv": [7, 1, 7.25, 1.5], "texture": "#1"},
+				"west": {"uv": [0, 0, 0, 0.5], "texture": "#1"},
+				"up": {"uv": [0, 0, 0.25, 0], "texture": "#1"},
+				"down": {"uv": [0, 0, 0.25, 0], "texture": "#1"}
+			}
+		},
+		{
+			"name": "Dial",
+			"from": [9.5, 7, 9.8],
+			"to": [10.5, 9, 9.8],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 7.5, 8]},
+			"faces": {
+				"north": {"uv": [7, 1, 7.25, 1.5], "texture": "#1"},
+				"east": {"uv": [0, 0, 0, 0.5], "texture": "#1"},
+				"south": {"uv": [7, 1, 7.25, 1.5], "texture": "#1"},
+				"west": {"uv": [0, 0, 0, 0.5], "texture": "#1"},
+				"up": {"uv": [0, 0, 0.25, 0], "texture": "#1"},
+				"down": {"uv": [0, 0, 0.25, 0], "texture": "#1"}
+			}
+		},
+		{
+			"name": "Dial",
+			"from": [11.5, 11, 9.8],
+			"to": [12.5, 13, 9.8],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 11.5, 8]},
+			"faces": {
+				"north": {"uv": [7, 1, 7.25, 1.5], "texture": "#1"},
+				"east": {"uv": [0, 0, 0, 0.5], "texture": "#1"},
+				"south": {"uv": [7, 1, 7.25, 1.5], "texture": "#1"},
+				"west": {"uv": [0, 0, 0, 0.5], "texture": "#1"},
+				"up": {"uv": [0, 0, 0.25, 0], "texture": "#1"},
+				"down": {"uv": [0, 0, 0.25, 0], "texture": "#1"}
+			}
+		},
+		{
+			"from": [11, 16, 14],
+			"to": [14, 18, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 16, 8]},
+			"faces": {
+				"north": {"uv": [7, 0, 7.75, 0.5], "texture": "#1"},
+				"east": {"uv": [7, 0.5, 7.5, 1], "texture": "#1"},
+				"south": {"uv": [7, 0, 7.75, 0.5], "texture": "#1"},
+				"west": {"uv": [7, 0.5, 7.5, 1], "texture": "#1"},
+				"up": {"uv": [7, 0, 7.75, 0.5], "texture": "#1"},
+				"down": {"uv": [7, 0, 7.75, 0.5], "texture": "#1"}
+			}
+		},
+		{
+			"from": [6.5, 16, 14],
+			"to": [9.5, 18, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 16, 8]},
+			"faces": {
+				"north": {"uv": [7, 0, 7.75, 0.5], "texture": "#1"},
+				"east": {"uv": [7, 0.5, 7.5, 1], "texture": "#1"},
+				"south": {"uv": [7, 0, 7.75, 0.5], "texture": "#1"},
+				"west": {"uv": [7, 0.5, 7.5, 1], "texture": "#1"},
+				"up": {"uv": [7, 0, 7.75, 0.5], "texture": "#1"},
+				"down": {"uv": [7, 0, 7.75, 0.5], "texture": "#1"}
+			}
+		},
+		{
+			"from": [2, 16, 14],
+			"to": [5, 18, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 16, 8]},
+			"faces": {
+				"north": {"uv": [7, 0, 7.75, 0.5], "texture": "#1"},
+				"east": {"uv": [7, 0.5, 7.5, 1], "texture": "#1"},
+				"south": {"uv": [7, 0, 7.75, 0.5], "texture": "#1"},
+				"west": {"uv": [7, 0.5, 7.5, 1], "texture": "#1"},
+				"up": {"uv": [7, 0, 7.75, 0.5], "texture": "#1"},
+				"down": {"uv": [7, 0, 7.75, 0.5], "texture": "#1"}
+			}
+		}
+	],
+	"display": {
+		"firstperson_righthand": {
+			"rotation": [0, 45, 0],
+			"translation": [0, 1, 0],
+			"scale": [0.4, 0.4, 0.4]
+		},
+		"firstperson_lefthand": {
+			"rotation": [0, 45, 0],
+			"translation": [0, 1, 0],
+			"scale": [0.4, 0.4, 0.4]
+		},
+		"ground": {
+			"translation": [0, 3, -1],
+			"scale": [0.25, 0.25, 0.25]
+		},
+		"gui": {
+			"rotation": [30, -135, 0],
+			"translation": [2.5, -1.5, 0],
+			"scale": [0.625, 0.625, 0.625]
+		},
+		"fixed": {
+			"translation": [0, 0, -3],
+			"scale": [0.5, 0.5, 0.5]
+		}
+	},
+	"groups": [
+		{
+			"name": "All",
+			"origin": [8, 8, 8],
+			"color": 0,
+			"children": [
+				0,
+				1,
+				{
+					"name": "Dial1",
+					"origin": [2.5, 6, 9.9],
+					"color": 0,
+					"children": [2]
+				},
+				{
+					"name": "Dial2",
+					"origin": [2.5, 6, 9.9],
+					"color": 0,
+					"children": [3]
+				},
+				{
+					"name": "Dial3",
+					"origin": [2.5, 6, 9.9],
+					"color": 0,
+					"children": [4]
+				},
+				{
+					"name": "Dial4",
+					"origin": [2.5, 6, 9.9],
+					"color": 0,
+					"children": [5]
+				},
+				{
+					"name": "Dial5",
+					"origin": [2.5, 6, 9.9],
+					"color": 0,
+					"children": [6]
+				},
+				{
+					"name": "Terminals",
+					"origin": [8, 8, 8],
+					"color": 0,
+					"children": [7, 8, 9]
+				}
+			]
+		}
+	]
+}

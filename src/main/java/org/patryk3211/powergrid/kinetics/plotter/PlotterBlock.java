@@ -37,7 +37,6 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
@@ -58,16 +57,13 @@ public class PlotterBlock extends ElectricKineticBlock implements IBE<PlotterBlo
     public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
 
     public static final TerminalBoundingBox[] TERMINALS = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 9, 13, 1, 11, 14, 3)
+            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 9, 12, 1, 11, 14, 3)
                     .withColor(IDecoratedTerminal.RED),
-            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 5, 13, 1, 7, 14, 3)
+            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 5, 12, 1, 7, 14, 3)
                     .withColor(IDecoratedTerminal.BLUE)
     };
 
-    public static final VoxelShape SHAPE = Shapes.or(
-            box(0, 0, 0, 16, 12, 16),
-            box(2, 12, 1, 14, 13, 3)
-    );
+    public static final VoxelShape SHAPE = box(0, 0, 0, 16, 12, 16);
 
     public PlotterBlock(Properties properties) {
         super(properties);

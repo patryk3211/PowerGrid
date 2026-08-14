@@ -22,7 +22,6 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -35,6 +34,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.advancements.PGAdvancementBehaviour;
+import org.patryk3211.powergrid.collections.ModdedAdvancements;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedDamageTypes;
 import org.patryk3211.powergrid.config.ThermalValues;
@@ -289,6 +290,9 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
                     // no more excuses, this device is exploding.
                     if (overheatCallback != null)
                         overheatCallback.run();
+                    var award = blockEntity.getBehaviour(PGAdvancementBehaviour.TYPE);
+                    if (award != null)
+                        award.awardPlayer(ModdedAdvancements.BLOW_UP);
                     if ((behaviourFlags & OVERHEAT_EXPLOSION) != 0) {
                         explode(world, pos, blockEntity.getBlockState(), 1.0f);
                     }
@@ -328,8 +332,7 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
 
     public static void explode(Level world, BlockPos pos, BlockState state, float power) {
         if(shouldExplode()) {
-            var registry = world.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE);
-            var source = new MachineOverloadDamageSource(registry.getHolder(ModdedDamageTypes.OVERLOADED_MACHINE).get(), state.getBlock());
+            var source = new MachineOverloadDamageSource(ModdedDamageTypes.OVERLOADED_MACHINE.holder(world), state.getBlock());
             // This block must be broken first to allow for damage to propagate.
             world.destroyBlock(pos, false);
             world.explode(null, source, null, pos.getX() + 0.5f, pos.getY() + 0.5f, pos.getZ() + 0.5f, power, false, Level.ExplosionInteraction.BLOCK);

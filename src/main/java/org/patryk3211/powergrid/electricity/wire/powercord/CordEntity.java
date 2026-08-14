@@ -15,17 +15,18 @@
  */
 package org.patryk3211.powergrid.electricity.wire.powercord;
 
-import dev.architectury.utils.Env;
-import dev.architectury.utils.EnvExecutor;
 import net.createmod.ponder.api.level.PonderLevel;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.FloatTag;
+import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
@@ -40,10 +41,7 @@ import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.WorldNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
-import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
-import org.patryk3211.powergrid.electricity.wire.CurveParameters;
-import org.patryk3211.powergrid.electricity.wire.IWire;
-import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
 
@@ -57,7 +55,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     protected ElectricWire wire1;
     protected ElectricWire wire2;
 
-    public Object renderParams;
+    public CurveParameters curveParams;
     private boolean particlesSpawned;
 
     public static CordEntity create(Level world, ICordEndpoint endpoint1, ICordEndpoint endpoint2, ItemStack item, @Nullable Float resistance) {
@@ -95,10 +93,8 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     }
 
     public void updateRenderParams() {
-        if(!level().isClientSide)
-            return;
         var item = getWireEntry();
-        renderParams = new CurveParameters(terminalPos1, terminalPos2,
+        curveParams = new CurveParameters(terminalPos1, terminalPos2,
                 item.horizontalCoefficient(), item.verticalCoefficient(), item.wireThickness());
         this.setBoundingBox(this.makeBoundingBox());
     }
@@ -106,13 +102,15 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     @Nullable
     @Environment(EnvType.CLIENT)
     public AABB calculateClientBoundingBox() {
-        if(renderParams == null)
+        if(curveParams == null)
             return null;
-        var curve = (CurveParameters) renderParams;
         var box = new AABB(terminalPos1, terminalPos2);
+        if(curveParams.isVertical()) {
+            return box.inflate(getWireEntry().wireThickness());
+        }
         var minY = new MutableFloat(box.minY);
         final float eY = (float) position().y;
-        curve.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
+        curveParams.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
             double y = (y1 + y2) * 0.5 + eY;
             if(y < minY.getValue())
                 minY.setValue(y);
@@ -224,12 +222,12 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
 
                 var tag = new CompoundTag();
                 var list = new ListTag();
-                list.add(FloatTag.valueOf((float) terminalPos1.x));
-                list.add(FloatTag.valueOf((float) terminalPos1.y));
-                list.add(FloatTag.valueOf((float) terminalPos1.z));
-                list.add(FloatTag.valueOf((float) terminalPos2.x));
-                list.add(FloatTag.valueOf((float) terminalPos2.y));
-                list.add(FloatTag.valueOf((float) terminalPos2.z));
+                list.add(DoubleTag.valueOf(terminalPos1.x));
+                list.add(DoubleTag.valueOf(terminalPos1.y));
+                list.add(DoubleTag.valueOf(terminalPos1.z));
+                list.add(DoubleTag.valueOf(terminalPos2.x));
+                list.add(DoubleTag.valueOf(terminalPos2.y));
+                list.add(DoubleTag.valueOf(terminalPos2.z));
                 tag.put("V", list);
                 var packet = new EntityDataS2CPacket(this, tag);
                 ModdedPackets.sendToClientsTracking(packet, this);
@@ -253,7 +251,6 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
         var pos = position();
         if(isOverheated()) {
             if(world.isClientSide && !particlesSpawned) {
-                var curveParams = (CurveParameters) renderParams;
                 var dx = curveParams.getCurveSpan();
                 int pointCount = (int) Math.round(dx / 0.25f);
                 curveParams.runForPoints(pointCount, (x, y, z) -> {
@@ -263,8 +260,8 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
                 });
                 particlesSpawned = true;
             }
-        } else if(temperature >= overheatTemperature - 50 && world.isClientSide && renderParams != null) {
-            var curvePoint = ((CurveParameters) renderParams).getRandomPoint(random);
+        } else if(temperature >= overheatTemperature - 50 && world.isClientSide && curveParams != null) {
+            var curvePoint = curveParams.getRandomPoint(random);
             double x = curvePoint.x + pos.x;
             double y = curvePoint.y + pos.y;
             double z = curvePoint.z + pos.z;
@@ -281,26 +278,57 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     @Override
     public boolean isPickable() {
         // Hits get handled by IComplexRaycast
-        return EnvExecutor.getInEnv(Env.CLIENT, () -> () -> {
-            if(renderParams instanceof CurveParameters rp) {
-                // Use Vanilla AABB based picking
-                return rp.isVertical();
-            } else {
-                return false;
-            }
-        }).orElse(false);
+        return curveParams != null && curveParams.isVertical();
+    }
+
+    @Override
+    public boolean isInsulated() {
+        return true;
     }
 
     @Override
     public void onEntityDataPacket(CompoundTag data) {
         if(data.contains("V")) {
-            var list = data.getList("V", Tag.TAG_FLOAT);
-            terminalPos1 = new Vec3(list.getFloat(0), list.getFloat(1), list.getFloat(2));
-            terminalPos2 = new Vec3(list.getFloat(3), list.getFloat(4), list.getFloat(5));
+            var list = data.getList("V", Tag.TAG_DOUBLE);
+            terminalPos1 = new Vec3(list.getDouble(0), list.getDouble(1), list.getDouble(2));
+            terminalPos2 = new Vec3(list.getDouble(3), list.getDouble(4), list.getDouble(5));
             updateRenderParams();
         } else {
             super.onEntityDataPacket(data);
         }
+    }
+
+    @Override
+    public InteractionResult interact(Player player, InteractionHand hand) {
+        var result = super.interact(player, hand);
+        if(hand != InteractionHand.MAIN_HAND || result != InteractionResult.PASS)
+            return result;
+        return level().isClientSide
+                ? ClientWireInteractions.cordInteraction(this)
+                : InteractionResult.CONSUME;
+    }
+
+    /**
+     * Detach cord and return half placed item to player
+     * @param player Interacting player
+     * @param secondEndpoint Which endpoint is being removed
+     * @return True if the item has been returned to the player
+     */
+    public boolean cordDetach(Player player, boolean secondEndpoint) {
+        var handStack = player.getMainHandItem();
+        boolean itemInHand = handStack.getItem() == getItem();
+        if(!handStack.isEmpty() && !itemInHand)
+            return false;
+        for(; itemCount > (itemInHand ? 0 : 64); itemCount -= 64) {
+            var stack = new ItemStack(getItem(), Math.min(itemCount, 64));
+            player.addItem(stack);
+        }
+        var stack = itemInHand ? handStack : new ItemStack(getItem(), itemCount);
+        stack.getOrCreateTag().put("Connection", (secondEndpoint ? endpoint1 : endpoint2).serialize());
+        player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+        itemCount = 0;
+        discard();
+        return true;
     }
 
     @Override
@@ -329,7 +357,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
         if(getWireEntry() == null)
             return null;
         var thickness = getWireEntry().wireThickness() * 2;
-        if(renderParams instanceof CurveParameters params) {
+        if(curveParams != null) {
             Vec3 ray = max.subtract(min);
             var rayLength = ray.lengthSqr();
             ray = ray.normalize();
@@ -351,7 +379,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
                     var parallelDistance = Math.abs(planeXVector.dot(hitOriginVector));
                     var perpendicularDistance = Math.abs(planeNormal.dot(hitOriginVector));
 
-                    if(parallelDistance < params.getCurveSpan() / 2 && perpendicularDistance < thickness / 2) {
+                    if(parallelDistance < curveParams.getCurveSpan() / 2 && perpendicularDistance < thickness / 2) {
                         // Hit
                         return hit;
                     } else {
@@ -371,12 +399,12 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
                     // We can do that since the entity never has any pitch.
                     double y = hitOriginVector.y;
 
-                    double closeX = params.findClosestPoint(x, y);
-                    double span = params.getCurveSpan() / 2;
+                    double closeX = curveParams.findClosestPoint(x, y);
+                    double span = curveParams.getCurveSpan() / 2;
                     closeX = Math.min(Math.max(closeX, -span), span);
 
                     double dX = x - closeX;
-                    double dY = y - params.apply((float) closeX);
+                    double dY = y - curveParams.apply((float) closeX);
 
                     double squareDistance = dX * dX + dY * dY;
                     if(squareDistance < thickness * thickness) {

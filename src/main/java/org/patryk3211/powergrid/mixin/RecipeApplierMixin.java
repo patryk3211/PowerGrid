@@ -20,6 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
 import org.patryk3211.powergrid.collections.ModdedTags;
+import org.patryk3211.powergrid.equipment.BoostRecipe;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -36,8 +37,21 @@ public class RecipeApplierMixin {
     )
     private static void powerGrid$recipeTransferNbt(Level level, ItemStack stackIn, Recipe<?> recipe, boolean returnProcessingRemainder, CallbackInfoReturnable<List<ItemStack>> cir) {
         var outputs = cir.getReturnValue();
-        if(outputs == null || outputs.isEmpty() ||
-                !stackIn.is(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag) ||
+        if(outputs == null || outputs.isEmpty())
+            return;
+        if(recipe instanceof BoostRecipe) {
+            if(stackIn.hasTag()) {
+                var tagIn = stackIn.getTag();
+                var tagOut = outputs.get(0).getTag();
+                for(var key : tagIn.getAllKeys()) {
+                    if(key.equals("Boosted"))
+                        continue;
+                    tagOut.put(key, tagIn.get(key).copy());
+                }
+            }
+            return;
+        }
+        if(!stackIn.is(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag) ||
                 !stackIn.hasTag() || !stackIn.getTag().contains("Schematic"))
             return;
         // Modify output with NBT

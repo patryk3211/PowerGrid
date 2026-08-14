@@ -31,6 +31,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.info.customdisplay.CustomDisplayBehaviour;
+import org.patryk3211.powergrid.electricity.info.customdisplay.IVarSet;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
@@ -41,7 +42,7 @@ import java.util.List;
  * PowerGrid's electric equivalent of the kinetic gauge from Create.
  * @see com.simibubi.create.content.kinetics.gauge.GaugeBlockEntity
  */
-public abstract class GaugeBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
+public abstract class GaugeBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, IVarSet {
     protected GaugeValueBehaviour gaugeValue;
     protected CustomDisplayBehaviour display;
     protected float maxValue;
@@ -74,8 +75,12 @@ public abstract class GaugeBlockEntity extends ElectricBlockEntity implements IH
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         super.addBehaviours(behaviours);
-        display = new CustomDisplayBehaviour(this, getUnit(), this instanceof CurrentGaugeBlockEntity, this::getMaxValue, this::getColor);
+        display = displayBehaviour();
         behaviours.add(display);
+    }
+
+    protected CustomDisplayBehaviour displayBehaviour() {
+        return new CustomDisplayBehaviour(this, getUnit(), this instanceof CurrentGaugeBlockEntity, this::getMaxValue, this::getColor, "x");
     }
 
     public float getProgress() {
@@ -83,13 +88,24 @@ public abstract class GaugeBlockEntity extends ElectricBlockEntity implements IH
     }
 
     public MutableComponent getCustomFormatted() {
-        return display.format(getValue()).component();
+        return display.format(getValue(), this).component();
     }
 
     public abstract float getMaxValue();
     public abstract ChatFormatting getColor(float value);
     public abstract float getValue();
     public abstract Unit getUnit();
+
+    @Override
+    public float get(String name) {
+        float x = getValue();
+        float max = getMaxValue();
+        if(x > max)
+            return max;
+        if(x < -max)
+            return -max;
+        return x;
+    }
 
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
@@ -105,7 +121,7 @@ public abstract class GaugeBlockEntity extends ElectricBlockEntity implements IH
 
         @Override
         protected Vec3 getSouthLocation() {
-            return VecHelper.voxelSpace(8.0f, 8.0f, 14.5f);
+            return VecHelper.voxelSpace(8.0f, 8.0f, 13.5f);
         }
     }
 }

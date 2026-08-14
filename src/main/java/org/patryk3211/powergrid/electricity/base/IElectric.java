@@ -199,10 +199,6 @@ public interface IElectric extends IWrenchable {
             return InteractionResult.FAIL;
         }
 
-        if(!HangingWireEntity.checkClearance(world, endpoint1.getExactPosition(world), endpoint2.getExactPosition(world))) {
-            return InteractionResult.FAIL;
-        }
-
         if(world.isClientSide)
             return InteractionResult.SUCCESS;
         ServerLevel serverWorld = (ServerLevel) world;

@@ -31,7 +31,9 @@ public class ModdedTags {
         COILS(FORGE_NAMESPACE, "coils"),
         CIRCUIT_SCHEMATIC_HOLDER("circuit_schematic_holder"),
         CIRCUIT_COMPONENT("circuit_component"),
-        FUSE_RESETTING("fuse_resetting")
+        FUSE_RESETTING("fuse_resetting"),
+        WIRE_CUTTERS("wire_cutters"),
+        BAD_WIRE_CUTTERS("bad_wire_cutters")
         ;
 
         public final TagKey<net.minecraft.world.item.Item> tag;

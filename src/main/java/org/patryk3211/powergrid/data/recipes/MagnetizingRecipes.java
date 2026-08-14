@@ -34,7 +34,7 @@ import java.util.function.UnaryOperator;
 public class MagnetizingRecipes extends ProcessingRecipeGen {
     GeneratedRecipe
 
-    MAGNET = create(() -> Items.IRON_INGOT, b -> b
+    MAGNET = create(() -> AllItems.ANDESITE_ALLOY, b -> b
             .output(ModdedItems.MAGNET)
     ),
 

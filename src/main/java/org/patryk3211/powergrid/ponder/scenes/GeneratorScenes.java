@@ -22,6 +22,7 @@ import net.createmod.catnip.math.Pointing;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.DyeColor;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -67,7 +68,15 @@ public class GeneratorScenes {
         scene.world().toggleRedstonePower(util.select().fromTo(2, 1, 2, 2, 1, 3));
         scene.effects().indicateRedstone(util.grid().at(2, 1, 2));
         scene.world().modifyBlockEntity(util.grid().at(2, 1, 3), GeneratorClutchBlockEntity.class,
-                be -> be.updateStrength(0));
+                be -> {
+            be.updateStrength(0);
+            var tag = new CompoundTag();
+            be.saveAdditional(tag);
+            var network = tag.getCompound("Network");
+            network.putFloat("AddedStress", 256);
+            network.putFloat("Stress", 256);
+            be.load(tag);
+        });
         scene.idle(50);
 
         scene.world().showSection(util.select().position(target.east()), Direction.NORTH);

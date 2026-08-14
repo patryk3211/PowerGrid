@@ -42,6 +42,7 @@ public enum ModdedPackets {
     LIGHTNING_SYNC(LightningSyncS2CPacket.class, LightningSyncS2CPacket::new),
     ENTITY_DATA(EntityDataS2CPacket.class, EntityDataS2CPacket::new),
     STATE(StateS2CPacket.class, StateS2CPacket::new),
+    DRILL_SPEED(DrillSpeedS2CPacket.class, DrillSpeedS2CPacket::new),
 
     ALTERNATE_PLACEMENT_STATUS(AlternatePlacementStatusC2SPacket.class, AlternatePlacementStatusC2SPacket::new),
     TRANSFORMER_WINDING(TransformerWindingC2SPacket.class, TransformerWindingC2SPacket::new),
@@ -54,6 +55,9 @@ public enum ModdedPackets {
     SAVE_CARD(SaveCardC2SPacket.class, SaveCardC2SPacket::new),
     SET_CUSTOM_DISPLAY(SetCustomDisplayC2SPacket.class, SetCustomDisplayC2SPacket::new),
     NEGOTIATE_SYNC(NegotiateSyncC2SPacket.class, NegotiateSyncC2SPacket::new),
+    CORD_DETACH(CordDetachC2SPacket.class, CordDetachC2SPacket::new),
+    ENERGY_METER_INTERACTION(EnergyMeterInteractionC2SPacket.class, EnergyMeterInteractionC2SPacket::new),
+    DISPLAY_BURNOUT(DisplayBurnoutS2CPacket.class, DisplayBurnoutS2CPacket::new),
 
     UPDATE_COMPONENT(UpdateComponentBiPacket.class, UpdateComponentBiPacket::new),
     ;

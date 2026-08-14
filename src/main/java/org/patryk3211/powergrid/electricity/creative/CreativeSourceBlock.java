@@ -17,14 +17,13 @@ package org.patryk3211.powergrid.electricity.creative;
 
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.MethodsReturnNonnullByDefault;
-import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.Property;
-import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
-import org.patryk3211.powergrid.electricity.base.HorizontalAxisElectricBlock;
+import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
@@ -32,24 +31,26 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class CreativeSourceBlock extends HorizontalAxisElectricBlock implements IBE<CreativeSourceBlockEntity> {
-    public static final Property<Direction.Axis> HORIZONTAL_AXIS = BlockStateProperties.HORIZONTAL_AXIS;
+public class CreativeSourceBlock extends HorizontalElectricBlock implements IBE<CreativeSourceBlockEntity> {
 
-    private static final VoxelShape SHAPE = Shapes.or(
-            box(0, 0, 0, 16, 2, 16),
-            box(1, 2, 1, 15, 13, 15)
-    );
+    private static final VoxelShape SHAPE = box(1, 0, 2, 15, 14, 14);
 
     private static final TerminalBoundingBox[] TERMINALS = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 6, 13, 2, 10, 16, 6)
+            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 9.5, 14, 6.5, 12.5, 16, 9.5)
                     .withColor(IDecoratedTerminal.RED),
-            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 6, 13, 10, 10, 16, 14)
+            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 3.5, 14, 6.5, 6.5, 16, 9.5)
                     .withColor(IDecoratedTerminal.BLUE)
     };
 
     public CreativeSourceBlock(Properties settings) {
         super(settings);
-        setTerminalCollection(horizontalZTerminals(this, TERMINALS, SHAPE));
+        setTerminalCollection(horizontalNorthTerminals(this, TERMINALS, SHAPE));
+    }
+
+    @Override
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        var player = ctx.getPlayer() == null || !ctx.getPlayer().isShiftKeyDown() ? ctx.getHorizontalDirection().getOpposite() : ctx.getHorizontalDirection();
+        return defaultBlockState().setValue(HORIZONTAL_FACING, player);
     }
 
     @Override

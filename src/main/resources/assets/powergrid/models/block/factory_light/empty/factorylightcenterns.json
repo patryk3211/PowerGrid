@@ -1,0 +1,46 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Made with Blockbench",
+	"parent": "block/block",
+	"texture_size": [64, 64],
+	"textures": {
+		"1": "powergrid:block/factory_light/factorylightempty",
+		"particle": "powergrid:block/zinc_plate"
+	},
+	"elements": [
+		{
+			"from": [1, 8, 0],
+			"to": [15, 10, 16],
+			"faces": {
+				"north": {"uv": [0.5, 8, 2.5, 8.5], "texture": "#1"},
+				"east": {"uv": [0, 13.5, 4, 14], "texture": "#1"},
+				"south": {"uv": [0.5, 8, 2.5, 8.5], "texture": "#1"},
+				"west": {"uv": [0, 13.5, 4, 14], "texture": "#1"},
+				"up": {"uv": [10.5, 14.5, 7, 10.5], "texture": "#1"},
+				"down": {"uv": [16, 11.25, 12.5, 7.25], "texture": "#1"}
+			}
+		},
+		{
+			"from": [2, 10, 0],
+			"to": [14, 16, 16],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 3, 0]},
+			"faces": {
+				"north": {"uv": [0, 7, 3, 8.5], "texture": "#1"},
+				"east": {"uv": [3, 9.5, 7, 11], "texture": "#1"},
+				"south": {"uv": [0, 7, 3, 8.5], "texture": "#1"},
+				"west": {"uv": [3, 9.5, 7, 11], "texture": "#1"},
+				"up": {"uv": [0, 3, 3, 7], "texture": "#1"},
+				"down": {"uv": [1.5, 14, 0, 16], "texture": "#1"}
+			}
+		}
+	],
+	"groups": [
+		{
+			"name": "centerNS",
+			"origin": [0, 0, 0],
+			"scope": 0,
+			"color": 0,
+			"children": [0, 1]
+		}
+	]
+}

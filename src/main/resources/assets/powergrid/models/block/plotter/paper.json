@@ -4,7 +4,7 @@
 	"parent": "block/block",
 	"textures": {
 		"1": "powergrid:block/plotter_paper",
-		"particle": "powergrid:block/plotter_paper"
+		"particle": "powergrid:block/conductive_casing"
 	},
 	"elements": [
 		{
@@ -13,12 +13,7 @@
 			"to": [14.7, 14, 15],
 			"rotation": {"angle": -22.5, "axis": "x", "origin": [7, 12, 9]},
 			"faces": {
-				"north": {"uv": [0, 0, 3, 0], "texture": "#missing"},
-				"east": {"uv": [0, 0, 3, 0], "texture": "#missing"},
-				"south": {"uv": [0, 0, 3, 0], "texture": "#missing"},
-				"west": {"uv": [0, 0, 3, 0], "texture": "#missing"},
-				"up": {"uv": [12, 14, 0, 2], "rotation": 270, "texture": "#1"},
-				"down": {"uv": [3, 12.75, 0, 15.75], "rotation": 90, "texture": "#missing"}
+				"up": {"uv": [12, 14, 0, 2], "rotation": 270, "texture": "#1"}
 			}
 		}
 	]

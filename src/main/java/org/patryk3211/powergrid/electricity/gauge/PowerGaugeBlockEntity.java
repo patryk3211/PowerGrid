@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.info.customdisplay.CustomDisplayBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
@@ -161,13 +162,29 @@ public class PowerGaugeBlockEntity extends GaugeBlockEntity {
     }
 
     @Override
+    public float get(String name) {
+        var lname = name.toLowerCase();
+        if(lname.equals("i")) {
+            return (float) series.current();
+        } else if(lname.equals("v")) {
+            return (float) shunt.potentialDifference();
+        }
+        return getValue();
+    }
+
+    @Override
+    protected CustomDisplayBehaviour displayBehaviour() {
+        return new CustomDisplayBehaviour(this, getUnit(), false, null, this::getColor, "I * V");
+    }
+
+    @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         super.addToGoggleTooltip(tooltip, isPlayerSneaking);
         Lang.builder().translate("gui.power_meter.title")
                 .style(ChatFormatting.GRAY)
                 .forGoggles(tooltip);
 
-        display.format(getValue()).forGoggles(tooltip, 1);
+        display.format(getValue(), this).forGoggles(tooltip, 1);
         return true;
     }
 }

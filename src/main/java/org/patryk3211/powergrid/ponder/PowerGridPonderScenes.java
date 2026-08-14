@@ -22,7 +22,6 @@ import com.tterrag.registrate.util.entry.ItemProviderEntry;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import net.createmod.ponder.api.registration.PonderSceneRegistrationHelper;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.item.Items;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.ponder.scenes.*;
@@ -34,6 +33,7 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedBlocks.VOLTAGE_METER, "gauges", GaugeScenes::voltage);
         HELPER.addStoryBoard(ModdedBlocks.CURRENT_METER, "gauges", GaugeScenes::current);
         HELPER.addStoryBoard(ModdedBlocks.POWER_METER, "power_gauge", GaugeScenes::power);
+        HELPER.addStoryBoard(ModdedBlocks.ENERGY_METER, "energy_meter", GaugeScenes::energyMeter);
 
         HELPER.addStoryBoard(ModdedBlocks.PLOTTER, "plotter", DeviceScenes::plotter);
 
@@ -67,6 +67,7 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedItems.INSULATED_COPPER_WIRE, "wire/insulated_wire", WireScenes::insulatedWire);
         HELPER.forComponents(ModdedItems.WIRE, ModdedItems.IRON_WIRE, ModdedItems.GOLDEN_WIRE, ModdedItems.INSULATED_COPPER_WIRE)
                 .addStoryBoard("wire/simple", WireScenes::simple)
+                .addStoryBoard("wire/wire_loop", WireScenes::wireLoop)
                 .addStoryBoard("wire/voltage_drop", WireScenes::voltageDrop);
         HELPER.forComponents(ModdedItems.CORD, ModdedItems.STRING_LIGHT_CORD)
                 .addStoryBoard("wire/cord", WireScenes::cord);
@@ -76,8 +77,9 @@ public class PowerGridPonderScenes {
                 .addStoryBoard("ground2", WireScenes::improvedGround, PowerGridPonderTags.ELECTRIC_RELAYS);
 
         HELPER.forComponents(ModdedBlocks.TRANSFORMER_CORE)
-                .addStoryBoard("transformer/sizes", DeviceScenes::transformerSizes, PowerGridPonderTags.ELECTRIC_RELAYS)
-                .addStoryBoard("transformer/winding", DeviceScenes::transformerWinding, PowerGridPonderTags.ELECTRIC_RELAYS);
+                .addStoryBoard("transformer/sizes", RelayScenes::transformerSizes, PowerGridPonderTags.ELECTRIC_RELAYS)
+                .addStoryBoard("transformer/winding", RelayScenes::transformerWinding, PowerGridPonderTags.ELECTRIC_RELAYS)
+                .addStoryBoard("transformer/nether", RelayScenes::transformerNether, PowerGridPonderTags.ELECTRIC_RELAYS);
         HELPER.addStoryBoard(ModdedBlocks.VARIAC, "variac", RelayScenes::variac, PowerGridPonderTags.ELECTRIC_RELAYS);
 
         HELPER.addStoryBoard(ModdedBlocks.RHEOSTAT, "rheostat", RelayScenes::rheostat, PowerGridPonderTags.ELECTRIC_RELAYS);
@@ -92,7 +94,7 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedItems.GROWTH_LAMP, "growth_lamp", DeviceScenes::growthLamp, PowerGridPonderTags.ELECTRIC_DEVICES);
 
         HELPER.forComponents(ModdedBlocks.WIRE_CONNECTOR, ModdedBlocks.HEAVY_WIRE_CONNECTOR)
-                .addStoryBoard("wire/connector", WireScenes::connector, PowerGridPonderTags.ELECTRIC_RELAYS);
+                .addStoryBoard("wire/connector", WireScenes::connector, PowerGridPonderTags.ELECTRIC_RELAYS, PowerGridPonderTags.CEILING_TILE_ATTACHMENTS);
         HELPER.addStoryBoard(ModdedBlocks.DEVICE_CONNECTOR, "device_connector", RelayScenes::deviceConnector, PowerGridPonderTags.ELECTRIC_RELAYS);
 
         HELPER.addStoryBoard(ModdedBlocks.ELECTRIC_MOTOR, "motor", DeviceScenes::motor, AllCreatePonderTags.KINETIC_SOURCES, PowerGridPonderTags.ELECTRIC_DEVICES);
@@ -102,9 +104,13 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedBlocks.ELECTRIC_FAN, "electric_fan", DeviceScenes::electricFan, PowerGridPonderTags.ELECTRIC_DEVICES);
         HELPER.addStoryBoard(AllBlocks.ENCASED_FAN, "encased_fan", DeviceScenes::encasedFan);
         HELPER.forComponents(ModdedBlocks.SOLAR_PANEL)
-                .addStoryBoard("solar_panel/solar_panel_conditions", DeviceScenes::solarPanel, PowerGridPonderTags.ELECTRIC_DEVICES)
-                .addStoryBoard("solar_panel/solar_panel_power_creation", DeviceScenes::solarPanel2, PowerGridPonderTags.ELECTRIC_DEVICES);
+                .addStoryBoard("solar_panel/solar_panel_conditions", DeviceScenes::solarPanel, PowerGridPonderTags.ELECTRIC_DEVICES, PowerGridPonderTags.CEILING_TILE_ATTACHMENTS)
+                .addStoryBoard("solar_panel/solar_panel_power_creation", DeviceScenes::solarPanel2, PowerGridPonderTags.ELECTRIC_DEVICES, PowerGridPonderTags.CEILING_TILE_ATTACHMENTS);
         HELPER.addStoryBoard(ModdedBlocks.SOLAR_PANEL_BEARING, "solar_panel_bearing", DeviceScenes::solarPanelBearing, PowerGridPonderTags.ELECTRIC_DEVICES, AllCreatePonderTags.KINETIC_SOURCES);
+
+        HELPER.addStoryBoard(ModdedBlocks.MODULAR_DISPLAY, "modular_display", DeviceScenes::modularDisplay, PowerGridPonderTags.ELECTRIC_DEVICES);
+
+        HELPER.addStoryBoard(ModdedBlocks.CEILING_TILE, "ceiling_tile", DeviceScenes::ceilingTile, PowerGridPonderTags.CEILING_TILE_ATTACHMENTS);
 
         HELPER.forComponents(ModdedItems.MAGNET)
                 .addStoryBoard("magnet", MagnetScenes::magnet)
@@ -133,7 +139,7 @@ public class PowerGridPonderScenes {
 
         HELPER.addStoryBoard(ModdedBlocks.BATTERY, "battery", DeviceScenes::battery);
 
-        HELPER.addStoryBoard(ModdedBlocks.CORD_JUNCTION, "wire/cord_junction", WireScenes::cordJunction, PowerGridPonderTags.ELECTRIC_RELAYS);
+        HELPER.addStoryBoard(ModdedBlocks.CORD_JUNCTION, "wire/cord_junction", WireScenes::cordJunction, PowerGridPonderTags.ELECTRIC_RELAYS, PowerGridPonderTags.CEILING_TILE_ATTACHMENTS);
         HELPER.addStoryBoard(ModdedBlocks.SOCKET, "wire/cord_socket", WireScenes::cordSocket, PowerGridPonderTags.ELECTRIC_RELAYS);
 
         HELPER.addStoryBoard(ModdedBlocks.CRT, "crt", DeviceScenes::crt, PowerGridPonderTags.ELECTRIC_DEVICES);
@@ -153,6 +159,12 @@ public class PowerGridPonderScenes {
         HELPER.addStoryBoard(ModdedItems.POTENTIOMETER, "circuit/potentiometer", CircuitScenes::potentiometer, PowerGridPonderTags.CIRCUIT_COMPONENTS);
         HELPER.addStoryBoard(ModdedItems.REGULATOR_TUBE, "circuit/regulator_tube", CircuitScenes::regulatorTube, PowerGridPonderTags.CIRCUIT_COMPONENTS);
         HELPER.addStoryBoard(ModdedItems.NEON_BULB, "circuit/neon", CircuitScenes::neonBulb, PowerGridPonderTags.CIRCUIT_COMPONENTS);
+        HELPER.forComponents(ModdedBlocks.FACTORY_LIGHT)
+                .addStoryBoard("factory_light/factory_light", DeviceScenes::factoryLight, PowerGridPonderTags.ELECTRIC_DEVICES, PowerGridPonderTags.CEILING_TILE_ATTACHMENTS)
+                .addStoryBoard("factory_light/factory_light_tall", DeviceScenes::factoryLightTall, PowerGridPonderTags.ELECTRIC_DEVICES, PowerGridPonderTags.CEILING_TILE_ATTACHMENTS)
+                .addStoryBoard("factory_light/factory_light_connect", DeviceScenes::factoryLightConnect, PowerGridPonderTags.ELECTRIC_DEVICES, PowerGridPonderTags.CEILING_TILE_ATTACHMENTS);
+
         helper.addStoryBoard(new ResourceLocation("paper"), "circuit/label", CircuitScenes::label, PowerGridPonderTags.CIRCUIT_COMPONENTS);
+        HELPER.addStoryBoard(ModdedItems.DISPLAY_MODULE, "circuit/display_module", CircuitScenes::displayModule, PowerGridPonderTags.CIRCUIT_COMPONENTS);
     }
 }

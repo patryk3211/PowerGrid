@@ -40,6 +40,7 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
@@ -49,11 +50,11 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
-public class CommutatorBlock extends AbstractRotorBlock implements IBE<CommutatorBlockEntity>, IBrushPlacement {
+public class CommutatorBlock extends AbstractRotorBlock implements IBE<CommutatorBlockEntity>, ICommutator {
     public static final DirectionProperty HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
 
-    final BlockStateTerminalCollection terminals;
-    final BlockStateTerminalCollection terminalsFlipped;
+    private final BlockStateTerminalCollection terminals;
+    private final BlockStateTerminalCollection terminalsFlipped;
     private final ImmutableMap<BlockState, VoxelShape> outlines;
 
     private static final TerminalBoundingBox[] TERMINALS_HORIZONTAL = new TerminalBoundingBox[] {
@@ -95,6 +96,11 @@ public class CommutatorBlock extends AbstractRotorBlock implements IBE<Commutato
                 })
                 .build();
         outlines = getShapeForEachState(terminals.shapeMapper());
+    }
+
+    @Override
+    public float getInertia() {
+        return ModdedConfigs.server().kinetics.generatorControls.generatorCommutatorInertia.getF();
     }
 
     @Override
@@ -172,8 +178,8 @@ public class CommutatorBlock extends AbstractRotorBlock implements IBE<Commutato
     @Override
     public Vec3 brushOffset(BlockState state) {
         return switch (state.getValue(HORIZONTAL_FACING).getAxis()) {
-            case Z -> new Vec3(3.5 / 16f, 0, 2 / 16f);
-            case X -> new Vec3(-2 / 16f, 0, 3.5 / 16);
+            case Z -> new Vec3(3.5 / 16f, 0, 1 / 16f);
+            case X -> new Vec3(-1 / 16f, 0, 3.5 / 16);
             default -> throw new IllegalStateException();
         };
     }
@@ -195,5 +201,15 @@ public class CommutatorBlock extends AbstractRotorBlock implements IBE<Commutato
     @Override
     public BlockState mirror(BlockState state, Mirror mirrorIn) {
         return state.rotate(mirrorIn.getRotation(state.getValue(HORIZONTAL_FACING)));
+    }
+
+    @Override
+    public BlockStateTerminalCollection terminals() {
+        return terminals;
+    }
+
+    @Override
+    public BlockStateTerminalCollection terminalsFlipped() {
+        return terminalsFlipped;
     }
 }

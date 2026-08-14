@@ -67,8 +67,8 @@ public class CurveParameters {
         // Calculate cross parameters
         direction = new Vec3(t2.x - t1.x, t2.y - t1.y, t2.z - t1.z);
         Vec3 v1 = new Vec3(1 - direction.x, 1 - direction.y, 1 - direction.z);
-        cross1 = v1.cross(direction).normalize().scale(thickness * 0.5);
-        cross2 = cross1.cross(direction).normalize().scale(thickness * 0.5);
+        cross1 = v1.cross(direction).normalize().scale(thickness * 0.5 * Math.sqrt(2));
+        cross2 = cross1.cross(direction).normalize().scale(thickness * 0.5 * Math.sqrt(2));
     }
 
     public double apply(double x) {

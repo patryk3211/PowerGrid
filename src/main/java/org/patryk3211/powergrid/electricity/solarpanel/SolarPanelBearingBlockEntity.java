@@ -26,13 +26,13 @@ import org.joml.Vector3d;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
-import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
+import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
 import java.util.List;
 
 import static org.patryk3211.powergrid.electricity.solarpanel.SolarHelper.*;
-import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.*;
 
 public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity implements IBearingBlockEntity, IDisplayAssemblyExceptions {
     protected ControlledContraptionEntity movedContraption;
@@ -42,7 +42,6 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     protected float clientAngleDiff;
     protected AssemblyException lastException;
     protected double sequencedAngleLimit;
-    protected VoltageSourceCoupling sourceCoupling;
     SolarPanelBearingContraption contraption;
     private float prevAngle;
     private boolean firstTick = true;
@@ -52,6 +51,9 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     private boolean skyVisible = false;
     protected SolarPanelBearingBlockScrollBehaviour parallelNumbers;
     private Vector3d panelNormal;
+
+    protected CurrentSourceWire currentSource;
+    protected ElectricWire seriesResistor;
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
@@ -69,7 +71,11 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        sourceCoupling = builder.addInternalNode(VoltageSourceCoupling.class, builder.terminalNode(0), builder.terminalNode(1), 0.01f);
+        var node = builder.addInternalNode();
+        currentSource = new CurrentSourceWire(node, builder.terminalNode(1), 0.00001f);
+        seriesResistor = builder.connect((float) 1, node, builder.terminalNode(0));
+        builder.add(currentSource);
+        builder.add(seriesResistor);
     }
 
     @Override
@@ -127,13 +133,15 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
             } else return;
         }
 
+        if (currentSource == null) return;
+
         if (!running) {
-            sourceCoupling.setVoltage(0);
-            sourceCoupling.setResistance(10000);
+            currentSource.setCurrent(0);
+            currentSource.setConductance(0.00001);
+            seriesResistor.setResistance(1);
             return;
         }
 
-        if (sourceCoupling == null) return;
         if (firstTick) {
             ambientTemp = ThermalBehaviour.getAmbientTemperature(world, this.getBlockPos());
             if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
@@ -142,6 +150,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         }
         float cloudCover = getWeather(world);
 
+        if (contraption.panelNormal == null) return;
         Vec3 localDir = new Vec3(contraption.panelNormal.x, contraption.panelNormal.y, contraption.panelNormal.z);
         Vec3 worldTip = movedContraption.toGlobalVector(localDir, 1.0f);
         Vec3 worldOrigin = movedContraption.toGlobalVector(Vec3.ZERO, 1.0f);
@@ -149,22 +158,16 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         panelNormal = new Vector3d(worldDir.x, worldDir.y, worldDir.z);
 
         var irradiance = getIrradiance(getAM(world), cloudCover, this.getBlockPos().getY(), world);
-        var cellTemp = getCellTemp(irradiance, ambientTemp);
-        var Vt = 8.617e-5 * (cellTemp + 273.15);
-        double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt, parallelNumbers.getDivisor());
-        double cellCurrent = adjusted[0];
-        double Voc_t = adjusted[1];
-        double Voc_panel = Voc_t * (CELLS_IN_SERIES * ((double) contraption.getPanelBlocks() / parallelNumbers.getDivisor()));
+        int panelsInParallel = parallelNumbers.getDivisor();
+        int panelsInSeries = contraption.getPanelBlocks() / parallelNumbers.getDivisor();
+        double Rs = (RS * panelsInSeries) / panelsInParallel;
 
-        if (cellCurrent <= 0) {
-            sourceCoupling.setVoltage(0);
-            sourceCoupling.setResistance(1e6f);
-            return;
-        }
-
-        double panelResistance = (cellCurrent > 0) ? Voc_panel / cellCurrent : 1e6;
-        sourceCoupling.setVoltage(Voc_panel);
-        sourceCoupling.setResistance((float) panelResistance);
+        double v0 = currentSource.potentialDifference();
+        var currentCellTemp = SolarHelper.getCellTemp(irradiance, ambientTemp);
+        double[] results = IVCurve(irradiance, currentCellTemp, v0, panelsInSeries, panelsInParallel);
+        currentSource.setCurrent(results[0]);
+        currentSource.setConductance(results[1]);
+        seriesResistor.setResistance(Rs);
 
         super.electricalTick();
     }
@@ -174,6 +177,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         var transmittance = 1 - cloudCover;
         var irradiance = SOLAR_CONSTANT * Math.pow(0.7,Math.pow(AM, 0.678));
         irradiance = irradiance * ((((YPos - 70) / 250f) * 0.04f) + 1); //70 is around average world height, but it could also be put to sea level
+        if (irradiance > SOLAR_CONSTANT) irradiance = SOLAR_CONSTANT;
 
         if (rayCastDelay-- == 0){
             sunVisibility = sunRaycast(world);
@@ -315,6 +319,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
 
         parallelNumbers.refreshDivisors(contraption.getPanelBlocks());
         sendData();
+        getPlacedBlockRotation();
     }
 
     public void disassemble() {

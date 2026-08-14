@@ -5,15 +5,15 @@
     "A": {
       "item": "create:andesite_casing"
     },
-    "C": {
-      "tag": "c:copper_nuggets"
-    },
     "I": {
       "tag": "c:iron_plates"
+    },
+    "P": {
+      "item": "powergrid:pins"
     }
   },
   "pattern": [
-    "C C",
+    " P ",
     "I I",
     " A "
   ],

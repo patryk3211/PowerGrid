@@ -1,6 +1,7 @@
 package org.patryk3211.powergrid.electricity.redstoneconverter;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
@@ -21,6 +22,9 @@ public class RedstoneConverterBlockEntity extends ElectricBlockEntity {
         var facing = state.getValue(RedstoneConverterBlock.FACING);
         var pos = worldPosition.relative(facing);
         float signal = RedstoneConverterRegistry.get(level, level.getBlockState(pos), pos, facing.getOpposite());
+        if(!Float.isFinite(signal))
+            signal = 0;
+        signal = Mth.clamp(signal, 0, 1);
         float signal2 = level.getDirectSignalTo(worldPosition) / 15.0f;
         signal = Math.max(signal, signal2);
         if (signal > 1 / 30f && !state.getValue(RedstoneConverterBlock.POWERED)) {

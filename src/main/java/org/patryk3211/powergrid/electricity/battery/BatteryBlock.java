@@ -130,7 +130,13 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
         var be = getBlockEntity(level, pos);
         if(be == null)
             return 0;
-        double fill = be.getEnergy() / be.getCapacity();
+        var controller = be.getControllerBE();
+        double fill;
+        if(controller == null) {
+            fill = be.getEnergy() / be.getCapacity();
+        } else {
+            fill = controller.getEnergy() / controller.getCapacity();
+        }
         return Mth.floor(fill * 14.0f) + (fill > 0.001 ? 1 : 0);
     }
 
@@ -139,7 +145,14 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
         var be = getBlockEntity(level, pos);
         if(be == null)
             return 0;
-        return (float) (be.getEnergy() / be.getCapacity());
+        var controller = be.getControllerBE();
+        double fill;
+        if(controller == null) {
+            fill = be.getEnergy() / be.getCapacity();
+        } else {
+            fill = controller.getEnergy() / controller.getCapacity();
+        }
+        return (float) fill;
     }
 
     @Override
@@ -170,5 +183,9 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
                 .add(Unit.ENERGY.get())
                 .style(ChatFormatting.GREEN)
                 .addTo(tooltip);
+    }
+
+    public static boolean isBattery(BlockState state) {
+        return state.getBlock() instanceof BatteryBlock;
     }
 }

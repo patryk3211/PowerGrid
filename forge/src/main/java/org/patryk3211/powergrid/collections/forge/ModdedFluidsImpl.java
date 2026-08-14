@@ -25,22 +25,30 @@ import net.minecraft.client.renderer.RenderType;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.phys.Vec3;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.ForgeFlowingFluid;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedDamageTypes;
 
 import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 
 public class ModdedFluidsImpl {
     public static final FluidEntry<ForgeFlowingFluid.Flowing> ACID =
             REGISTRATE.fluid("acid",
-                            ResourceLocation.tryBuild("minecraft", "block/water_still"),
-                            ResourceLocation.tryBuild("minecraft", "block/water_flow"),
+                            ResourceLocation.tryBuild("powergrid", "block/acid_still"),
+                            ResourceLocation.tryBuild("powergrid", "block/acid_flow"),
                             AcidFluidType::new)
                     .tag(FluidTags.create(PowerGrid.asResource("acid")))
+                    .lang("Blazing Acid")
+                    .source(ForgeFlowingFluid.Source::new)
+                        .bucket()
+                        .lang("Blazing Acid Bucket")
+                        .build()
                     .transform(translucent())
                     .register();
 
@@ -72,12 +80,20 @@ public class ModdedFluidsImpl {
 
         @Override
         protected int getTintColor(FluidStack stack) {
-            return 0xFFFFEE80;
+            return 0xFFFFFFFF;
         }
 
         @Override
         protected int getTintColor(FluidState state, BlockAndTintGetter getter, BlockPos pos) {
-            return 0xFFFFEE80;
+            return 0xFFFFFFFF;
+        }
+
+        @Override
+        public boolean move(FluidState state, LivingEntity entity, Vec3 movementVector, double gravity) {
+            if (entity.level().random.nextInt(15) >= 10) {
+                entity.hurt(ModdedDamageTypes.ACID.simpleDamageSource(entity.level()), 2);
+            }
+            return false;
         }
     }
 }

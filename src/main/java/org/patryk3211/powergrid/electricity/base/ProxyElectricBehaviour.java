@@ -30,6 +30,7 @@ import java.util.function.Supplier;
 
 public class ProxyElectricBehaviour extends ElectricBehaviour {
     protected final Supplier<BlockPos> behaviourPosition;
+    private boolean fetching = false;
 
     public <T extends SmartBlockEntity & IElectricEntity> ProxyElectricBehaviour(T be, Supplier<BlockPos> behaviourPosition) {
         super(be, false);
@@ -45,7 +46,7 @@ public class ProxyElectricBehaviour extends ElectricBehaviour {
         var pos = behaviourPosition.get();
         if(getPos().equals(pos) || pos == null)
             return Optional.empty();
-        if(!getWorld().isLoaded(pos))
+        if(getWorld() == null || !getWorld().isLoaded(pos))
             return Optional.empty();
         return Optional.ofNullable(get(getWorld(), pos, TYPE));
     }
@@ -78,9 +79,14 @@ public class ProxyElectricBehaviour extends ElectricBehaviour {
 
     @Override
     public List<OwnedFloatingNode> getExternalNodes() {
-        return getMainBehaviour()
+        if(fetching)
+            return List.of();
+        fetching = true;
+        var result = getMainBehaviour()
                 .map(ElectricBehaviour::getExternalNodes)
                 .orElseGet(super::getExternalNodes);
+        fetching = false;
+        return result;
     }
 
     @Override

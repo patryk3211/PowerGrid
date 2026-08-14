@@ -25,10 +25,15 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
     private double temperatureCelsius;
     private final double reverseSaturationCurrent;
     private final double seriesResistance;
-    private final double idealityFactor;
+    private double idealityFactor;
+    private final double breakdownVoltage;
+    private final double breakdownSaturationCurrent;
+
     private double G = ElectricalNetwork.G_MIN;
     private double Ieq = 0;
     private double prevV;
+
+    public int iterationLimit = -1;
 
     public PNJunctionWire(double reverseSaturationCurrent, double seriesResistance, double temperatureCelsius, double idealityFactor, IElectricNode node1, IElectricNode node2) {
         super(node1, node2);
@@ -36,6 +41,18 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         this.seriesResistance = seriesResistance;
         this.temperatureCelsius = temperatureCelsius;
         this.idealityFactor = idealityFactor;
+        this.breakdownVoltage = 0;
+        this.breakdownSaturationCurrent = 0;
+    }
+
+    public PNJunctionWire(double reverseSaturationCurrent, double seriesResistance, double temperatureCelsius, double idealityFactor, double breakdownVoltage, double breakdownSaturationCurrent, IElectricNode node1, IElectricNode node2) {
+        super(node1, node2);
+        this.reverseSaturationCurrent = reverseSaturationCurrent;
+        this.seriesResistance = seriesResistance;
+        this.temperatureCelsius = temperatureCelsius;
+        this.idealityFactor = idealityFactor;
+        this.breakdownVoltage = breakdownVoltage;
+        this.breakdownSaturationCurrent = breakdownSaturationCurrent;
     }
 
     public static double WrightOmega(double z) {
@@ -55,12 +72,24 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         }
     }
 
+    public static double WrightOmega4(double z) {
+        // D'Angelo, Gabrielli and Turchet (2019) approximation
+        double w3 = WrightOmega(z);
+        return w3 - (w3 - Math.exp(z - w3)) / (w3 + 1);
+    }
+
     public double pnLim(double V1, double V0, double Vcrit, double V_T) {
-        if(V1 < Vcrit * 0.5f && V0 < Vcrit * 0.5f)
-            return V1;
-        var dV = V1 - V0;
-        if(V1 > Vcrit && dV > V_T * 2)
-            return V0 + V_T * Math.log1p(dV / V_T);
+        if(V0 < 0 && V1 > Vcrit)
+            return Vcrit;
+        if(V0 >= 0 && V0 < Vcrit && V1 > Vcrit)
+            return Vcrit;
+        double dV = V1 - V0;
+        if(V1 > Vcrit && Math.abs(dV) > V_T * 2) {
+            double arg = dV / (idealityFactor * V_T);
+            if(arg + 1 < 0)
+                return Vcrit;
+            return V0 + idealityFactor * V_T * Math.log1p(arg);
+        }
         return V1;
     }
 
@@ -80,7 +109,8 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
 
     @Override
     public void startIteration(int iteration) {
-        // TODO: reverse breakdown
+        if(iterationLimit > 0 && iteration > iterationLimit)
+            return;
         double k = 1.380649e-23; // Boltzmann constant in J/K
         double q = 1.602176634e-19; // Elementary charge in C
         double V_T = (k * (temperatureCelsius + 273.15)) / q; // Thermal voltage in V
@@ -98,8 +128,20 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         // Banwell and Jayakumar (2000)
         double IsRs = I_s2 * R_s;
         double Omega_arg = Math.log(IsRs / n / V_T) + (IsRs + V) / (n * V_T);
-        double WTerm = WrightOmega(Omega_arg);
+        double WTerm = WrightOmega4(Omega_arg);
         double G = Math.max(WTerm / (R_s * (1 + WTerm)), ElectricalNetwork.G_MIN);
+
+        double I = V_T * n * WTerm / R_s - I_s2;
+        if(breakdownVoltage > 0) {
+            // Reverse breakdown using a shifted diode current curve
+            double V_over = -breakdownVoltage - V; //so only when in reverse bias
+            double B_IsRs = breakdownSaturationCurrent * R_s;
+            double B_Omega_arg = Math.log(B_IsRs / n / V_T) + (B_IsRs + V_over) / (n * V_T);
+            double B_WTerm = WrightOmega4(B_Omega_arg);
+            G += Math.max(B_WTerm / (R_s * (1 + B_WTerm)), ElectricalNetwork.G_MIN);
+            I -= V_T * n * B_WTerm / R_s - breakdownSaturationCurrent;
+        }
+
         // Adding a resistor across the diode helps with convergence in certain cases.
         double G_add = 1e-6;
         if(iteration > 100) {
@@ -108,7 +150,8 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
         G += G_add;
         network.updateConductance(this, G - this.G);
         this.G = G;
-        double I = V_T * n * WTerm / R_s - I_s2;
+
+        // Compute Ieq
         this.Ieq = I - G * V;
     }
 
@@ -116,5 +159,14 @@ public class PNJunctionWire extends AbstractElectricWire implements ISolverHook 
     public void addResidual(IResidualAdder residual) {
         residual.add(node1.getIndex(), Ieq);
         residual.add(node2.getIndex(), -Ieq);
+    }
+
+    public void setIdealityFactor(double idealityFactor) {
+        this.idealityFactor = idealityFactor;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("PNJunction(Is=%g)#%d", reverseSaturationCurrent, System.identityHashCode(this));
     }
 }

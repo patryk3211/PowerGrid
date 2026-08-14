@@ -108,7 +108,7 @@ public class PowerGridImpl {
         PowerGrid.init();
 
         TABS.register("main", () -> CreativeModeTab.builder()
-                .icon(() -> new ItemStack(ModdedItems.WIRE))
+                .icon(() -> new ItemStack(ModdedBlocks.ELECTRIC_MOTOR))
                 .displayItems(new ItemDisplay.BaseItemDisplay(true))
                 .title(net.minecraft.network.chat.Component.translatable("itemGroup.powergrid.main"))
                 .build());
@@ -137,7 +137,7 @@ public class PowerGridImpl {
     @SubscribeEvent
     public static void newDynamicRegistryEvent(DataPackRegistryEvent.NewRegistry event) {
         event.dataPackRegistry(ComponentRegistry.ITEM_REGISTRY_KEY, ComponentRegistry.ITEM_CODEC, ComponentRegistry.ITEM_CODEC);
-        event.dataPackRegistry(WireRegistry.KEY, WireItemEntry.CODEC, WireItemEntry.CODEC);
+        event.dataPackRegistry(WireRegistry.KEY, WireItemEntry.CODEC.orElse(null), WireItemEntry.CODEC);
     }
 
     @SubscribeEvent
@@ -200,6 +200,7 @@ public class PowerGridImpl {
 
             providePonderLang(langConsumer);
             ModdedSoundEvents.provideLang(langConsumer);
+            ModdedAdvancements.provideLang(langConsumer);
         });
 
         generator.addProvider(true, new CookingRecipes(output));
@@ -213,6 +214,7 @@ public class PowerGridImpl {
         generator.addProvider(true, new SequencedAssemblyRecipes(output));
         generator.addProvider(true, new org.patryk3211.powergrid.data.recipe.forge.SequencedAssemblyRecipes(output));
         generator.addProvider(true, new DeployerApplicationRecipes(output));
+        generator.addProvider(true, new ModdedAdvancements(output));
 
         generator.addProvider(true, new BlockTagProvider(output, event.getLookupProvider()));
         generator.addProvider(true, new ItemTagProvider(output, event.getLookupProvider()));

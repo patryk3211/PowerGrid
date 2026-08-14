@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "create:andesite_alloy"
+    },
+    "C": {
+      "tag": "forge:copper_coils"
+    },
+    "I": {
+      "tag": "forge:plates/iron"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    }
+  },
+  "pattern": [
+    " A ",
+    "ICI",
+    " P "
+  ],
+  "result": {
+    "item": "powergrid:display_module"
+  },
+  "show_notification": true
+}

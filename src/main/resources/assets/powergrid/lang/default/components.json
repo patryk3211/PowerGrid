@@ -81,6 +81,15 @@
   "powergrid.component.property.varistor_voltage": "Threshold Voltage",
   "powergrid.component.property.varistor_voltage.summary": "Voltage around which the varistor starts to conduct major current",
 
+  "powergrid.component.property.diode_vb": "Breakdown Voltage",
+  "powergrid.component.property.diode_vb.summary": "Reverse breakdown voltage of the diode",
+
   "powergrid.component.property.current_fuse_max": "Max Current",
-  "powergrid.component.property.current_fuse_max.summary": "Current at which the fuse blows"
+  "powergrid.component.property.current_fuse_max.summary": "Current at which the fuse blows",
+
+  "powergrid.component.property.modular_display_current": "Minimum Current",
+  "powergrid.component.property.modular_display_current.summary":"Minimum current required to actuate this component",
+  "powergrid.component.property.modular_display_resistance": "Coil resistance",
+  "powergrid.component.property.modular_display_module": "Module",
+  "powergrid.component.property.modular_display_text_color": "Text color"
 }

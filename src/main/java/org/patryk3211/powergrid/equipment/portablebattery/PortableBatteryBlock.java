@@ -21,6 +21,7 @@ import com.simibubi.create.content.equipment.armor.BacktankItem;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import com.simibubi.create.foundation.block.IBE;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -31,6 +32,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -39,21 +41,27 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.HorizontalElectricBlock;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
+import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.electricity.wire.IWire;
+import org.patryk3211.powergrid.electricity.wire.powercord.AutoCordEndpoint;
+import org.patryk3211.powergrid.electricity.wire.powercord.IAcceptCord;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import java.util.List;
 
-public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE<PortableBatteryBlockEntity>, SpecialBlockItemRequirement {
+public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE<PortableBatteryBlockEntity>, SpecialBlockItemRequirement, IAcceptCord {
     private static final VoxelShape SHAPE = Shapes.or(
             box(4, 0, 4, 12, 9, 12),
             box(5, 9, 5, 11, 12, 11)
@@ -75,7 +83,7 @@ public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE
     }
 
     public int capacity() {
-        return ModdedConfigs.server().electricity.portableBatteryBaseCapacity.get();
+        return ModdedConfigs.server().equipment.portableBatteryBaseCapacity.get();
     }
 
     @Override
@@ -89,9 +97,26 @@ public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE
     }
 
     @Override
-    public List<ItemStack> getDrops(BlockState state, LootParams.Builder builder) {
-        var stacks = super.getDrops(state, builder);
-        return stacks;
+    public List<ItemStack> getDrops(BlockState pState, LootParams.Builder pBuilder) {
+        List<ItemStack> stacks = super.getDrops(pState, pBuilder);
+        BlockEntity blockEntity = pBuilder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
+        if(blockEntity instanceof PortableBatteryBlockEntity be) {
+            CompoundTag vanillaTag = be.getVanillaTag();
+            return vanillaTag == null ? stacks : stacks.stream().map((stack) -> {
+                if (!(stack.getItem() instanceof PortableBatteryItem)) {
+                    return stack;
+                } else {
+                    ItemStack modifiedStack = new ItemStack(stack.getItem(), stack.getCount());
+                    var charge = be.getCharge();
+                    var tag = vanillaTag.copy();
+                    tag.putInt("Charge", charge);
+                    modifiedStack.setTag(tag);
+                    return modifiedStack;
+                }
+            }).toList();
+        } else {
+            return stacks;
+        }
     }
 
     /**
@@ -178,5 +203,25 @@ public class PortableBatteryBlock extends HorizontalElectricBlock implements IBE
         if(item instanceof BacktankItem.BacktankBlockItem placeable)
             item = placeable.getActualItem();
         return new ItemRequirement(ItemRequirement.ItemUseType.CONSUME, item);
+    }
+
+    @Override
+    public boolean renderPlug() {
+        return true;
+    }
+
+    @Override
+    public @Nullable AutoCordEndpoint getEndpoint(UseOnContext context) {
+        var pos = context.getClickedPos();
+        var center = Vec3.atCenterOf(pos);
+        var point = center.add(0, 0.4375f, 0);
+        return new AutoCordEndpoint(context.getClickedPos(), 0, 1, point, Direction.UP);
+    }
+
+    @Override
+    public @Nullable ITerminalPlacement cordTerminal(BlockState state, Level level, BlockHitResult hit) {
+        return new TerminalBoundingBox(IDecoratedTerminal.CORD,
+                6, 12, 6,
+                10, 14, 10);
     }
 }

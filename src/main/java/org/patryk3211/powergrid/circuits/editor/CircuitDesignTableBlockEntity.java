@@ -15,8 +15,6 @@
  */
 package org.patryk3211.powergrid.circuits.editor;
 
-import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
-import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -35,22 +33,52 @@ import org.patryk3211.powergrid.base.IMultiScreenHandlerFactory;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.ISchematicHolder;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 
-import java.util.List;
-
-public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements IMultiScreenHandlerFactory, ISchematicHolder {
+public class CircuitDesignTableBlockEntity extends ElectricBlockEntity implements IMultiScreenHandlerFactory, ISchematicHolder {
     private final Container inventory = new SimpleContainer(3);
 
+    private ElectricWire wire;
     CircuitSchematic schematic = new CircuitSchematic();
     boolean schematicChanged = false;
 
+    private boolean wasPowered;
+
     public CircuitDesignTableBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
+        wasPowered = state.getValue(CircuitDesignTableBlock.POWERED);
     }
 
     @Override
-    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+        return ThermalBehaviour.fromConfig(this);
+    }
 
+    @Override
+    public void electricalTick() {
+        super.electricalTick();
+        applyPower(wire);
+        if(wasPowered && !isPowered()) {
+            level.setBlock(worldPosition,
+                    getBlockState().setValue(CircuitDesignTableBlock.POWERED, false),
+                    CircuitDesignTableBlock.UPDATE_ALL_IMMEDIATE);
+            wasPowered = false;
+        } else if(!wasPowered && isPowered()) {
+            level.setBlock(worldPosition,
+                    getBlockState().setValue(CircuitDesignTableBlock.POWERED, true),
+                    CircuitDesignTableBlock.UPDATE_ALL_IMMEDIATE);
+            wasPowered = true;
+        }
+    }
+
+    public boolean isPowered() {
+        return wire.power() >= 30;
+    }
+
+    public float power() {
+        return (float) wire.power();
     }
 
     @Override
@@ -140,5 +168,11 @@ public class CircuitDesignTableBlockEntity extends SmartBlockEntity implements I
         this.schematic = schematic;
         if(!level.isClientSide)
             notifyUpdate();
+    }
+
+    @Override
+    public void buildCircuit(CircuitBuilder builder) {
+        builder.setTerminalCount(2);
+        wire = builder.connect(resistance(), builder.terminalNode(0), builder.terminalNode(1));
     }
 }

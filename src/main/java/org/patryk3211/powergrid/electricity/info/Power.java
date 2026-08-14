@@ -47,4 +47,13 @@ public class Power {
                     .style(ChatFormatting.RED).addTo(tooltip);
         }
     }
+
+    public static void max(float power, Player player, List<Component> tooltip) {
+        Lang.translate("tooltip.power.max")
+                .style(ChatFormatting.GRAY).addTo(tooltip);
+        Lang.builder()
+                .add(Component.nullToEmpty(" ")).add(Lang.number(power))
+                .add(Component.nullToEmpty(" ")).add(Unit.POWER.get())
+                .style(ChatFormatting.RED).addTo(tooltip);
+    }
 }

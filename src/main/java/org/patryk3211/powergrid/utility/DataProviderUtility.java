@@ -28,15 +28,23 @@ import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.HvSwitchBlock;
 import org.patryk3211.powergrid.electricity.electricswitch.SwitchBlock;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlock;
+import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
+import org.patryk3211.powergrid.electricity.transformer.NetherTransformerBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
+import org.patryk3211.powergrid.general.ceilingtile.lamp.CeilingTileLampBlock;
+import org.patryk3211.powergrid.kinetics.base.TunedBlock;
 import org.patryk3211.powergrid.kinetics.generator.inductionrotor.VerticalCommutatorBlock;
 import org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock;
 
 import java.util.function.Function;
 
+/**
+ * @see org.patryk3211.powergrid.utility.forge.DataProviderUtilityImpl
+ * @see org.patryk3211.powergrid.utility.fabric.DataProviderUtilityImpl
+ */
 public class DataProviderUtility {
     @ExpectPlatform
     public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> horizontalBlock(String model) {
@@ -75,8 +83,22 @@ public class DataProviderUtility {
         throw new AssertionError();
     }
 
+    public static <T extends Block> NonNullBiConsumer<DataGenContext<Block, T>, RegistrateBlockstateProvider> tunedBlock(String based, String baseless) {
+        return horizontalBlock(state -> state.getValue(TunedBlock.BASE) ? based : baseless);
+    }
+
     @ExpectPlatform
     public static NonNullBiConsumer<DataGenContext<Block, LightFixtureBlock>, RegistrateBlockstateProvider> lightFixture(String baseName) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static NonNullBiConsumer<DataGenContext<Block, FactoryLightBlock>, RegistrateBlockstateProvider> factoryLight(String baseFolder) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static NonNullBiConsumer<DataGenContext<Block, CeilingTileLampBlock>, RegistrateBlockstateProvider> ceilingTileLamp(String baseFolder) {
         throw new AssertionError();
     }
 
@@ -117,6 +139,11 @@ public class DataProviderUtility {
 
     @ExpectPlatform
     public static NonNullBiConsumer<DataGenContext<Block, TransformerMediumBlock>, RegistrateBlockstateProvider> transformerMedium() {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static NonNullBiConsumer<DataGenContext<Block, NetherTransformerBlock>, RegistrateBlockstateProvider> transformerNether() {
         throw new AssertionError();
     }
 
@@ -177,6 +204,11 @@ public class DataProviderUtility {
 
     @ExpectPlatform
     public static <T extends Item> NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> itemWithParent(String parent) {
+        throw new AssertionError();
+    }
+
+    @ExpectPlatform
+    public static <T extends Item> NonNullBiConsumer<DataGenContext<Item, T>, RegistrateItemModelProvider> blockItem() {
         throw new AssertionError();
     }
 

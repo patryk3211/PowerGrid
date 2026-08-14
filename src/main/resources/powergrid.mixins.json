@@ -11,11 +11,13 @@
     "ChuteBlockEntityMixin",
     "EntityMixin",
     "FanProcessingMixin",
+    "FluidPropagatorMixin",
     "KineticBlockEntityAccessor",
     "LevelEntitiesAccessor",
     "LightningAccessor",
     "PlayerMixin",
     "RecipeApplierMixin",
+    "SheepMixin",
     "SoundEntryBuilderMixin"
   ],
   "injectors": {

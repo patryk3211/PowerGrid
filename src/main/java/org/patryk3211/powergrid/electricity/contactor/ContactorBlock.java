@@ -22,14 +22,18 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelReader;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.config.ThermalValues;
 import org.patryk3211.powergrid.electricity.base.HorizontalAxisElectricBlock;
+import org.patryk3211.powergrid.electricity.base.IHelperTerminal;
+import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.deviceconnector.IAcceptConnector;
 import org.patryk3211.powergrid.electricity.info.Current;
@@ -40,7 +44,7 @@ import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
-public class ContactorBlock extends HorizontalAxisElectricBlock implements IBE<ContactorBlockEntity>, IHaveElectricProperties, IAcceptConnector {
+public class ContactorBlock extends HorizontalAxisElectricBlock implements IBE<ContactorBlockEntity>, IHaveElectricProperties, IAcceptConnector, IHelperTerminal {
     public static final VoxelShape SHAPE_NORTH = Shapes.or(
             box(0, 0, 0, 16, 12, 16),
             box(0, 12, 4, 16, 14, 12),
@@ -97,5 +101,26 @@ public class ContactorBlock extends HorizontalAxisElectricBlock implements IBE<C
     @Override
     public boolean canConnect(LevelReader world, BlockPos pos, BlockState state, Direction side) {
         return side.getAxis() != Direction.Axis.Y && state.getValue(HORIZONTAL_AXIS) != side.getAxis();
+    }
+
+    @Override
+    public boolean hasAnalogOutputSignal(BlockState state) {
+        return true;
+    }
+
+    @Override
+    public int getAnalogOutputSignal(BlockState state, Level level, BlockPos pos) {
+        return getBlockEntityOptional(level, pos).map(ContactorBlockEntity::getSignal).orElse(0);
+    }
+
+    @Override
+    public @Nullable ITerminalPlacement connectedTerminal(BlockState state, int index) {
+        return switch(index) {
+            case 2 -> terminal(state, 3);
+            case 3 -> terminal(state, 2);
+            case 4 -> terminal(state, 5);
+            case 5 -> terminal(state, 4);
+            default -> null;
+        };
     }
 }
