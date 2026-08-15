@@ -49,13 +49,13 @@ public class Components {
             .register();
 
     public static final RegistryEntry<PentodeComponent> PENTODE = REGISTRATE.component("pentode", PentodeComponent::new)
-            .footprint(4, 3, b -> b
+            .footprint(3, 3, b -> b
                     .addPad(0, 0, 2, "Anode", "A")
-                    .addPad(1, 1, 0, "Cathode", "C")
+                    .addPad(1, 0, 5, "Screen", "G2")
                     .addPad(2, 0, 1, "Grid", "G")
-                    .addPad(3, 0, 5, "Screen", "G2")
+                    .addPad(1, 1, 0, "Cathode", "C")
                     .addPad(0, 2, 3, "Heater", "H")
-                    .addPadSharedText(3, 2, 4, "pentode.3", "pentode.3.short")
+                    .addPadSharedText(2, 2, 4, "pentode.3", "pentode.3.short")
                     .withItem().withOutline())
             .item(ModdedItems.PENTODE)
             .register();
