@@ -3,6 +3,7 @@ package org.patryk3211.powergrid.compat.cc;
 import dan200.computercraft.api.peripheral.PeripheralCapability;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.compat.cc.battery.BatteryPeripheral;
 import org.patryk3211.powergrid.compat.cc.clutch.GeneratorClutchPeripheral;
 import org.patryk3211.powergrid.compat.cc.gauges.CurrentGaugePeripheral;
 import org.patryk3211.powergrid.compat.cc.gauges.EnergyMeterPeripheral;
@@ -35,6 +36,11 @@ public class CCBridge {
                 PeripheralCapability.get(),
                 ModdedBlockEntities.ENERGY_METER.get(),
                 (be, direction) -> new EnergyMeterPeripheral(be)
+        );
+        event.registerBlockEntity(
+                PeripheralCapability.get(),
+                ModdedBlockEntities.MULTIBLOCK_BATTERY.get(),
+                (be, direction) -> new BatteryPeripheral(be)
         );
     }
 }
