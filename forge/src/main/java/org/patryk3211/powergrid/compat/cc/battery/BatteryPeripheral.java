@@ -29,8 +29,8 @@ public class BatteryPeripheral implements IPeripheral {
     }
 
     @LuaFunction
-    public int chargePercentage() {
-        return battery.getCurrentValue();
+    public double chargePercentage() {
+        return battery.getEnergy() / battery.getCapacity();
     }
 
     @LuaFunction
