@@ -15,7 +15,8 @@
  */
 package org.patryk3211.powergrid.compat.tfmg;
 
-import com.drmangotea.tfmg.content.electricity.base.*;
+import com.drmangotea.tfmg.content.electricity.base.ElectricBlockValues;
+import com.drmangotea.tfmg.content.electricity.base.IElectric;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -23,7 +24,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.network.PacketDistributor;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.deviceconnector.BridgeElectricBehaviour;
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock;
@@ -82,8 +82,8 @@ public class TFMGCompatDeviceConnectorBlockEntity extends DeviceConnectorBlockEn
     }
 
     @Override
-    public long getPos() {
-        return getBlockPos().asLong();
+    public BlockPos getPos() {
+        return getBlockPos();
     }
 
     @Override
@@ -112,49 +112,18 @@ public class TFMGCompatDeviceConnectorBlockEntity extends DeviceConnectorBlockEn
     }
 
     @Override
-    public int powerGeneration() {
+    public float powerGeneration() {
         return ModdedConfigs.server().electricity.tfmgConnectorPower.get();
     }
 
     @Override
-    public int getNetworkResistance() {
-        return data.networkResistance;
-    }
-
-    @Override
-    public void updateNextTick() {
-        data.updateNextTick = true;
-    }
-
-    @Override
-    public void onNetworkChanged(int oldVoltage, int oldPower) {
+    public void onNetworkChanged(int oldVoltage, float oldPower) {
         powerRefresh = true;
-    }
-
-    @Override
-    public void updateNetwork() {
-        getOrCreateElectricNetwork().updateNetwork();
-        if (!level.isClientSide)
-            PacketDistributor.sendToAllPlayers(new NetworkUpdatePacket(BlockPos.of(getPos())));
-        sendData();
     }
 
     @Override
     public void sendStuff() {
         sendData();
-    }
-
-    @Override
-    public void setVoltage(int i) {
-        data.voltage = i;
-    }
-
-    @Override
-    public void setNetwork(long network) {
-        this.data.electricalNetworkId = network;
-        if (network != getPos())
-            ElectricNetworkManager.networks.get(getLevel())
-                    .remove(getPos());
     }
 
     @Override
