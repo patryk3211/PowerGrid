@@ -616,7 +616,7 @@ public class ModdedBlocks {
             .transform(axeOrPickaxe())
             .addLayer(() -> RenderType::cutout)
             .loot((tables, block) ->
-                    tables.add(block, b -> LootTable.lootTable()
+                    tables.add(block, LootTable.lootTable()
                             .withPool(LootPool.lootPool()
                                     .when(ExplosionCondition.survivesExplosion())
                                     .add(LootItem.lootTableItem(CEILING_TILE))
@@ -628,7 +628,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::stone)
             .transform(axeOrPickaxe())
             .loot((tables, block) ->
-                    tables.add(block, b -> LootTable.lootTable()
+                    tables.add(block, LootTable.lootTable()
                             .withPool(LootPool.lootPool()
                                     .when(ExplosionCondition.survivesExplosion())
                                     .add(LootItem.lootTableItem(CEILING_TILE))
@@ -640,7 +640,7 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::stone)
             .transform(axeOrPickaxe())
             .loot((tables, block) ->
-                    tables.add(block, b -> LootTable.lootTable()
+                    tables.add(block, LootTable.lootTable()
                             .withPool(LootPool.lootPool()
                                     .when(ExplosionCondition.survivesExplosion())
                                     .add(LootItem.lootTableItem(CEILING_TILE))
@@ -994,7 +994,7 @@ public class ModdedBlocks {
             .transform(axeOrPickaxe())
             .onRegister(CreateRegistrate.connectedTextures(CeilingTileSolarBlockCTBehaviour::new))
             .loot((tables, block) ->
-                    tables.add(block, b -> LootTable.lootTable()
+                    tables.add(block, LootTable.lootTable()
                             .withPool(LootPool.lootPool()
                                     .when(ExplosionCondition.survivesExplosion())
                                     .add(LootItem.lootTableItem(CEILING_TILE))

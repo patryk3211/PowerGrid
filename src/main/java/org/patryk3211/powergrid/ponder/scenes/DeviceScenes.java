@@ -550,7 +550,7 @@ public class DeviceScenes {
                 .placeNearTarget()
                 .text("The Input items can be dropped or placed on a Depot under the Electromagnet");
         scene.idle(50);
-        var alloy = new ItemStack(AllItems.ANDESITE_ALLOY);
+        var alloy = new ItemStack(AllItems.ANDESITE_ALLOY.asItem());
         scene.world().createItemOnBeltLike(depotPos, Direction.NORTH, alloy);
         var depotCenter = util.vector().centerOf(depotPos.south());
         scene.overlay().showControls(depotCenter, Pointing.UP, 30).withItem(alloy);

@@ -27,6 +27,7 @@ import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
@@ -209,9 +210,11 @@ public class CordItem extends WireItem {
         var level = player.level();
         var state = level.getBlockState(blockPos);
         var electric = IElectric.getAt(level, blockPos);
-        var hit = player.pick(PlayerUtilities.getReachDistance(player) + 1.0f, 1.0f, false);
+        var hit = player.pick(PlayerUtilities.getReachDistance(player) + 1.0f, 0.0f, false);
         if(!(hit instanceof BlockHitResult blockHit))
             return EventResult.pass();
+        if(hit.getType() != HitResult.Type.BLOCK || !blockHit.getBlockPos().equals(blockPos))
+            return EventResult.interruptFalse();
         var context = new UseOnContext(player, hand, blockHit);
         if(electric != null) {
             var stack = player.getMainHandItem();

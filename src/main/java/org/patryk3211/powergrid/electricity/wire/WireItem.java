@@ -42,6 +42,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedKeys;
@@ -313,9 +314,11 @@ public class WireItem extends Item implements IWire {
             return EventResult.pass();
         if(IWire.isCord(player.level(), stack.getItem()))
             return CordItem.useOn(player, hand, blockPos, direction);
-        var hit = player.pick(PlayerUtilities.getReachDistance(player) + 1.0f, 1.0f, false);
+        var hit = player.pick(PlayerUtilities.getReachDistance(player) + 1.0f, 0.0f, false);
         if(!(hit instanceof BlockHitResult blockHit))
             return EventResult.pass();
+        if(hit.getType() != HitResult.Type.BLOCK || !blockHit.getBlockPos().equals(blockPos))
+            return EventResult.interruptFalse();
 
         var level = player.level();
         var electric = IElectric.getAt(level, blockPos);
