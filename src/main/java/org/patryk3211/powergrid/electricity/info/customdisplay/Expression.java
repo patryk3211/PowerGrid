@@ -122,7 +122,7 @@ public interface Expression {
         }
         if(eqStr.charAt(0) == '-') {
             return new Negate(parse(eqStr.substring(1)));
-        } else if(eqStr.length() == 1) {
+        } else if(eqStr.length() == 1 && eqStr.matches("[a-zA-Z]")) {
             return new Variable(eqStr);
         } else {
             for(var entry : UnaryExpressions.EXPRESSIONS.entrySet()) {

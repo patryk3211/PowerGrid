@@ -615,30 +615,36 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::stone)
             .transform(axeOrPickaxe())
             .addLayer(() -> RenderType::cutout)
-            .loot((tables, block) -> {
-                tables.dropOther(block, FACTORY_LIGHT);
-                tables.dropOther(block, CEILING_TILE);
-            })
+            .loot((tables, block) ->
+                    tables.add(block, b -> LootTable.lootTable()
+                            .withPool(LootPool.lootPool()
+                                    .when(ExplosionCondition.survivesExplosion())
+                                    .add(LootItem.lootTableItem(CEILING_TILE))
+                                    .add(LootItem.lootTableItem(FACTORY_LIGHT)))))
             .register();
 
     public static final BlockEntry<CeilingTileConnectorBlock> CEILING_TILE_CONNECTOR = REGISTRATE.block("ceiling_tile_connector", CeilingTileConnectorBlock::new)
             .blockstate(simple("block/ceiling_tile/ceiling_tile_connector"))
             .initialProperties(SharedProperties::stone)
             .transform(axeOrPickaxe())
-            .loot((tables, block) -> {
-                tables.dropOther(block, WIRE_CONNECTOR);
-                tables.dropOther(block, CEILING_TILE);
-            })
+            .loot((tables, block) ->
+                    tables.add(block, b -> LootTable.lootTable()
+                            .withPool(LootPool.lootPool()
+                                    .when(ExplosionCondition.survivesExplosion())
+                                    .add(LootItem.lootTableItem(CEILING_TILE))
+                                    .add(LootItem.lootTableItem(WIRE_CONNECTOR)))))
             .register();
 
     public static final BlockEntry<CeilingTileJunctionBlock> CEILING_TILE_JUNCTION = REGISTRATE.block("ceiling_tile_junction", CeilingTileJunctionBlock::new)
             .blockstate(simple("block/ceiling_tile/ceiling_tile_cord_junction"))
             .initialProperties(SharedProperties::stone)
             .transform(axeOrPickaxe())
-            .loot((tables, block) -> {
-                tables.dropOther(block, CORD_JUNCTION);
-                tables.dropOther(block, CEILING_TILE);
-            })
+            .loot((tables, block) ->
+                    tables.add(block, b -> LootTable.lootTable()
+                            .withPool(LootPool.lootPool()
+                                    .when(ExplosionCondition.survivesExplosion())
+                                    .add(LootItem.lootTableItem(CEILING_TILE))
+                                    .add(LootItem.lootTableItem(CORD_JUNCTION)))))
             .register();
 
     public static final BlockEntry<TransformerCoreBlock> TRANSFORMER_CORE = REGISTRATE.block("transformer_core", TransformerCoreBlock::new)
@@ -987,10 +993,12 @@ public class ModdedBlocks {
             .initialProperties(SharedProperties::stone)
             .transform(axeOrPickaxe())
             .onRegister(CreateRegistrate.connectedTextures(CeilingTileSolarBlockCTBehaviour::new))
-            .loot((tables, block) -> {
-                tables.dropOther(block, SOLAR_PANEL);
-                tables.dropOther(block, CEILING_TILE);
-            })
+            .loot((tables, block) ->
+                    tables.add(block, b -> LootTable.lootTable()
+                            .withPool(LootPool.lootPool()
+                                    .when(ExplosionCondition.survivesExplosion())
+                                    .add(LootItem.lootTableItem(CEILING_TILE))
+                                    .add(LootItem.lootTableItem(SOLAR_PANEL)))))
             .register();
 
     public static BlockEntry<ModularDisplayBlock> MODULAR_DISPLAY = REGISTRATE.block("modular_display", ModularDisplayBlock::new)

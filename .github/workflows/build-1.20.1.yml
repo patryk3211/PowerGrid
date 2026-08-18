@@ -2,7 +2,7 @@ name: Dev builds
 
 on:
   push:
-    branches: [ "architectury-1.20.1/v0.6" ]
+    branches: [ "architectury-1.20.1/dev" ]
 
 jobs:
   build:
@@ -32,19 +32,19 @@ jobs:
         if-no-files-found: error
         retention-days: 30
 
-    - name: Build Fabric
-      uses: burrunan/gradle-cache-action@v3
-      with:
-        job-id: jdk21
-        arguments: :fabric:build
-    - name: Upload Fabric Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: fabric-build
-        path:
-          fabric/build/libs/powergrid-mc*-*-????????.jar
-        if-no-files-found: error
-        retention-days: 30
+#    - name: Build Fabric
+#      uses: burrunan/gradle-cache-action@v3
+#      with:
+#        job-id: jdk21
+#        arguments: :fabric:build
+#    - name: Upload Fabric Artifacts
+#      uses: actions/upload-artifact@v4
+#      with:
+#        name: fabric-build
+#        path:
+#          fabric/build/libs/powergrid-mc*-*-????????.jar
+#        if-no-files-found: error
+#        retention-days: 30
     - name: Send announcement to Discord
       env:
         DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}

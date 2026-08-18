@@ -48,7 +48,6 @@ import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
 import org.patryk3211.powergrid.electricity.battery.MultiBlockBatteryEntity;
 import org.patryk3211.powergrid.electricity.crt.CRTBlock;
-import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
 import org.patryk3211.powergrid.electricity.electromagnet.MagnetizingBehaviour;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
@@ -551,10 +550,10 @@ public class DeviceScenes {
                 .placeNearTarget()
                 .text("The Input items can be dropped or placed on a Depot under the Electromagnet");
         scene.idle(50);
-        var iron = new ItemStack(Items.IRON_INGOT);
-        scene.world().createItemOnBeltLike(depotPos, Direction.NORTH, iron);
+        var alloy = new ItemStack(AllItems.ANDESITE_ALLOY);
+        scene.world().createItemOnBeltLike(depotPos, Direction.NORTH, alloy);
         var depotCenter = util.vector().centerOf(depotPos.south());
-        scene.overlay().showControls(depotCenter, Pointing.UP, 30).withItem(iron);
+        scene.overlay().showControls(depotCenter, Pointing.UP, 30).withItem(alloy);
         scene.idle(10);
         var type = ElectromagnetBlockEntity.class;
         scene.world().modifyBlockEntity(magnetPos, type, pte -> pte.getMagnetizingBehaviour()
@@ -582,9 +581,9 @@ public class DeviceScenes {
                 .text("When items are provided on a belt...");
         scene.idle(30);
 
-        var ingot = scene.world().createItemOnBelt(beltPos, Direction.SOUTH, iron);
+        var ingot = scene.world().createItemOnBelt(beltPos, Direction.SOUTH, alloy);
         scene.idle(15);
-        var ingot2 = scene.world().createItemOnBelt(beltPos, Direction.SOUTH, iron);
+        var ingot2 = scene.world().createItemOnBelt(beltPos, Direction.SOUTH, alloy);
         scene.idle(15);
         scene.world().stallBeltItem(ingot, true);
         scene.world().modifyBlockEntity(magnetPos, type, pte -> pte.getMagnetizingBehaviour()
