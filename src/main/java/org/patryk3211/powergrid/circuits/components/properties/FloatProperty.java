@@ -43,13 +43,17 @@ public class FloatProperty extends ComponentProperty<Float> {
     public Float parse(String str) throws NumberFormatException {
         if(str == null || str.isEmpty()) throw new NumberFormatException("Value is empty");
         str = str.trim();
-        char modifierCharacter = Character.toLowerCase(str.charAt(str.length() - 1));
-        boolean hasModifier = modifierCharacter =='k' || modifierCharacter == 'm';
+        char modifierCharacter = str.charAt(str.length() - 1);
+        boolean hasModifier = "pnumkM".indexOf(modifierCharacter) != -1; 
         String numericPart = hasModifier ? str.substring(0, str.length() - 1) : str;
         var value = Float.parseFloat(numericPart);
         switch (modifierCharacter) {
-            case 'k' -> value *= 1_000f;
-            case 'm' -> value *= 1_000_000f;
+            case 'p' -> value /= 1_000_000_000_000f; // pico
+            case 'n' -> value /= 1_000_000_000f;     // nano
+            case 'u' -> value /= 1_000_000f;         // micro
+            case 'm' -> value /= 1_000f;             // milli
+            case 'k' -> value *= 1_000f;             // kilo
+            case 'M' -> value *= 1_000_000f;         // Mega
         }
         return limit(value);
     }
