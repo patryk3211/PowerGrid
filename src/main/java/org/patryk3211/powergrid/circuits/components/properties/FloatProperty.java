@@ -41,7 +41,16 @@ public class FloatProperty extends ComponentProperty<Float> {
 
     @Override
     public Float parse(String str) throws NumberFormatException {
-        var value = Float.parseFloat(str);
+        if(str == null || str.isEmpty()) throw new NumberFormatException("Value is empty");
+        str = str.trim();
+        char modifierCharacter = Character.toLowerCase(str.charAt(str.length() - 1));
+        boolean hasModifier = modifierCharacter =='k' || modifierCharacter == 'm';
+        String numericPart = hasModifier ? str.substring(0, str.length() - 1) : str;
+        var value = Float.parseFloat(numericPart);
+        switch (modifierCharacter) {
+            case 'k' -> value *= 1_000f;
+            case 'm' -> value *= 1_000_000f;
+        }
         return limit(value);
     }
 
