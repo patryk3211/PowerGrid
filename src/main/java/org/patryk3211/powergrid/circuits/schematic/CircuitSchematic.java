@@ -32,6 +32,9 @@ import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_SIZE
 import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_GRID_SCALE;
 
 public class CircuitSchematic {
+    // This value should be updated when component properties change, to allow for old schematics to be migrated.
+    public static final int VERSION = 2;
+
     private static final Point[] MANHATTAN_NEIGHBORHOOD = new Point[] {
             new Point(-1, 0), new Point(1, 0),
             new Point(0, -1), new Point(0, 1),
@@ -84,6 +87,7 @@ public class CircuitSchematic {
         tag.put("Front", front.serializeNbt());
         tag.put("Back", back.serializeNbt());
         tag.putBoolean("FullPixelTraces", false);
+        tag.putInt("Version", VERSION);
 
         var list = new ListTag();
         for(var component : components) {
@@ -101,6 +105,7 @@ public class CircuitSchematic {
         tag.put("Front", front.serializeNbt());
         tag.put("Back", back.serializeNbt());
         tag.putBoolean("FullPixelTraces", false);
+        tag.putInt("Version", VERSION);
 
         var list = new ListTag();
         for(var component : components) {
@@ -130,11 +135,13 @@ public class CircuitSchematic {
                 name = null;
             }
 
+            int version = tag.contains("Version") ? tag.getInt("Version") : 1;
+
             components.clear();
             var list = tag.getList("Components", Tag.TAG_COMPOUND);
             for (var element : list) {
                 try {
-                    components.add(new PlacedComponent((CompoundTag) element));
+                    components.add(new PlacedComponent((CompoundTag) element, version));
                 } catch (RuntimeException e) {
                     PowerGrid.LOGGER.error("Failed to deserialize circuit component NBT", e);
                 }

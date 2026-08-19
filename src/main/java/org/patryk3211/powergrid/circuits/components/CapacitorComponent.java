@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.google.common.collect.ImmutableCollection;
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
@@ -27,7 +28,7 @@ import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.electricity.sim.special.CRSeriesWire;
 
 public class CapacitorComponent extends OrientableComponent {
-    public static final FloatProperty CAPACITANCE = new FloatProperty(PowerGrid.MOD_ID, "capacitor_value", 0.1f, 1e-9f, 1000.0f);
+    public static final FloatProperty CAPACITANCE = new FloatProperty(PowerGrid.MOD_ID, "capacitor_value", 0.0001f, 1e-12f, 1.0f);
     private static final ChargeProperty CHARGE = new ChargeProperty(PowerGrid.MOD_ID, "charge");
 
     public CapacitorComponent(ComponentFootprint footprint) {
@@ -42,7 +43,7 @@ public class CapacitorComponent extends OrientableComponent {
 
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
-        var capacitorWire = new CRSeriesWire(placed.get(CAPACITANCE) / 1000, 0.01f, builder.terminalNode(0), builder.terminalNode(1));
+        var capacitorWire = new CRSeriesWire(placed.get(CAPACITANCE), 0.01f, builder.terminalNode(0), builder.terminalNode(1));
         capacitorWire.setVoltage(placed.get(CHARGE));
         builder.add(capacitorWire);
         placed.add(capacitorWire);
@@ -63,6 +64,14 @@ public class CapacitorComponent extends OrientableComponent {
             return;
         var wire = (CRSeriesWire) placed.wires.get(0);
         wire.setVoltage(placed.get(CHARGE));
+    }
+
+    @Override
+    public void dataFixup(@NotNull CompoundTag tag, int version) {
+        if(version == 1) {
+            var props = tag.getCompound("Properties");
+            props.putFloat(CAPACITANCE.id().toString(), props.getFloat(CAPACITANCE.id().toString()) / 1000);
+        }
     }
 
     private static class ChargeProperty extends FloatProperty {
