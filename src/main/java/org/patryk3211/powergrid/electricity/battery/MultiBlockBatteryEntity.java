@@ -109,6 +109,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
     @Override
     public void updateBehaviour() {
         // This also finds wires connected through device connectors/proxy behaviours
+        electricBehaviour.inhibitSyncCount = 2;
         List<TransmissionLinePart> wires = null;
         if(level != null)
             wires = GlobalElectricNetworks.getWorldNetworks(level).findConnectedWires(electricBehaviour);
@@ -138,6 +139,7 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
             // Rewire connected wires.
             wires.forEach(TransmissionLinePart::refreshEndpointNodes);
         }
+        electricBehaviour.inhibitSyncCount = 2;
         updateParameters();
     }
 
