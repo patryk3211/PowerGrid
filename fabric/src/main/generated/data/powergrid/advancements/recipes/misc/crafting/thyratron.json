@@ -1,24 +1,35 @@
 {
-  "type": "minecraft:crafting_shaped",
-  "category": "misc",
-  "key": {
-    "E": {
-      "item": "minecraft:ender_pearl"
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_item": {
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "powergrid:heavy_wire_connector"
+            ]
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
     },
-    "H": {
-      "item": "powergrid:heavy_wire_connector"
-    },
-    "I": {
-      "tag": "c:iron_plates"
+    "has_the_recipe": {
+      "conditions": {
+        "recipe": "powergrid:crafting//thyratron"
+      },
+      "trigger": "minecraft:recipe_unlocked"
     }
   },
-  "pattern": [
-    "H",
-    "E",
-    "I"
+  "requirements": [
+    [
+      "has_item",
+      "has_the_recipe"
+    ]
   ],
-  "result": {
-    "item": "powergrid:thyratron"
+  "rewards": {
+    "recipes": [
+      "powergrid:crafting//thyratron"
+    ]
   },
-  "show_notification": true
+  "sends_telemetry_event": false
 }
