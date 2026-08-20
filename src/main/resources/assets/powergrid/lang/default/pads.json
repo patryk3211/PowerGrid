@@ -16,5 +16,14 @@
   "component.powergrid.relay.no": "Normally Open",
   "component.powergrid.relay.no.short": "NO",
   "component.powergrid.display_module.reset": "Reset",
-  "component.powergrid.display_module.reset.short": "R"
+  "component.powergrid.display_module.reset.short": "R",
+
+  "component.powergrid.thyratron.0": "Cathode",
+  "component.powergrid.thyratron.0.short": "C",
+  "component.powergrid.thyratron.1": "Grid",
+  "component.powergrid.thyratron.1.short": "G",
+  "component.powergrid.thyratron.2": "Anode",
+  "component.powergrid.thyratron.2.short": "A",
+  "component.powergrid.thyratron.3": "Heater",
+  "component.powergrid.thyratron.3.short": "H"
 }
