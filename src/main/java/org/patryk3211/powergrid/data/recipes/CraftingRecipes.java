@@ -452,6 +452,16 @@ public class CraftingRecipes extends StandardRecipeProvider {
                     .define('T', ModdedItems.TRIODE)
                     .define('I', ironSheet())),
 
+    THYRATRON = create(ModdedItems.THYRATRON)
+            .unlockedBy(() -> ModdedItems.TRIODE)
+            .viaShaped(b -> b
+                    .pattern("G")
+                    .pattern("T")
+                    .pattern("I")
+                    .define('G', glowstoneDust())
+                    .define('T', ModdedItems.TRIODE)
+                    .define('I', ironSheet())),
+
     BARRETTER_TUBE = create(ModdedItems.BARRETTER_TUBE)
             .unlockedBy(() -> Items.QUARTZ)
             .viaShaped(b -> b
