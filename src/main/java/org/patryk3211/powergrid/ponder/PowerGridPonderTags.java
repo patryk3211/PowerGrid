@@ -132,6 +132,7 @@ public class PowerGridPonderTags {
                 .add(ModdedItems.REDSTONE_RELAY)
                 .add(ModdedItems.TRIODE)
                 .add(ModdedItems.PENTODE)
+                .add(ModdedItems.THYRATRON)
                 .add(ModdedItems.REGULATOR_TUBE)
                 .add(ModdedItems.BARRETTER_TUBE)
                 .add(ModdedItems.NEON_BULB)
