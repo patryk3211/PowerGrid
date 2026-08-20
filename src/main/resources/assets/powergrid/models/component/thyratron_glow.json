@@ -8,23 +8,22 @@
 	"elements": [
 		{
 			"name": "head",
-			"from": [-0.125, 2.375, -0.125],
-			"to": [3.125, 9.625, 3.125],
+			"from": [-0.125, 2.5, -0.125],
+			"to": [3.125, 10.75, 3.125],
 			"rotation": {"angle": 0, "axis": "y", "origin": [0, 2.5, 0]},
 			"faces": {
-				"north": {"uv": [3, 12, 6, 16], "texture": "#1"},
-				"east": {"uv": [0, 12, 3, 16], "texture": "#1"},
-				"south": {"uv": [9, 12, 12, 16], "texture": "#1"},
-				"west": {"uv": [6, 12, 9, 16], "texture": "#1"},
-				"up": {"uv": [6, 12, 3, 9], "texture": "#1"},
-				"down": {"uv": [9, 9, 6, 12], "texture": "#1"}
+				"north": {"uv": [3, 8, 6, 16], "texture": "#1"},
+				"east": {"uv": [0, 8, 3, 16], "texture": "#1"},
+				"south": {"uv": [9, 8, 12, 16], "texture": "#1"},
+				"west": {"uv": [6, 8, 9, 16], "texture": "#1"},
+				"up": {"uv": [3, 7, 0, 4], "texture": "#1"},
+				"down": {"uv": [6, 4, 3, 7], "texture": "#1"}
 			}
 		}
 	],
-	"display": {},
 	"groups": [
 		{
-			"name": "electronTube",
+			"name": "thyratron",
 			"origin": [8, 8, 8],
 			"scope": 0,
 			"color": 0,
