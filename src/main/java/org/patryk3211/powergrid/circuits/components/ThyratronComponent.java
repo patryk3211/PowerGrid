@@ -230,7 +230,7 @@ public class ThyratronComponent extends MirrorableComponent implements IRendered
 
         int flash = (int) (strike * 255);
         if (flash > 0) {
-            float s = 1f + strike * 0.22f;
+            float s = 1f + strike * 0.08f;
             ms.pushPose();
             ms.translate(GLOW_CENTER_X, GLOW_CENTER_Y, GLOW_CENTER_Z);
             ms.scale(s, s, s);
