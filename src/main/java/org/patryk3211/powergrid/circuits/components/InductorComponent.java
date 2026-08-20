@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.circuits.components;
 
 import com.google.common.collect.ImmutableCollection;
+import net.minecraft.nbt.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
@@ -27,7 +28,7 @@ import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
 import org.patryk3211.powergrid.electricity.sim.special.LRSeriesWire;
 
 public class InductorComponent extends OrientableComponent {
-    public static final FloatProperty INDUCTANCE = new FloatProperty(PowerGrid.MOD_ID, "inductor_value", 0.1f, 1e-4f, 1000.0f);
+    public static final FloatProperty INDUCTANCE = new FloatProperty(PowerGrid.MOD_ID, "inductor_value", 0.0001f, 1e-7f, 1.0f);
     private static final CurrentProperty CURRENT = new CurrentProperty(PowerGrid.MOD_ID, "current");
 
     public InductorComponent(ComponentFootprint footprint) {
@@ -42,7 +43,7 @@ public class InductorComponent extends OrientableComponent {
 
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
-        var L = placed.get(INDUCTANCE) / 1000;
+        var L = placed.get(INDUCTANCE);
 //        var R = L * 1.2; // 1.2 Ω/H
         var wire = new LRSeriesWire(L, 0.01f, builder.terminalNode(0), builder.terminalNode(1));
         wire.setCurrent(placed.get(CURRENT));
@@ -65,6 +66,14 @@ public class InductorComponent extends OrientableComponent {
             return;
         var wire = (LRSeriesWire) placed.wires.get(0);
         wire.setCurrent(placed.get(CURRENT));
+    }
+
+    @Override
+    public void dataFixup(@NotNull CompoundTag tag, int version) {
+        if(version == 1) {
+            var props = tag.getCompound("Properties");
+            props.putFloat(INDUCTANCE.id().toString(), props.getFloat(INDUCTANCE.id().toString()) / 1000);
+        }
     }
 
     private static class CurrentProperty extends FloatProperty {

@@ -12,6 +12,10 @@
         {
           "type": "minecraft:item",
           "name": "powergrid:ceiling_tile"
+        },
+        {
+          "type": "minecraft:item",
+          "name": "powergrid:solar_panel"
         }
       ],
       "rolls": 1.0

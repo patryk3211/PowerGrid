@@ -41,13 +41,50 @@ public class FloatProperty extends ComponentProperty<Float> {
 
     @Override
     public Float parse(String str) throws NumberFormatException {
-        var value = Float.parseFloat(str);
+        if(str == null || str.isEmpty()) throw new NumberFormatException("Value is empty");
+        str = str.trim();
+        char modifierCharacter = str.charAt(str.length() - 1);
+        boolean hasModifier = "pnumkM".indexOf(modifierCharacter) != -1; 
+        String numericPart = hasModifier ? str.substring(0, str.length() - 1) : str;
+        var value = Float.parseFloat(numericPart);
+        switch (modifierCharacter) {
+            case 'p' -> value /= 1_000_000_000_000f; // pico
+            case 'n' -> value /= 1_000_000_000f;     // nano
+            case 'u' -> value /= 1_000_000f;         // micro
+            case 'm' -> value /= 1_000f;             // milli
+            case 'k' -> value *= 1_000f;             // kilo
+            case 'M' -> value *= 1_000_000f;         // Mega
+        }
         return limit(value);
     }
 
     @Override
     public String toString(Float value) {
-        return Float.toString(value);
+        if(value == 0)
+            return Float.toString(0);
+        String suffix;
+        if(value < 1e-9f) {
+            value *= 1e12f;
+            suffix = "p";
+        } else if(value < 1e-6f) {
+            value *= 1e9f;
+            suffix = "n";
+        } else if(value < 1e-3f) {
+            value *= 1e6f;
+            suffix = "u";
+        } else if(value < 1) {
+            value *= 1e3f;
+            suffix = "m";
+        } else if(value < 1e3f) {
+            suffix = "";
+        } else if(value < 1e6f) {
+            value *= 1e-3f;
+            suffix = "k";
+        } else {
+            value *= 1e-6f;
+            suffix = "M";
+        }
+        return value + suffix;
     }
 
     @Override

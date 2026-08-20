@@ -111,6 +111,7 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
         if(isButton) {
             buttonTimeout = tag.getByte("Timeout");
             isNormallyClosed = tag.getBoolean("NormallyClosed");
+            wire.setState(switchState != isNormallyClosed);
         }
         if(tag.contains("Overvolted")) {
             overvoltResistance = tag.getFloat("Overvolted");
@@ -120,18 +121,12 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
             wire.setState(true);
             if(tag.getBoolean("Effect"))
                 overvoltEffect();
-        } else {
-            switchState = tag.getBoolean("State");
-            wire.setState(switchState != isNormallyClosed);
         }
     }
 
     @Override
     protected void write(CompoundTag tag, boolean clientPacket) {
         super.write(tag, clientPacket);
-        if(clientPacket) {
-            tag.putBoolean("State", switchState);
-        }
         if(overvoltResistance != null) {
             tag.putFloat("Overvolted", overvoltResistance);
             if(playEffect) {

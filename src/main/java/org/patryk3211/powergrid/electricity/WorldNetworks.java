@@ -384,7 +384,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 for(var pair : behaviours.entrySet()) {
                     if(syncTicks % pair.getValue().lod() != 0)
                         continue;
-                    if(pair.getKey() == null)
+                    if(pair.getKey() == null || !pair.getKey().shouldSync())
                         continue;
                     packet.begin(pair.getKey());
                     pair.getKey().writeToSync(wrapper, useDoubles, this::findLineMiddle);

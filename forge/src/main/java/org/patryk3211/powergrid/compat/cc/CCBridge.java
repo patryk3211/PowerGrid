@@ -4,11 +4,13 @@ import dan200.computercraft.api.ForgeComputerCraftAPI;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.common.util.LazyOptional;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.compat.cc.battery.BatteryPeripheral;
 import org.patryk3211.powergrid.compat.cc.clutch.GeneratorClutchPeripheral;
 import org.patryk3211.powergrid.compat.cc.gauges.CurrentGaugePeripheral;
 import org.patryk3211.powergrid.compat.cc.gauges.EnergyMeterPeripheral;
 import org.patryk3211.powergrid.compat.cc.gauges.PowerGaugePeripheral;
 import org.patryk3211.powergrid.compat.cc.gauges.VoltageGaugePeripheral;
+import org.patryk3211.powergrid.electricity.battery.MultiBlockBatteryEntity;
 import org.patryk3211.powergrid.electricity.gauge.EnergyMeterBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlockEntity;
 
@@ -29,6 +31,8 @@ public class CCBridge {
                 return LazyOptional.of(() -> new GeneratorClutchPeripheral((GeneratorClutchBlockEntity) be));
             } else if (type == ModdedBlockEntities.ENERGY_METER.get()) {
                 return LazyOptional.of(() -> new EnergyMeterPeripheral((EnergyMeterBlockEntity) be));
+            } else if (type == ModdedBlockEntities.MULTIBLOCK_BATTERY.get()) {
+                return LazyOptional.of(() -> new BatteryPeripheral((MultiBlockBatteryEntity) be));
             }
             return LazyOptional.empty();
         });
