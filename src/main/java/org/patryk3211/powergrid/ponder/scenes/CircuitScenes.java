@@ -337,6 +337,63 @@ public class CircuitScenes {
         scene.markAsFinished();
     }
 
+    public static void thyratron(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("circuit_thyratron", "Thyratron");
+        scene.configureBasePlate(0, 0, 3);
+        scene.scaleSceneView(3.0f);
+
+        scene.showBasePlate();
+        scene.idle(5);
+        scene.world().showSection(util.select().position(1, 1, 1), Direction.DOWN);
+
+        scene.electric().addSource(util.grid().at(1, 1, 1), 3, 0);
+        scene.electric().addSource(util.grid().at(1, 1, 1), 0, 50);
+        scene.electric().tickFor(10);
+        scene.idle(10);
+
+        scene.overlay().showText(90)
+                .text("The Thyratron is a gas-filled tube that latches on when anode voltage exceeds a grid-controlled strike voltage")
+                .pointAt(util.vector().of(1.5, 1.85, 1.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(100);
+
+        scene.overlay().showText(60)
+                .text("Like a triode, it must first be heated before it can fire")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(70);
+
+        scene.electric().addSource(util.grid().at(1, 1, 1), 2, 6);
+        scene.electric().tickFor(10);
+        scene.effects().indicateSuccess(util.grid().at(1, 1, 1));
+        scene.idle(30);
+
+        scene.overlay().showText(80)
+                .text("A positive grid pulse lowers the strike voltage and triggers conduction")
+                .pointAt(util.vector().of(1.5, 1.25, 1.875))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.electric().addSource(util.grid().at(1, 1, 1), 1, 1);
+        scene.electric().tickFor(10);
+        scene.idle(30);
+
+        scene.overlay().showText(80)
+                .text("Once ionized, the tube stays on even if the grid is driven negative again")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.electric().addSource(util.grid().at(1, 1, 1), 1, -10);
+        scene.electric().tickFor(10);
+        scene.idle(30);
+
+        scene.markAsFinished();
+    }
+
     public static void redstoneRelay(SceneBuilder builder, SceneBuildingUtil util) {
         var scene = new PowerGridSceneBuilder(builder);
         scene.title("circuit_redstone_relay", "Redstone relay");
