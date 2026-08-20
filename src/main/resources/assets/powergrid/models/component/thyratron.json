@@ -9,13 +9,13 @@
 		{
 			"name": "head",
 			"from": [0, 2.5, 0],
-			"to": [3, 9.5, 3],
+			"to": [3, 10.5, 3],
 			"rotation": {"angle": 0, "axis": "y", "origin": [0, 2.5, 0]},
 			"faces": {
-				"north": {"uv": [3, 9, 6, 16], "texture": "#1"},
-				"east": {"uv": [0, 9, 3, 16], "texture": "#1"},
-				"south": {"uv": [9, 9, 12, 16], "texture": "#1"},
-				"west": {"uv": [6, 9, 9, 16], "texture": "#1"},
+				"north": {"uv": [3, 8, 6, 16], "texture": "#1"},
+				"east": {"uv": [0, 8, 3, 16], "texture": "#1"},
+				"south": {"uv": [9, 8, 12, 16], "texture": "#1"},
+				"west": {"uv": [6, 8, 9, 16], "texture": "#1"},
 				"up": {"uv": [3, 7, 0, 4], "texture": "#1"},
 				"down": {"uv": [6, 4, 3, 7], "texture": "#1"}
 			}
@@ -36,9 +36,9 @@
 		},
 		{
 			"name": "anode cap",
-			"from": [0.5, 10.5, 0.5],
-			"to": [2.5, 12.5, 2.5],
-			"rotation": {"angle": 0, "axis": "y", "origin": [-0.5, 11, -0.5]},
+			"from": [0.5, 12.5, 0.5],
+			"to": [2.5, 15.5, 2.5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [-0.5, 13, -0.5]},
 			"faces": {
 				"north": {"uv": [10, 7, 12, 8], "texture": "#1"},
 				"east": {"uv": [8, 7, 10, 8], "texture": "#1"},
@@ -64,9 +64,9 @@
 		},
 		{
 			"name": "separator",
-			"from": [1, 9.5, 1],
-			"to": [2, 10.5, 2],
-			"rotation": {"angle": 0, "axis": "y", "origin": [0, 10, 0]},
+			"from": [1, 10.5, 1],
+			"to": [2, 12.5, 2],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 11, 0]},
 			"faces": {
 				"north": {"uv": [11, 1, 12, 2], "texture": "#1"},
 				"east": {"uv": [11, 1, 12, 2], "texture": "#1"},
