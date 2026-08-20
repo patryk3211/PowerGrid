@@ -1,14 +1,15 @@
 {
   "values": [
     "powergrid:potentiometer",
+    "powergrid:pentode",
     "powergrid:current_gauge",
     "powergrid:barretter_tube",
     "powergrid:copper_coil",
     "powergrid:display_module",
-    "create:electron_tube",
     "powergrid:bjt_npn",
     "powergrid:bjt_pnp",
     "create:copper_nugget",
+    "powergrid:triode",
     "powergrid:lv_switch",
     "powergrid:lv_button",
     "powergrid:voltage_gauge",
@@ -25,6 +26,7 @@
     "powergrid:wire_connector",
     "powergrid:redstone_relay",
     "powergrid:regulator_tube",
+    "powergrid:thyratron",
     "powergrid:diode"
   ]
 }
