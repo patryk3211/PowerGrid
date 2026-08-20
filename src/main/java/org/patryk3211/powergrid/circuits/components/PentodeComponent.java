@@ -113,7 +113,7 @@ public class PentodeComponent extends MirrorableComponent implements IRenderedCo
     public void render(CircuitBoardBlockEntity be, PlacedComponent placed, float partialTicks, PoseStack ms, MultiBufferSource bufferSource, int light, int overlay) {
         int a = 0;
         if (placed.customData instanceof ElectronTubeComponent.RenderData data) {
-            a = (int) (Mth.lerp(partialTicks, data.prev, data.current) * 64);
+            a = (int) (Mth.lerp(partialTicks, data.prev, data.current) * 170);
         }
         if (a == 0)
             return;
