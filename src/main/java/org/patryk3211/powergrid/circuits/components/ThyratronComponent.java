@@ -69,7 +69,7 @@ public class ThyratronComponent extends MirrorableComponent implements IRendered
     private static final float GRID_LEAK_RESISTANCE = 1_000_000f;
     private static final int ANODE_NODE = 2;
     private static final float GLOW_CENTER_X = 1.5f / 16f;
-    private static final float GLOW_CENTER_Y = 6f / 16f;
+    private static final float GLOW_CENTER_Y = 6.5f / 16f;
     private static final float GLOW_CENTER_Z = 1.5f / 16f;
     private static final float STEADY_PLASMA = 0.72f;
     private static final float HUM_VOLUME = 0.1f;
@@ -80,7 +80,7 @@ public class ThyratronComponent extends MirrorableComponent implements IRendered
     private static final List<TerminalBoundingBox> ANODE_TERMINAL = List.of(
             new TerminalBoundingBox(
                     net.minecraft.network.chat.Component.translatable("component.powergrid.thyratron.2"),
-                    0.5f, 10.5f, 0.5f, 2.5f, 12.5f, 2.5f
+                    0.5f, 12.5f, 0.5f, 2.5f, 15.5f, 2.5f
             ).withColor(IDecoratedTerminal.RED)
     );
 
