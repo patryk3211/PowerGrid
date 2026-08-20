@@ -60,6 +60,16 @@ public class Components {
             .item(ModdedItems.PENTODE)
             .register();
 
+    public static final RegistryEntry<ThyratronComponent> THYRATRON = REGISTRATE.component("thyratron", ThyratronComponent::new)
+            .footprint(3, 3, b -> b
+                    .addPad(1, 1, 0, "Cathode", "C")
+                    .addPad(1, 0, 1, "Grid", "G")
+                    .addPad(0, 2, 3, "Heater", "H")
+                    .addPadSharedText(2, 2, 4, "thyratron.3", "thyratron.3.short")
+                    .withItem().withOutline())
+            .item(ModdedItems.THYRATRON)
+            .register();
+
     public static final RegistryEntry<VFETComponent> VFET = REGISTRATE.component("vfet", VFETComponent::new)
             .footprint(3, 3, b -> b
                     .addPad(0, 0, 0, "Drain", "D")
