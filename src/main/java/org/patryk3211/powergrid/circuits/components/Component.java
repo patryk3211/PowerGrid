@@ -99,6 +99,10 @@ public abstract class Component {
         return false;
     }
 
+    public boolean isExternalNode(int nodeIndex) {
+        return emitExternalTerminals();
+    }
+
     public List<TerminalBoundingBox> terminals(@NotNull PlacedComponent placed) {
         return List.of();
     }
@@ -171,7 +175,7 @@ public abstract class Component {
      * Data fixer, handles changes between updates.
      * @param tag Tag to modify
      */
-    public void dataFixup(@NotNull CompoundTag tag, int version) {
+    public void dataFixup(@NotNull CompoundTag tag) {
 
     }
 
