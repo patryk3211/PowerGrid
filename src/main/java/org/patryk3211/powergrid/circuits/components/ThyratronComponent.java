@@ -73,9 +73,7 @@ public class ThyratronComponent extends MirrorableComponent implements IRendered
     private static final float GLOW_CENTER_Z = 1.5f / 16f;
     private static final float STEADY_PLASMA = 0.72f;
     private static final float HUM_VOLUME = 0.1f;
-    // Wait this long after lighting before the loop starts (filters rapid fire/quench).
     private static final int HUM_DELAY_TICKS = 5;
-    // Ticks from silence to full volume after the loop starts. 1 = snap on.
     private static final int HUM_FADE_TICKS = 5;
     private static final List<TerminalBoundingBox> ANODE_TERMINAL = List.of(
             new TerminalBoundingBox(
