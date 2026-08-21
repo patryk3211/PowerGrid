@@ -62,7 +62,7 @@ public class PentodeComponent extends MirrorableComponent implements IRenderedCo
     }
 
     @Override
-    public void dataFixup(@NotNull CompoundTag tag) {
+    public void dataFixup(@NotNull CompoundTag tag, int version) {
         var props = tag.getCompound("Properties");
         if (!props.contains(K_G2.id().toString())) {
             props.putFloat(K_G2.id().toString(), K_G2.defaultValue());
