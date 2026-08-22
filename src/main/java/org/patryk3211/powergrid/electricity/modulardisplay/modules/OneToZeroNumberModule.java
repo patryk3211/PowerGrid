@@ -45,8 +45,8 @@ public class OneToZeroNumberModule implements IDisplayModule {
     }
 
     @Override
-    public ResourceLocation getDisplayTexture() {
-        return PowerGrid.texture("block/modular_display/onetozero");
+    public String getDisplayTexture() {
+        return "block/modular_display/onetozero";
     }
 
     public DisplayModuleType getDisplayModuleType() {

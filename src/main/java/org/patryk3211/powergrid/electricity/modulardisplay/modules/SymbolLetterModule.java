@@ -45,8 +45,8 @@ public class SymbolLetterModule implements IDisplayModule {
     }
 
     @Override
-    public ResourceLocation getDisplayTexture() {
-        return PowerGrid.texture("block/modular_display/symbols");
+    public String getDisplayTexture() {
+        return "block/modular_display/symbols";
     }
 
     public DisplayModuleType getDisplayModuleType() {

@@ -1,20 +1,30 @@
 package org.patryk3211.powergrid.electricity.modulardisplay;
 
+import com.simibubi.create.AllItems;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.scrollValue.ScrollOptionBehaviour;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -28,6 +38,7 @@ import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.network.packets.DisplayBurnoutS2CPacket;
 import org.patryk3211.powergrid.utility.Lang;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class ModularDisplayBlockEntity extends ElectricBlockEntity{
@@ -37,6 +48,7 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
     public int lastHitSlot = 0;
     public final IDisplayModule[] modules = new IDisplayModule[SLOT_COUNT];
     private DisplaySlotThermal[] slotThermals;
+    private boolean[] removeBlankingPage = new boolean[SLOT_COUNT];
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
@@ -50,7 +62,7 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
         ) {
             @Override
             public boolean bypassesInput(ItemStack mainhandItem) {
-                return mainhandItem.getItem() instanceof DyeItem;
+                return mainhandItem.getItem() instanceof DyeItem || AllItems.WRENCH.isIn(mainhandItem);
             }
         };
 
@@ -130,8 +142,17 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
             return;
         }
 
-        if (heldModule == null)
+        if (heldModule == null) {
+            if (AllItems.WRENCH.isIn(player.getItemInHand(InteractionHand.MAIN_HAND))) {
+                removeBlankingPage[slotIndex] = !removeBlankingPage[slotIndex];
+                setIndex(slotIndex, 0);
+                setHalfClick(slotIndex, false);
+                defaultSlotWires(slotIndex);
+                markUpdated();
+                return;
+            }
             return;
+        }
 
         modules[slotIndex] = heldModule;
         if (!player.isCreative()) held.shrink(1);
@@ -152,7 +173,6 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
         }
         return null;
     }
-
 
     private void markUpdated() {
         setChanged();
@@ -189,7 +209,12 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
             IDisplayModule module = modules[i];
             slotList.add(StringTag.valueOf(module != null ? module.serialize() : ""));
         }
+        var rbp = new ArrayList<Integer>();
+        for (int i = 0; i < SLOT_COUNT; i++) {
+            rbp.add(removeBlankingPage[i] ? 1 : 0);
+        }
         tag.put("slots", slotList);
+        tag.putIntArray("rbp", rbp);
     }
 
     @Override
@@ -201,7 +226,12 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
             IDisplayModule module = modules[i];
             slotList.add(StringTag.valueOf(module != null ? module.serialize() : ""));
         }
+        var rbp = new ArrayList<Integer>();
+        for (int i = 0; i < SLOT_COUNT; i++) {
+            rbp.add(removeBlankingPage[i] ? 1 : 0);
+        }
         tag.put("slots", slotList);
+        tag.putIntArray("rbp", rbp);
     }
 
     @Override
@@ -213,6 +243,12 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
             for (int i = 0; i < Math.min(slotList.size(), SLOT_COUNT); i++) {
                 modules[i] = DisplayModuleRegistry.deserialize(slotList.getString(i));
                 defaultSlotWires(i);
+            }
+        }
+        if (tag.contains("rbp", Tag.TAG_INT_ARRAY)) {
+            var rbp = tag.getIntArray("rbp");
+            for (int i = 0; i < Math.min(rbp.length, SLOT_COUNT); i++) {
+                removeBlankingPage[i] = rbp[i] == 1;
             }
         }
     }
@@ -270,7 +306,8 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
             var coilNodeToResetCurrent = Math.abs(coilNodeToReset.current());
             var slot = getSlot(i);
             if (!slot.isEmpty()) {
-                var charCount = slot.getModule().getDisplayTextureCharacterCount();
+                var charCount = removeBlankingPage[i] ? slot.getModule().getDisplayTextureCharacterCount() - 1 :
+                        slot.getModule().getDisplayTextureCharacterCount();
                 //every module display texture has the characters in the sprite plus a blank space and the first character again for smooth transition
                 //but im only counting characters before the blank space and adding one for the blank space and two for the transition
                 if (coilNodeToNegativeCurrent >= .5 && slot.getIndex() != charCount+1 && !slot.getHalfClick()) {
@@ -339,5 +376,60 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
             wires[w3] = builder.connectSwitch(0.1f, builder.terminalNode(r), coilNode, false);
             p += 2; r += 2; w1 += 3; w2 += 3; w3 += 3;
         }
+    }
+
+    public boolean getRemovedBlankingPage(int index){
+        return removeBlankingPage[index];
+    }
+
+    @Nullable
+    @Environment(EnvType.CLIENT)
+    public static Component overlayText(Player player) {
+        if(!AllItems.WRENCH.isIn(player.getItemInHand(InteractionHand.MAIN_HAND)))
+            return null;
+        HitResult hit = Minecraft.getInstance().hitResult;
+        if(!(hit instanceof BlockHitResult blockHit) || blockHit.getType() == HitResult.Type.MISS)
+            return null;
+        var state = Minecraft.getInstance().level.getBlockState(blockHit.getBlockPos());
+        if(!(state.getBlock() instanceof ModularDisplayBlock displayBlock))
+            return null;
+
+        Direction facing = state.getValue(ModularDisplayBlock.HORIZONTAL_FACING);
+        var bhit = (BlockHitResult) hit;
+        Vec3 localHit = hit.getLocation().subtract(bhit.getBlockPos().getX(), bhit.getBlockPos().getY(), bhit.getBlockPos().getZ());
+        double bestDist = Double.MAX_VALUE;
+        int bestSlot = 0;
+
+        for (int i = 0; i < 4; i++) {
+            int col = i % 2;
+            int row = i / 2;
+
+            double slotX, slotY, slotZ;
+            double u = (col * 8 + 4) / 16f;
+            double v = ((1 - row) * 8 + 4) / 16f;
+
+            switch (facing) {
+                case NORTH -> { slotX = u;        slotY = v; slotZ = 0.0;}
+                case SOUTH -> { slotX = 1.0 - u;  slotY = v; slotZ = 1.0;}
+                case WEST  -> { slotX = 0.0;      slotY = v; slotZ = 1.0 - u;}
+                case EAST  -> { slotX = 1.0;      slotY = v; slotZ = u;}
+                default    -> { slotX = 0.5;      slotY = v; slotZ = 0.5;}
+            }
+
+            double dist = localHit.distanceTo(new Vec3(slotX, slotY, slotZ));
+            if (dist < bestDist) {
+                bestDist = dist;
+                bestSlot = i;
+            }
+        }
+        var be = displayBlock.getBlockEntity(Minecraft.getInstance().level, blockHit.getBlockPos());
+        if (be == null) return null;
+        var removed = be.getRemovedBlankingPage(bestSlot);
+
+        return Lang.translate("gui.modular_display.blank")
+                .add(Lang.translate("generic." + (removed ? "disabled" : "enabled"))
+                        .style(ChatFormatting.BLUE))
+                .style(ChatFormatting.GRAY)
+                .component();
     }
 }
