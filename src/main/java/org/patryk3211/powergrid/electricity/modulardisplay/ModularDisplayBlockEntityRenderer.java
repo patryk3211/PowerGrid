@@ -10,6 +10,7 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import org.joml.Matrix4f;
+import org.patryk3211.powergrid.PowerGrid;
 
 public class ModularDisplayBlockEntityRenderer extends SafeBlockEntityRenderer<ModularDisplayBlockEntity> {
     public ModularDisplayBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
@@ -79,9 +80,11 @@ public class ModularDisplayBlockEntityRenderer extends SafeBlockEntityRenderer<M
                 float vMax = FRAME_HEIGHT / SHEET_HEIGHT;
 
                 float[] rgb = slot.getModule().getColor().getTextureDiffuseColors();
+                var texture = (be.getRemovedBlankingPage(slotIndex) ?
+                        slot.getModule().getDisplayTexture() + "noblank" : slot.getModule().getDisplayTexture());
 
                 renderQuad(matrix, buffer,
-                        slot.getModule().getDisplayTexture(),
+                        PowerGrid.texture(texture),
                         innerX, innerY,
                         INNER_RL_SIZE, INNER_UD_SIZE,
                         uMin, vMin, uMax, vMax,

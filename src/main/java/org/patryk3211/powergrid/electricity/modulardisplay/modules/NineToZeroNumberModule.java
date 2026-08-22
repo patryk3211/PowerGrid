@@ -37,8 +37,8 @@ public class NineToZeroNumberModule implements IDisplayModule {
     }
 
     @Override
-    public ResourceLocation getDisplayTexture() {
-        return PowerGrid.texture("block/modular_display/ninetozero");
+    public String getDisplayTexture() {
+        return "block/modular_display/ninetozero";
     }
 
     public float getDisplayTextureSize() {

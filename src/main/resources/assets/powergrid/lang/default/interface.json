@@ -163,6 +163,8 @@
   "powergrid.generic.output": "Output",
   "powergrid.generic.reset": "Reset",
   "powergrid.generic.case_common": "Case Common",
+  "powergrid.generic.enabled": "Enabled",
+  "powergrid.generic.disabled": "Disabled",
 
   "powergrid.contactor.switch1": "Switch 1",
   "powergrid.contactor.switch2": "Switch 2",
@@ -232,6 +234,7 @@
   "powergrid.gui.modular_display.hexadecimal": "Hexadecimal",
   "powergrid.gui.modular_display.symbols": "Symbols",
   "powergrid.gui.modular_display.alphabet": "Alphabet",
+  "powergrid.gui.modular_display.blank": "Blanking page: ",
 
   "powergrid.gui.button_overlay.mode": "Button mode: ",
   "powergrid.gui.button_overlay.nc": "Normally closed",

@@ -28,7 +28,7 @@ public interface IDisplayModule {
 
     IDisplayModule withColor(DyeColor color);
 
-    default ResourceLocation getDisplayTexture() {return null;}
+    default String getDisplayTexture() {return null;}
 
     default float getDisplayTextureSize() {return 0;}
 

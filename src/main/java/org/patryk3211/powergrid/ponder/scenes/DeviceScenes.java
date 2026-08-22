@@ -1729,6 +1729,15 @@ public class DeviceScenes {
         });
         scene.idle(70);
 
+        scene.overlay().showText(110)
+                .text("You can click with a wrench on any slot to enable or disable the blanking page for that slot")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(50);
+        scene.overlay().showControls(util.vector().of(2.25, 1.75, 2), Pointing.DOWN, 40)
+                .withItem(AllItems.WRENCH.asStack());
+        scene.idle(70);
+
         scene.overlay().showText(70)
                 .text("You can dye modules by clicking the slot with dye")
                 .placeNearTarget()
