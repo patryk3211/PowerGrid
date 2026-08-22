@@ -93,12 +93,12 @@
   "powergrid.component.property.modular_display_module": "Module",
   "powergrid.component.property.modular_display_text_color": "Text color",
 
-  "powergrid.component.property.thyratron_mu": "Control Ratio (μ)",
+  "powergrid.component.property.thyratron_mu": "Control Ratio (p)",
   "powergrid.component.property.thyratron_mu.summary": "How many volts the anode strike voltage shifts per volt of grid-to-cathode voltage. Higher values mean a small negative grid bias can hold off a high anode voltage",
   "powergrid.component.property.thyratron_vb": "Breakdown Voltage",
-  "powergrid.component.property.thyratron_vb.summary": "Anode-to-cathode voltage that fires the tube when the grid is at 0 V. Negative grid voltage raises this; positive grid voltage lowers it",
+  "powergrid.component.property.thyratron_vb.summary": "Anode-to-cathode voltage that fires the tube when the grid is at 0 V. Negative grid voltage raises this, positive grid voltage lowers it",
   "powergrid.component.property.thyratron_vh": "Holding Voltage",
-  "powergrid.component.property.thyratron_vh.summary": "Anode voltage drop while the tube is conducting. Stays in a typical 8-16 V arc range",
+  "powergrid.component.property.thyratron_vh.summary": "Anode voltage drop while the tube is conducting",
   "powergrid.component.property.thyratron_ih": "Holding Current",
   "powergrid.component.property.thyratron_ih.summary": "Minimum anode current needed to keep the plasma ionized. Below this, the tube extinguishes and the grid regains control"
 
