@@ -71,7 +71,7 @@ public class ThyratronComponent extends MirrorableComponent implements IRendered
     private static final float GLOW_CENTER_X = 1.5f / 16f;
     private static final float GLOW_CENTER_Y = 6.5f / 16f;
     private static final float GLOW_CENTER_Z = 1.5f / 16f;
-    private static final float STEADY_PLASMA = 0.72f;
+    private static final float STEADY_PLASMA = 0.82f;
     private static final float HUM_VOLUME = 0.1f;
     private static final int HUM_DELAY_TICKS = 5;
     private static final int HUM_FADE_TICKS = 5;
@@ -228,7 +228,7 @@ public class ThyratronComponent extends MirrorableComponent implements IRendered
 
         int flash = (int) (strike * 255);
         if (flash > 0) {
-            float s = 1f + strike * 0.10f;
+            float s = 1f + strike * 0.07f;
             ms.pushPose();
             ms.translate(GLOW_CENTER_X, GLOW_CENTER_Y, GLOW_CENTER_Z);
             ms.scale(s, s, s);
