@@ -61,7 +61,7 @@ public class ThyratronComponent extends MirrorableComponent implements IRendered
             v -> Unit.CURRENT.formatWithPrefixes(v).string());
     public static final FloatProperty HEATER_VOLTAGE = new FloatProperty(PowerGrid.MOD_ID, "tube_heater_voltage", 6f, 1f, 16f);
     public static final CalculatedProperty<Float> HEATER_POWER = new CalculatedProperty<>(PowerGrid.MOD_ID, "tube_heater_power",
-            state -> 5f,
+            state -> 100f,
             value -> String.format("%.1f W", value));
 
     private static final float DISCHARGE_CONDUCTANCE = 50f;
@@ -71,14 +71,14 @@ public class ThyratronComponent extends MirrorableComponent implements IRendered
     private static final float GLOW_CENTER_X = 1.5f / 16f;
     private static final float GLOW_CENTER_Y = 6.5f / 16f;
     private static final float GLOW_CENTER_Z = 1.5f / 16f;
-    private static final float STEADY_PLASMA = 0.72f;
+    private static final float STEADY_PLASMA = 0.82f;
     private static final float HUM_VOLUME = 0.1f;
     private static final int HUM_DELAY_TICKS = 5;
     private static final int HUM_FADE_TICKS = 5;
     private static final List<TerminalBoundingBox> ANODE_TERMINAL = List.of(
             new TerminalBoundingBox(
                     net.minecraft.network.chat.Component.translatable("component.powergrid.thyratron.2"),
-                    0.5f, 12.5f, 0.5f, 2.5f, 15.5f, 2.5f
+                    0.5f, 10.5f, 0.5f, 2.5f, 12.5f, 2.5f
             ).withColor(IDecoratedTerminal.RED)
     );
 
@@ -228,7 +228,7 @@ public class ThyratronComponent extends MirrorableComponent implements IRendered
 
         int flash = (int) (strike * 255);
         if (flash > 0) {
-            float s = 1f + strike * 0.08f;
+            float s = 1f + strike * 0.10f;
             ms.pushPose();
             ms.translate(GLOW_CENTER_X, GLOW_CENTER_Y, GLOW_CENTER_Z);
             ms.scale(s, s, s);
