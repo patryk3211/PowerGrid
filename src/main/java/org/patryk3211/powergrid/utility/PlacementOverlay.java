@@ -123,6 +123,8 @@ public class PlacementOverlay {
                         break;
                 }
                 RenderSystem.setShaderColor(state[0], state[1], state[2], state[3]);
+                if(!added && overlayTicks == 0)
+                    lines.clear();
             }
         }
     }
