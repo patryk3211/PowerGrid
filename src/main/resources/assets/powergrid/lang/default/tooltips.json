@@ -28,6 +28,8 @@
   "item.powergrid.portable_saw.tooltip.summary": "A saw for sawing wood. Can be powered with _Energy_ from a _Portable Battery_",
   "item.powergrid.portable_saw.tooltip.condition1": "While wearing a Portable Battery",
   "item.powergrid.portable_saw.tooltip.behaviour1": "_No durability_ will be used. Instead, _Energy_ is drained from the Battery",
+  "item.powergrid.portable_saw.tooltip.condition2": "When sufficiently powered",
+  "item.powergrid.portable_saw.tooltip.behaviour2": "Harvests whole trees at once",
 
   "block.powergrid.thermometer.tooltip.summary": "A simple device which measures the temperature of things",
   "block.powergrid.thermometer.tooltip.condition1": "When Held",
