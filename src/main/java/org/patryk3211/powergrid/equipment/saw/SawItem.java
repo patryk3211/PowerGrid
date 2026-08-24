@@ -67,7 +67,7 @@ public class SawItem extends AxeItem {
             if(!level.isClientSide && state.getDestroySpeed(level, pos) != 0.0F && power == 0) {
                 stack.hurtAndBreak(1, miningEntity, (livingEntity) -> livingEntity.broadcastBreakEvent(EquipmentSlot.MAINHAND));
             }
-            if(power >= 0.3f && !level.isClientSide) {
+            if(player.isShiftKeyDown() && power >= 0.3f && !level.isClientSide) {
                 Optional<AbstractBlockBreakQueue> dynamicTree = TreeCutter.findDynamicTree(state.getBlock(), pos);
                 if (dynamicTree.isPresent()) {
                     dynamicTree.get().destroyBlocks(level, null, (pos1, stack1) -> dropTreeItem(level, pos1, stack1));
