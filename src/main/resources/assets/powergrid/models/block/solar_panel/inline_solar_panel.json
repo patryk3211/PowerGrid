@@ -9,16 +9,6 @@
 	},
 	"elements": [
 		{
-			"name": "grid",
-			"from": [0, 0, 9],
-			"to": [16, 16, 9],
-			"rotation": {"angle": 0, "axis": "y", "origin": [0, 7, 16]},
-			"faces": {
-				"north": {"uv": [14, 0, 16, 2], "texture": "#0"},
-				"south": {"uv": [14, 0, 16, 2], "texture": "#0"}
-			}
-		},
-		{
 			"name": "chassis",
 			"from": [0, 0, 6],
 			"to": [16, 16, 10],
@@ -71,7 +61,7 @@
 			"name": "solar_panel",
 			"origin": [0, 7, 0],
 			"color": 0,
-			"children": [0, 1]
+			"children": [0]
 		}
 	]
 }

@@ -65,6 +65,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements Transf
 
     private void makeProxy() {
         assert controller != null;
+        electricBehaviour.inhibitSyncCount = 2;
         if(electricBehaviour instanceof ProxyElectricBehaviour)
             return;
         List<TransmissionLinePart> wires = null;
@@ -79,10 +80,12 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements Transf
         seriesResistor = null;
         if(wires != null)
             wires.forEach(TransmissionLinePart::refreshEndpointNodes);
+        electricBehaviour.inhibitSyncCount = 2;
     }
 
     private void makeMain() {
         assert controller == null;
+        electricBehaviour.inhibitSyncCount = 2;
         if(!(electricBehaviour instanceof ProxyElectricBehaviour proxy))
             return;
         List<TransmissionLinePart> wires = null;
@@ -93,6 +96,7 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements Transf
         attachBehaviourLate(electricBehaviour);
         if(wires != null)
             wires.forEach(TransmissionLinePart::refreshEndpointNodes);
+        electricBehaviour.inhibitSyncCount = 2;
     }
 
     @Override
