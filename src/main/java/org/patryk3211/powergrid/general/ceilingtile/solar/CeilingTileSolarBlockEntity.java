@@ -15,15 +15,15 @@ import org.joml.Vector3d;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
+import org.patryk3211.powergrid.electricity.base.AThermalBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
-import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
-import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWireSolar;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarHelper;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarHelper.DDAHit;
 
 import java.util.*;
 
@@ -110,8 +110,8 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity {
         var subLevel = SableCompanion.INSTANCE.getContaining(this);
 
         if (firstTick || subLevel != null) {
-            ambientTemp = ThermalBehaviour.getAmbientTemperature(world, blockPos);
-            if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
+            ambientTemp = AThermalBehaviour.getAmbientTemperature(world, blockPos);
+            if (ambientTemp <= AThermalBehaviour.ABSOLUTE_ZERO)
                 ambientTemp = 22f;
             firstTick = false;
             getPlacedBlockRotation();

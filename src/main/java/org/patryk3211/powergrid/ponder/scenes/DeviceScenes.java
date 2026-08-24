@@ -43,6 +43,7 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.electricity.base.AThermalBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlock;
 import org.patryk3211.powergrid.electricity.battery.BatteryBlockEntity;
@@ -101,7 +102,7 @@ public class DeviceScenes {
                 .pointAt(util.vector().topOf(heatingCoil))
                 .placeNearTarget();
         scene.world().modifyBlockEntity(heatingCoil, HeaterBlockEntity.class, c -> {
-            var temp = c.getBehaviour(ThermalBehaviour.TYPE);
+            var temp = c.getBehaviour(AThermalBehaviour.TYPE);
             temp.setTemperature(380);
         });
         scene.electric().setSource(voltageSource, 32);
@@ -117,7 +118,7 @@ public class DeviceScenes {
         scene.electric().setSource(voltageSource, 38);
         scene.electric().tickFor(10);
         scene.world().modifyBlockEntity(heatingCoil, HeaterBlockEntity.class, c -> {
-            var temp = c.getBehaviour(ThermalBehaviour.TYPE);
+            var temp = c.getBehaviour(AThermalBehaviour.TYPE);
             temp.setTemperature(510);
         });
         scene.idle(80);
@@ -151,7 +152,7 @@ public class DeviceScenes {
         scene.electric().connectInvisible(util.grid().at(2, 2, 4), 0, voltageSource, 1);
         scene.electric().setSource(voltageSource, 32);
         scene.world().modifyBlockEntity(heatingCoil, HeaterBlockEntity.class, c -> {
-            var temp = c.getBehaviour(ThermalBehaviour.TYPE);
+            var temp = c.getBehaviour(AThermalBehaviour.TYPE);
             temp.setTemperature(380);
         });
         scene.electric().tickFor(10);
@@ -518,9 +519,9 @@ public class DeviceScenes {
         var depotPos = util.grid().at(2, 1, 1);
 
         scene.world().modifyBlockEntity(magnetPos, ElectromagnetBlockEntity.class, be -> {
-                var behavior = be.getBehaviour(ThermalBehaviour.TYPE);
-                if(behavior != null)
-                    behavior.behaviourFlags(0);
+                var behavior = be.getBehaviour(AThermalBehaviour.TYPE);
+                if(behavior != null && behavior instanceof ThermalBehaviour thermalBehaviour)
+                    thermalBehaviour.behaviourFlags(0);
         });
         scene.electric().addSource(magnetPos, 0, 200);
         scene.electric().addSource(magnetPos, 1, 0);

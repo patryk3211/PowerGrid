@@ -18,7 +18,6 @@ package org.patryk3211.powergrid.electricity.base;
 import com.simibubi.create.content.kinetics.fan.AirCurrent;
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
-import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -49,7 +48,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchronizedElement {
+public class ThermalBehaviour extends AThermalBehaviour implements ISynchronizedElement {
     public static final BehaviourType<ThermalBehaviour> TYPE = new BehaviourType<>("thermal");
     public static final float STANDARD_TEMPERATURE = 22.0f;
     public static final float ABSOLUTE_ZERO = -273.15f;
@@ -59,28 +58,28 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
     public static final int OVERHEAT_EXPLOSION = 2;
     public static final int IGNORE_EXTRA_COOLING = 4;
 
-    private float temperature;
-    private float prevTemperature;
-    private int overheatTicks;
+    protected float temperature;
+    protected float prevTemperature;
+    protected int overheatTicks;
 
-    private float cachedAmbientTemperature;
+    protected float cachedAmbientTemperature;
 
     // thermalMass = ΔE/ΔT
-    private float thermalMass;
+    protected float thermalMass;
     // dissipation coefficient * area
-    private float dissipationFactor;
-    private final float overheatTemperature;
+    protected float dissipationFactor;
+    protected final float overheatTemperature;
 
-    private final Map<AirCurrent, Float> coolingAir = new HashMap<>();
-    private float totalCoolingFactorMultiplier;
+    protected final Map<AirCurrent, Float> coolingAir = new HashMap<>();
+    protected float totalCoolingFactorMultiplier;
 
-    private BlockPos trackedBehaviour;
+    protected BlockPos trackedBehaviour;
 
-    private int behaviourFlags = OVERHEAT_PARTICLES | OVERHEAT_EXPLOSION;
-    private Runnable overheatCallback;
-    private boolean firstTick = true;
+    protected int behaviourFlags = OVERHEAT_PARTICLES | OVERHEAT_EXPLOSION;
+    protected Runnable overheatCallback;
+    protected boolean firstTick = true;
 
-    private IParticleGenerator particleGenerator = null;
+    protected IParticleGenerator particleGenerator = null;
 
     protected ThermalBehaviour(SmartBlockEntity be, float thermalMass, float dissipationFactor, float overheatTemperature) {
         super(be);

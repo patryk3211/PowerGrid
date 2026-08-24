@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.electricity.base.AThermalBehaviour;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 
@@ -57,11 +58,11 @@ public class TransformerMediumBlockEntity extends TransformerBlockEntity {
     }
 
     @Override
-    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+    public @Nullable AThermalBehaviour specifyThermalBehaviour() {
         var b = super.specifyThermalBehaviour();
-        if(b != null) {
+        if(b != null && b instanceof ThermalBehaviour thermal) {
             if (isMain()) {
-                b.overheatCallback(() -> {
+                thermal.overheatCallback(() -> {
                     // Destroy all 4 blocks of the transformer
                     var axis = getBlockState().getValue(TransformerMediumBlock.HORIZONTAL_AXIS);
                     assert level != null;
@@ -71,7 +72,7 @@ public class TransformerMediumBlockEntity extends TransformerBlockEntity {
                     level.destroyBlock(worldPosition.relative(axis, 1).above(), false);
                 });
             } else {
-                b.behaviourFlags(ThermalBehaviour.OVERHEAT_PARTICLES);
+                thermal.behaviourFlags(ThermalBehaviour.OVERHEAT_PARTICLES);
             }
         }
         return b;
@@ -97,8 +98,8 @@ public class TransformerMediumBlockEntity extends TransformerBlockEntity {
     public void tick() {
         if(isMain()) {
             super.tick();
-        } else if(thermalBehaviour != null) {
-            getMain().ifPresent(be -> thermalBehaviour.track(be.thermalBehaviour));
+        } else if(thermalBehaviour != null && thermalBehaviour instanceof ThermalBehaviour thermal) {
+            getMain().ifPresent(be -> thermal.track((ThermalBehaviour)be.thermalBehaviour));
             thermalBehaviour.tick();
         }
     }

@@ -30,6 +30,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
+import org.patryk3211.powergrid.electricity.base.AThermalBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.modulardisplay.modules.*;
@@ -278,7 +279,7 @@ public class ModularDisplayBlockEntity extends ElectricBlockEntity{
     @Override
     public void tick() {
         super.tick();
-        if(ThermalBehaviour.shouldOverheat()) {
+        if(AThermalBehaviour.shouldOverheat()) {
             int w1 = 0, w2 = 1, w3 = 2;
             for (int i = 0; i < SLOT_COUNT; i++) {
                 var slot = getSlot(i);

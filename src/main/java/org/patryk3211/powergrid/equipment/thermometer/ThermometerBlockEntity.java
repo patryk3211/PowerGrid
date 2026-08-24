@@ -27,7 +27,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+
+import org.patryk3211.powergrid.electricity.base.AThermalBehaviour;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
@@ -49,11 +50,11 @@ public class ThermometerBlockEntity extends SmartBlockEntity implements IHaveGog
 
     public float temperature() {
         var facing = getBlockState().getValue(ThermometerBlock.FACING);
-        var thermal = BlockEntityBehaviour.get(level, worldPosition.relative(facing), ThermalBehaviour.TYPE);
+        var thermal = BlockEntityBehaviour.get(level, worldPosition.relative(facing), AThermalBehaviour.TYPE);
         if(thermal != null) {
             return thermal.getTemperature();
         }
-        return ThermalBehaviour.getAmbientTemperature(level, worldPosition);
+        return AThermalBehaviour.getAmbientTemperature(level, worldPosition);
     }
 
     @Override

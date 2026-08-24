@@ -27,11 +27,11 @@ import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3d;
 import org.patryk3211.powergrid.collections.ModdedTags;
+import org.patryk3211.powergrid.electricity.base.AThermalBehaviour;
 import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
-import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
-import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWireSolar;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarHelper.DDAHit;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
 import java.util.List;
@@ -148,8 +148,8 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         var pos = SableCompanion.INSTANCE.projectOutOfSubLevel(level, getContraptionCenter(movedContraption));
         var contraptionCenterPos = BlockPos.containing(JOMLConversion.toMojang(pos));
 
-        ambientTemp = ThermalBehaviour.getAmbientTemperature(world, contraptionCenterPos);
-        if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
+        ambientTemp = AThermalBehaviour.getAmbientTemperature(world, contraptionCenterPos);
+        if (ambientTemp <= AThermalBehaviour.ABSOLUTE_ZERO)
             ambientTemp = 22f;
         float cloudCover = getWeather(world);
 

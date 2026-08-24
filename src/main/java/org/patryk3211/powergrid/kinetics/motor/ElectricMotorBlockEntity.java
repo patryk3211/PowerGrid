@@ -27,6 +27,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.advancements.PGAdvancementBehaviour;
 import org.patryk3211.powergrid.collections.ModdedAdvancements;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.electricity.base.AThermalBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
@@ -45,7 +46,7 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
 
     protected ElectricBehaviour electricBehaviour;
     @Nullable
-    protected ThermalBehaviour thermalBehaviour;
+    protected AThermalBehaviour thermalBehaviour;
 
     private ElectricWire coil;
 

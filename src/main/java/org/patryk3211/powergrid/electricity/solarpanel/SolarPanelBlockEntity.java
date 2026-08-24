@@ -5,9 +5,7 @@ import dev.ryanhcode.sable.companion.math.JOMLConversion;
 import net.minecraft.core.*;
 import com.simibubi.create.api.contraption.transformable.TransformableBlockEntity;
 import com.simibubi.create.content.contraptions.StructureTransform;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.core.SectionPos;
+
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
@@ -26,6 +24,7 @@ import org.patryk3211.powergrid.electricity.base.*;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarHelper.DDAHit;
 
 import java.util.*;
 
@@ -107,8 +106,8 @@ public class SolarPanelBlockEntity extends ElectricBlockEntity implements Transf
         var subLevel = SableCompanion.INSTANCE.getContaining(this);
 
         if (firstTick || subLevel != null) {
-            ambientTemp = ThermalBehaviour.getAmbientTemperature(world, blockPos);
-            if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
+            ambientTemp = AThermalBehaviour.getAmbientTemperature(world, blockPos);
+            if (ambientTemp <= AThermalBehaviour.ABSOLUTE_ZERO)
                 ambientTemp = 22f;
             firstTick = false;
             getPlacedBlockRotation();
