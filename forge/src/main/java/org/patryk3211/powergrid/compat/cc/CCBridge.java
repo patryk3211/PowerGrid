@@ -10,8 +10,10 @@ import org.patryk3211.powergrid.compat.cc.gauges.CurrentGaugePeripheral;
 import org.patryk3211.powergrid.compat.cc.gauges.EnergyMeterPeripheral;
 import org.patryk3211.powergrid.compat.cc.gauges.PowerGaugePeripheral;
 import org.patryk3211.powergrid.compat.cc.gauges.VoltageGaugePeripheral;
+import org.patryk3211.powergrid.compat.cc.redstone.RedstoneConverterPeripheral;
 import org.patryk3211.powergrid.electricity.battery.MultiBlockBatteryEntity;
 import org.patryk3211.powergrid.electricity.gauge.EnergyMeterBlockEntity;
+import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlockEntity;
 
 public class CCBridge {
@@ -33,6 +35,8 @@ public class CCBridge {
                 return LazyOptional.of(() -> new EnergyMeterPeripheral((EnergyMeterBlockEntity) be));
             } else if (type == ModdedBlockEntities.MULTIBLOCK_BATTERY.get()) {
                 return LazyOptional.of(() -> new BatteryPeripheral((MultiBlockBatteryEntity) be));
+            } else if (type == ModdedBlockEntities.REDSTONE_CONVERTER.get()) {
+                return LazyOptional.of(() -> new RedstoneConverterPeripheral((RedstoneConverterBlockEntity) be));
             }
             return LazyOptional.empty();
         });
