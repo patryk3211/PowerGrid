@@ -240,19 +240,20 @@ public class CircuitScenes {
         scene.world().showSection(util.select().position(1, 1, 1), Direction.DOWN);
 
         scene.electric().addSource(util.grid().at(1, 1, 1), 3, 0);
+        scene.electric().addSource(util.grid().at(1, 1, 1), 1, 0);
         scene.electric().addSource(util.grid().at(1, 1, 1), 0, 50);
         scene.electric().tickFor(10);
         scene.idle(10);
 
         scene.overlay().showText(70)
-                .text("The Triode is a non-linear electrical component which can amplify signals")
+                .text("The Triode is a vacuum tube that can amplify signals")
                 .pointAt(util.vector().of(1.5, 1.125, 1.25))
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(80);
 
         scene.overlay().showText(60)
-                .text("To make it work, first you need to power its heating element")
+                .text("To make it conduct, first power the heating element")
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(70);
@@ -263,22 +264,18 @@ public class CircuitScenes {
         scene.idle(30);
 
         scene.overlay().showText(80)
-                .text("It will then start conducting current from anode to cathode. This current can be controlled with the Grid pin")
+                .text("With the anode positive, current flows from anode to cathode")
                 .pointAt(util.vector().of(1.625, 1.25, 1.875))
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(90);
 
         scene.overlay().showText(80)
-                .text("A negative voltage can be applied to the grid. A small change there can result in a major change of the anode current")
+                .text("The Grid pin controls how much of that current is allowed to flow")
                 .pointAt(util.vector().of(1.25, 1.25, 1.875))
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(90);
-
-        scene.electric().addSource(util.grid().at(1, 1, 1), 1, -5);
-        scene.electric().tickFor(10);
-        scene.idle(30);
 
         scene.markAsFinished();
     }
@@ -299,14 +296,14 @@ public class CircuitScenes {
         scene.idle(10);
 
         scene.overlay().showText(80)
-                .text("The Pentode is like a triode with an additional Screen Grid (G2) between the control grid and the anode")
+                .text("The Pentode adds a Screen Grid (G2) between the control grid and the anode")
                 .pointAt(util.vector().of(1.5, 1.125, 1.25))
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(90);
 
         scene.overlay().showText(60)
-                .text("As with a triode, you must first power the heating element before the tube will conduct")
+                .text("As with a triode, the heater must be powered before the tube will conduct")
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(70);
@@ -317,20 +314,13 @@ public class CircuitScenes {
         scene.idle(30);
 
         scene.overlay().showText(80)
-                .text("The screen grid shields the anode from the control grid, allowing higher gain")
+                .text("The screen must be positively biased for the tube to conduct")
                 .pointAt(util.vector().of(1.625, 1.25, 1.875))
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(90);
 
-        scene.overlay().showText(80)
-                .text("Both the control grid and screen grid influence plate current; the screen must be positively biased for normal operation")
-                .pointAt(util.vector().of(1.25, 1.25, 1.875))
-                .placeNearTarget()
-                .attachKeyFrame();
-        scene.idle(90);
-
-        scene.electric().addSource(util.grid().at(1, 1, 1), 1, -5);
+        scene.electric().addSource(util.grid().at(1, 1, 1), 1, 50);
         scene.electric().tickFor(10);
         scene.idle(30);
 
@@ -347,49 +337,37 @@ public class CircuitScenes {
         scene.idle(5);
         scene.world().showSection(util.select().position(1, 1, 1), Direction.DOWN);
 
-        scene.electric().addSource(util.grid().at(1, 1, 1), 3, 0);
-        scene.electric().addSource(util.grid().at(1, 1, 1), 0, 50);
+        var board = util.grid().at(1, 1, 1);
+        scene.electric().addSource(board, 3, 0);
+        scene.electric().addSource(board, 1, 0);
+        scene.electric().addSource(board, 4, 80);
         scene.electric().tickFor(10);
         scene.idle(10);
 
-        scene.overlay().showText(90)
-                .text("The Thyratron is a gas-filled tube that latches on when anode voltage exceeds a grid-controlled strike voltage")
+        scene.overlay().showText(80)
+                .text("The Thyratron is a gas-filled tube that conducts from anode to cathode")
                 .pointAt(util.vector().of(1.5, 1.85, 1.5))
                 .placeNearTarget()
                 .attachKeyFrame();
-        scene.idle(100);
+        scene.idle(90);
 
         scene.overlay().showText(60)
-                .text("Like a triode, it must first be heated before it can fire")
+                .text("First power the heating element")
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(70);
 
-        scene.electric().addSource(util.grid().at(1, 1, 1), 2, 6);
+        scene.electric().addSource(board, 2, 6);
         scene.electric().tickFor(10);
-        scene.effects().indicateSuccess(util.grid().at(1, 1, 1));
+        scene.effects().indicateSuccess(board);
         scene.idle(30);
 
         scene.overlay().showText(80)
-                .text("A positive grid pulse lowers the strike voltage and triggers conduction")
-                .pointAt(util.vector().of(1.5, 1.25, 1.875))
+                .text("When the anode is positive enough, the tube fires and conducts")
+                .pointAt(util.vector().of(1.5, 1.85, 1.5))
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(90);
-
-        scene.electric().addSource(util.grid().at(1, 1, 1), 1, 1);
-        scene.electric().tickFor(10);
-        scene.idle(30);
-
-        scene.overlay().showText(80)
-                .text("Once ionized, the tube stays on even if the grid is driven negative again")
-                .placeNearTarget()
-                .attachKeyFrame();
-        scene.idle(90);
-
-        scene.electric().addSource(util.grid().at(1, 1, 1), 1, -10);
-        scene.electric().tickFor(10);
-        scene.idle(30);
 
         scene.markAsFinished();
     }
