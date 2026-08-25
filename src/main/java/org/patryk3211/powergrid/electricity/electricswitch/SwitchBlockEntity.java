@@ -33,18 +33,25 @@ import org.patryk3211.powergrid.utility.Lang;
 import java.util.List;
 
 public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
-    private SwitchedWire wire;
+    private SwitchedWire wire_1;
+    private SwitchedWire wire_2;
     private float maxVoltage;
     private boolean switchState;
     private Float overvoltResistance;
     private boolean isButton;
+    private boolean isSPDT;
     private boolean isNormallyClosed;
     private int buttonTimeout = 0;
-    private boolean playEffect = false;
+    private boolean playEffect
+            = false;
 
     public SwitchBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
-        isButton = ((SwitchBlock) state.getBlock()).isButton;
+
+        if (state.getBlock() instanceof SwitchBlock switchBlock) {
+            this.isButton = switchBlock.isButton();
+            this.isSPDT = switchBlock.isSPDT();
+        }
     }
 
     @Override
@@ -61,14 +68,20 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
 
     @Override
     public void electricalTick() {
-        applyPower(wire);
-        if(wire.isConverged() && Math.abs(wire.potentialDifference()) > maxVoltage && overvoltResistance == null) {
-            wire.setState(true);
-            // Pick a random resistance for failed switches to spice things up.
-            overvoltResistance = level.random.nextFloat() * 1000f;
-            wire.setResistance(overvoltResistance);
-            playEffect = true;
-            notifyUpdate();
+        if (wire_1 != null) {
+            applyPower(wire_1);
+            if (wire_1.isConverged() && Math.abs(wire_1.potentialDifference()) > maxVoltage && overvoltResistance == null) {
+                wire_1.setState(true);
+                overvoltResistance = level.random.nextFloat() * 1000f;
+                wire_1.setResistance(overvoltResistance);
+                playEffect = true;
+                notifyUpdate();
+            }
+        }
+
+        // Only process wire_2 if this is an SPDT switch
+        if (isSPDT && wire_2 != null) {
+            applyPower(wire_2);
         }
     }
 
@@ -89,12 +102,21 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
 
     public void setState(boolean state) {
         switchState = state;
-        if(overvoltResistance == null)
-            wire.setState(state != isNormallyClosed);
-        if(isButton && state)
+        if (overvoltResistance == null) {
+            boolean wire1Active = isButton ? (state != isNormallyClosed) : state;
+            if (wire_1 != null) {
+                wire_1.setState(wire1Active);
+            }
+            if (isSPDT && wire_2 != null) {
+                wire_2.setState(!wire1Active);
+            }
+        }
+        if (isButton && state) {
             buttonTimeout = 10;
-        if(!level.isClientSide)
+        }
+        if (level != null && !level.isClientSide) {
             notifyUpdate();
+        }
     }
 
     public void setNormallyClosed(boolean normallyClosed) {
@@ -108,18 +130,15 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
     @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
-        if(isButton) {
+        if (isButton) {
             buttonTimeout = tag.getByte("Timeout");
             isNormallyClosed = tag.getBoolean("NormallyClosed");
-            wire.setState(switchState != isNormallyClosed);
         }
-        if(tag.contains("Overvolted")) {
+        if (tag.contains("Overvolted")) {
             overvoltResistance = tag.getFloat("Overvolted");
-            if(overvoltResistance <= 0)
+            if (overvoltResistance <= 0)
                 overvoltResistance = 1f;
-            wire.setResistance(overvoltResistance);
-            wire.setState(true);
-            if(tag.getBoolean("Effect"))
+            if (tag.getBoolean("Effect") && level != null && level.isClientSide)
                 overvoltEffect();
         }
     }
@@ -142,15 +161,34 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
 
     @Override
     public void buildCircuit(CircuitBuilder builder) {
-        builder.setTerminalCount(2);
-        if(!(getBlockState().getBlock() instanceof SwitchBlock block))
+        if (!(getBlockState().getBlock() instanceof SwitchBlock block))
             throw new IllegalArgumentException("Blocks with SwitchBlockEntity must inherit from SwitchBlock");
+
+        this.isButton = block.isButton();
+        this.isSPDT = block.isSPDT();
+
+        builder.setTerminalCount(isSPDT ? 3 : 2);
+
         maxVoltage = block.getMaxVoltage();
         switchState = !getBlockState().getValue(SwitchBlock.OPEN);
-        wire = builder.connectSwitch(resistance(), builder.terminalNode(0), builder.terminalNode(1), switchState);
-        if(overvoltResistance != null) {
-            wire.setResistance(overvoltResistance);
-            wire.setState(true);
+
+        // Terminal 0 is Common (COM)
+        boolean wire1Active = isButton ? (switchState != isNormallyClosed) : switchState;
+        wire_1 = builder.connectSwitch(resistance(), builder.terminalNode(0), builder.terminalNode(1), wire1Active);
+
+        if (overvoltResistance != null) {
+            wire_1.setResistance(overvoltResistance);
+            wire_1.setState(true);
+        }
+
+        if (isSPDT) {
+            boolean wire2Active = !wire1Active;
+            wire_2 = builder.connectSwitch(resistance(), builder.terminalNode(0), builder.terminalNode(2), wire2Active);
+
+            if (overvoltResistance != null) {
+                wire_2.setResistance(overvoltResistance);
+                wire_2.setState(true);
+            }
         }
     }
 

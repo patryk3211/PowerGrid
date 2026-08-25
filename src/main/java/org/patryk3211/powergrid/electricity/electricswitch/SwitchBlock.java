@@ -56,6 +56,7 @@ public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlo
 
     protected float maxVoltage = 200f;
     protected boolean isButton = false;
+    protected boolean isSPDT = false;
 
     public SwitchBlock(Properties settings) {
         super(settings);
@@ -70,6 +71,9 @@ public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlo
 
     public boolean isButton() {
         return isButton;
+    }
+    public boolean isSPDT() {
+        return isSPDT;
     }
 
     @Override

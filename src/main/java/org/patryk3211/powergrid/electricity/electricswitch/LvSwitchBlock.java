@@ -26,18 +26,26 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 public class LvSwitchBlock extends SurfaceSwitchBlock {
     private static final TerminalBoundingBox[] DOWN_TERMINALS = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6.5, 0, 2.5, 9.5, 2, 4.5),
-            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6.5, 0, 11.5, 9.5, 2, 13.5)
+            // INDEX 0: Middle Pin (Common / Input) - Z: 7.0 to 9.0
+            new TerminalBoundingBox(IDecoratedTerminal.INPUT, 6.5, 0, 7.0, 9.5, 2, 9.0),
+
+            // INDEX 1: Edge 1 (Output A) - Z: 2.5 to 4.5
+            new TerminalBoundingBox(IDecoratedTerminal.OUTPUT, 6.5, 0, 2.5, 9.5, 2, 4.5),
+
+            // INDEX 2: Edge 2 (Output B) - Z: 11.5 to 13.5
+            new TerminalBoundingBox(IDecoratedTerminal.OUTPUT, 6.5, 0, 11.5, 9.5, 2, 13.5)
     };
 
     private static final VoxelShape SHAPE_DOWN = Shapes.or(
             box(5.5, 0, 4.5, 10.5, 2, 11.5),
-            box(5.5, 2, 5.5, 10.5, 5, 10.5)
+            box(5.5, 2, 5.5, 10.5, 5, 10.5),
+            box(6.5, 0, 2.5, 9.5, 2, 13.5)
     );
 
     public LvSwitchBlock(Properties settings) {
         super(settings);
         this.maxVoltage = 320;
+        this.isSPDT = true;
         setTerminalCollection(switchDownTerminals(this, DOWN_TERMINALS, SHAPE_DOWN));
     }
 
