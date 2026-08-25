@@ -26,8 +26,8 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 public class LvSwitchBlock extends SurfaceSwitchBlock {
     private static final TerminalBoundingBox[] DOWN_TERMINALS = new TerminalBoundingBox[] {
-            // INDEX 0: Middle Pin (Common / Input) - Z: 7.0 to 9.0
-            new TerminalBoundingBox(IDecoratedTerminal.INPUT, 6.5, 0, 7.0, 9.5, 2, 9.0),
+            // INDEX 0: Middle Pin (Common / Input) - Z: 6.5 to 9.5 (Length = 3)
+            new TerminalBoundingBox(IDecoratedTerminal.INPUT, 3.5, 0, 6.5, 12.5, 2, 9.5),
 
             // INDEX 1: Edge 1 (Output A) - Z: 2.5 to 4.5
             new TerminalBoundingBox(IDecoratedTerminal.OUTPUT, 6.5, 0, 2.5, 9.5, 2, 4.5),
