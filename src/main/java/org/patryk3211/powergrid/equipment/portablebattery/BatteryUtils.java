@@ -89,6 +89,19 @@ public class BatteryUtils {
         }
         return outputPercent;
     }
+    public static int tryDrawEnergy(ItemStack stack, int fe) {
+        if(stack.isEmpty() || !(stack.getItem() instanceof PortableBatteryItem))
+            return 0;
+        var charge = getCurrentCharge(stack);
+        if(charge < fe)
+            fe = charge;
+        CustomData data = stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY);
+        CompoundTag newTag = data.copyTag();
+
+        newTag.putInt("Charge", charge - fe);
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(newTag));
+        return fe;
+    }
 
     public static ItemStack getBattery(Player player) {
         var stack = player.getItemBySlot(EquipmentSlot.CHEST);
