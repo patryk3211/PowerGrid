@@ -18,8 +18,6 @@ package org.patryk3211.powergrid.electricity.electromagnet.forge;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
-import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
-import org.patryk3211.powergrid.PowerGrid;
 
 public class ElectromagnetBlockEntityImpl  {
     public static int tryTransferPower(ItemStack item, int power, boolean simulate) {
