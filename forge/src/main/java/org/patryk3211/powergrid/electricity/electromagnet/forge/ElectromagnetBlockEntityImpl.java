@@ -16,19 +16,18 @@
 package org.patryk3211.powergrid.electricity.electromagnet.forge;
 
 import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.energy.IEnergyStorage;
-import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
-import org.patryk3211.powergrid.PowerGrid;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.common.util.LazyOptional;
+import net.minecraftforge.energy.IEnergyStorage;
 
 public class ElectromagnetBlockEntityImpl  {
     public static int tryTransferPower(ItemStack item, int power, boolean simulate) {
-        IEnergyStorage itemEnergy = item.getCapability(Capabilities.EnergyStorage.ITEM);
-        if (itemEnergy == null) return 0;
+        LazyOptional<IEnergyStorage> itemEnergy = item.getCapability(ForgeCapabilities.ENERGY);
+        if (!itemEnergy.isPresent()) return 0;
         int toTransfer = power;
         int powerTransfered;
         do { //Take all my power >:3
-            powerTransfered = itemEnergy.receiveEnergy(power, simulate);
+            powerTransfered = itemEnergy.map(handler -> handler.receiveEnergy(power, simulate)).orElse(0);
             toTransfer -= powerTransfered;
         } while(!simulate && powerTransfered != 0 && toTransfer > 0);
         return power - toTransfer;
