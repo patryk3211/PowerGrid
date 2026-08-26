@@ -14,13 +14,12 @@ public class PortableBatteryItemImpl {
         int maxEnergyDrain = heldEnergy.getMaxEnergyStored() - heldEnergy.getEnergyStored();
         if (maxEnergyDrain < 1) return;
 
-
         int energyDrain = heldEnergy.receiveEnergy(maxEnergyDrain, true);
         if (energyDrain <= 0) return;
 
-        int available = BatteryUtils.tryDrawEnergy(batteryStack, energyDrain);
+        float available = BatteryUtils.drawEnergy(player, energyDrain);
         if (available <= 0) return;
 
-        int accepted = heldEnergy.receiveEnergy(available, false);
+        int accepted = heldEnergy.receiveEnergy((int) (available * energyDrain), false);
     }
 }
