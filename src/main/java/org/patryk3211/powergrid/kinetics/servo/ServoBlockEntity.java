@@ -28,6 +28,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.electricity.base.AThermalBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
@@ -45,7 +46,7 @@ public class ServoBlockEntity extends GeneratingKineticBlockEntity implements IE
 
     protected ElectricBehaviour electricBehaviour;
     @Nullable
-    protected ThermalBehaviour thermalBehaviour;
+    protected AThermalBehaviour thermalBehaviour;
     private float generatedSpeed;
     private int currentAngle;
 //    private float prevTarget;

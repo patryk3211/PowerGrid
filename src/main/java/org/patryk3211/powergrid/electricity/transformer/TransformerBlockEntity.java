@@ -35,6 +35,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedAdvancements;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.electricity.base.AThermalBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.IHelperTerminal;
 import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
@@ -69,7 +70,7 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     }
 
     @Override
-    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+    public @Nullable AThermalBehaviour specifyThermalBehaviour() {
         return ThermalBehaviour.fromConfig(this);
     }
 

@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.electricity.base.AThermalBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
@@ -53,13 +54,13 @@ public class BasinHeaterBlockEntity extends ElectricBlockEntity {
     }
 
     public static float minPower() {
-        float factor = power() / (600 - ThermalBehaviour.STANDARD_TEMPERATURE);
-        return factor * (300 - ThermalBehaviour.STANDARD_TEMPERATURE);
+        float factor = power() / (600 - AThermalBehaviour.STANDARD_TEMPERATURE);
+        return factor * (300 - AThermalBehaviour.STANDARD_TEMPERATURE);
     }
 
     @Override
-    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
-        float factor = power() / (600 - ThermalBehaviour.STANDARD_TEMPERATURE);
+    public @Nullable AThermalBehaviour specifyThermalBehaviour() {
+        float factor = power() / (600 - AThermalBehaviour.STANDARD_TEMPERATURE);
         return ThermalBehaviour.always(this, 2.0f, factor, 1600);
     }
 

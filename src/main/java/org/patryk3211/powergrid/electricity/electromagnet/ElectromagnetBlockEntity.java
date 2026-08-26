@@ -29,6 +29,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.electricity.base.AThermalBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
@@ -46,7 +47,7 @@ public class ElectromagnetBlockEntity extends ElectricBlockEntity implements Mag
     }
 
     @Override
-    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+    public @Nullable AThermalBehaviour specifyThermalBehaviour() {
         return ThermalBehaviour.fromConfig(this);
     }
 

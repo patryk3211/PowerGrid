@@ -27,13 +27,14 @@ import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.config.ThermalValues;
+import org.patryk3211.powergrid.electricity.base.AThermalBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
 public class CarbonPileBlockEntity extends SmartBlockEntity {
-    protected ThermalBehaviour thermal;
+    protected AThermalBehaviour thermal;
     protected TrimValueBehaviour trim;
     private CarbonPileCoilBlockEntity coil;
     private int size;
@@ -45,8 +46,8 @@ public class CarbonPileBlockEntity extends SmartBlockEntity {
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> list) {
         thermal = ThermalBehaviour.fromConfig(this);
-        if(thermal != null) {
-            thermal.particleGenerator((consumer, random) -> {
+        if(thermal != null && thermal instanceof ThermalBehaviour thermalBehaviour) {
+            thermalBehaviour.particleGenerator((consumer, random) -> {
                 for (int i = 0; i < Math.ceil(size / 2.0f); ++i) {
                     double x = worldPosition.getX() + random.nextDouble();
                     double z = worldPosition.getZ() + random.nextDouble();
@@ -81,9 +82,9 @@ public class CarbonPileBlockEntity extends SmartBlockEntity {
         }
         this.coil = coil.get();
         trim.setValue((int) ((this.coil.getTrim() - 1.0f) * 200));
-        if(thermal != null) {
-            thermal.setThermalMass(ThermalValues.getMass(getBlockState().getBlock()) * size);
-            thermal.setDissipationFactor(
+        if(thermal != null && thermal instanceof ThermalBehaviour thermalBehaviour) {
+            thermalBehaviour.setThermalMass(ThermalValues.getMass(getBlockState().getBlock()) * size);
+            thermalBehaviour.setDissipationFactor(
                     ThermalBehaviour.dissipationFactor(ThermalValues.getPower(getBlockState().getBlock()) * size,
                             175.0f));
         }

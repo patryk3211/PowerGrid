@@ -35,6 +35,7 @@ import org.patryk3211.powergrid.base.IMultiScreenHandlerFactory;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.ISchematicHolder;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.electricity.base.AThermalBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
@@ -54,7 +55,7 @@ public class CircuitDesignTableBlockEntity extends ElectricBlockEntity implement
     }
 
     @Override
-    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+    public @Nullable AThermalBehaviour specifyThermalBehaviour() {
         return ThermalBehaviour.fromConfig(this);
     }
 

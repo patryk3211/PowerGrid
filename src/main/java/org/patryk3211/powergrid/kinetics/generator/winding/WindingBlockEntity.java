@@ -134,7 +134,7 @@ public class WindingBlockEntity extends ElectricBlockEntity implements IMultipar
     }
 
     @Override
-    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+    public @Nullable AThermalBehaviour specifyThermalBehaviour() {
         var thermal = ThermalBehaviour.fromConfig(this);
         if(thermal != null) {
             thermal.overheatCallback(() -> {
@@ -718,7 +718,7 @@ public class WindingBlockEntity extends ElectricBlockEntity implements IMultipar
             for (var collected : collectedBEs) {
                 if (collected == this)
                     continue;
-                consumer.accept(collected.thermalBehaviour);
+                consumer.accept((ThermalBehaviour)collected.thermalBehaviour);
             }
         }
         if(parallelPositions != null) {
@@ -728,7 +728,7 @@ public class WindingBlockEntity extends ElectricBlockEntity implements IMultipar
                         for (var collected : winding.collectedBEs) {
                             if (collected == this)
                                 continue;
-                            consumer.accept(collected.thermalBehaviour);
+                            consumer.accept((ThermalBehaviour)collected.thermalBehaviour);
                         }
                     }
                 });
