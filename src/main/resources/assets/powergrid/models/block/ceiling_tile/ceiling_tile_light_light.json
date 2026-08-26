@@ -1,0 +1,19 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Made with Blockbench",
+	"texture_size": [32, 32],
+	"textures": {
+		"0": "powergrid:block/ceiling_tile/ceiling_tile_light_light",
+		"particle": "powergrid:block/ceiling_tile/ceiling_tile_light_light"
+	},
+	"elements": [
+		{
+			"from": [1, 0, 1],
+			"to": [15, 0, 15],
+			"rotation": {"angle": 0, "axis": "y", "origin": [1, -1, 1]},
+			"faces": {
+				"down": {"uv": [7, 7, 0, 14], "texture": "#0"}
+			}
+		}
+	]
+}

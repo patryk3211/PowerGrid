@@ -18,24 +18,32 @@ package org.patryk3211.powergrid.electricity.sparkgap;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.blockEntity.behaviour.CenteredSideValueBoxTransform;
 import net.createmod.catnip.math.VecHelper;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.particles.HvSparkSoundInstance;
+import org.patryk3211.powergrid.electricity.particles.SparkSoundOwner;
 import org.patryk3211.powergrid.electricity.particles.ZapParticleData;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.List;
 
-public class SparkGapBlockEntity extends ElectricBlockEntity {
+public class SparkGapBlockEntity extends ElectricBlockEntity implements SparkSoundOwner {
     private SwitchedWire plasmaChannel;
 
     protected SparkGapValueBehaviour setting;
+    private boolean wasSparking;
 
     public SparkGapBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -48,7 +56,6 @@ public class SparkGapBlockEntity extends ElectricBlockEntity {
         setting = new SparkGapValueBehaviour(Lang.translateDirect("devices.spark_gap.voltage"), this, new BoxTransform());
         behaviours.add(setting);
     }
-
 
     @Override
     public void electricalTick() {
@@ -66,22 +73,47 @@ public class SparkGapBlockEntity extends ElectricBlockEntity {
         super.tick();
         if(level.isClientSide && plasmaChannel.getState()) {
             var center = worldPosition.getCenter().subtract(0, 0.125f, 0);
-            float offset = (1 + setting.getValue() * 3 / 18f) / 16f;
+            float offset = (1 + setting.getValue() * 2.8f / 18f) / 33f;
 
             var axis = getBlockState().getValue(SparkGapBlock.HORIZONTAL_AXIS);
             var end = center.relative(Direction.fromAxisAndDirection(axis, Direction.AxisDirection.POSITIVE), offset);
             var start = center.relative(Direction.fromAxisAndDirection(axis, Direction.AxisDirection.NEGATIVE), offset);
-            level.addParticle(new ZapParticleData(end.x, end.y, end.z, true)
+            level.addParticle(new ZapParticleData(end, true)
                             .withLife(1)
                             .withSegments(5),
                     start.x, start.y, start.z, 0, 0, 0);
+            double dist = start.distanceTo(end);
+            int sparks = (int) (dist / 0.05f);
+            var random = level.random;
+            for(int i = 0; i < sparks + 1; ++i) {
+                double x = Mth.lerp((float) i / sparks, start.x, end.x) + random.nextFloat() * 0.05f - 0.025f;
+                double y = Mth.lerp((float) i / sparks, start.y, end.y) + random.nextFloat() * 0.05f - 0.025f;
+                double z = Mth.lerp((float) i / sparks, start.z, end.z) + random.nextFloat() * 0.05f - 0.025f;
+                level.addParticle(ParticleTypes.ELECTRIC_SPARK, x, y, z, 0, 0, 0);
+            }
         }
+        if(level.isClientSide) {
+            if (!wasSparking && plasmaChannel.getState()) {
+                makeSparkSound();
+            }
+            wasSparking = plasmaChannel.getState();
+        }
+    }
+
+    @Override
+    public boolean isSparking() {
+        return plasmaChannel.getState();
     }
 
     @Override
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
         plasmaChannel.setState(tag.getBoolean("State"));
+    }
+
+    @Environment(EnvType.CLIENT)
+    public void makeSparkSound() {
+        Minecraft.getInstance().getSoundManager().play(new HvSparkSoundInstance(this));
     }
 
     @Override
@@ -103,7 +135,7 @@ public class SparkGapBlockEntity extends ElectricBlockEntity {
 
         @Override
         protected Vec3 getSouthLocation() {
-            return VecHelper.voxelSpace(8.0f, 8.0f, 8.5f);
+            return VecHelper.voxelSpace(8.0f, 8.0f, 2.5f);
         }
     }
 }

@@ -21,8 +21,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 
 import java.util.List;
@@ -111,6 +113,32 @@ public class TransformerMediumBlockEntity extends TransformerBlockEntity {
                 behaviours.add(thermalBehaviour);
             }
         }
+    }
+
+    @Override
+    public ITerminalPlacement connectedTerminal(BlockState state, int index) {
+        if(isMain())
+            return super.connectedTerminal(state, index);
+        return getMain().map(be -> be.connectedTerminal(state, index)).orElse(null);
+    }
+
+    @Override
+    protected int connectedTerminalIndex(int index) {
+        if(isMain())
+            return super.connectedTerminalIndex(index);
+        return getMain().map(be -> be.connectedTerminalIndex(index)).orElse(-1);
+    }
+
+    @Override
+    public @NotNull BlockPos connectedTerminalPosition(BlockPos pos, BlockState state, int index) {
+        int part = state.getValue(TransformerMediumBlock.PART);
+        var axis = state.getValue(TransformerMediumBlock.HORIZONTAL_AXIS);
+        int offset = switch(connectedTerminalIndex(index)) {
+            case 0, 1 -> part == 2 ? 0 : -1;
+            case 2, 3 -> part == 3 ? 0 :  1;
+            default -> 0;
+        };
+        return pos.relative(axis, offset);
     }
 
     @Override

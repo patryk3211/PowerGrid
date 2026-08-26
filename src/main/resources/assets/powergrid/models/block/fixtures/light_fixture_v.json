@@ -5,7 +5,7 @@
 	"texture_size": [32, 32],
 	"textures": {
 		"0": "powergrid:block/light_fixture",
-		"particle": "powergrid:block/light_fixture"
+		"particle": "powergrid:block/wire_connector"
 	},
 	"elements": [
 		{
@@ -46,6 +46,20 @@
 				"up": {"uv": [9, 5, 10.5, 6], "rotation": 90, "texture": "#0"},
 				"down": {"uv": [9, 4, 10.5, 5], "rotation": 270, "texture": "#0"}
 			}
+		},
+		{
+			"name": "inlet",
+			"from": [6.5, 3, 6.5],
+			"to": [9.5, 1, 9.5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [6.5, 3, 6.5]},
+			"faces": {
+				"north": {"uv": [9, 9.5, 10.5, 10.5], "texture": "#0"},
+				"east": {"uv": [9, 9.5, 10.5, 10.5], "texture": "#0"},
+				"south": {"uv": [9, 9.5, 10.5, 10.5], "texture": "#0"},
+				"west": {"uv": [9, 9.5, 10.5, 10.5], "texture": "#0"},
+				"up": {"uv": [10.5, 8, 12, 9.5], "texture": "#0"},
+				"down": {"uv": [9, 8, 10.5, 9.5], "texture": "#0"}
+			}
 		}
 	],
 	"display": {
@@ -56,6 +70,11 @@
 		},
 		"firstperson_lefthand": {
 			"translation": [0, 3, 0]
+		},
+		"gui": {
+			"rotation": [30, 45, 0],
+			"translation": [0, 3.25, 0],
+			"scale": [0.9, 0.9, 0.9]
 		}
 	}
 }

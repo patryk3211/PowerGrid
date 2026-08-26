@@ -82,7 +82,7 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
             sendData();
         });
         behaviours.add(gaugeValue);
-        displayBehaviour = new CustomDisplayBehaviour(this, Unit.VOLTAGE, true, () -> maxValue, value -> ChatFormatting.AQUA);
+        displayBehaviour = new CustomDisplayBehaviour(this, Unit.VOLTAGE, true, () -> maxValue, value -> ChatFormatting.AQUA, "x");
         behaviours.add(displayBehaviour);
     }
 
@@ -165,6 +165,7 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
     @Override
     public void tick() {
         super.tick();
+        prevHeadPosition = headPosition;
         if(!isSpeedRequirementFulfilled())
             return;
         if(!wire.isConverged() && !ModdedConfigs.server().electricity.plotterRecordNonconvergence.get())
@@ -173,7 +174,6 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
         int newSize = (int) (128 / Math.abs(getSpeed()) * 40 * ticks);
         if(newSize != sampleBuffer.length)
             resample(newSize);
-        prevHeadPosition = headPosition;
 
         headTarget = 0;
         for(int i = 0; i < ticks; ++i) {
@@ -200,12 +200,12 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
     @Override
     public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
         super.addToGoggleTooltip(tooltip, isPlayerSneaking);
-        EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
+        return EnvExecutor.getInEnv(Env.CLIENT, () -> () -> {
             var target = ClientSideAccess.getHitResult();
             if(target.getType() == HitResult.Type.BLOCK) {
                 var hit = (BlockHitResult) target;
                 if(hit.getDirection() != Direction.UP)
-                    return;
+                    return false;
                 var loc = target.getLocation();
                 var facing = getBlockState().getValue(PlotterBlock.HORIZONTAL_FACING);
                 var coord = loc.get(facing.getAxis()) - worldPosition.get(facing.getAxis());
@@ -213,7 +213,7 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
                     coord = 1 - coord;
                 coord = (coord - 4 / 16f) / ((16 - 4) / 16f);
                 if(coord < 0 || coord > 1)
-                    return;
+                    return false;
                 coord = 1 - coord;
                 int i = Math.round((float) coord * sampleBuffer.length);
                 var x = sampleBuffer[(head + i) % sampleBuffer.length];
@@ -238,10 +238,13 @@ public class PlotterBlockEntity extends ElectricKineticBlockEntity {
                         .add(Lang.numberConstant((1 - coord) * sampleBuffer.length / 20f))
                         .add(Component.literal("s"))
                         .forGoggles(tooltip);
-                displayBehaviour.format(x * maxValue).forGoggles(tooltip, 1);
+                displayBehaviour.format(x * maxValue, name -> {
+                    return x * maxValue;
+                }).forGoggles(tooltip, 1);
+                return true;
             }
-        });
-        return true;
+            return false;
+        }).orElse(false);
     }
 
     @Override

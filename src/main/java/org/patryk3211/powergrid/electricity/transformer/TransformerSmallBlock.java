@@ -40,10 +40,10 @@ import java.util.Optional;
 public class TransformerSmallBlock extends TransformerBlock implements IBE<TransformerSmallBlockEntity> {
     public static final EnumProperty<Direction.Axis> HORIZONTAL_AXIS = BlockStateProperties.HORIZONTAL_AXIS;
 
-    private static final TerminalBoundingBox Z_TERMINAL_1 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 0, 12, 2, 4, 17, 5);
-    private static final TerminalBoundingBox Z_TERMINAL_2 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 0, 12, 11, 4, 17, 14);
-    private static final TerminalBoundingBox Z_TERMINAL_3 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 11, 12, 2, 15, 17, 5);
-    private static final TerminalBoundingBox Z_TERMINAL_4 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 11, 12, 11, 15, 17, 14);
+    private static final TerminalBoundingBox Z_TERMINAL_1 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 1, 13, 2, 4, 16, 5);
+    private static final TerminalBoundingBox Z_TERMINAL_2 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 1, 13, 11, 4, 16, 14);
+    private static final TerminalBoundingBox Z_TERMINAL_3 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 12, 13, 2, 15, 16, 5);
+    private static final TerminalBoundingBox Z_TERMINAL_4 = new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 12, 13, 11, 15, 16, 14);
 
     private static final TerminalBoundingBox X_TERMINAL_1 = Z_TERMINAL_1.rotateAroundY(Rotation.CLOCKWISE_90);
     private static final TerminalBoundingBox X_TERMINAL_2 = Z_TERMINAL_2.rotateAroundY(Rotation.CLOCKWISE_90);

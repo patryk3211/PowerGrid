@@ -26,5 +26,9 @@ public interface ISynchronizedElement {
     void writeToSync(FriendlyByteBuf buffer, boolean useDoubles, Function<OwnedFloatingNode, TransmissionLine> lineLookup);
     void readFromSync(FriendlyByteBuf buffer, boolean useDoubles);
 
+    default boolean shouldSync() {
+        return true;
+    }
+
     StateS2CPacket.Key getKey();
 }

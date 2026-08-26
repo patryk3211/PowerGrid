@@ -27,7 +27,7 @@ public class InvisibleWireElement extends WireElement {
     public InvisibleWireElement(BlockPos pos1, int terminal1, BlockPos pos2, int terminal2, float resistance) {
         super(level -> {
             var wire = HangingWireEntity.create(level, new BlockWireEndpoint(pos1, terminal1), new BlockWireEndpoint(pos2, terminal2), ModdedItems.WIRE.asStack(), resistance);
-            wire.updateRenderParams();
+            wire.updateCurveParams();
             return wire;
         });
     }

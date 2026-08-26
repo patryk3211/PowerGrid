@@ -29,14 +29,14 @@ import org.joml.Vector3d;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
-import org.patryk3211.powergrid.electricity.sim.node.VoltageSourceCoupling;
+import org.patryk3211.powergrid.electricity.sim.ElectricWire;
+import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
+import org.patryk3211.powergrid.electricity.sim.special.PNJunctionWireSolar;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
 import java.util.List;
-import java.util.Map;
 
 import static org.patryk3211.powergrid.electricity.solarpanel.SolarHelper.*;
-import static org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity.*;
 
 public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity implements IBearingBlockEntity, IDisplayAssemblyExceptions {
     protected ControlledContraptionEntity movedContraption;
@@ -46,17 +46,17 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     protected float clientAngleDiff;
     protected AssemblyException lastException;
     protected double sequencedAngleLimit;
-    protected VoltageSourceCoupling sourceCoupling;
     SolarPanelBearingContraption contraption;
     private float prevAngle;
-    private float cloudCover = 0;
-    private boolean firstTick = true;
-    private float AMBIENT_TEMP = -2000f;
+    private float ambientTemp = -2000f;
     private int rayCastDelay = 0;
     private float sunVisibility = 0;
-    private int temp = 0;
+    private boolean skyVisible = false;
     protected SolarPanelBearingBlockScrollBehaviour parallelNumbers;
     private Vector3d panelNormal;
+
+    protected CurrentSourceWire currentSource;
+    protected ElectricWire seriesResistor;
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
@@ -74,7 +74,11 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     @Override
     public void buildCircuit(CircuitBuilder builder) {
         builder.setTerminalCount(2);
-        sourceCoupling = builder.addInternalNode(VoltageSourceCoupling.class, builder.terminalNode(0), builder.terminalNode(1), 0.01f);
+        var node = builder.addInternalNode();
+        currentSource = new CurrentSourceWire(node, builder.terminalNode(1), 0.00001f);
+        seriesResistor = builder.connect((float) 1, node, builder.terminalNode(0));
+        builder.add(currentSource);
+        builder.add(seriesResistor);
     }
 
     @Override
@@ -116,7 +120,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
                 sequencedAngleLimit = Math.max(0, sequencedAngleLimit - Math.abs(angularSpeed));
             }
             float newAngle = angle + angularSpeed;
-            angle = (float) (newAngle % 360);
+            angle = newAngle % 360;
         }
 
         applyRotation();
@@ -132,24 +136,24 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
             } else return;
         }
 
+        if (currentSource == null) return;
+
         if (!running) {
-            sourceCoupling.setVoltage(0);
-            sourceCoupling.setResistance(10000);
+            currentSource.setCurrent(0);
+            currentSource.setConductance(0.00001);
+            seriesResistor.setResistance(1);
             return;
         }
 
-        var d = SableCompanion.INSTANCE.projectOutOfSubLevel(world, new Vector3d(this.getBlockPos().getX(), this.getBlockPos().getY(), this.getBlockPos().getZ()));
-        var pos = new BlockPos((int)d.x, (int)d.y, (int)d.z);
+        var pos = SableCompanion.INSTANCE.projectOutOfSubLevel(level, getContraptionCenter(movedContraption));
+        var contraptionCenterPos = BlockPos.containing(JOMLConversion.toMojang(pos));
 
-        if (sourceCoupling == null) return;
-        if (firstTick) {
-            AMBIENT_TEMP = ThermalBehaviour.getAmbientTemperature(world, pos);
-            if (AMBIENT_TEMP <= ThermalBehaviour.ABSOLUTE_ZERO)
-                AMBIENT_TEMP = 22f;
-            firstTick = false;
-        }
-        cloudCover = getWeather(world);
+        ambientTemp = ThermalBehaviour.getAmbientTemperature(world, contraptionCenterPos);
+        if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
+            ambientTemp = 22f;
+        float cloudCover = getWeather(world);
 
+        if (contraption.panelNormal == null) return;
         Vec3 localDir = new Vec3(contraption.panelNormal.x, contraption.panelNormal.y, contraption.panelNormal.z);
         Vec3 worldTip = movedContraption.toGlobalVector(localDir, 1.0f);
         Vec3 worldOrigin = movedContraption.toGlobalVector(Vec3.ZERO, 1.0f);
@@ -161,50 +165,33 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
             subLevel.logicalPose().orientation().transform(panelNormal);
             panelNormal.normalize();
         }
+        var irradiance = getIrradiance(getAM(world), cloudCover, contraptionCenterPos.getY(), world);
+        int panelsInParallel = parallelNumbers.getDivisor();
+        int panelsInSeries = contraption.getPanelBlocks() / parallelNumbers.getDivisor();
+        double Rs = (RS * panelsInSeries) / panelsInParallel;
 
-        var irradiance = getIrradiance(getAM(world), cloudCover, pos.getY(), world);
-        var cellTemp = getCellTemp(irradiance, AMBIENT_TEMP);
-        var Vt = 8.617e-5 * (cellTemp + 273.15);
-        double[] adjusted = getTempAdjusted(irradiance, cellTemp, Vt, parallelNumbers.getDivisor());
-        double cellCurrent = adjusted[0];
-        double Voc_t = adjusted[1];
-        double Voc_panel = Voc_t * (CELLS_IN_SERIES * ((double) contraption.getPanelBlocks() / parallelNumbers.getDivisor()));
-
-        if (cellCurrent <= 0) {
-            sourceCoupling.setVoltage(0);
-            sourceCoupling.setResistance(1e6f);
-            return;
-        }
-
-        double panelResistance = (cellCurrent > 0) ? Voc_panel / cellCurrent : 1e6;
-        sourceCoupling.setVoltage((float) Voc_panel);
-        sourceCoupling.setResistance((float) panelResistance);
-
-        if (temp++ == 20){
-            System.out.println("Cell Temp: " + cellTemp);
-            //System.out.println("Single cell voltage: " + Voc_t);
-            //System.out.println("Single cell current: " + cellCurrent);
-            //System.out.println("Vt: " + Vt);
-            System.out.println("Current irradiance: " + irradiance);
-            System.out.println("AM: " + getAM(world));
-            System.out.println("normal: " + panelNormal);
-            //System.out.println("tilt: " + panelTiltDeg);
-            System.out.println();
-            temp = 0;
-        }
+        double v0 = currentSource.potentialDifference();
+        var currentCellTemp = SolarHelper.getCellTemp(irradiance, ambientTemp);
+        double[] results = IVCurve(irradiance, currentCellTemp, v0, panelsInSeries, panelsInParallel);
+        currentSource.setCurrent(results[0]);
+        currentSource.setConductance(results[1]);
+        seriesResistor.setResistance(Rs);
 
         super.electricalTick();
     }
 
     public double getIrradiance(double AM, double cloudCover, int YPos, Level world) {
         if (AM == Double.POSITIVE_INFINITY) return 0;
-        var transmisttance = 1 - cloudCover;
+        var transmittance = 1 - cloudCover;
         var irradiance = SOLAR_CONSTANT * Math.pow(0.7,Math.pow(AM, 0.678));
         irradiance = irradiance * ((((YPos - 70) / 250f) * 0.04f) + 1); //70 is around average world height, but it could also be put to sea level
+        if (irradiance > SOLAR_CONSTANT) irradiance = SOLAR_CONSTANT;
 
         if (rayCastDelay-- == 0){
             sunVisibility = sunRaycast(world);
             rayCastDelay = world.random.nextInt(41) + 10;
+            skyVisible = skyCheck(world, BlockPos.containing(JOMLConversion.toMojang(getContraptionCenter(movedContraption)
+                    .add(panelNormal.x, panelNormal.y, panelNormal.z))));
         }
 
         double sunAngle = world.getSunAngle(0);
@@ -213,17 +200,22 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
 
         double cosIncidence = Math.max(0, sunDir.dot(panelNormal));
         cosIncidence = Math.max(0, cosIncidence);
-        double diffuseLight = 0.1 * irradiance * (1 + cloudCover) * ((1 + panelNormal.y()) / 2);
-        double reflected = 0.15 * irradiance * ((1 - panelNormal.y()) / 2.0);
+        double diffuseLight = DIFFUSE_FRAC * (Math.max(0, sunDir.y) * irradiance * transmittance)
+                * (1 + cloudCover) * ((1 + panelNormal.y()) / 2);
+        double reflected = ALBEDO_FRAC * (Math.max(0, sunDir.y) * irradiance * transmittance) * ((1 - panelNormal.y()) / 2.0);
 
-        return (irradiance * sunVisibility) * transmisttance * cosIncidence + diffuseLight +  reflected;
+        if (!skyVisible){
+            diffuseLight = 0;
+            reflected = 0;
+        }
+        return (irradiance * sunVisibility) * transmittance * cosIncidence + diffuseLight +  reflected;
     }
 
     public float sunRaycast(Level world) {
-        var d = SableCompanion.INSTANCE.projectOutOfSubLevel(world, new Vector3d(this.getBlockPos().getX() + .5,
+        var pos = SableCompanion.INSTANCE.projectOutOfSubLevel(world, new Vector3d(this.getBlockPos().getX() + .5,
                 this.getBlockPos().getY() + .5, this.getBlockPos().getZ() + .5));
 
-        var blockPos = BlockPos.containing(d.x, d.y, d.z);
+        var blockPos = BlockPos.containing(pos.x, pos.y, pos.z);
         int castLength = 0;
         ChunkAccess chunk;
 
@@ -243,10 +235,15 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         }
         var centerPanelPos = JOMLConversion.toMojang(SableCompanion.INSTANCE.projectOutOfSubLevel(world, getContraptionCenter(movedContraption)));
         var end = centerPanelPos.add(new Vec3(sunX, sunY, 0).scale(castLength));
-        var results = DDA(world, centerPanelPos, end);
+        var results = DDA(world, centerPanelPos.add(JOMLConversion.toMojang(panelNormal)), end);
         float returnValue = 1;
-        for (BlockPos result : results) {
-            var blockState = world.getBlockState(result);
+        for (DDAHit result : results) {
+            BlockState blockState;
+            if (result.contraption() != null) {
+                blockState = result.contraption().getContraption().getBlocks().get(result.worldOrLocalPos()).state();
+            } else {
+                blockState = world.getBlockState(result.worldOrLocalPos());
+            }
 
             if (blockState.is(ModdedTags.Block.SOLAR_QUARTER_LIGHT.tag)) {
                 returnValue *= .25f;

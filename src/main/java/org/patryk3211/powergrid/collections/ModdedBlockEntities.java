@@ -20,6 +20,7 @@ import com.tterrag.registrate.util.entry.BlockEntityEntry;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardRenderer;
 import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableBlockEntity;
+import org.patryk3211.powergrid.circuits.editor.CircuitDesignTableRenderer;
 import org.patryk3211.powergrid.electricity.basinheater.BasinHeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.battery.MultiBlockBatteryEntity;
 import org.patryk3211.powergrid.electricity.battery.PotatoBatteryBlockEntity;
@@ -36,22 +37,29 @@ import org.patryk3211.powergrid.electricity.electricswitch.*;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanBlockEntity;
 import org.patryk3211.powergrid.electricity.fan.ElectricFanRenderer;
+import org.patryk3211.powergrid.electricity.febridge.FEInverterBlockEntity;
 import org.patryk3211.powergrid.electricity.fuse.FuseHolderBlockEntity;
-import org.patryk3211.powergrid.electricity.gauge.CurrentGaugeBlockEntity;
-import org.patryk3211.powergrid.electricity.gauge.GaugeRenderer;
-import org.patryk3211.powergrid.electricity.gauge.PowerGaugeBlockEntity;
-import org.patryk3211.powergrid.electricity.gauge.VoltageGaugeBlockEntity;
+import org.patryk3211.powergrid.electricity.gauge.*;
 import org.patryk3211.powergrid.electricity.grounding.GroundingRodBlockEntity;
 import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
+import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightBlockEntity;
+import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightLightBlockEntity;
+import org.patryk3211.powergrid.electricity.light.factorylight.FactoryLightRenderer;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureRenderer;
+import org.patryk3211.powergrid.electricity.modulardisplay.ModularDisplayBlockEntity;
+import org.patryk3211.powergrid.electricity.modulardisplay.ModularDisplayBlockEntityRenderer;
+import org.patryk3211.powergrid.electricity.pump.ElectricPumpBlockEntity;
 import org.patryk3211.powergrid.electricity.redstoneconverter.RedstoneConverterBlockEntity;
 import org.patryk3211.powergrid.electricity.resistor.ResistorBlockEntity;
 import org.patryk3211.powergrid.electricity.socket.SocketBlockEntity;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBearingBlockEntity;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBearingRenderer;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBearingVisual;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapBlockEntity;
 import org.patryk3211.powergrid.electricity.sparkgap.SparkGapRenderer;
+import org.patryk3211.powergrid.electricity.transformer.NetherTransformerBlockEntity;
 import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlockEntity;
 import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlockEntity;
 import org.patryk3211.powergrid.electricity.wireconnector.ConnectorBlockEntity;
@@ -59,16 +67,18 @@ import org.patryk3211.powergrid.electricity.wireconnector.CordJunctionBlockEntit
 import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryBlockEntity;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerBlockEntity;
 import org.patryk3211.powergrid.equipment.thermometer.ThermometerRenderer;
+import org.patryk3211.powergrid.general.ceilingtile.junction.CeilingTileJunctionBlockEntity;
+import org.patryk3211.powergrid.general.ceilingtile.lamp.CeilingTileLampBlockEntity;
+import org.patryk3211.powergrid.general.ceilingtile.lamp.CeilingTileLampRenderer;
+import org.patryk3211.powergrid.general.ceilingtile.solar.CeilingTileSolarBlockEntity;
+import org.patryk3211.powergrid.general.ceilingtile.wire.CeilingTileConnectorBlockEntity;
 import org.patryk3211.powergrid.kinetics.base.HalfShaftVisual;
 import org.patryk3211.powergrid.kinetics.base.TunedBlockRenderer;
 import org.patryk3211.powergrid.kinetics.base.TunedBlockVisual;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchBlockEntity;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchRenderer;
 import org.patryk3211.powergrid.kinetics.generator.clutch.GeneratorClutchVisual;
-import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorBlockEntity;
-import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorRenderer;
-import org.patryk3211.powergrid.kinetics.generator.inductionrotor.CommutatorVisual;
-import org.patryk3211.powergrid.kinetics.generator.inductionrotor.InductionRotorBlockEntity;
+import org.patryk3211.powergrid.kinetics.generator.inductionrotor.*;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorRenderer;
 import org.patryk3211.powergrid.kinetics.generator.rotor.RotorVisual;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
@@ -126,6 +136,12 @@ public class ModdedBlockEntities {
                     .renderer(() -> GaugeRenderer::new)
                     .register();
 
+    public static final BlockEntityEntry<EnergyMeterBlockEntity> ENERGY_METER =
+            REGISTRATE.blockEntity("energy_meter", EnergyMeterBlockEntity::new)
+                    .validBlock(ModdedBlocks.ENERGY_METER)
+                    .renderer(() -> EnergyMeterRenderer::new)
+                    .register();
+
     public static final BlockEntityEntry<PlotterBlockEntity> PLOTTER =
             REGISTRATE.blockEntity("plotter", PlotterBlockEntity::new)
                     .visual(() -> ShaftVisual::new)
@@ -154,6 +170,12 @@ public class ModdedBlockEntities {
             REGISTRATE.blockEntity("generator_induction_rotor", InductionRotorBlockEntity::new)
                     .visual(() -> RotorVisual.of(ModdedPartialModels.INDUCTION_ROTOR))
                     .validBlock(ModdedBlocks.GENERATOR_INDUCTION_ROTOR)
+                    .renderer(() -> RotorRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<LargeInductionRotorBlockEntity> GENERATOR_LARGE_INDUCTION_ROTOR =
+            REGISTRATE.blockEntity("generator_large_induction_rotor", LargeInductionRotorBlockEntity::new)
+                    .validBlock(ModdedBlocks.GENERATOR_LARGE_INDUCTION_ROTOR)
                     .renderer(() -> RotorRenderer::new)
                     .register();
 
@@ -231,6 +253,11 @@ public class ModdedBlockEntities {
                     .validBlock(ModdedBlocks.TRANSFORMER_MEDIUM)
                     .register();
 
+    public static final BlockEntityEntry<NetherTransformerBlockEntity> NETHER_TRANSFORMER =
+            REGISTRATE.blockEntity("nether_transformer", NetherTransformerBlockEntity::new)
+                    .validBlock(ModdedBlocks.NETHER_TRANSFORMER)
+                    .register();
+
     public static final BlockEntityEntry<VariacBlockEntity> VARIAC =
             REGISTRATE.blockEntity("variac", VariacBlockEntity::new)
                     .visual(() -> TunedBlockVisual::new)
@@ -270,6 +297,11 @@ public class ModdedBlockEntities {
                     .renderer(() -> ElectricFanRenderer::new)
                     .register();
 
+    public static final BlockEntityEntry<ElectricPumpBlockEntity> ELECTRIC_PUMP =
+            REGISTRATE.blockEntity("electric_pump", ElectricPumpBlockEntity::new)
+                    .validBlock(ModdedBlocks.ELECTRIC_PUMP)
+                    .register();
+
     public static final BlockEntityEntry<PortableBatteryBlockEntity> PORTABLE_BATTERY =
             REGISTRATE.blockEntity("portable_battery", PortableBatteryBlockEntity::new)
                     .validBlock(ModdedBlocks.PORTABLE_BATTERY)
@@ -283,6 +315,7 @@ public class ModdedBlockEntities {
     public static final BlockEntityEntry<CircuitDesignTableBlockEntity> CIRCUIT_DESIGN_TABLE =
             REGISTRATE.blockEntity("circuit_design_table", CircuitDesignTableBlockEntity::new)
                     .validBlock(ModdedBlocks.CIRCUIT_DESIGN_TABLE)
+                    .renderer(() -> CircuitDesignTableRenderer::new)
                     .register();
 
     public static final BlockEntityEntry<CircuitBoardBlockEntity> CIRCUIT_BOARD =
@@ -334,6 +367,11 @@ public class ModdedBlockEntities {
                     .validBlock(ModdedBlocks.REDSTONE_CONVERTER)
                     .register();
 
+    public static final BlockEntityEntry<FEInverterBlockEntity> FE_INVERTER =
+            REGISTRATE.blockEntity("fe_inverter", SubstituteBlockEntityProvider.INSTANCE.get(FEInverterBlockEntity.class))
+                    .validBlock(ModdedBlocks.FE_INVERTER)
+                    .register();
+
     public static final BlockEntityEntry<CarbonPileCoilBlockEntity> CARBON_PILE_COIL =
             REGISTRATE.blockEntity("carbon_pile_coil", CarbonPileCoilBlockEntity::new)
                     .validBlock(ModdedBlocks.CARBON_PILE_COIL)
@@ -357,6 +395,33 @@ public class ModdedBlockEntities {
                     .renderer(() -> PunchCardReaderRenderer::new)
                     .register();
 
+    public static final BlockEntityEntry<FactoryLightBlockEntity> FACTORY_LIGHT =
+            REGISTRATE.blockEntity("factory_light", FactoryLightBlockEntity::new)
+                    .validBlock(ModdedBlocks.FACTORY_LIGHT)
+                    .renderer(() -> FactoryLightRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<CeilingTileLampBlockEntity> CEILING_TILE_LAMP =
+            REGISTRATE.blockEntity("ceiling_tile_lamp", CeilingTileLampBlockEntity::new)
+                    .validBlock(ModdedBlocks.CEILING_TILE_LAMP)
+                    .renderer(() -> CeilingTileLampRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<CeilingTileConnectorBlockEntity> CEILING_TILE_CONNECTOR =
+            REGISTRATE.blockEntity("ceiling_tile_connector", CeilingTileConnectorBlockEntity::new)
+                    .validBlock(ModdedBlocks.CEILING_TILE_CONNECTOR)
+                    .register();
+
+    public static final BlockEntityEntry<CeilingTileJunctionBlockEntity> CEILING_TILE_JUNCTION =
+            REGISTRATE.blockEntity("ceiling_tile_junction", CeilingTileJunctionBlockEntity::new)
+                    .validBlock(ModdedBlocks.CEILING_TILE_JUNCTION)
+                    .register();
+
+    public static final BlockEntityEntry<CeilingTileSolarBlockEntity> CEILING_TILE_SOLAR =
+            REGISTRATE.blockEntity("ceiling_tile_solar", CeilingTileSolarBlockEntity::new)
+                    .validBlock(ModdedBlocks.CEILING_TILE_SOLAR)
+                    .register();
+
     public static final BlockEntityEntry<SolarPanelBlockEntity> SOLAR_PANEL =
             REGISTRATE.blockEntity("solar_panel", SolarPanelBlockEntity::new)
                     .validBlock(ModdedBlocks.SOLAR_PANEL)
@@ -364,7 +429,20 @@ public class ModdedBlockEntities {
 
     public static final BlockEntityEntry<SolarPanelBearingBlockEntity> SOLAR_PANEL_BEARING =
             REGISTRATE.blockEntity("solar_panel_bearing", SolarPanelBearingBlockEntity::new)
+                    .visual(() -> SolarPanelBearingVisual::new)
                     .validBlock(ModdedBlocks.SOLAR_PANEL_BEARING)
+                    .renderer(() -> SolarPanelBearingRenderer::new)
+                    .register();
+
+    public static final BlockEntityEntry<FactoryLightLightBlockEntity> LIGHT_LIGHT =
+            REGISTRATE.blockEntity("light_light", FactoryLightLightBlockEntity::new)
+                    .validBlock(ModdedBlocks.FACTORY_LIGHT_LIGHT)
+                    .register();
+
+    public static final BlockEntityEntry<ModularDisplayBlockEntity> MODULAR_DISPLAY =
+            REGISTRATE.<ModularDisplayBlockEntity>blockEntity("modular_display", ModularDisplayBlockEntity::new)
+                    .validBlock(ModdedBlocks.MODULAR_DISPLAY)
+                    .renderer(() -> ModularDisplayBlockEntityRenderer::new)
                     .register();
 
     @SuppressWarnings("EmptyMethod")

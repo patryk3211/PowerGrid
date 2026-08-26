@@ -5,7 +5,7 @@
 	"textures": {
 		"0": "powergrid:block/carbon_pile",
 		"1": "powergrid:block/carbon_pile_2",
-		"particle": "powergrid:block/carbon_pile"
+		"particle": "powergrid:block/conductive_casing"
 	},
 	"elements": [
 		{

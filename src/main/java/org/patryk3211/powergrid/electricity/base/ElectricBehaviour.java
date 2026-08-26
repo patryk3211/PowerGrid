@@ -35,6 +35,7 @@ import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 import org.patryk3211.powergrid.electricity.sim.node.*;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
+import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
 import org.patryk3211.powergrid.electricity.wire.BlockWireEndpoint;
 import org.patryk3211.powergrid.electricity.wire.HangingWireEntity;
@@ -59,6 +60,10 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
     private boolean removed = false;
     private boolean paused = true;
     private boolean reducedSync = false;
+    public int inhibitSyncCount = 0;
+
+    private int syncCount = 0;
+    private int lastSyncCount = 0;
 
     @Nullable
     private SyncAppender syncAppender;
@@ -338,6 +343,11 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
             for(var node : internalNodes) {
                 node.setStateValue(list.getFloat(index++) * 0.5f + node.getStateValue() * 0.5f);
             }
+            if(syncCount == lastSyncCount) {
+                // Server not sending data to client
+                GlobalElectricNetworks.nodeHolderAdded(this);
+            }
+            lastSyncCount = syncCount;
         }
     }
 
@@ -471,6 +481,16 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
         }
         if(syncAppender != null)
             syncAppender.readFromSync(buffer);
+        ++syncCount;
+    }
+
+    @Override
+    public boolean shouldSync() {
+        if(inhibitSyncCount > 0) {
+            --inhibitSyncCount;
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -480,6 +500,10 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
 
     public void setSyncAppender(@Nullable SyncAppender syncAppender) {
         this.syncAppender = syncAppender;
+    }
+
+    public Collection<TransmissionLinePart> wires() {
+        return GlobalElectricNetworks.getWorldNetworks(getWorld()).findConnectedWires(this);
     }
 
     @Override

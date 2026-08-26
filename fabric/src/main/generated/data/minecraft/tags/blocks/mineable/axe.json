@@ -8,11 +8,16 @@
     "powergrid:mv_switch",
     "powergrid:hv_switch",
     "powergrid:spark_gap",
-    "powergrid:light_fixture",
+    "powergrid:ceiling_tile",
+    "powergrid:ceiling_tile_lamp",
+    "powergrid:ceiling_tile_connector",
+    "powergrid:ceiling_tile_junction",
     "powergrid:electric_fan",
     "powergrid:circuit_design_table",
+    "powergrid:fe_inverter",
     "powergrid:fuse_holder",
     "powergrid:andesite_encased_crt",
-    "powergrid:brass_encased_crt"
+    "powergrid:brass_encased_crt",
+    "powergrid:ceiling_tile_solar"
   ]
 }

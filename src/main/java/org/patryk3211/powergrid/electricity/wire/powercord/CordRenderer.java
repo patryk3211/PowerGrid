@@ -19,6 +19,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import dev.ryanhcode.sable.companion.SableCompanion;
 import net.createmod.catnip.animation.AnimationTickHolder;
 import net.createmod.catnip.render.CachedBuffers;
+import net.createmod.catnip.theme.Color;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
@@ -91,7 +92,10 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
         // To introduce some subtle variety into the wires.
         var thicknessOffset = entity.getId() / 16f;
 
-        int color = entity.getColor() | 0xFF000000;
+        int color = Color.mixColors(
+                entity.getColor() | 0xFF000000,
+                0xFFFF0000,
+                (float) Math.max(0, (rp.L - entity.placedLength) * entity.overlayTicks / 20f));
 
         var world = entity.level();
         var rawPos = entity.position();
@@ -125,7 +129,12 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                 moved = true;
             }
             if (moved) {
-                rp.nudge(pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z);
+                double L = entity.placedLength;
+                double d = pos1.distanceTo(pos2);
+                if(d > L && d < L + 1) {
+                    L = d + .01;
+                }
+                rp.nudge(pos1.x, pos1.y, pos1.z, pos2.x, pos2.y, pos2.z, L);
             }
         }
         rp.runForSegments((x1, y1, z1, x2, y2, z2, offset, length, first, last) -> {
@@ -166,7 +175,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                             rp.thickness * 0.5f, thicknessOffset, (float) (length * 2), (float) offset, simpleModel);
                     return;
                 } else if(endpoint instanceof SocketEndpoint socket) {
-                    var sublevel = entity.isDynamic ? SableCompanion.INSTANCE.getContainingClient(socket.getPosition()) : null;
+                    var sublevel = entity.dynamic != 0 ? SableCompanion.INSTANCE.getContainingClient(socket.getPosition()) : null;
                     if(sublevel != null) {
                         matrices.pushPose();
                         var pose = sublevel.renderPose(AnimationTickHolder.getPartialTicks());
@@ -181,7 +190,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                 } else if(endpoint instanceof AutoCordEndpoint auto) {
                     var facing = auto.getPlugFacing();
                     if(facing != null) {
-                        var sublevel = entity.isDynamic ? SableCompanion.INSTANCE.getContainingClient(auto.getPosition()) : null;
+                        var sublevel = entity.dynamic != 0 ? SableCompanion.INSTANCE.getContainingClient(auto.getPosition()) : null;
                         if(sublevel != null) {
                             matrices.pushPose();
                             var pose = sublevel.renderPose(AnimationTickHolder.getPartialTicks());
@@ -227,7 +236,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                             rp.thickness * 0.5f, thicknessOffset, (float) (length * 2), (float) offset, simpleModel);
                     return;
                 } else if(endpoint instanceof SocketEndpoint socket) {
-                    var sublevel = entity.isDynamic ? SableCompanion.INSTANCE.getContainingClient(socket.getPosition()) : null;
+                    var sublevel = entity.dynamic != 0 ? SableCompanion.INSTANCE.getContainingClient(socket.getPosition()) : null;
                     if(sublevel != null) {
                         matrices.pushPose();
                         var pose = sublevel.renderPose(AnimationTickHolder.getPartialTicks());
@@ -242,7 +251,7 @@ public class CordRenderer<T extends CordEntity> extends EntityRenderer<T> {
                 } else if(endpoint instanceof AutoCordEndpoint auto) {
                     var facing = auto.getPlugFacing();
                     if(facing != null) {
-                        var sublevel = entity.isDynamic ? SableCompanion.INSTANCE.getContainingClient(auto.getPosition()) : null;
+                        var sublevel = entity.dynamic != 0 ? SableCompanion.INSTANCE.getContainingClient(auto.getPosition()) : null;
                         if(sublevel != null) {
                             matrices.pushPose();
                             var pose = sublevel.renderPose(AnimationTickHolder.getPartialTicks());

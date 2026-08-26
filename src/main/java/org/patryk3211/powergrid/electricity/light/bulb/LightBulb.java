@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.electricity.light.bulb;
 
+import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.tterrag.registrate.builders.ItemBuilder;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import dev.architectury.utils.Env;
@@ -34,8 +35,6 @@ import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Power;
 import org.patryk3211.powergrid.electricity.info.Resistance;
 import org.patryk3211.powergrid.electricity.info.Voltage;
-import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
-import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -146,7 +145,7 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
     }
 
     @Override
-    public LightBulbState createState(LightFixtureBlockEntity fixture) {
+    public <F extends SmartBlockEntity & IFixtureEntity> LightBulbState createState(F fixture) {
         return new SimpleState(this, fixture, modelSupplier, dyedModelSupplier);
     }
 
@@ -189,9 +188,9 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
         @Environment(EnvType.CLIENT)
         public Function<DyedState, PartialModel> dyedModelProvider;
 
-        public <T extends Item & ILightBulb> SimpleState(T bulb, LightFixtureBlockEntity fixture,
-                                                         Supplier<Function<State, PartialModel>> modelProviderSupplier,
-                                                         @Nullable Supplier<Function<DyedState, PartialModel>> dyedModelProviderSupplier) {
+        public <T extends Item & ILightBulb, F extends SmartBlockEntity & IFixtureEntity> SimpleState(T bulb, F fixture,
+                                                                                                        Supplier<Function<State, PartialModel>> modelProviderSupplier,
+                                                                                                        @Nullable Supplier<Function<DyedState, PartialModel>> dyedModelProviderSupplier) {
             super(bulb, fixture);
             EnvExecutor.runInEnv(Env.CLIENT, () -> () -> {
                 modelProvider = modelProviderSupplier.get();
@@ -207,8 +206,7 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
             if(burned) {
                 state = State.BROKEN;
             } else {
-                var blockState = fixture.getBlockState();
-                int powerLevel = blockState.getValue(LightFixtureBlock.POWER);
+                int powerLevel = fixtureLogic.getPowerLevel();
                 if(powerLevel == 1) {
                     state = State.LOW_POWER;
                 } else if(powerLevel == 2) {
@@ -238,8 +236,7 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
 
         @Override
         public float getAlpha() {
-            var blockState = fixture.getBlockState();
-            int powerLevel = blockState.getValue(LightFixtureBlock.POWER);
+            int powerLevel = fixtureLogic.getPowerLevel();
             if(powerLevel == 2) {
                 return 1;
             } else if(powerLevel == 1) {

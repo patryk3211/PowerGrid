@@ -21,10 +21,13 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.FloatTag;
+import net.minecraft.nbt.DoubleTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Rotation;
@@ -34,6 +37,7 @@ import org.apache.commons.lang3.mutable.MutableFloat;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.collections.ModdedEntities;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.compat.sable.SableUtils;
@@ -41,10 +45,7 @@ import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
 import org.patryk3211.powergrid.electricity.WorldNetworks;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
-import org.patryk3211.powergrid.electricity.wire.BaseWireEntity;
-import org.patryk3211.powergrid.electricity.wire.CurveParameters;
-import org.patryk3211.powergrid.electricity.wire.IWire;
-import org.patryk3211.powergrid.electricity.wire.IWireEndpoint;
+import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.network.packets.EntityDataS2CPacket;
 import org.patryk3211.powergrid.utility.IComplexRaycast;
 
@@ -55,10 +56,11 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     public Vec3 terminalPos1;
     public Vec3 terminalPos2;
     public AABB deSabledBB;
-    boolean isDynamic = false;
+    protected byte dynamic;
     Vec3 baseTerminalPos1;
     Vec3 baseTerminalPos2;
     protected float placedLength;
+    int overlayTicks = 0;
 
     protected ElectricWire wire1;
     protected ElectricWire wire2;
@@ -108,9 +110,16 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
         return wire2;
     }
 
-    public void updateRenderParams() {
+    public void updateCurveParams() {
         var item = getWireEntry();
-        curveParams = new CurveParameters(terminalPos1, terminalPos2, placedLength, item.wireThickness());
+        double L = placedLength;
+        double d = terminalPos1.distanceTo(terminalPos2);
+        if(d > L && d < L + 1) {
+            L = d + .01;
+        }
+        if(curveParams != null && L > curveParams.L)
+            overlayTicks = 20;
+        curveParams = new CurveParameters(terminalPos1, terminalPos2, L, item.wireThickness());
         this.setBoundingBox(this.makeBoundingBox());
     }
 
@@ -121,6 +130,9 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             return null;
         var pos = position();
         var box = new AABB(terminalPos1, terminalPos2);
+        if(curveParams.isVertical()) {
+            return box.inflate(getWireEntry().wireThickness());
+        }
         var minY = new MutableFloat(box.minY);
         final float eY = (float) pos.y;
         curveParams.runForSegments((x1, y1, z1, x2, y2, z2, offset, length) -> {
@@ -238,7 +250,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             );
             setYRot(facingAngle);
 
-            updateRenderParams();
+            updateCurveParams();
             if(!world.isClientSide) {
                 // I guess we have to do position update like that because otherwise,
                 // the update method would have to go into the tick function
@@ -246,13 +258,13 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
 
                 var tag = new CompoundTag();
                 var list = new ListTag();
-                list.add(FloatTag.valueOf((float) terminalPos1.x));
-                list.add(FloatTag.valueOf((float) terminalPos1.y));
-                list.add(FloatTag.valueOf((float) terminalPos1.z));
-                list.add(FloatTag.valueOf((float) terminalPos2.x));
-                list.add(FloatTag.valueOf((float) terminalPos2.y));
-                list.add(FloatTag.valueOf((float) terminalPos2.z));
-                tag.putBoolean("D", isDynamic);
+                list.add(DoubleTag.valueOf(terminalPos1.x));
+                list.add(DoubleTag.valueOf(terminalPos1.y));
+                list.add(DoubleTag.valueOf(terminalPos1.z));
+                list.add(DoubleTag.valueOf(terminalPos2.x));
+                list.add(DoubleTag.valueOf(terminalPos2.y));
+                list.add(DoubleTag.valueOf(terminalPos2.z));
+                tag.putByte("D", dynamic);
                 tag.put("V", list);
                 var packet = new EntityDataS2CPacket(this, tag);
                 ModdedPackets.sendToClientsTracking(packet, this);
@@ -262,17 +274,23 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
 
     @Override
     public void tick() {
+        if(overlayTicks > 0)
+            --overlayTicks;
         var beginFlags = deferEndpointResolution;
         if(sublevelMove) {
             refreshTerminalPositions();
         }
         super.tick();
         var world = level();
-        if(beginFlags != deferEndpointResolution) {
+        if((dynamic & 1) != 0 && SableCompanion.INSTANCE.getContaining(world, endpoint1.getExactPosition(world)) == null)
+            deferEndpointResolution |= 1;
+        if((dynamic & 2) != 0 && SableCompanion.INSTANCE.getContaining(world, endpoint2.getExactPosition(world)) == null)
+            deferEndpointResolution |= 2;
+        if(beginFlags != deferEndpointResolution && deferEndpointResolution == 0) {
             grabEndpointPositions();
-            updateRenderParams();
+            updateCurveParams();
         }
-        if(isDynamic && baseTerminalPos1 != null && baseTerminalPos2 != null) {
+        if(dynamic != 0 && baseTerminalPos1 != null && baseTerminalPos2 != null) {
             var sublevel1 = SableCompanion.INSTANCE.getContaining(world, baseTerminalPos1);
             var sublevel2 = SableCompanion.INSTANCE.getContaining(world, baseTerminalPos2);
             terminalPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, baseTerminalPos1);
@@ -293,7 +311,7 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
                     (terminalPos1.z + terminalPos2.z) * 0.5
             );
             setYRot(facingAngle);
-            updateRenderParams();
+            updateCurveParams();
         }
         if(curveParams != null && !curveParams.valid) {
             kill();
@@ -346,13 +364,18 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     }
 
     @Override
+    public boolean isInsulated() {
+        return true;
+    }
+
+    @Override
     public void onEntityDataPacket(CompoundTag data) {
         if(data.contains("V")) {
-            var list = data.getList("V", Tag.TAG_FLOAT);
-            terminalPos1 = new Vec3(list.getFloat(0), list.getFloat(1), list.getFloat(2));
-            terminalPos2 = new Vec3(list.getFloat(3), list.getFloat(4), list.getFloat(5));
-            isDynamic = data.getBoolean("D");
-            updateRenderParams();
+            var list = data.getList("V", Tag.TAG_DOUBLE);
+            terminalPos1 = new Vec3(list.getDouble(0), list.getDouble(1), list.getDouble(2));
+            terminalPos2 = new Vec3(list.getDouble(3), list.getDouble(4), list.getDouble(5));
+            dynamic = data.getByte("D");
+            updateCurveParams();
         } else {
             super.onEntityDataPacket(data);
         }
@@ -362,6 +385,65 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
     protected void addAdditionalSaveData(CompoundTag nbt) {
         super.addAdditionalSaveData(nbt);
         nbt.putFloat("PlacedLength", placedLength);
+        nbt.putByte("Dynamic", dynamic);
+    }
+
+    @Override
+    public InteractionResult interact(Player player, InteractionHand hand) {
+        InteractionResult result = super.interact(player, hand);
+        if(result != InteractionResult.PASS)
+            return result;
+        var stack = player.getItemInHand(hand);
+        if(stack.getItem() == getItem()) {
+            int l0 = (int) placedLength;
+            if(player.isShiftKeyDown()) {
+                double d = terminalPos1.distanceTo(terminalPos2);
+                if(placedLength - 0.1f <= d)
+                    return InteractionResult.FAIL;
+                placedLength -= 0.1f;
+                if (l0 != (int) placedLength && !player.isCreative() && getWireCount() > 1) {
+                    player.addItem(new ItemStack(getItem(), 1));
+                    setItem(getItem(), getWireCount() - 1);
+                }
+                return InteractionResult.SUCCESS_NO_ITEM_USED;
+            } else {
+                placedLength += 0.1f;
+                if (l0 != (int) placedLength && !player.isCreative()) {
+                    stack.shrink(1);
+                    setItem(getItem(), getWireCount() + 1);
+                    return InteractionResult.SUCCESS;
+                }
+                return InteractionResult.SUCCESS_NO_ITEM_USED;
+            }
+        }
+        if(hand != InteractionHand.MAIN_HAND)
+            return InteractionResult.PASS;
+        return level().isClientSide
+                ? ClientWireInteractions.cordInteraction(this)
+                : InteractionResult.CONSUME;
+    }
+
+    /**
+     * Detach cord and return half placed item to player
+     * @param player Interacting player
+     * @param secondEndpoint Which endpoint is being removed
+     * @return True if the item has been returned to the player
+     */
+    public boolean cordDetach(Player player, boolean secondEndpoint) {
+        var handStack = player.getMainHandItem();
+        boolean itemInHand = handStack.getItem() == getItem();
+        if(!handStack.isEmpty() && !itemInHand)
+            return false;
+        for(; itemCount > (itemInHand ? 0 : 64); itemCount -= 64) {
+            var stack = new ItemStack(getItem(), Math.min(itemCount, 64));
+            player.addItem(stack);
+        }
+        var stack = itemInHand ? handStack : new ItemStack(getItem(), itemCount);
+        stack.set(ModdedDataComponents.CONNECTION_DATA.get(), WireConnection.of(secondEndpoint ? endpoint1 : endpoint2));
+        player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+        itemCount = 0;
+        discard();
+        return true;
     }
 
     @Override
@@ -373,9 +455,19 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             return;
         }
 
+        dynamic = nbt.getByte("Dynamic");
         var world = level();
         if(!world.isClientSide) {
-            refreshTerminalPositions();
+            var terminalPos1 = getEndpoint1().getExactPosition(world);
+            var sublevel1 = SableCompanion.INSTANCE.getContaining(world, terminalPos1);
+            if((dynamic & 1) != 0 && sublevel1 == null)
+                deferEndpointResolution |= 1;
+            var terminalPos2 = getEndpoint2().getExactPosition(world);
+            var sublevel2 = SableCompanion.INSTANCE.getContaining(world, terminalPos2);
+            if((dynamic & 2) != 0 && sublevel2 == null)
+                deferEndpointResolution |= 2;
+            if(deferEndpointResolution == 0)
+                refreshTerminalPositions();
         } else {
             grabEndpointPositions();
         }
@@ -389,24 +481,27 @@ public class CordEntity extends BaseWireEntity implements IComplexRaycast {
             var hL = dX * dX + dZ * dZ;
             placedLength = (float) Math.sqrt(getWireEntry().horizontalCoefficient() * hL + getWireEntry().verticalCoefficient() * dY * dY);
         }
-        updateRenderParams();
+        if(terminalPos1 != null)
+            updateCurveParams();
     }
 
     public void grabEndpointPositions() {
         var world = level();
         terminalPos1 = getEndpoint1().getExactPosition(world);
         terminalPos2 = getEndpoint2().getExactPosition(world);
-        if(getEndpoint1().getSubLevel(world) != null || getEndpoint2().getSubLevel(world) != null) {
+        var sublevel1 = SableCompanion.INSTANCE.getContaining(world, terminalPos1);
+        var sublevel2 = SableCompanion.INSTANCE.getContaining(world, terminalPos2);
+        if(sublevel1 != null || sublevel2 != null) {
             // Make outside of sublevels
             baseTerminalPos1 = terminalPos1;
             baseTerminalPos2 = terminalPos2;
-            isDynamic = true;
+            dynamic = (byte) ((sublevel1 != null ? 1 : 0) | (sublevel2 != null ? 2 : 0));
             terminalPos1 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, terminalPos1);
             terminalPos2 = SableCompanion.INSTANCE.projectOutOfSubLevel(world, terminalPos2);
         } else {
             baseTerminalPos1 = null;
             baseTerminalPos2 = null;
-            isDynamic = false;
+            dynamic = 0;
         }
     }
 

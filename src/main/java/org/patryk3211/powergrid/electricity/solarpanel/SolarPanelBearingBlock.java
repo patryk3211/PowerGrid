@@ -2,6 +2,8 @@ package org.patryk3211.powergrid.electricity.solarpanel;
 
 import com.simibubi.create.content.kinetics.base.IRotate;
 import com.simibubi.create.foundation.block.IBE;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
+import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
 import net.createmod.catnip.data.Iterate;
 import net.createmod.catnip.math.VoxelShaper;
 import net.minecraft.core.BlockPos;
@@ -32,28 +34,28 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 import org.patryk3211.powergrid.electricity.base.terminals.BlockStateTerminalCollection;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlock;
 
-
-
 public class SolarPanelBearingBlock extends ElectricKineticBlock implements IBE<SolarPanelBearingBlockEntity> {
     public static final DirectionProperty FACING = BlockStateProperties.FACING;
     public static final TerminalBoundingBox[] TERMINALS = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 5, 0, 11, 7, 2, 13)
+            new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 9, 13, 10, 12, 16, 13)
                     .withColor(IDecoratedTerminal.RED),
-            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 9, 0, 11, 11, 2, 13)
+            new TerminalBoundingBox(IDecoratedTerminal.NEGATIVE, 4, 13, 10, 7, 16, 13)
                     .withColor(IDecoratedTerminal.BLUE)
     };
 
     public static final VoxelShape SHAPE = Shapes.or(
-            box(0, 0, 0, 16, 16, 11)
+            box(2, 2, 4, 14, 14, 16),
+            box(1, 1, 0, 15, 15, 4)
     );
     public static final VoxelShape SHAPE2 = Shapes.or(
-            box(0, 5, 0, 16, 16, 16)
+            box(2, 0, 2, 14, 12, 14),
+            box(1, 12, 1, 15, 16, 15)
     );
 
     public SolarPanelBearingBlock(Properties properties) {
         super(properties);
         var shaper = VoxelShaper.forDirectional(SHAPE, Direction.NORTH);
-        if(SHAPE2 != null) shaper.withVerticalShapes(SHAPE2);
+        shaper.withVerticalShapes(SHAPE2);
         var terminalstate = BlockStateTerminalCollection.builder(this)
                 .forAllStates(state -> BlockStateTerminalCollection.each(TERMINALS, terminal -> switch(state.getValue(FACING)) {
                     case NORTH -> terminal;
@@ -77,6 +79,14 @@ public class SolarPanelBearingBlock extends ElectricKineticBlock implements IBE<
             return InteractionResult.FAIL;
         if (player.getItemInHand(handIn)
                 .isEmpty()) {
+            var behavior = BlockEntityBehaviour.get(worldIn, pos, SolarPanelBearingBlockScrollBehaviour.TYPE);
+            if(behavior != null) {
+                if(behavior.getSlotPositioning() instanceof ValueBoxTransform.Sided sided)
+                    sided.fromSide(hit.getDirection());
+                boolean hovering = behavior.testHit(hit.getLocation());
+                if(hovering)
+                    return InteractionResult.PASS;
+            }
             if (worldIn.isClientSide)
                 return InteractionResult.SUCCESS;
             withBlockEntityDo(worldIn, pos, be -> {
@@ -121,7 +131,7 @@ public class SolarPanelBearingBlock extends ElectricKineticBlock implements IBE<
         for (Direction side : Iterate.directions) {
             BlockState blockState = context.getLevel()
                     .getBlockState(context.getClickedPos()
-                            .relative(side));
+                    .relative(side));
             if (blockState.getBlock() instanceof IRotate) {
                 if (((IRotate) blockState.getBlock()).hasShaftTowards(context.getLevel(), context.getClickedPos()
                         .relative(side), blockState, side.getOpposite()))
@@ -141,7 +151,7 @@ public class SolarPanelBearingBlock extends ElectricKineticBlock implements IBE<
         Direction preferred = getPreferredFacing(context);
         if (preferred == null || (context.getPlayer() != null && context.getPlayer()
                 .isShiftKeyDown())) {
-            Direction nearestLookingDirection = context.getHorizontalDirection();
+            Direction nearestLookingDirection = context.getNearestLookingDirection();
             return defaultBlockState().setValue(FACING, context.getPlayer() != null && context.getPlayer()
                     .isShiftKeyDown() ? nearestLookingDirection : nearestLookingDirection.getOpposite());
         }
@@ -161,9 +171,6 @@ public class SolarPanelBearingBlock extends ElectricKineticBlock implements IBE<
 
     @Override
     public InteractionResult onWrenched(BlockState state, UseOnContext context) {
-        if (context.getClickedFace().getAxis() != Direction.Axis.Y || context.getClickedFace().getAxis() != Direction.Axis.Y) {
-            return InteractionResult.PASS;
-        }
         var be = context.getLevel().getBlockEntity(context.getClickedPos());
         if (be instanceof SolarPanelBearingBlockEntity blockEntity) {
             if (!context.getLevel().isClientSide) {

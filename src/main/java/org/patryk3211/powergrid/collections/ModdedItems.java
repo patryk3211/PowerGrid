@@ -32,14 +32,21 @@ import org.patryk3211.powergrid.electricity.light.bulb.GrowthLamp;
 import org.patryk3211.powergrid.electricity.light.bulb.LightBulb;
 import org.patryk3211.powergrid.electricity.light.bulb.LvLightBulb;
 import org.patryk3211.powergrid.electricity.light.string.StringLightCordItem;
+import org.patryk3211.powergrid.electricity.modulardisplay.DisplayModuleItem;
 import org.patryk3211.powergrid.electricity.sim.DebugItem;
 import org.patryk3211.powergrid.electricity.wire.WireItem;
 import org.patryk3211.powergrid.electricity.wire.powercord.CordItem;
+import org.patryk3211.powergrid.equipment.BoostingChipItem;
+import org.patryk3211.powergrid.equipment.BoostingChipRenderer;
 import org.patryk3211.powergrid.equipment.ZincArmorMaterial;
 import org.patryk3211.powergrid.equipment.baton.ElectroBatonItem;
+import org.patryk3211.powergrid.equipment.drill.DrillItem;
+import org.patryk3211.powergrid.equipment.drill.DrillItemRenderer;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItem;
 import org.patryk3211.powergrid.equipment.multimeter.MultimeterItemRenderer;
 import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryItem;
+import org.patryk3211.powergrid.equipment.saw.SawItem;
+import org.patryk3211.powergrid.equipment.saw.SawItemRenderer;
 import org.patryk3211.powergrid.equipment.zapper.ElectroZapperItem;
 import org.patryk3211.powergrid.equipment.zapper.ElectroZapperItemRenderer;
 import org.patryk3211.powergrid.kinetics.generator.winding.WindingItem;
@@ -57,38 +64,38 @@ import static org.patryk3211.powergrid.utility.DataProviderUtility.itemWithParen
 public class ModdedItems {
     public static final ItemEntry<WireItem> WIRE = REGISTRATE.item("wire", WireItem::new)
             .transform(WireItem.properties(0.0015f, 24, 0.5f, 1.0f, 80,
-                    PowerGrid.texture("special/copper_wire"), 1.01f, 1.2f, 0.0625f,
-                    false, false))
+                    PowerGrid.texture("special/copper_wire"), 1.01f, 1.2f, 1/16f,
+                    false, false, false))
             .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag, wires("copper"))
             .lang("Copper Wire")
             .register();
     public static final ItemEntry<WireItem> IRON_WIRE = REGISTRATE.item("iron_wire", WireItem::new)
             .transform(WireItem.properties(0.005f, 64, 0.5f, 2.0f, 160,
-                    PowerGrid.texture("special/iron_wire"), 1.0075f, 1.125f, 0.125f,
-                    false, false))
+                    PowerGrid.texture("special/iron_wire"), 1.0075f, 1.125f, 2/16f,
+                    false, false, false))
             .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.FUSE_RESETTING.tag, wires("iron"))
             .register();
     public static final ItemEntry<WireItem> GOLDEN_WIRE = REGISTRATE.item("golden_wire", WireItem::new)
             .transform(WireItem.properties(0.003f, 12, 0.5f, 0.8f, 160,
-                    PowerGrid.texture("special/golden_wire"), 1.02f, 1.4f, 0.0625f,
-                    false, false))
+                    PowerGrid.texture("special/golden_wire"), 1.02f, 1.4f, 1/16f,
+                    false, false, false))
             .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag, wires("gold"))
             .register();
     public static final ItemEntry<WireItem> INSULATED_COPPER_WIRE = REGISTRATE.item("insulated_copper_wire", WireItem::new)
             .transform(WireItem.properties(0.0015f, 16, 0.5f, 1.2f, 70,
-                    PowerGrid.texture("special/insulated_wire"), 1.01f, 1.2f, 0.0625f,
-                    true, false))
+                    PowerGrid.texture("special/insulated_wire"), 1.01f, 1.2f, 1.5f/16f,
+                    true, false, true))
             .tag(ModdedTags.Item.WIRES.tag, ModdedTags.Item.LIGHT_WIRES.tag)
             .register();
     public static final ItemEntry<CordItem> CORD = REGISTRATE.item("copper_cord", CordItem::new)
             .transform(WireItem.properties(0.0015f, 16, 0.5f, 2.0f, 60,
-                    PowerGrid.texture("special/insulated_wire"), 1.005f, 1.005f, 0.125f,
-                    true, true))
+                    PowerGrid.texture("special/insulated_wire"), 1.005f, 1.005f, 2/16f,
+                    true, true, true))
             .register();
     public static final ItemEntry<StringLightCordItem> STRING_LIGHT_CORD = REGISTRATE.item("string_light_cord", StringLightCordItem::new)
             .transform(WireItem.properties(0.0015f, 16, 0.5f, 2.0f, 60,
-                    PowerGrid.texture("special/insulated_wire"), 1.005f, 1.005f, 0.125f,
-                    false, true))
+                    PowerGrid.texture("special/insulated_wire"), 1.005f, 1.005f, 2/16f,
+                    false, true, true))
             .register();
 
     public static final ItemEntry<Item> WIRE_CUTTER = REGISTRATE.item("wire_cutter", Item::new)
@@ -154,9 +161,12 @@ public class ModdedItems {
             .register();
     public static final ItemEntry<Item> MAGNET = ingredient("magnet");
 
-    public static final ItemEntry<Item> INTEGRATED_CIRCUIT = ingredient("integrated_circuit");
+    public static final ItemEntry<BoostingChipItem> INTEGRATED_CIRCUIT = REGISTRATE.item("integrated_circuit", BoostingChipItem::new)
+            .transform(customRenderer(() -> BoostingChipRenderer::new))
+            .register();
     public static final ItemEntry<Item> ELECTRICAL_GIZMO = ingredient("electrical_gizmo");
     public static final ItemEntry<Item> ZINC_SHEET = ingredient("zinc_sheet", ModdedTags.Item.PLATES.tag);
+    public static final ItemEntry<Item> PINS = ingredient("pins");
 
     public static final ItemEntry<Item> RELAY = ingredient("relay");
     public static final ItemEntry<Item> RELAY_DPDT = REGISTRATE.item("relay_dpdt", Item::new)
@@ -210,6 +220,16 @@ public class ModdedItems {
             .lang("Electro-Baton")
             .register();
 
+    public static final ItemEntry<DrillItem> PORTABLE_DRILL = REGISTRATE.item("portable_drill", DrillItem::new)
+            .transform(customRenderer(() -> DrillItemRenderer::new))
+            .model(itemWithParent("item/drill/item"))
+            .register();
+
+    public static final ItemEntry<SawItem> PORTABLE_SAW = REGISTRATE.item("portable_saw", SawItem::new)
+            .transform(customRenderer(() -> SawItemRenderer::new))
+            .model(itemWithParent("item/saw/item"))
+            .register();
+
     public static final ItemEntry<BacktankItem.BacktankBlockItem> PORTABLE_BATTERY_PLACEABLE = REGISTRATE.item("portable_battery_placeable",
                     p -> new BacktankItem.BacktankBlockItem(ModdedBlocks.PORTABLE_BATTERY.get(), ModdedItems.PORTABLE_BATTERY::get, p))
             .model(barrier())
@@ -219,7 +239,6 @@ public class ModdedItems {
                     p -> SubstituteItemProvider.INSTANCE.invoke(PortableBatteryItem.class, ZincArmorMaterial.INSTANCE, p, PowerGrid.asResource("zinc"), PORTABLE_BATTERY_PLACEABLE))
             //p -> new PortableBatteryItem(ZincArmorMaterial.INSTANCE, p, PowerGrid.asResource("zinc"), PORTABLE_BATTERY_PLACEABLE))
             .model(itemWithParent("block/portable_battery/block"))
-            .properties(p -> p.durability(-1))
 			.tag(forgeItemTag("chestplates"))
             .register();
 
@@ -235,6 +254,10 @@ public class ModdedItems {
             .register();
 
     public static final ItemEntry<PunchCardItem> PUNCH_CARD = REGISTRATE.item("punch_card", PunchCardItem::new)
+            .register();
+
+    public static final ItemEntry<DisplayModuleItem> DISPLAY_MODULE = REGISTRATE.item("display_module", DisplayModuleItem::new)
+            .lang("Display Module")
             .register();
 
     @SuppressWarnings("EmptyMethod")

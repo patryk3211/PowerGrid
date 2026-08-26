@@ -24,7 +24,7 @@ import java.util.Collection;
 import java.util.List;
 
 import static org.patryk3211.powergrid.electricity.sim.ElectricalNetwork.G_MIN;
-import static org.patryk3211.powergrid.electricity.sim.special.PNJunctionWire.WrightOmega;
+import static org.patryk3211.powergrid.electricity.sim.special.PNJunctionWire.WrightOmega4;
 
 public class BJTWire extends CompoundWire implements ISolverHook {
     private static final double V_T = 0.025;
@@ -34,6 +34,8 @@ public class BJTWire extends CompoundWire implements ISolverHook {
     protected final ConductanceWire collectorBase;
     private final CrossWire collectorEmitter;
     private final CrossWire emitterCollector;
+
+    protected final ConductanceWire collectorEmitterR;
 
     private final double beta;
     private final double forwardGain, reverseGain;
@@ -50,6 +52,7 @@ public class BJTWire extends CompoundWire implements ISolverHook {
     private double Ic, Ib, Ie;
 
     private double power;
+    private int lastIter = -1;
 
     public BJTWire(IElectricNode collector, IElectricNode base, IElectricNode emitter, double Is, double fBeta, double Rs, boolean pnp) {
         super(base, emitter);
@@ -59,13 +62,8 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         forwardGain = fBeta / (fBeta + 1);
         reverseGain = Math.max(0.5, fBeta * 0.1 / (fBeta * 0.1 + 1));
         saturationCurrent = Is;
-        if(pnp) {
-            emitterResistance = Rs * 10;
-            collectorResistance = Rs;
-        } else {
-            emitterResistance = Rs;
-            collectorResistance = Rs * 10;
-        }
+        emitterResistance = Rs;
+        collectorResistance = Rs;
         this.pnp = pnp ? -1 : 1;
 
         OmegaLogE = Math.log(saturationCurrent * emitterResistance / V_T);
@@ -75,14 +73,21 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         collectorEmitter = addInternalWire(new CrossWire(base, collector, emitter));
         emitterCollector = addInternalWire(new CrossWire(base, emitter, collector));
         Vcrit = V_T * Math.log(V_T / (Is * Math.sqrt(2)));
+        collectorEmitterR = addDynamicWire(collector, emitter);
     }
 
     public double pnLim(double V1, double V0, double Vcrit) {
-        if(V0 < Vcrit * 0.5f && V1 < Vcrit * 0.5f)
-            return V1;
-        var dV = V1 - V0;
-        if(V1 > Vcrit && dV > V_T * 2)
-            return V0 + V_T * Math.log1p(dV / V_T);
+        if(V0 < 0 && V1 > Vcrit)
+            return Vcrit;
+        if(V0 >= 0 && V0 < Vcrit && V1 > Vcrit)
+            return Vcrit;
+        double dV = V1 - V0;
+        if(V1 > Vcrit && Math.abs(dV) > V_T * 2) {
+            double arg = dV / V_T;
+            if(arg + 1 < 0)
+                return Vcrit;
+            return V0 + V_T * Math.log1p(arg);
+        }
         return V1;
     }
 
@@ -93,11 +98,21 @@ public class BJTWire extends CompoundWire implements ISolverHook {
         double Vb = node1.getVoltage();
         double Ve = node2.getVoltage();
         double Vbe = Vb - Ve, Vbc = Vb - Vc;
-        Vbc = prevCollector = pnp * pnLim(pnp * Vbc, pnp * prevCollector, Vcrit);
-        Vbe = prevEmitter = pnp * pnLim(pnp * Vbe, pnp * prevEmitter, Vcrit);
+        if(iteration == 0) {
+            prevEmitter = Vbe;
+            prevCollector = Vbc;
+        }
+        Vbc = pnp * pnLim(pnp * Vbc, pnp * prevCollector, Vcrit);
+        Vbe = pnp * pnLim(pnp * Vbe, pnp * prevEmitter, Vcrit);
+        if(lastIter != iteration) {
+            // Make sure solution fitting doesn't touch previous voltages
+            prevCollector = Vbc;
+            prevEmitter = Vbe;
+        }
+        lastIter = iteration;
 
-        double WbeTerm = WrightOmega(OmegaLogE + (saturationCurrent * emitterResistance + pnp * Vbe) / V_T);
-        double WbcTerm = WrightOmega(OmegaLogC + (saturationCurrent * collectorResistance + pnp * Vbc) / V_T);
+        double WbeTerm = WrightOmega4(OmegaLogE + (saturationCurrent * emitterResistance + pnp * Vbe) / V_T);
+        double WbcTerm = WrightOmega4(OmegaLogC + (saturationCurrent * collectorResistance + pnp * Vbc) / V_T);
         double Ebe = (V_T * WbeTerm / emitterResistance - saturationCurrent);// * (1 + Vbc / -15);
         double Ebc = (V_T * WbcTerm / collectorResistance - saturationCurrent);// * (1 + Vbe / -15);
 //        double forwardGain = beta * (1 + Vbc / -15);
@@ -116,21 +131,24 @@ public class BJTWire extends CompoundWire implements ISolverHook {
 
         double G_add = 1e-6;
         if(iteration > 100) {
-            G_add = 1e-4;
+            G_add = 1e-3;
         }
 
         // Base - Emitter, simple wire
-        setConductance(Gee + G_add);
+        setConductance(Gee);
         // Base - Collector, simple wire
-        collectorBase.setConductance(Gcc + G_add);
+        collectorBase.setConductance(Gcc);
         // Collector - Emitter, VCCS
         collectorEmitter.setConductance(Gce);
         // Emitter - Collector, VCCS
         emitterCollector.setConductance(Gec);
 
-        this.Ib = Ib - (G_add + Gcc + Gec) * Vbc - (G_add + Gee + Gce) * Vbe;
-        this.Ic = Ic + (Gcc + G_add) * Vbc + Gce * Vbe;
-        this.Ie = Ie + (Gee + G_add) * Vbe + Gec * Vbc;
+        // Collector - Emitter, simple wire
+        collectorEmitterR.setConductance(G_add);
+
+        this.Ib = Ib - (Gcc + Gec) * Vbc - (Gee + Gce) * Vbe;
+        this.Ic = Ic + Gcc * Vbc + Gce * Vbe;
+        this.Ie = Ie + Gee * Vbe + Gec * Vbc;
 
         power = 0;
         if(Vbe > 0) {

@@ -1,0 +1,211 @@
+package org.patryk3211.powergrid.circuits.components;
+
+import com.google.common.collect.ImmutableCollection;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.DyeColor;
+import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix4f;
+import org.patryk3211.powergrid.PowerGrid;
+import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
+import org.patryk3211.powergrid.circuits.circuitboard.ComponentCircuitBuilder;
+import org.patryk3211.powergrid.circuits.components.properties.*;
+import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
+import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
+import org.patryk3211.powergrid.circuits.thermal.ThermalBuilder;
+import org.patryk3211.powergrid.collections.ModdedSoundEvents;
+import org.patryk3211.powergrid.electricity.modulardisplay.DisplayModuleType;
+import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
+import org.patryk3211.powergrid.utility.Unit;
+
+public class ModularDisplayComponent extends OrientableComponent implements IRenderedComponent{
+    public static final IntProperty INDEX = new IntProperty(PowerGrid.MOD_ID, "modular_display_index", 0, 0, 30).hidden().cast();
+    public static final BooleanProperty HALF_CLICK = new BooleanProperty(PowerGrid.MOD_ID, "modular_display_half_click").hidden().cast();
+    public static final BooleanProperty WIRE_RESET = new BooleanProperty(PowerGrid.MOD_ID, "modular_display_reset").hidden().cast();
+    public static final ConstantProperty MIN_CURRENT = new ConstantProperty(PowerGrid.MOD_ID, "modular_display_current", Unit.CURRENT.formatWithPrefixes(.5f).component());
+    public static final ConstantProperty RESISTANCE = new ConstantProperty(PowerGrid.MOD_ID, "modular_display_resistance", Unit.RESISTANCE.formatWithPrefixes(25).component());
+    public static final BooleanProperty REMOVE_BLANKING_PAGE = new BooleanProperty(PowerGrid.MOD_ID, "modular_display_blanking_page");
+    public static final EnumProperty<DisplayModuleType> CURRENT_MODULE = new EnumProperty<DisplayModuleType>(PowerGrid.MOD_ID, "modular_display_module",
+            DisplayModuleType.class, new DisplayModuleType[]{DisplayModuleType.ZERO_TO_NINE, DisplayModuleType.NINE_TO_ZERO, DisplayModuleType.ONE_TO_ZERO, DisplayModuleType.HEXADECIMAL, DisplayModuleType.SYMBOLS, DisplayModuleType.ALPHABET});
+    public static final EnumProperty<DyeColor> CURRENT_COLOR = new EnumProperty<DyeColor>(PowerGrid.MOD_ID, "modular_display_text_color", DyeColor.class);
+
+    public ModularDisplayComponent(ComponentFootprint footprint) {
+        super(footprint);
+    }
+
+    //some of these might be moved to enum
+    private static final float SHEET_HEIGHT = 16f;
+    private static final float FRAME_WIDTH = 5f;
+    private static final float FRAME_HEIGHT = 7f;
+    private static final float FRAME_PADDING = 1f;
+    private static final float PIXEL = 1f / 16f;
+    private static final float INNER_OFFSET = 1f * PIXEL;
+    private static final float INNER_UD_OFFSET = .75f * PIXEL;
+    private static final float INNER_UD_SIZE = 2.5f * PIXEL;
+    private static final float INNER_RL_SIZE = 2f * PIXEL;
+    private static final float Y_NUDGE = 0.0001f;
+
+    @Override
+    protected void addProperties(ImmutableCollection.Builder<ComponentProperty<?>> properties) {
+        super.addProperties(properties);
+        properties.add(CURRENT_MODULE, CURRENT_COLOR, REMOVE_BLANKING_PAGE, RESISTANCE, MIN_CURRENT, INDEX, HALF_CLICK, WIRE_RESET, power(25));
+    }
+
+    @Override
+    public boolean tick(@NotNull PlacedComponent placed) {
+        var module = placed.get(CURRENT_MODULE);
+
+        if (placed.isClient()) return true;
+        if (placed.wires.isEmpty())
+            return true;
+
+        var coilNodeToReset = (SwitchedWire) placed.wires.get(0);
+        var coilNodeToNegative =  (SwitchedWire) placed.wires.get(2);
+
+        var coilNodeToNegativeCurrent = Math.abs(coilNodeToNegative.current());
+        var coilNodeToResetCurrent = Math.abs(coilNodeToReset.current());
+        var charCount = (placed.get(REMOVE_BLANKING_PAGE) ? module.getCharacterCount() - 1 : module.getCharacterCount());
+        var index = placed.get(INDEX);
+        //every module display texture has the characters in the sprite plus a blank space and the first character again for smooth transition
+        //but im only counting characters before the blank space and adding one for the blank space and two for the transition
+
+        if (placed.get(WIRE_RESET) == true){
+            coilNodeToReset.setState(false);
+            coilNodeToNegative.setState(true);
+            placed.set(WIRE_RESET, false);
+        }
+
+        if (coilNodeToNegative.isConverged()){
+
+            if (coilNodeToNegativeCurrent >= .5 && index != charCount+1 && !placed.get(HALF_CLICK)) {
+                placed.set(INDEX, index +1);
+                placed.set(HALF_CLICK, true);
+                placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), 0.75f, 2f));
+                placed.notifyClients(INDEX);
+                placed.notifyClients(HALF_CLICK);
+            }
+
+            if (coilNodeToNegativeCurrent < .5 && index == charCount+1 && coilNodeToNegative.getState()){
+                placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), 0.75f, 1.9f));
+                coilNodeToNegative.setState(false);
+                coilNodeToReset.setState(true);
+                placed.set(HALF_CLICK, false);
+                placed.notifyClients(HALF_CLICK);
+            }
+
+            if (coilNodeToNegativeCurrent < .5 && coilNodeToNegative.getState() && placed.get(HALF_CLICK)) {
+                placed.set(HALF_CLICK, false);
+                placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), 0.75f, 1.9f));
+                placed.notifyClients(HALF_CLICK);
+            }
+
+            if (coilNodeToReset.getState() && coilNodeToResetCurrent >= .5 && index == charCount+1) {
+                placed.onServerWorld(() -> world -> ModdedSoundEvents.RELAY_CLICK.playOnServer(world, placed.getPos(), 0.75f, 2f));
+                placed.set(INDEX, index +1);
+                placed.set(HALF_CLICK, true);
+                coilNodeToNegative.setState(true);
+                coilNodeToReset.setState(false);
+                placed.notifyClients(INDEX);
+                placed.notifyClients(HALF_CLICK);
+            }
+
+            if (index >= charCount+2 && !placed.get(HALF_CLICK)){
+                placed.set(INDEX, 0);
+                placed.notifyClients(INDEX);
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
+
+        var coilNode = builder.addInternalNode();
+        var coil = builder.connect(25, builder.terminalNode(0), coilNode);
+        var coilNodeToNegitive = builder.connectSwitch(0.1f, builder.terminalNode(1), coilNode, true);
+        var coilNodeToReset = builder.connectSwitch(0.1f, builder.terminalNode(2), coilNode, false);
+        placed.add(coilNodeToReset); placed.add(coil); placed.add(coilNodeToNegitive);
+
+        thermals.builder()
+                .setThermalMass(0.15f)
+                .setMaxPower(25, 125f)
+                .addHeatSource(coil);
+
+    }
+
+    @Override
+    public void render(CircuitBoardBlockEntity be, PlacedComponent placed, float partialTicks, PoseStack pStack,
+                       MultiBufferSource buffer, int light, int overlay) {
+        var module = placed.get(CURRENT_MODULE);
+
+        pStack.pushPose();
+        pStack.translate(0.5, 6f/16f, 0.5);
+
+        Boolean halfClick = false;
+
+        pStack.translate(-0.5, 0, -0.5);
+        pStack.translate(0f, Y_NUDGE, 0f);
+
+        Matrix4f matrix = pStack.last().pose();
+        if (placed.has(HALF_CLICK)) {
+            halfClick = placed.get(HALF_CLICK);
+        }
+
+        float frameIndex = placed.get(INDEX);
+        if (halfClick){
+            frameIndex -= .5f;
+        }
+        var displayTexture = "block/modular_display/" + (placed.get(REMOVE_BLANKING_PAGE) ?
+                module.getDisplayTexture() + "noblank" : module.getDisplayTexture());
+
+        float innerX = 0 + INNER_OFFSET;
+        float innerY = 0 + INNER_UD_OFFSET;
+
+        float uMin = (frameIndex * (FRAME_WIDTH + FRAME_PADDING)) / module.getSpriteWidth();
+        float uMax = (frameIndex * (FRAME_WIDTH + FRAME_PADDING) + FRAME_WIDTH) / module.getSpriteWidth();
+        float vMin = 0f;
+        float vMax = FRAME_HEIGHT / SHEET_HEIGHT;
+
+        int rgb = placed.get(CURRENT_COLOR).getTextureDiffuseColor();
+
+        renderQuad(matrix, buffer,
+                PowerGrid.texture(displayTexture),
+                innerX, innerY,
+                INNER_RL_SIZE, INNER_UD_SIZE,
+                uMin, vMin, uMax, vMax,
+                light, overlay, rgb);
+
+        pStack.popPose();
+    }
+
+    private void renderQuad(Matrix4f matrix, MultiBufferSource bufferSource, ResourceLocation texture,
+                            float x, float z, float width, float height, float uMin, float vMin, float uMax, float vMax,
+                            int packedLight, int packedOverlay, int rgb) {
+
+        VertexConsumer vc = bufferSource.getBuffer(RenderType.text(texture));
+
+        int r = (rgb >> 16) & 0xFF;
+        int g = (rgb >> 8)  & 0xFF;
+        int b =  rgb        & 0xFF;
+
+        vc.addVertex(matrix, x + width, 0f, z).setColor(r, g, b, 255)
+                .setUv(uMax, vMin).setOverlay(packedOverlay).setLight(packedLight)
+                .setNormal(0f, 0f, 1f);
+
+        vc.addVertex(matrix, x, 0f, z).setColor(r, g, b, 255)
+                .setUv(uMin, vMin).setOverlay(packedOverlay).setLight(packedLight)
+                .setNormal(0f, 0f, 1f);
+
+        vc.addVertex(matrix, x, 0f, z + height).setColor(r, g, b, 255)
+                .setUv(uMin, vMax).setOverlay(packedOverlay).setLight(packedLight)
+                .setNormal(0f, 0f, 1f);
+
+        vc.addVertex(matrix, x + width, 0f, z + height).setColor(r, g, b, 255)
+                .setUv(uMax, vMax).setOverlay(packedOverlay).setLight(packedLight)
+                .setNormal(0f, 0f, 1f);
+    }
+
+}

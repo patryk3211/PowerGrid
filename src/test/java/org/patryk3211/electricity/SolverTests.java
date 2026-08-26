@@ -182,8 +182,8 @@ public class SolverTests extends TestHelper {
             var E2 = rotor2.energy();
             Net.calculate();
 
-            V1.tick(60);
-            V2.tick(60);
+//            V1.tick(60);
+//            V2.tick(60);
             var deltaE1 = rotor1.energy() - E1;
             var deltaE2 = rotor2.energy() - E2;
 

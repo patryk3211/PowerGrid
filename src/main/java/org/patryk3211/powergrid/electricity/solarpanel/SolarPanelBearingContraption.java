@@ -7,7 +7,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
@@ -15,6 +14,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.joml.Vector3d;
 import org.patryk3211.powergrid.collections.ModdedBlockEntities;
 import org.patryk3211.powergrid.collections.ModdedContraptions;
+import org.patryk3211.powergrid.utility.Lang;
 
 public class SolarPanelBearingContraption extends BearingContraption {
     protected int panelBlocks;
@@ -36,8 +36,8 @@ public class SolarPanelBearingContraption extends BearingContraption {
         startMoving(world);
         expandBoundsAroundAxis(facing.getAxis());
         if (panelBlocks < 1)
-            throw new AssemblyException(Component.translatable(
-                    "powergrid.contraption.assembly.not_enough_panels"));
+            throw new AssemblyException(Lang.translateDirect(
+                    "contraption.assembly.not_enough_panels"));
         for (StructureTemplate.StructureBlockInfo info : getBlocks().values()) {
             if (!(info.state().getBlock() instanceof SolarPanelBlock))
                 continue;
@@ -46,17 +46,15 @@ public class SolarPanelBearingContraption extends BearingContraption {
             if (panelNormal == null) {
                 panelNormal = new Vector3d(n.getX(), n.getY(), n.getZ());
             } else if (!panelNormal.equals(new Vector3d(n.getX(), n.getY(), n.getZ()))) {
-                throw new AssemblyException(Component.translatable(
-                        "powergrid.contraption.assembly.mismatched_panel_facing"));
+                throw new AssemblyException(Lang.translateDirect(
+                        "contraption.assembly.mismatched_panel_facing"));
             }
         }
         if (!hasValidDivisor(panelBlocks)){
-            throw new AssemblyException(Component.translatable("powergrid.contraption.assembly.invalid_panel_amount"));
+            throw new AssemblyException(Lang.translateDirect("contraption.assembly.invalid_panel_amount"));
         }
 
-        if (blocks.isEmpty())
-            return false;
-        return true;
+        return !blocks.isEmpty();
     }
 
     private static boolean hasValidDivisor(int panelCount) {
@@ -98,7 +96,7 @@ public class SolarPanelBearingContraption extends BearingContraption {
 
     @Override
     public ContraptionType getType() {
-        return ModdedContraptions.SOLAR_PANEL.holder.value();
+        return ModdedContraptions.SOLAR_PANEL.get();
     }
 
     public int getPanelBlocks(){

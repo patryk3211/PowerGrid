@@ -23,6 +23,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.advancements.PGAdvancementBehaviour;
+import org.patryk3211.powergrid.advancements.PowerGridAdvancement;
+import org.patryk3211.powergrid.collections.ModdedAdvancements;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 import org.patryk3211.powergrid.utility.sound.SoundScapes;
 
@@ -47,12 +50,20 @@ public abstract class ElectricBlockEntity extends SmartBlockEntity implements IE
 
     @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
-        electricBehaviour = new ElectricBehaviour(this);
-        behaviours.add(electricBehaviour);
+        electricBehaviour = specifyElectricBehaviour();
+        if(electricBehaviour != null) {
+            behaviours.add(electricBehaviour);
+        }
 
         thermalBehaviour = specifyThermalBehaviour();
-        if(thermalBehaviour != null)
+        if(thermalBehaviour != null) {
             behaviours.add(thermalBehaviour);
+            registerAwardables(behaviours, ModdedAdvancements.BLOW_UP);
+        }
+    }
+
+    public ElectricBehaviour specifyElectricBehaviour() {
+        return new ElectricBehaviour(this);
     }
 
     @Nullable
@@ -104,5 +115,27 @@ public abstract class ElectricBlockEntity extends SmartBlockEntity implements IE
         if(electricBehaviour != null) {
             electricBehaviour.remove();
         }
+    }
+
+    public void registerAwardables(List<BlockEntityBehaviour> behaviours, PowerGridAdvancement... advancements) {
+        for(var behaviour : behaviours) {
+            if(behaviour instanceof PGAdvancementBehaviour ab) {
+                ab.add(advancements);
+                return;
+            }
+        }
+        behaviours.add(new PGAdvancementBehaviour(this, advancements));
+    }
+
+    public void award(PowerGridAdvancement advancement) {
+        var behaviour = getBehaviour(PGAdvancementBehaviour.TYPE);
+        if(behaviour != null)
+            behaviour.awardPlayer(advancement);
+    }
+
+    public void awardIfNear(PowerGridAdvancement advancement, int range) {
+        var behaviour = getBehaviour(PGAdvancementBehaviour.TYPE);
+        if(behaviour != null)
+            behaviour.awardPlayerIfNear(advancement, range);
     }
 }

@@ -46,3 +46,4 @@ replay_*.log
 DESIGN.md
 *.bbmodel
 *.jar
+*/.cache/

@@ -15,10 +15,16 @@
  */
 package org.patryk3211.powergrid.circuits.schematic;
 
+import net.createmod.catnip.math.VecHelper;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.NotNull;
+import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.circuits.components.Component;
 import org.patryk3211.powergrid.circuits.components.ComponentRegistry;
@@ -55,9 +61,10 @@ public class PlacedComponent {
     public Object customData;
     public boolean destroyed;
 
-    public PlacedComponent(CompoundTag tag) {
-        this(get(tag.getString("Id")), tag.getInt("X"), tag.getInt("Y"), tag.getUUID("UUID"));
-        component.dataFixup(tag);
+    public PlacedComponent(CompoundTag tag, int version) {
+        this(get(tag.getString("Id")), tag.getInt("X"), tag.getInt("Y"), tag.contains("UUID") ? tag.getUUID("UUID") : null);
+        if(CircuitSchematic.VERSION != version)
+            component.dataFixup(tag, version);
         var propertyMap = tag.getCompound("Properties");
         for(var entry : properties) {
             entry.read(propertyMap);
@@ -91,7 +98,7 @@ public class PlacedComponent {
         this.component = component;
         this.x = x;
         this.y = y;
-        this.uuid = uuid;
+        this.uuid = uuid == null ? UUID.randomUUID() : uuid;
         for(var property : component.getProperties()) {
             properties.add(PropertyEntry.makeFor(property, this));
         }
@@ -134,6 +141,27 @@ public class PlacedComponent {
         if(!properties.isEmpty()) {
             var propertyMap = new CompoundTag();
             for(var entry : properties) {
+                entry.write(propertyMap);
+            }
+            tag.put("Properties", propertyMap);
+        }
+
+        return tag;
+    }
+
+    public Tag serializeSafeNbt() {
+        var tag = new CompoundTag();
+
+        var id = ComponentRegistry.getId(component);
+        tag.putString("Id", id.toString());
+        tag.putInt("X", x);
+        tag.putInt("Y", y);
+
+        if(!properties.isEmpty()) {
+            var propertyMap = new CompoundTag();
+            for(var entry : properties) {
+                if(entry.property.isUnsafe())
+                    continue;
                 entry.write(propertyMap);
             }
             tag.put("Properties", propertyMap);
@@ -263,6 +291,14 @@ public class PlacedComponent {
 
     public BlockPos getPos() {
         return pos;
+    }
+
+    public @NotNull Vec3 getExactPos() {
+        var pos = new Vec3((x + 0.5f) / 16f, 2 / 16f, (y + 0.5f) / 16f);
+        var state = getWorld().getBlockState(this.pos);
+        pos = VecHelper.rotateCentered(pos, CircuitBoardBlock.getAngleX(state), Direction.Axis.X);
+        pos = VecHelper.rotateCentered(pos, CircuitBoardBlock.getAngleY(state), Direction.Axis.Y);
+        return pos.add(this.pos.getX(), this.pos.getY(), this.pos.getZ());
     }
 
     public <T> T data() {

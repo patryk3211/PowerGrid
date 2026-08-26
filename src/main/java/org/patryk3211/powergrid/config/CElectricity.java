@@ -27,14 +27,11 @@ public class CElectricity extends ConfigBase {
     public final ConfigInt growthLampRadius = i(2, 1, "growthLampRadius", Comments.growthLampRadius);
     public final ConfigInt growthLampChance = i(50, 0, "growthLampChance", Comments.growthLampChance);
 
+    public final ConfigBool motorDynamicResistance = b(true, "motorDynamicResistance", Comments.motorDynamicResistance);
+
     public final ConfigFloat forgeEnergyPerVolt = f(2, 0, "forgeEnergyPerVolt", Comments.forgeEnergyPerVolt);
     public final ConfigFloat forgeEnergyPerWatt = f(10, 0, "forgeEnergyPerWatt", Comments.forgeEnergyPerWatt);
     public final ConfigInt tfmgConnectorPower = i(10000, 0, "TFMGConnectorPower", Comments.tfmgConnectorPower);
-
-    public final ConfigInt electroZapperFePerShot = i(100, 1, "electroZapperFePerShot", Comments.electroZapperFePerShot);
-
-    public final ConfigInt portableBatteryBaseCapacity = i(10000, 1, "portableBatteryBaseCapacity", Comments.portableBatteryBaseCapacity);
-    public final ConfigInt portableBatteryEnchantCapacity = i(10000, 1, "portableBatteryEnchantCapacity", Comments.portableBatteryEnchantCapacity);
 
     public final ConfigFloat acidBatteryCapacity = f(120f, 0, "acidBatteryCapacity", Comments.acidBatteryCapacity);
     public final ConfigFloat acidBatteryInitialCharge = f(0.9f, 0, 1.0f, "acidBatteryInitialCharge", Comments.acidBatteryInitialCharge);
@@ -52,16 +49,39 @@ public class CElectricity extends ConfigBase {
     public final ConfigInt carbonPileMaxHeight = i(5, 1, "carbonPileMaxHeight", Comments.carbonPileMaxHeight);
     public final ConfigFloat carbonPileGain = f(10, 0, "carbonPileGain", Comments.carbonPileGain);
 
-    public final ConfigFloat multimeterDistance = f(5, 1, "multimeterDistance", Comments.multimeterDistance);
-    public final ConfigFloat multimeterVoltage = f(500, 1, "multimeterVoltage", Comments.multimeterVoltage);
-    public final ConfigFloat multimeterCurrent = f(50, 1, "multimeterCurrent", Comments.multimeterCurrent);
-
     public final ConfigFloat smallCoreAl = f(1.5f, 0, "smallCoreAl", Comments.smallCoreAl);
     public final ConfigFloat smallCoreK = f(0.9999f, 0, 1, "smallCoreK", Comments.smallCoreK);
     public final ConfigFloat mediumCoreAl = f(10.0f, 0, "mediumCoreAl", Comments.mediumCoreAl);
     public final ConfigFloat mediumCoreK = f(0.99999f, 0, 1, "mediumCoreK", Comments.mediumCoreK);
 
+    public final ConfigFloat wireCutDamageCurrentThreshold = f(0.2f, 0, "wireCutDamageCurrentThreshold", Comments.wireCutDamageCurrentThreshold);
+    public final ConfigBool creativePlayerShortsWires = b(false, "creativePlayerShortsWires", Comments.creativePlayerShortsWires);
+    public final ConfigFloat entityCurrentDamageThreshold = f(0.1f, 0, "entityCurrentDamageThreshold", Comments.entityCurrentDamageThreshold);
+    public final ConfigFloat entityResistance = f(5000, 0, "entityResistance", Comments.entityResistance);
+
+    public final ConfigBool entityWireInteraction = b(true, "entityWireInteractions", Comments.entityWireInteractions);
+    public final ConfigInt factoryLightProjectionRange = i(16, 0, "factoryLightProjectionRange", Comments.factoryLightProjectionRange);
     public final ConfigBool plotterRecordNonconvergence = b(false, "plotterRecordNonconvergence", Comments.plotterRecordNonconvergence);
+
+    public final ConfigInt electricPumpRange = i(24, 0, "electricPumpRange", Comments.electricPumpRange);
+    public final ConfigFloat electricPumpPower = f(2.135f, 0, "electricPumpPower", Comments.electricPumpPower);
+    public final ConfigFloat electricPumpMaxSpeed = f(256f, 0, "electricPumpMaxSpeed", Comments.electricPumpMaxSpeed);
+
+    public final ConfigFloat feInverterControlVoltage = f(20, 0, "feInverterControlVoltage", Comments.feInverterControlVoltage);
+    public final ConfigFloat feInverterControlCapacitance = f(0.0001f, 0, 1, "feInverterControlCapacitance", Comments.feInverterControlCapacitance);
+    public final ConfigInt feInverterBufferSize = i(20000, 0, "feInverterBufferSize", Comments.feInverterBufferSize);
+
+    public final ConfigFloat solarPanelVoc = f(26.4f, 0, 100, "solarPanelVocTarget", Comments.solarPanelVocTarget);
+    public final ConfigInt solarPanelCellCount = i(48, 0, 100, "solarPanelCellCount", Comments.solarPanelCellCount);
+    public final ConfigFloat solarPanelIsc = f(3.3f, 0, 100, "solarPanelIscTarget", Comments.solarPanelIscTarget);
+    public final ConfigFloat solarPanelVmp = f(21.12f, 0, 100, "solarPanelVmpTarget", Comments.solarPanelVmp);
+    public final ConfigFloat solarPanelImp = f(3.036f, 0, 100, "solarPanelImpTarget", Comments.solarPanelImp);
+    public final ConfigInt solarPanelNOCT = i(45, 0, 100, "solarPanelNOCT", Comments.solarPanelNOCT);
+    public final ConfigInt solarPanelMaxSize = i(25, 1, "solarPanelMaxSize", Comments.solarPanelMaxSize);
+
+    public final ConfigFloat hvSwitchSparkExtinguishRPMFactor = f(1, 0, "hvSwitchSparkExtinguishRPMFactor", Comments.hvSwitchSparkExtinguishRPMFactor);
+    public final ConfigFloat hvSwitchSparkMinimumCurrent = f(0.1f, 0, "hvSwitchSparkMinimumCurrent", Comments.hvSwitchSparkMinimumCurrent);
+    public final ConfigFloat hvSwitchSparkPotentialFactor = f(1000, 0, "hvSwitchSparkPotentialFactor", Comments.hvSwitchSparkPotentialFactor);
 
     public final CSolver solver = nested(1, CSolver::new, Comments.solver);
     public final CResistance resistance = nested(1, CResistance::new, Comments.resistance);
@@ -86,14 +106,11 @@ public class CElectricity extends ConfigBase {
         public static final String growthLampRadius = "Radius of the area affected by growth lamp effect";
         public static final String growthLampChance = "Chance value for the growth lamp to tick a random block in its area (lower value = higher chance), this value is divided by lamp's power level";
 
+        public static final String motorDynamicResistance = "Vary motor resistance based on stress consumption";
+
         public static final String forgeEnergyPerVolt = "Conversion rate of volts to Forge Energy (controls buffer size and max transfer rate)";
         public static final String forgeEnergyPerWatt = "Conversion rate of watts to Forge Energy (controls the actual energy cost of a unit of FE)";
         public static final String tfmgConnectorPower = "Maximum power generated by a device connector when it is connected to a 'Create: The Factory Must Grow' electrical network";
-
-        public static final String electroZapperFePerShot = "Forge Energy used by Electro-Zapper per shot";
-
-        public static final String portableBatteryBaseCapacity = "Portable Battery Forge Energy capacity before enchants";
-        public static final String portableBatteryEnchantCapacity = "Portable Battery Forge Energy capacity increase per level of Capacity enchant";
 
         public static final String acidBatteryInitialCharge = "Initial charge of the acid battery";
         public static final String acidBatteryFullChargeInternalResistance = "Acid battery internal resistance when fully charged, measured in Ohms";
@@ -111,15 +128,40 @@ public class CElectricity extends ConfigBase {
         public static final String carbonPileMaxHeight = "Maximum block height of the carbon pile structure";
         public static final String carbonPileGain = "Carbon pile \"gain\", controls how much the coil current affects the resistance";
 
-        public static final String multimeterDistance = "Max multimeter distance";
-        public static final String multimeterVoltage = "Max multimeter voltage";
-        public static final String multimeterCurrent = "Max multimeter current";
-
         public static final String smallCoreAl = "Al parameter of small transformer core (affects resistance per turn)";
         public static final String smallCoreK = "K parameter of small transformer core (affects stray resistance)";
         public static final String mediumCoreAl = "Al parameter of medium transformer core (affects resistance per turn)";
         public static final String mediumCoreK = "K parameter of medium transformer core (affects stray resistance)";
 
+        public static final String factoryLightProjectionRange = "Maximum block range of the factory light projected light blocks";
+
+        public static final String wireCutDamageCurrentThreshold = "Minimum current flowing through a cut wire that will start causing damage";
+        public static final String creativePlayerShortsWires = "Enable circuit forming interaction for players in creative mode";
+        public static final String entityCurrentDamageThreshold = "Minimum current flowing through an entity for it to receive damage";
+        public static final String entityResistance = "Resistance of entities when they are shorting wires";
+
+        public static final String entityWireInteractions = "Enables entities to form circuits when touching wires";
+
         public static final String plotterRecordNonconvergence = "Control whether the plotter records voltage values when networks are not converged";
+
+        public static final String electricPumpRange = "Block range of the electric pump";
+        public static final String electricPumpPower = "Controls how much power is needed to run the pump at a given speed";
+        public static final String electricPumpMaxSpeed = "Maximum speed the pump can run at (can be above the Create's speed limit)";
+
+        public static final String feInverterControlVoltage = "Maximum value of the FE Inverter control pin voltage";
+        public static final String feInverterControlCapacitance = "Capacitance of the FE Inverter control pin";
+        public static final String feInverterBufferSize = "Controls the FE buffer size, and with it, the maximum generated voltage";
+
+        public static final String solarPanelVocTarget = "Target open circuit voltage for the solar panels";
+        public static final String solarPanelCellCount = "Controls the amount of cells in the solar panel (Should be left at 48 if your not trying to imitate a real panel)";
+        public static final String solarPanelIscTarget = "Target short circuit current for the solar panels";
+        public static final String solarPanelVmp = "Controls the voltage part of the max power point (should be around 80% of the Voc)";
+        public static final String solarPanelImp = "Controls the current part of the max power point, (should be around 92% of the Isc)";
+        public static final String solarPanelNOCT = "This is the Nominal Operating Cell Temp of the solar cells in the panel";
+        public static final String solarPanelMaxSize = "Controls maximum number of solar panels in a single multiblock";
+
+        public static final String hvSwitchSparkExtinguishRPMFactor = "RPM required to cleanly turn off a HV switch for a given current flowing through it";
+        public static final String hvSwitchSparkMinimumCurrent = "Minimum current for a HV switch spark to continue existing";
+        public static final String hvSwitchSparkPotentialFactor = "Voltage required to spark when the switch is turning on, scales with contact distance";
     }
 }

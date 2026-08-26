@@ -21,10 +21,13 @@ import com.simibubi.create.content.kinetics.belt.transport.TransportedItemStack;
 import com.simibubi.create.content.kinetics.deployer.BeltDeployerCallbacks;
 import com.simibubi.create.content.kinetics.deployer.DeployerBlockEntity;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.crafting.Recipe;
+import org.patryk3211.powergrid.collections.ModdedAdvancements;
 import org.patryk3211.powergrid.collections.ModdedTags;
+import org.patryk3211.powergrid.equipment.BoostRecipe;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -40,6 +43,14 @@ public class BeltDeployerMixin {
     private static void powerGrid$activateMixin(TransportedItemStack transported, TransportedItemStackHandlerBehaviour handler, DeployerBlockEntity blockEntity, Recipe<?> recipe, CallbackInfo ci, @Local List<TransportedItemStack> collect) {
         var player = blockEntity.getPlayer();
         var stack = player == null ? ItemStack.EMPTY : player.getMainHandItem();
+        if(recipe instanceof BoostRecipe) {
+            var pos = blockEntity.getBlockPos();
+            var awardee = blockEntity.getLevel()
+                    .getNearestPlayer(pos.getX(), pos.getY(), pos.getZ(), 8, EntitySelector.NO_SPECTATORS);
+            if(!ModdedAdvancements.BOOSTING_CHIP.isAlreadyAwardedTo(awardee)) {
+                ModdedAdvancements.BOOSTING_CHIP.awardTo(awardee);
+            }
+        }
         if(stack.is(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag)) {
             if(!stack.has(DataComponents.CUSTOM_DATA))
                 return;

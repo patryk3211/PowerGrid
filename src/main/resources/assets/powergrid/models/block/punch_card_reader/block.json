@@ -6,7 +6,7 @@
 	"textures": {
 		"0": "powergrid:block/punch_card_reader",
 		"1": "powergrid:block/conductive_casing",
-		"particle": "powergrid:block/punch_card_reader"
+		"particle": "powergrid:block/conductive_casing"
 	},
 	"elements": [
 		{

@@ -16,11 +16,20 @@
 package org.patryk3211.powergrid.kinetics.generator.housing;
 
 import com.simibubi.create.content.equipment.wrench.IWrenchable;
+import net.createmod.catnip.placement.IPlacementHelper;
+import net.createmod.catnip.placement.PlacementHelpers;
+import net.createmod.catnip.placement.PlacementOffset;
 import net.minecraft.MethodsReturnNonnullByDefault;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
@@ -29,16 +38,23 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.kinetics.generator.winding.IWindingConnectable;
 
+import javax.annotation.ParametersAreNonnullByDefault;
+import java.util.List;
+import java.util.function.Predicate;
+
+@ParametersAreNonnullByDefault
 @MethodsReturnNonnullByDefault
 public class GeneratorHousing extends Block implements IWrenchable, IWindingConnectable {
     public static final EnumProperty<Direction> HORIZONTAL_FACING = BlockStateProperties.HORIZONTAL_FACING;
     public static final BooleanProperty UP = BlockStateProperties.UP;
+    private static final int placementHelperId = PlacementHelpers.register(new GeneratorHousing.PlacementHelper());
 
     private static final VoxelShape SHAPE = box(1, 1, 1, 15, 15, 15);
 
@@ -55,6 +71,19 @@ public class GeneratorHousing extends Block implements IWrenchable, IWindingConn
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         super.createBlockStateDefinition(builder);
         builder.add(HORIZONTAL_FACING, UP);
+    }
+
+    @Override
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        IPlacementHelper placementHelper = PlacementHelpers.get(placementHelperId);
+        if (!player.isShiftKeyDown() && player.mayBuild()) {
+            if (placementHelper.matchesItem(stack)) {
+                placementHelper.getOffset(player, level, state, pos, hit)
+                        .placeInWorld(level, (BlockItem) stack.getItem(), player, hand, hit);
+                return ItemInteractionResult.SUCCESS;
+            }
+        }
+        return super.useItemOn(stack, state, level, pos, player, hand, hit);
     }
 
     @Override
@@ -125,5 +154,36 @@ public class GeneratorHousing extends Block implements IWrenchable, IWindingConn
     @Override
     public BlockState mirror(BlockState state, Mirror mirrorIn) {
         return state.rotate(mirrorIn.getRotation(state.getValue(HORIZONTAL_FACING)));
+    }
+
+    @MethodsReturnNonnullByDefault
+    private static class PlacementHelper implements IPlacementHelper {
+        @Override
+        public Predicate<ItemStack> getItemPredicate() {
+            return ModdedBlocks.GENERATOR_HOUSING::isIn;
+        }
+
+        @Override
+        public Predicate<BlockState> getStatePredicate() {
+            return s -> s.getBlock() instanceof GeneratorHousing;
+        }
+
+        @Override
+        public PlacementOffset getOffset(Player player, Level world, BlockState state, BlockPos pos, BlockHitResult ray) {
+            List<Direction> directions = IPlacementHelper.orderedByDistanceExceptAxis(pos, ray.getLocation(),
+                    state.getValue(HORIZONTAL_FACING).getAxis(), dir -> {
+                if(dir == Direction.DOWN || dir == Direction.UP){
+                    return false;
+                } else return world.getBlockState(pos.relative(dir)).canBeReplaced();
+            });
+
+
+            if (directions.isEmpty())
+                return PlacementOffset.fail();
+            else {
+                return PlacementOffset.success(pos.relative(directions.get(0)),
+                        s -> s.setValue(HORIZONTAL_FACING, state.getValue(HORIZONTAL_FACING)).setValue(UP, state.getValue(UP)));
+            }
+        }
     }
 }

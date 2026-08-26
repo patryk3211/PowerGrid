@@ -1,0 +1,28 @@
+{
+  "parent": "powergrid:root",
+  "criteria": {
+    "0": {
+      "trigger": "powergrid:lightning_builtin"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "description": {
+      "color": "#DBA213",
+      "translate": "advancement.powergrid.lightning.desc"
+    },
+    "icon": {
+      "count": 1,
+      "id": "minecraft:lightning_rod"
+    },
+    "title": {
+      "translate": "advancement.powergrid.lightning"
+    }
+  },
+  "requirements": [
+    [
+      "0"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

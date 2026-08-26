@@ -44,6 +44,7 @@ import org.patryk3211.powergrid.electricity.info.Voltage;
 import org.patryk3211.powergrid.electricity.redstoneconverter.IRedstoneConverterBehaviour;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.utility.Lang;
+import org.patryk3211.powergrid.utility.Unit;
 
 import java.util.List;
 
@@ -138,7 +139,13 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
         var be = getBlockEntity(level, pos);
         if(be == null)
             return 0;
-        double fill = be.getEnergy() / be.getCapacity();
+        var controller = be.getControllerBE();
+        double fill;
+        if(controller == null) {
+            fill = be.getEnergy() / be.getCapacity();
+        } else {
+            fill = controller.getEnergy() / controller.getCapacity();
+        }
         return Mth.floor(fill * 14.0f) + (fill > 0.001 ? 1 : 0);
     }
 
@@ -147,7 +154,14 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
         var be = getBlockEntity(level, pos);
         if(be == null)
             return 0;
-        return (float) (be.getEnergy() / be.getCapacity());
+        var controller = be.getControllerBE();
+        double fill;
+        if(controller == null) {
+            fill = be.getEnergy() / be.getCapacity();
+        } else {
+            fill = controller.getEnergy() / controller.getCapacity();
+        }
+        return (float) fill;
     }
 
     @Override
@@ -155,16 +169,32 @@ public class BatteryBlock extends AbstractBatteryBlock<MultiBlockBatteryEntity> 
         Voltage.max(spec.calculateVoltage(1), player, tooltip);
         Power.max(stack, player, tooltip);
         float charge;
+        float maxCharge = getSpec().getMaxCharge();
         if(!stack.has(DataComponents.CUSTOM_DATA) || !stack.get(DataComponents.CUSTOM_DATA).contains("Energy")) {
-            charge = getSpec().getInitialCharge() / getSpec().getMaxCharge();
+            charge = getSpec().getInitialCharge() / maxCharge;
         } else {
-            charge = (float) (stack.get(DataComponents.CUSTOM_DATA).copyTag().getDouble("Energy") / getSpec().getMaxCharge());
+            charge = (float) (stack.get(DataComponents.CUSTOM_DATA).copyTag().getDouble("Energy") / maxCharge);
         }
         Lang.translate("tooltip.charge.current")
                 .style(ChatFormatting.GRAY).addTo(tooltip);
         Lang.builder()
-                .add(Component.literal(" ")).add(Lang.numberConstant(charge * 100))
+                .add(Component.literal(" "))
+                .add(Lang.numberConstant(charge * 100))
                 .add(Component.literal("%"))
                 .style(ChatFormatting.AQUA).addTo(tooltip);
+        Lang.translate("tooltip.capacity")
+                .style(ChatFormatting.GRAY)
+                .addTo(tooltip);
+        Lang.builder()
+                .add(Component.literal(" "))
+                .add(Lang.numberConstant(maxCharge / 3600))
+                .add(Component.literal(" "))
+                .add(Unit.ENERGY.get())
+                .style(ChatFormatting.GREEN)
+                .addTo(tooltip);
+    }
+
+    public static boolean isBattery(BlockState state) {
+        return state.getBlock() instanceof BatteryBlock;
     }
 }

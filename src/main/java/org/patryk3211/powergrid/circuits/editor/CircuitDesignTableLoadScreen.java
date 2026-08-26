@@ -91,9 +91,10 @@ public class CircuitDesignTableLoadScreen extends AbstractSimiContainerScreen<Ci
         }
 
         try {
-            var file = Path.of("circuits", fileNameInput.getValue());
-            if(!file.toString().endsWith(".nbt"))
-                file = Path.of(file + ".nbt");
+            var filename = fileNameInput.getValue();
+            if (filename.endsWith(".nbt"))
+                filename = filename.substring(0, filename.length() - 4);
+            var file = Path.of("circuits", filename.replaceAll("\\W+", "_") + ".nbt");
             Files.createDirectories(file.getParent());
             if(Files.exists(file) && !confirm) {
                 confirm = true;
@@ -125,7 +126,11 @@ public class CircuitDesignTableLoadScreen extends AbstractSimiContainerScreen<Ci
             try (InputStream in = Files.newInputStream(file, StandardOpenOption.READ)) {
                 var nbt = NbtIo.readCompressed(in, NbtAccounter.unlimitedHeap());
                 var schematic = CircuitSchematic.fromNbt(nbt);
-                ModdedPackets.sendToServer(new SaveSchematicC2SPacket(this.menu.contentHolder, null, schematic));
+                var name = fileNameInput.getValue();
+                if(name.endsWith(".nbt")) {
+                    name = name.substring(0, name.length() - 4);
+                }
+                ModdedPackets.sendToServer(new SaveSchematicC2SPacket(this.menu.contentHolder, name, schematic));
             }
         } catch (IOException e) {
             PowerGrid.LOGGER.error("Failed to load circuit schematic", e);
@@ -171,6 +176,8 @@ public class CircuitDesignTableLoadScreen extends AbstractSimiContainerScreen<Ci
         fileNameInput.tick();
         if(popupTimeout > 0)
             --popupTimeout;
+        if(!menu.player.isCreative() && !menu.contentHolder.isPowered())
+            onClose();
     }
 
     private void popup(Component text) {

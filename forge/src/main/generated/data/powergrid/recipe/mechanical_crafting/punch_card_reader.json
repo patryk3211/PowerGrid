@@ -12,19 +12,19 @@
     "M": {
       "item": "create:precision_mechanism"
     },
+    "P": {
+      "item": "powergrid:pins"
+    },
     "S": {
       "item": "create:shaft"
     },
     "Z": {
       "tag": "c:plates/zinc"
-    },
-    "n": {
-      "tag": "c:nuggets/copper"
     }
   },
   "pattern": [
     " ZMZ ",
-    "nnCnn",
+    "PPCPP",
     " GSG "
   ],
   "result": {

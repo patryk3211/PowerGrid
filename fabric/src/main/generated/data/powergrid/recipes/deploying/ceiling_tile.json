@@ -1,0 +1,16 @@
+{
+  "type": "create:deploying",
+  "ingredients": [
+    {
+      "item": "create:copycat_panel"
+    },
+    {
+      "item": "create:cardboard"
+    }
+  ],
+  "results": [
+    {
+      "item": "powergrid:ceiling_tile"
+    }
+  ]
+}

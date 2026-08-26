@@ -38,13 +38,22 @@ dependencies {
 //    modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-forge:$rei_version"
 
     // Create: The Factory Must Grow
-    modCompileOnly "maven.modrinth:create-tfmg:1.2.0"
+    modCompileOnly "curse.maven:tfmg-community-edition-1653026:8665896"
 
     // TIS-3D
-    modCompileOnly("maven.modrinth:tis3d-renewed:1.8.1")
+    modCompileOnly("maven.modrinth:tis3d-renewed:${tis3d_version}")
 
-    // Cold Sweat
-    modCompileOnly "curse.maven:cold-sweat-506194:${cold_sweat_cursemaven_fileid}-sources-${cold_sweat_sources_cursemaven_fileid}"
+    // CC: Tweaked
+    modCompileOnly("cc.tweaked:cc-tweaked-${project.minecraft_version}-core-api:${cc_tweaked_version}")
+    modCompileOnly("cc.tweaked:cc-tweaked-${project.minecraft_version}-forge-api:${cc_tweaked_version}")
+    forgeRuntimeLibrary "cc.tweaked:cobalt:0.9.7"
+    modLocalRuntime("cc.tweaked:cc-tweaked-${project.minecraft_version}-forge:${cc_tweaked_version}")
+
+    // CC: Tweaked
+    modCompileOnly("cc.tweaked:cc-tweaked-${project.minecraft_version}-core-api:${cc_tweaked_version}")
+    modCompileOnly("cc.tweaked:cc-tweaked-${project.minecraft_version}-forge-api:${cc_tweaked_version}")
+    forgeRuntimeLibrary "cc.tweaked:cobalt:0.9.7"
+    modLocalRuntime("cc.tweaked:cc-tweaked-${project.minecraft_version}-forge:${cc_tweaked_version}")
 
     // Cold Sweat
     modCompileOnly "curse.maven:cold-sweat-506194:${cold_sweat_cursemaven_fileid}-sources-${cold_sweat_sources_cursemaven_fileid}"
@@ -81,10 +90,10 @@ dependencies {
 	forgeRuntimeLibrary("io.github.spair:imgui-java-binding:1.88.0")
 	forgeRuntimeLibrary("io.github.spair:imgui-java-lwjgl3:1.88.0")
 
-//    modLocalRuntime("maven.modrinth:create-tfmg:1.2.0")
+//    modLocalRuntime("curse.maven:tfmg-community-edition-1653026:8665896")
 //    modLocalRuntime("me.shedaniel:RoughlyEnoughItems-forge:$rei_version")
-    modLocalRuntime("maven.modrinth:tis3d-renewed:1.8.1")
-    modLocalRuntime("maven.modrinth:markdown-manual-renewed:1.3.1")
+//    modLocalRuntime("maven.modrinth:tis3d-renewed:${tis3d_version}")
+//    modLocalRuntime("maven.modrinth:markdown-manual-renewed:1.3.1")
 }
 
 loom {

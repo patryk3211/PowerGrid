@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.info;
 
-import com.simibubi.create.content.equipment.goggles.GogglesItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
@@ -29,15 +28,17 @@ import org.patryk3211.powergrid.utility.Unit;
 import java.util.List;
 
 public class Current {
-    public static void max(float value, Player player, List<Component> tooltip) {
-        boolean hasGoggles = GogglesItem.isWearingGoggles(player);
-
-        Lang.translate("tooltip.current.max")
+    public static void current(String key, ChatFormatting color, float value, Player player, List<Component> tooltip) {
+        Lang.translate(key)
                 .style(ChatFormatting.GRAY).addTo(tooltip);
         Lang.builder()
                 .add(Component.nullToEmpty(" ")).add(Lang.number(value))
                 .add(Component.nullToEmpty(" ")).add(Unit.CURRENT.get())
-                .style(ChatFormatting.RED).addTo(tooltip);
+                .style(color).addTo(tooltip);
+    }
+
+    public static void max(float value, Player player, List<Component> tooltip) {
+        current("tooltip.current.max", ChatFormatting.RED, value, player, tooltip);
     }
 
     public static void max(ItemStack stack, Player player, List<Component> tooltip) {
@@ -50,8 +51,20 @@ public class Current {
         }
     }
 
+    public static void min(float value, Player player, List<Component> tooltip) {
+        current("tooltip.current.min", ChatFormatting.RED, value, player, tooltip);
+    }
+
     public static void max(float resistance, float power, Player player, List<Component> tooltip) {
         var current = Math.sqrt(power / resistance);
         max((float) Math.round(current * 10) / 10, player, tooltip);
     }
+
+    public static void isc(float value, Player player, List<Component> tooltip) {
+        current("tooltip.solar.isc", ChatFormatting.RED, value, player, tooltip);
+    }
+    public static void imp(float value, Player player, List<Component> tooltip) {
+        current("tooltip.solar.imp", ChatFormatting.YELLOW, value, player, tooltip);
+    }
+
 }

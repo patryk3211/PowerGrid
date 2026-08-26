@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.electricity.transformer;
 
 import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
+import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
@@ -31,9 +32,12 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedAdvancements;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
+import org.patryk3211.powergrid.electricity.base.IHelperTerminal;
+import org.patryk3211.powergrid.electricity.base.ITerminalPlacement;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.TransformerCoupling;
@@ -47,7 +51,7 @@ import java.util.List;
 
 import static org.patryk3211.powergrid.electricity.sim.special.SplitTransformerControllerWire.AVG_SAMPLE_COUNT;
 
-public abstract class TransformerBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
+public abstract class TransformerBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation, IHelperTerminal {
     protected TransformerCoilParameters primaryCoil;
     protected TransformerCoilParameters secondaryCoil;
 
@@ -73,6 +77,12 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
     public abstract double couplingFactor();
 
     @Override
+    public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
+        super.addBehaviours(behaviours);
+        registerAwardables(behaviours, ModdedAdvancements.TRANSFORMER);
+    }
+
+    @Override
     public void tick() {
         float power = 0;
         lastCurrent = 0;
@@ -87,6 +97,9 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             var P3 = I3 * I3 * mutualInductance.getResistance();
             power += P3;
             lastCurrent += Math.abs(I3);
+            if(Math.abs(I3) > 0.001) {
+                award(ModdedAdvancements.TRANSFORMER);
+            }
         }
         if(thermalBehaviour != null && !level.isClientSide)
             thermalBehaviour.applyTickPower(power);
@@ -129,12 +142,14 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
 
         if(splittingTransformers() && couplingI1 != null && couplingI2 != null) {
             var avgData = tag.getList("TrAvgDat", CompoundTag.TAG_DOUBLE);
-            for(int i = 0; i < AVG_SAMPLE_COUNT; ++i) {
-                couplingI1.samples[i] = avgData.getDouble(i * 2);
-                couplingI2.samples[i] = avgData.getDouble(i * 2 + 1);
+            if(avgData.size() == AVG_SAMPLE_COUNT) {
+                for(int i = 0; i < AVG_SAMPLE_COUNT; ++i) {
+                    couplingI1.samples[i] = avgData.getDouble(i * 2);
+                    couplingI2.samples[i] = avgData.getDouble(i * 2 + 1);
+                }
+                couplingI1.avgHead = tag.getInt("PAvgHead");
+                couplingI2.avgHead = tag.getInt("SAvgHead");
             }
-            couplingI1.avgHead = tag.getInt("PAvgHead");
-            couplingI2.avgHead = tag.getInt("SAvgHead");
         }
 
         super.read(tag, registries, clientPacket);
@@ -346,6 +361,34 @@ public abstract class TransformerBlockEntity extends ElectricBlockEntity impleme
             this.mutualInductance = null;
             this.coupling = null;
         }
+    }
+
+    protected int connectedTerminalIndex(int index) {
+        if(primaryCoil != null) {
+            if(primaryCoil.getTerminal1() == index) {
+                return primaryCoil.getTerminal2();
+            } else if(primaryCoil.getTerminal2() == index) {
+                return primaryCoil.getTerminal1();
+            }
+        }
+        if(secondaryCoil != null) {
+            if(secondaryCoil.getTerminal1() == index) {
+                return secondaryCoil.getTerminal2();
+            } else if(secondaryCoil.getTerminal2() == index) {
+                return secondaryCoil.getTerminal1();
+            }
+        }
+        return -1;
+    }
+
+    @Override
+    public ITerminalPlacement connectedTerminal(BlockState state, int index) {
+        if(!(getBlockState().getBlock() instanceof TransformerBlock block))
+            return null;
+        int outIndex = connectedTerminalIndex(index);
+        if(outIndex >= 0)
+            return block.terminal(state, outIndex);
+        return null;
     }
 
     @Override

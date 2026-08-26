@@ -5,7 +5,7 @@
 	"texture_size": [64, 64],
 	"textures": {
 		"0": "powergrid:block/punch_card_reader",
-		"particle": "powergrid:block/punch_card_reader"
+		"particle": "powergrid:block/conductive_casing"
 	},
 	"elements": [
 		{

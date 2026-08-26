@@ -45,10 +45,7 @@ import net.minecraft.world.level.material.PushReaction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
-import org.patryk3211.powergrid.collections.ModdedConfigs;
-import org.patryk3211.powergrid.collections.ModdedItems;
-import org.patryk3211.powergrid.collections.ModdedPackets;
-import org.patryk3211.powergrid.collections.ModdedSoundEvents;
+import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.DebugItem;
 import org.patryk3211.powergrid.electricity.wire.registry.WireItemEntry;
@@ -344,13 +341,15 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
             endpoint2 = WireEndpointType.deserialize(nbt.getCompound("Endpoint2"));
         }
 
-        var currentPos = blockPosition();
-        if(lastPos != null && !lastPos.equals(currentPos)) {
-            var diff = currentPos.subtract(lastPos);
-            if(endpoint1 != null)
-                endpoint1 = endpoint1.makeOffset(diff);
-            if(endpoint2 != null)
-                endpoint2 = endpoint2.makeOffset(diff);
+        if(!level().isClientSide) {
+            var currentPos = blockPosition();
+            if (lastPos != null && !lastPos.equals(currentPos)) {
+                var diff = currentPos.subtract(lastPos);
+                if (endpoint1 != null)
+                    endpoint1 = endpoint1.makeOffset(diff);
+                if (endpoint2 != null)
+                    endpoint2 = endpoint2.makeOffset(diff);
+            }
         }
 
         setEndpoint1(endpoint1);
@@ -453,12 +452,33 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         super.kill();
     }
 
+    private void cut(Player player, boolean correctTool) {
+        ModdedSoundEvents.WIRE_CUT.playAt(level(), position(), 0.75f, 1.25f, false);
+        double I = Math.abs(current());
+        float threshold = ModdedConfigs.server().electricity.wireCutDamageCurrentThreshold.getF();
+        if(!correctTool) {
+            itemCount = (int) (itemCount * 0.75f);
+            threshold *= 0.5f;
+            if(!ModdedAdvancements.WIRE_CUT.isAlreadyAwardedTo(player)) {
+                ModdedAdvancements.WIRE_CUT.awardTo(player);
+            }
+        }
+        if(I >= threshold) {
+            float damage = (float) (I / threshold);
+            var source = ModdedDamageTypes.LIVE_WIRE_CUTTING.simpleDamageSource(level());
+            player.hurt(source, damage);
+        }
+        kill();
+    }
+
     @Override
     public InteractionResult interact(Player player, InteractionHand hand) {
         var stack = player.getItemInHand(hand);
-        if(stack.getItem() == ModdedItems.WIRE_CUTTER.get()) {
-            ModdedSoundEvents.WIRE_CUT.playAt(level(), position(), 0.75f, 1.25f, false);
-            kill();
+        if(stack.is(ModdedTags.Item.WIRE_CUTTERS.tag)) {
+            cut(player, true);
+            return InteractionResult.SUCCESS;
+        } else if(stack.is(ModdedTags.Item.BAD_WIRE_CUTTERS.tag)) {
+            cut(player, false);
             return InteractionResult.SUCCESS;
         } else if(stack.getItem() instanceof MultimeterItem multimeter) {
             return multimeter.useOnWire(player, stack, hand, this);
@@ -517,6 +537,10 @@ public abstract class BaseWireEntity extends Entity implements EntityDataS2CPack
         if(wireEntry.colorable())
             return color;
         return -1;
+    }
+
+    public boolean isInsulated() {
+        return wireEntry.insulated();
     }
 
     public void redeferEndpoints() {

@@ -151,7 +151,7 @@ public class FuseHolderBlockEntity extends ElectricBlockEntity {
 
         @Override
         protected Vec3 getSouthLocation() {
-            return VecHelper.voxelSpace(8.0f, 8.0f, 9.0f);
+            return VecHelper.voxelSpace(8.0f, 8.0f, 5.0f);
         }
     }
 }

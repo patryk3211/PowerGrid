@@ -21,6 +21,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.datafix.DataFixTypes;
@@ -150,9 +151,6 @@ public class GlobalElectricNetworks {
 
     public static void inspect(ElectricBehaviour behaviour, Player user) {
         var worldNetworks = getWorldNetworks(user.level());
-        user.sendSystemMessage(user instanceof ServerPlayer
-                ? Component.literal("Server:").withStyle(ChatFormatting.GOLD)
-                : Component.literal("Client:").withStyle(ChatFormatting.GREEN));
         int index = 0;
         for(var node : behaviour.getExternalNodes()) {
             user.sendSystemMessage(Component.literal((index++) + " = ").append(display(node))
@@ -225,4 +223,12 @@ public class GlobalElectricNetworks {
         }
     }
 
+    public static void dropTrackers(ServerPlayer player, ResourceKey<Level> dimension) {
+        for(var entry : worldNetworks.entrySet()) {
+            if(entry.getKey().dimension() == dimension) {
+                entry.getValue().dropTrackers(player);
+                break;
+            }
+        }
+    }
 }

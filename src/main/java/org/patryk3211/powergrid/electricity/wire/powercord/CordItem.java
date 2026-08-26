@@ -27,6 +27,7 @@ import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGrid;
@@ -100,6 +101,11 @@ public class CordItem extends WireItem {
         if(e11 instanceof BlockWireEndpoint be1 && e21 instanceof BlockWireEndpoint be2) {
             var behaviour1 = be1.getElectricBehaviour(level);
             var behaviour2 = be2.getElectricBehaviour(level);
+            if(behaviour1 == null || behaviour2 == null) {
+                IElectric.sendMessage(context, Lang.translate("message.connection_failed").style(ChatFormatting.RED).component());
+                PowerGrid.LOGGER.error("Connection failed, behaviors: ({}, {})", behaviour1, behaviour2);
+                return InteractionResult.FAIL;
+            }
             // Check if there is an existing connection between these nodes.
             if (behaviour1.hasConnection(be1, be2) || behaviour2.hasConnection(be2, be1)) {
                 IElectric.sendMessage(context, Lang.translate("message.connection_exists").style(ChatFormatting.RED).component());
@@ -111,6 +117,11 @@ public class CordItem extends WireItem {
         if(e12 instanceof BlockWireEndpoint be1 && e22 instanceof BlockWireEndpoint be2) {
             var behaviour1 = be1.getElectricBehaviour(level);
             var behaviour2 = be2.getElectricBehaviour(level);
+            if(behaviour1 == null || behaviour2 == null) {
+                IElectric.sendMessage(context, Lang.translate("message.connection_failed").style(ChatFormatting.RED).component());
+                PowerGrid.LOGGER.error("Connection failed, behaviors: ({}, {})", behaviour1, behaviour2);
+                return InteractionResult.FAIL;
+            }
             // Check if there is an existing connection between these nodes.
             if (behaviour1.hasConnection(be1, be2) || behaviour2.hasConnection(be2, be1)) {
                 IElectric.sendMessage(context, Lang.translate("message.connection_exists").style(ChatFormatting.RED).component());
@@ -199,9 +210,11 @@ public class CordItem extends WireItem {
         var level = player.level();
         var state = level.getBlockState(blockPos);
         var electric = IElectric.getAt(level, blockPos);
-        var hit = player.pick(PlayerUtilities.getReachDistance(player) + 1.0f, 1.0f, false);
+        var hit = player.pick(PlayerUtilities.getReachDistance(player) + 1.0f, 0.0f, false);
         if(!(hit instanceof BlockHitResult blockHit))
             return EventResult.pass();
+        if(hit.getType() != HitResult.Type.BLOCK || !blockHit.getBlockPos().equals(blockPos))
+            return EventResult.interruptFalse();
         var context = new UseOnContext(player, hand, blockHit);
         if(electric != null) {
             var stack = player.getMainHandItem();

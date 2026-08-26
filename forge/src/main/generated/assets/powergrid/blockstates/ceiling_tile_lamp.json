@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "state=empty": {
+      "model": "powergrid:block/ceiling_tile/ceiling_tile_light_empty"
+    },
+    "state=lamp": {
+      "model": "powergrid:block/ceiling_tile/ceiling_tile_light"
+    },
+    "state=lamp_low_power": {
+      "model": "powergrid:block/ceiling_tile/ceiling_tile_light"
+    },
+    "state=lamp_on": {
+      "model": "powergrid:block/ceiling_tile/ceiling_tile_light"
+    }
+  }
+}

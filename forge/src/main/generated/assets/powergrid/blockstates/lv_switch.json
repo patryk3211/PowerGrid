@@ -1,111 +1,215 @@
 {
   "variants": {
-    "axis_along_first=false,facing=down,open=false": {
+    "facing=down,open=false,rotation=0": {
       "model": "powergrid:block/switches/lv_switch_on_v",
-      "y": 90
-    },
-    "axis_along_first=false,facing=down,open=true": {
-      "model": "powergrid:block/switches/lv_switch_off_v",
-      "y": 90
-    },
-    "axis_along_first=false,facing=east,open=false": {
-      "model": "powergrid:block/switches/lv_switch_on_h",
-      "x": 90
-    },
-    "axis_along_first=false,facing=east,open=true": {
-      "model": "powergrid:block/switches/lv_switch_off_h",
-      "x": 90
-    },
-    "axis_along_first=false,facing=north,open=false": {
-      "model": "powergrid:block/switches/lv_switch_on_h",
-      "x": 90,
       "y": -90
     },
-    "axis_along_first=false,facing=north,open=true": {
-      "model": "powergrid:block/switches/lv_switch_off_h",
-      "x": 90,
-      "y": -90
-    },
-    "axis_along_first=false,facing=south,open=false": {
-      "model": "powergrid:block/switches/lv_switch_on_h",
-      "x": 90,
-      "y": 90
-    },
-    "axis_along_first=false,facing=south,open=true": {
-      "model": "powergrid:block/switches/lv_switch_off_h",
-      "x": 90,
-      "y": 90
-    },
-    "axis_along_first=false,facing=up,open=false": {
-      "model": "powergrid:block/switches/lv_switch_on_v",
-      "x": 180,
-      "y": 90
-    },
-    "axis_along_first=false,facing=up,open=true": {
-      "model": "powergrid:block/switches/lv_switch_off_v",
-      "x": 180,
-      "y": 90
-    },
-    "axis_along_first=false,facing=west,open=false": {
-      "model": "powergrid:block/switches/lv_switch_on_h",
-      "x": 90,
-      "y": 180
-    },
-    "axis_along_first=false,facing=west,open=true": {
-      "model": "powergrid:block/switches/lv_switch_off_h",
-      "x": 90,
-      "y": 180
-    },
-    "axis_along_first=true,facing=down,open=false": {
+    "facing=down,open=false,rotation=1": {
       "model": "powergrid:block/switches/lv_switch_on_v"
     },
-    "axis_along_first=true,facing=down,open=true": {
+    "facing=down,open=false,rotation=2": {
+      "model": "powergrid:block/switches/lv_switch_on_v",
+      "y": 90
+    },
+    "facing=down,open=false,rotation=3": {
+      "model": "powergrid:block/switches/lv_switch_on_v",
+      "y": 180
+    },
+    "facing=down,open=true,rotation=0": {
+      "model": "powergrid:block/switches/lv_switch_off_v",
+      "y": -90
+    },
+    "facing=down,open=true,rotation=1": {
       "model": "powergrid:block/switches/lv_switch_off_v"
     },
-    "axis_along_first=true,facing=east,open=false": {
+    "facing=down,open=true,rotation=2": {
+      "model": "powergrid:block/switches/lv_switch_off_v",
+      "y": 90
+    },
+    "facing=down,open=true,rotation=3": {
+      "model": "powergrid:block/switches/lv_switch_off_v",
+      "y": 180
+    },
+    "facing=east,open=false,rotation=0": {
+      "model": "powergrid:block/switches/lv_switch_on_h",
+      "x": -90
+    },
+    "facing=east,open=false,rotation=1": {
       "model": "powergrid:block/switches/lv_switch_on_h",
       "x": 180
     },
-    "axis_along_first=true,facing=east,open=true": {
+    "facing=east,open=false,rotation=2": {
+      "model": "powergrid:block/switches/lv_switch_on_h",
+      "x": 90
+    },
+    "facing=east,open=false,rotation=3": {
+      "model": "powergrid:block/switches/lv_switch_on_h"
+    },
+    "facing=east,open=true,rotation=0": {
+      "model": "powergrid:block/switches/lv_switch_off_h",
+      "x": -90
+    },
+    "facing=east,open=true,rotation=1": {
       "model": "powergrid:block/switches/lv_switch_off_h",
       "x": 180
     },
-    "axis_along_first=true,facing=north,open=false": {
+    "facing=east,open=true,rotation=2": {
+      "model": "powergrid:block/switches/lv_switch_off_h",
+      "x": 90
+    },
+    "facing=east,open=true,rotation=3": {
+      "model": "powergrid:block/switches/lv_switch_off_h"
+    },
+    "facing=north,open=false,rotation=0": {
+      "model": "powergrid:block/switches/lv_switch_on_h",
+      "x": -90,
+      "y": -90
+    },
+    "facing=north,open=false,rotation=1": {
       "model": "powergrid:block/switches/lv_switch_on_h",
       "x": 180,
       "y": -90
     },
-    "axis_along_first=true,facing=north,open=true": {
+    "facing=north,open=false,rotation=2": {
+      "model": "powergrid:block/switches/lv_switch_on_h",
+      "x": 90,
+      "y": -90
+    },
+    "facing=north,open=false,rotation=3": {
+      "model": "powergrid:block/switches/lv_switch_on_h",
+      "y": -90
+    },
+    "facing=north,open=true,rotation=0": {
+      "model": "powergrid:block/switches/lv_switch_off_h",
+      "x": -90,
+      "y": -90
+    },
+    "facing=north,open=true,rotation=1": {
       "model": "powergrid:block/switches/lv_switch_off_h",
       "x": 180,
       "y": -90
     },
-    "axis_along_first=true,facing=south,open=false": {
+    "facing=north,open=true,rotation=2": {
+      "model": "powergrid:block/switches/lv_switch_off_h",
+      "x": 90,
+      "y": -90
+    },
+    "facing=north,open=true,rotation=3": {
+      "model": "powergrid:block/switches/lv_switch_off_h",
+      "y": -90
+    },
+    "facing=south,open=false,rotation=0": {
+      "model": "powergrid:block/switches/lv_switch_on_h",
+      "x": -90,
+      "y": 90
+    },
+    "facing=south,open=false,rotation=1": {
       "model": "powergrid:block/switches/lv_switch_on_h",
       "x": 180,
       "y": 90
     },
-    "axis_along_first=true,facing=south,open=true": {
+    "facing=south,open=false,rotation=2": {
+      "model": "powergrid:block/switches/lv_switch_on_h",
+      "x": 90,
+      "y": 90
+    },
+    "facing=south,open=false,rotation=3": {
+      "model": "powergrid:block/switches/lv_switch_on_h",
+      "y": 90
+    },
+    "facing=south,open=true,rotation=0": {
+      "model": "powergrid:block/switches/lv_switch_off_h",
+      "x": -90,
+      "y": 90
+    },
+    "facing=south,open=true,rotation=1": {
       "model": "powergrid:block/switches/lv_switch_off_h",
       "x": 180,
       "y": 90
     },
-    "axis_along_first=true,facing=up,open=false": {
+    "facing=south,open=true,rotation=2": {
+      "model": "powergrid:block/switches/lv_switch_off_h",
+      "x": 90,
+      "y": 90
+    },
+    "facing=south,open=true,rotation=3": {
+      "model": "powergrid:block/switches/lv_switch_off_h",
+      "y": 90
+    },
+    "facing=up,open=false,rotation=0": {
+      "model": "powergrid:block/switches/lv_switch_on_v",
+      "x": 180,
+      "y": -90
+    },
+    "facing=up,open=false,rotation=1": {
       "model": "powergrid:block/switches/lv_switch_on_v",
       "x": 180
     },
-    "axis_along_first=true,facing=up,open=true": {
+    "facing=up,open=false,rotation=2": {
+      "model": "powergrid:block/switches/lv_switch_on_v",
+      "x": 180,
+      "y": 90
+    },
+    "facing=up,open=false,rotation=3": {
+      "model": "powergrid:block/switches/lv_switch_on_v",
+      "x": 180,
+      "y": 180
+    },
+    "facing=up,open=true,rotation=0": {
+      "model": "powergrid:block/switches/lv_switch_off_v",
+      "x": 180,
+      "y": -90
+    },
+    "facing=up,open=true,rotation=1": {
       "model": "powergrid:block/switches/lv_switch_off_v",
       "x": 180
     },
-    "axis_along_first=true,facing=west,open=false": {
+    "facing=up,open=true,rotation=2": {
+      "model": "powergrid:block/switches/lv_switch_off_v",
+      "x": 180,
+      "y": 90
+    },
+    "facing=up,open=true,rotation=3": {
+      "model": "powergrid:block/switches/lv_switch_off_v",
+      "x": 180,
+      "y": 180
+    },
+    "facing=west,open=false,rotation=0": {
+      "model": "powergrid:block/switches/lv_switch_on_h",
+      "x": -90,
+      "y": 180
+    },
+    "facing=west,open=false,rotation=1": {
       "model": "powergrid:block/switches/lv_switch_on_h",
       "x": 180,
       "y": 180
     },
-    "axis_along_first=true,facing=west,open=true": {
+    "facing=west,open=false,rotation=2": {
+      "model": "powergrid:block/switches/lv_switch_on_h",
+      "x": 90,
+      "y": 180
+    },
+    "facing=west,open=false,rotation=3": {
+      "model": "powergrid:block/switches/lv_switch_on_h",
+      "y": 180
+    },
+    "facing=west,open=true,rotation=0": {
+      "model": "powergrid:block/switches/lv_switch_off_h",
+      "x": -90,
+      "y": 180
+    },
+    "facing=west,open=true,rotation=1": {
       "model": "powergrid:block/switches/lv_switch_off_h",
       "x": 180,
+      "y": 180
+    },
+    "facing=west,open=true,rotation=2": {
+      "model": "powergrid:block/switches/lv_switch_off_h",
+      "x": 90,
+      "y": 180
+    },
+    "facing=west,open=true,rotation=3": {
+      "model": "powergrid:block/switches/lv_switch_off_h",
       "y": 180
     }
   }

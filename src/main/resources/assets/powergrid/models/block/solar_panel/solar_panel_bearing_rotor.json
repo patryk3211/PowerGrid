@@ -1,0 +1,49 @@
+{
+	"format_version": "1.21.11",
+	"credit": "Made with Blockbench",
+	"texture_size": [64, 64],
+	"textures": {
+		"0": "powergrid:block/solar_panel_bearing",
+		"particle": "powergrid:block/wire_connector"
+	},
+	"elements": [
+		{
+			"name": "SlipRing",
+			"from": [4, 4, 5],
+			"to": [12, 12, 8],
+			"rotation": {"angle": 0, "axis": "y", "origin": [8, 8, 9]},
+			"faces": {
+				"north": {"uv": [6, 9, 8, 11], "texture": "#0"},
+				"east": {"uv": [2.75, 7, 2, 9], "texture": "#0"},
+				"south": {"uv": [0, 7, 2, 9], "texture": "#0"},
+				"west": {"uv": [2, 7, 2.75, 9], "texture": "#0"},
+				"up": {"uv": [11.5, 8, 9.5, 8.75], "texture": "#0"},
+				"down": {"uv": [11.5, 8.75, 9.5, 8], "texture": "#0"}
+			}
+		},
+		{
+			"name": "Holder2",
+			"from": [1, 1, 0],
+			"to": [15, 15, 4],
+			"faces": {
+				"north": {"uv": [0, 0, 3.5, 3.5], "texture": "#0"},
+				"east": {"uv": [8, 9, 9, 12.5], "texture": "#0"},
+				"south": {"uv": [3.5, 3.5, 0, 7], "texture": "#0"},
+				"west": {"uv": [9, 9, 8, 12.5], "texture": "#0"},
+				"up": {"uv": [9, 10, 12.5, 9], "texture": "#0"},
+				"down": {"uv": [12.5, 9, 9, 10], "texture": "#0"}
+			}
+		}
+	],
+	"groups": [
+		0,
+		1,
+		{
+			"name": "all",
+			"origin": [8, 8, 8],
+			"scope": 0,
+			"color": 0,
+			"children": []
+		}
+	]
+}

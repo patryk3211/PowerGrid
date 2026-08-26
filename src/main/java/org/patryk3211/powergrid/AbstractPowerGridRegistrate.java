@@ -38,6 +38,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.ItemLike;
 import net.minecraft.world.level.block.Block;
@@ -171,6 +172,7 @@ public abstract class AbstractPowerGridRegistrate extends AbstractRegistrate<Abs
     public static ProviderType<ComponentItemEntryProvider> COMPONENT_ITEMS;
     public abstract static class ComponentItemEntryProvider implements RegistrateProvider {
         private final Map<String, Item> entries = new HashMap<>();
+        private final Map<String, TagKey<Item>> tags = new HashMap<>();
         private final AbstractRegistrate<?> owner;
         private final PackOutput output;
 
@@ -203,6 +205,10 @@ public abstract class AbstractPowerGridRegistrate extends AbstractRegistrate<Abs
                 var json = new JsonObject();
                 var id = BuiltInRegistries.ITEM.getResourceKey(entry.getValue());
                 json.addProperty("item", id.get().location().toString());
+                var tag1 = tags.get(entry.getKey());
+                if(tag1 != null) {
+                    json.addProperty("tag", tag1.location().toString());
+                }
                 return DataProvider.saveStable(output, json, path.resolve(entry.getKey() + ".json"));
             }).toArray(CompletableFuture[]::new)), tag);
         }
@@ -215,6 +221,11 @@ public abstract class AbstractPowerGridRegistrate extends AbstractRegistrate<Abs
 
         public void add(String componentId, ItemLike item) {
             entries.put(componentId, item.asItem());
+        }
+
+        public void add(String componentId, ItemLike item, TagKey<Item> tag) {
+            entries.put(componentId, item.asItem());
+            tags.put(componentId, tag);
         }
     }
 

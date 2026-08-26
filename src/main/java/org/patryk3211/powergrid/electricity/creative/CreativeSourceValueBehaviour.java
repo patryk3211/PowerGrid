@@ -28,20 +28,25 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.BlockHitResult;
 import org.patryk3211.powergrid.utility.Lang;
 
+import java.util.function.Consumer;
+
 public class CreativeSourceValueBehaviour extends ScrollValueBehaviour {
     private final float multiplier;
+    private Consumer<Float> callback;
 
     public CreativeSourceValueBehaviour(Component label, SmartBlockEntity be, float multiplier, ValueBoxTransform slot) {
         super(label, be, slot);
         this.multiplier = multiplier;
-        between(-250, 250);
-        withFormatter(i -> String.format("%.1f", Math.abs(i) * multiplier));
+        between(-500, 500);
+        withFormatter(i -> String.format("%.1f", Math.abs(processValue(i))));
     }
 
     public ValueSettingsBoard createBoard(Player player, BlockHitResult hitResult) {
         ImmutableList<Component> rows = ImmutableList.of(
-                Component.literal("+"),//.formatted(Formatting.BOLD),
-                Component.literal("-")//.formatted(Formatting.BOLD)
+                Component.literal("× +100"),
+                Component.literal("+"),
+                Component.literal("-"),
+                Component.literal("× -100")
         );
         ValueSettingsFormatter formatter = new ValueSettingsFormatter(this::formatSettings);
         return new ValueSettingsBoard(this.label, 250, 20, rows, formatter);
@@ -52,12 +57,59 @@ public class CreativeSourceValueBehaviour extends ScrollValueBehaviour {
         if (!valueSetting.equals(this.getValueSettings())) {
             this.playFeedbackSound(this);
         }
+        if(value == 0) {
+            this.setValue(0);
+            return;
+        }
+        this.setValue(switch(valueSetting.row()) {
+            case 0 -> value + 250;
+            case 1 -> value;
+            case 2 -> -value;
+            case 3 -> -value - 250;
+            default -> throw new IllegalStateException();
+        });
+    }
 
-        this.setValue(valueSetting.row() == 0 ? value : -value);
+    public void withMultipliedCallback(Consumer<Float> callback) {
+        this.callback = callback;
+    }
+
+    private float processValue(int i) {
+        if(i > 250) {
+            i = (i - 250) * 100;
+        } else if(i < -250) {
+            i = (i + 250) * 100;
+        }
+        return i * multiplier;
+    }
+
+    public float getMultipliedValue() {
+        return processValue(getValue());
+    }
+
+    @Override
+    public void setValue(int value) {
+        super.setValue(value);
+        if(callback != null)
+            callback.accept(getMultipliedValue());
     }
 
     public ValueSettingsBehaviour.ValueSettings getValueSettings() {
-        return new ValueSettingsBehaviour.ValueSettings(this.value < 0 ? 1 : 0, Math.abs(this.value));
+        int i = 0, row = 0;
+        if(value < -250) {
+            row = 3;
+            i = -value - 250;
+        } else if(value < 0) {
+            row = 2;
+            i = -value;
+        } else if(value <= 250) {
+            row = 1;
+            i = value;
+        } else {
+            row = 0;
+            i = value - 250;
+        }
+        return new ValueSettingsBehaviour.ValueSettings(row, i);
     }
 
     public MutableComponent formatSettings(ValueSettingsBehaviour.ValueSettings settings) {

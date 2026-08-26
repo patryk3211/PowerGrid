@@ -42,6 +42,8 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.PowerGridClient;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPackets;
+import org.patryk3211.powergrid.equipment.BoostingChipItem;
+import org.patryk3211.powergrid.equipment.ItemBoostUtils;
 import org.patryk3211.powergrid.equipment.portablebattery.BatteryUtils;
 import org.patryk3211.powergrid.utility.Lang;
 
@@ -82,21 +84,21 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
 
     @Override
     public boolean isBarVisible(ItemStack stack) {
-        return BatteryUtils.isBarVisible(stack, fePerUse());
+        return BatteryUtils.isBarVisible(stack, energyPerUse());
     }
 
     @Override
     public int getBarWidth(ItemStack stack) {
-        return BatteryUtils.getBarWidth(stack, fePerUse());
+        return BatteryUtils.getBarWidth(stack, energyPerUse());
     }
 
     @Override
     public int getBarColor(ItemStack stack) {
-        return BatteryUtils.getBarColor(stack, fePerUse());
+        return BatteryUtils.getBarColor(stack, energyPerUse());
     }
 
-    public static int fePerUse() {
-        return ModdedConfigs.server().electricity.electroZapperFePerShot.get();
+    public static int energyPerUse() {
+        return ModdedConfigs.server().equipment.electroZapperEnergyPerShot.get();
     }
 
     @Environment(EnvType.CLIENT)
@@ -107,11 +109,18 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         var stack = user.getItemInHand(hand);
+        boolean boosted = ItemBoostUtils.useBoost(stack, user);
+        if(!boosted) {
+            var otherStack = user.getItemInHand(hand == InteractionHand.MAIN_HAND ? InteractionHand.OFF_HAND : InteractionHand.MAIN_HAND);
+            if(otherStack.getItem() instanceof BoostingChipItem)
+                return InteractionResultHolder.pass(stack);
+        }
         if(world.isClientSide) {
             clientUse(hand);
             return InteractionResultHolder.success(stack);
         }
 
+        float power = BatteryUtils.drawEnergy(user, energyPerUse());
         var barrelPos = ShootableGadgetItemMethods.getGunBarrelVec(user, hand == InteractionHand.MAIN_HAND,
                 new Vec3(.25f, -0.15f, 1.0f));
         var correction = ShootableGadgetItemMethods.getGunBarrelVec(user, hand == InteractionHand.MAIN_HAND,
@@ -122,7 +131,7 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
                 .normalize()
                 .scale(4);
 
-        var projectile = ZapProjectileEntity.create(world, barrelPos, motion, (float) lookVec.y, (float) lookVec.x);
+        var projectile = ZapProjectileEntity.create(world, barrelPos, motion, Math.max(power, 0.5f) * (boosted ? 2 : 1));
         projectile.setOwner(user);
         world.addFreshEntity(projectile);
 
@@ -130,7 +139,7 @@ public class ElectroZapperItem extends ProjectileWeaponItem implements CustomArm
         Function<Boolean, ElectroZapperS2CPacket> factory = b -> new ElectroZapperS2CPacket(barrelPos, hand, b);
         ModdedPackets.sendToClientsTracking(factory.apply(false), user);
         ModdedPackets.sendToClient(factory.apply(true), (ServerPlayer) user);
-        if(!BatteryUtils.drawEnergy(user, fePerUse()))
+        if(power == 0)
             stack.hurtAndBreak(1, user, EquipmentSlot.MAINHAND);
         return InteractionResultHolder.success(user.getItemInHand(hand));
     }

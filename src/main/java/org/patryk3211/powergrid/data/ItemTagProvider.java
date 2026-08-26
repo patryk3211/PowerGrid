@@ -23,6 +23,7 @@ import net.minecraft.data.tags.TagsProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.ModdedTags;
 
@@ -45,5 +46,9 @@ public class ItemTagProvider extends TagsProvider<Item> {
         tag(ModdedTags.plates("zinc"))
                 .add(reverseLookup(ModdedItems.ZINC_SHEET.asItem()))
                 .addOptional(ResourceLocation.tryBuild("createdeco", "zinc_sheet"));
+        tag(ModdedTags.Item.WIRE_CUTTERS.tag)
+                .add(reverseLookup(ModdedItems.WIRE_CUTTER.asItem()));
+        tag(ModdedTags.Item.BAD_WIRE_CUTTERS.tag)
+                .add(reverseLookup(Items.SHEARS));
     }
 }

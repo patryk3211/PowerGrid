@@ -33,6 +33,7 @@ import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.config.CSolver;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
+import org.patryk3211.powergrid.electricity.base.IMultipartSync;
 import org.patryk3211.powergrid.electricity.base.ISynchronizedElement;
 import org.patryk3211.powergrid.electricity.sim.*;
 import org.patryk3211.powergrid.electricity.sim.node.*;
@@ -40,7 +41,6 @@ import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePort;
 import org.patryk3211.powergrid.electricity.wire.*;
-import org.patryk3211.powergrid.kinetics.generator.winding.WindingBlockEntity;
 import org.patryk3211.powergrid.network.packets.NegotiateSyncC2SPacket;
 import org.patryk3211.powergrid.network.packets.StateS2CPacket;
 
@@ -348,8 +348,8 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                                 continue;
                             var ebPos = eb.getPos();
                             var syncState = new SyncState((int) (Math.sqrt(player.distanceToSqr(ebPos.getX(), ebPos.getY(), ebPos.getZ())) / 24 + 1));
-                            if(eb.blockEntity instanceof WindingBlockEntity winding) {
-                                winding.forSync(sync -> {
+                            if(eb.blockEntity instanceof IMultipartSync multipart) {
+                                multipart.forSync(sync -> {
                                     if(sync == null)
                                         return;
                                     syncStates.computeIfAbsent(player, $ -> new HashMap<>())
@@ -388,7 +388,7 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 for(var pair : behaviours.entrySet()) {
                     if(syncTicks % pair.getValue().lod() != 0)
                         continue;
-                    if(pair.getKey() == null)
+                    if(pair.getKey() == null || !pair.getKey().shouldSync())
                         continue;
                     packet.begin(pair.getKey());
                     pair.getKey().writeToSync(wrapper, useDoubles, this::findLineMiddle);
@@ -468,6 +468,16 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         return null;
     }
 
+    public void putInNetwork(@NotNull IWireEndpoint endpoint) {
+        var node = endpoint.getNode(world);
+        add(endpoint);
+        var line = findLineMiddle(node);
+        if(line != null)
+            return;
+        if(node.getNetwork() == null)
+            endpoint.joinNetwork(world, newNetwork());
+    }
+
     @Nullable
     public ElectricalNetwork prepareForConnection(IWireEndpoint endpoint1, IWireEndpoint endpoint2) {
         var node1 = endpoint1.getNode(world);
@@ -504,6 +514,53 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         } else if(net2 == null) {
             network = net1;
             endpoint2.joinNetwork(world, network);
+        } else if(net1 != net2) {
+            if(net1.size() >= net2.size()) {
+                network = net1;
+                network.merge(net2);
+            } else {
+                network = net2;
+                network.merge(net1);
+            }
+        } else {
+            network = net1;
+        }
+
+        return network;
+    }
+
+    @Nullable
+    public ElectricalNetwork prepareForConnection(IWireEndpoint endpoint1, ElectricNode node2) {
+        var node1 = endpoint1.getNode(world);
+
+        if(node1 == node2)
+            return null;
+        if(node1 == null || node2 == null)
+            return null;
+
+        add(endpoint1);
+        globalGraph.addNode(node2);
+
+        // Split transmission lines if needed.
+        var line1 = findLineMiddle(node1);
+        if(line1 != null)
+            line1.splitAt(node1);
+
+        var net1 = node1.getNetwork();
+        var net2 = node2.getNetwork();
+
+        // Put both nodes into the same network.
+        ElectricalNetwork network;
+        if(net1 == null && net2 == null) {
+            network = newNetwork();
+            endpoint1.joinNetwork(world, network);
+            network.addNode(node2);
+        } else if(net1 == null) {
+            network = net2;
+            endpoint1.joinNetwork(world, network);
+        } else if(net2 == null) {
+            network = net1;
+            network.addNode(node2);
         } else if(net1 != net2) {
             if(net1.size() >= net2.size()) {
                 network = net1;
@@ -1101,6 +1158,16 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         if(set == null)
             return Set.of();
         return set;
+    }
+
+    public void dropTrackers(ServerPlayer player) {
+        var iter = trackers.entrySet().iterator();
+        while(iter.hasNext()) {
+            var entry = iter.next();
+            entry.getValue().remove(player);
+            if(entry.getValue().isEmpty())
+                iter.remove();
+        }
     }
 
     public void chunkLoaded(ChunkPos chunkPos) {

@@ -33,7 +33,9 @@ public class ModdedTags {
         COILS(FORGE_NAMESPACE, "coils"),
         CIRCUIT_SCHEMATIC_HOLDER("circuit_schematic_holder"),
         CIRCUIT_COMPONENT("circuit_component"),
-        FUSE_RESETTING("fuse_resetting")
+        FUSE_RESETTING("fuse_resetting"),
+        WIRE_CUTTERS("wire_cutters"),
+        BAD_WIRE_CUTTERS("bad_wire_cutters")
         ;
 
         public final TagKey<net.minecraft.world.item.Item> tag;
@@ -61,6 +63,7 @@ public class ModdedTags {
         SABLE_LIGHT(SABLE_NAMESPACE, "light"),
         SABLE_HEAVY(SABLE_NAMESPACE, "heavy"),
         SABLE_SUPER_HEAVY(SABLE_NAMESPACE, "super_heavy"),
+
         GLASS_BLOCK(FORGE_NAMESPACE, "glass_blocks"),
         GLASS_PANE(FORGE_NAMESPACE, "glass_panes"),
         SOLAR_QUARTER_LIGHT("solar_quarter_light"),

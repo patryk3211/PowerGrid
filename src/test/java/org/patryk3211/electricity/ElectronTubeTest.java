@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 patryk3211
+ * Copyright 2026 patryk3211
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,8 +31,7 @@ public class ElectronTubeTest extends TestHelper {
         var Cathode = Net.N();
         var Grid = Net.N();
 
-        // kG1 = 1 / perveance
-        var Tube = new ElectronTubeWire(10, 0.001f, 10, Cathode, Anode, Grid);
+        var Tube = new ElectronTubeWire(10, 13_600f, 600, 300, 1.5f, 10f, Cathode, Anode, Grid);
         Net.network.addWire(Tube);
 
         final var R = 0.001f;
@@ -67,7 +66,7 @@ public class ElectronTubeTest extends TestHelper {
         var Cathode = Net.N();
         var Grid = Net.N();
 
-        var Tube = new ElectronTubeWire(10, 0.01f, 10, Cathode, Anode, Grid);
+        var Tube = new ElectronTubeWire(10, 136_000f, 600, 300, 1.5f, 10f, Cathode, Anode, Grid);
         Net.network.addWire(Tube);
 
         final float R = 0.001f;
@@ -93,7 +92,7 @@ public class ElectronTubeTest extends TestHelper {
         var Cathode = Net.N();
         var Grid = Net.N();
 
-        var Tube = new ElectronTubeWire(10, 0.001f, 10, Cathode, Anode, Grid);
+        var Tube = new ElectronTubeWire(10, 13_600f, 600, 300, 1.5f, 10f, Cathode, Anode, Grid);
         Net.network.addWire(Tube);
 
         final float R = 0.001f;
@@ -104,8 +103,8 @@ public class ElectronTubeTest extends TestHelper {
         for(int i = 0; i < 5; ++i)
             Net.calculate();
 
-        Assertions.assertEquals(0.011143f, V1.getCurrent(), 1e-3f, "Anode current is incorrect");
-        Assertions.assertEquals(49.8885f, Anode.getVoltage(), 1e-3f, "Anode voltage is incorrect");
+        Assertions.assertEquals(0.001643f, V1.getCurrent(), 1e-4f, "Anode current is incorrect");
+        Assertions.assertEquals(49.9836f, Anode.getVoltage(), 1e-3f, "Anode voltage is incorrect");
         Assertions.assertEquals(V1.getCurrent(), Tube.current(), 1e-6f, "Tube current is incorrect");
     }
 
@@ -121,7 +120,7 @@ public class ElectronTubeTest extends TestHelper {
         var Cathode = Net.N();
         var Grid = Net.N();
 
-        var Tube = new ElectronTubeWire(10, 0.001f, 10, Cathode, Anode, Grid);
+        var Tube = new ElectronTubeWire(10, 13_600f, 600, 300, 1.5f, 10f, Cathode, Anode, Grid);
         Net.network.addWire(Tube);
 
         final float R = 0.001f;
@@ -146,7 +145,7 @@ public class ElectronTubeTest extends TestHelper {
         var Cathode = Net.N();
         var Grid = Net.N();
 
-        var Tube = new ElectronTubeWire(2, 0.001f, 0.1f, Cathode, Anode, Grid);
+        var Tube = new ElectronTubeWire(2, 13_600f, 600, 300, 1.5f, 0.1f, Cathode, Anode, Grid);
         Net.network.addWire(Tube);
 
         final float R = 0.001f;
@@ -157,7 +156,6 @@ public class ElectronTubeTest extends TestHelper {
         for(int i = 0; i < 5; ++i)
             Net.calculate();
 
-        // Should be about 120mA if saturation wasn't the limit
         Assertions.assertTrue(0.1f >= V1.getCurrent(), "Anode current is incorrect");
         Assertions.assertTrue(49.0f <= Anode.getVoltage(), "Anode voltage is incorrect");
         Assertions.assertEquals(V1.getCurrent(), Tube.current(), 1e-6f, "Tube current is incorrect");
@@ -175,7 +173,7 @@ public class ElectronTubeTest extends TestHelper {
         var Cathode = Net.N();
         var Grid = Net.N();
 
-        var Tube = new ElectronTubeWire(10, 0.001f, 10, Cathode, Anode, Grid);
+        var Tube = new ElectronTubeWire(10, 13_600f, 600, 300, 1.5f, 10f, Cathode, Anode, Grid);
         Net.network.addWire(Tube);
 
         final float R = 0.001f;
@@ -188,6 +186,13 @@ public class ElectronTubeTest extends TestHelper {
 
         Assertions.assertEquals(0.0f, V1.getCurrent(), 1e-6f, "Anode current is incorrect");
         Assertions.assertEquals(0.0f, Anode.getVoltage(), 1e-6f, "Anode voltage is incorrect");
+        Assertions.assertTrue(V2.getCurrent() > 0, "Grid should draw current when overdriven");
         Assertions.assertEquals(V1.getCurrent() + V2.getCurrent(), Tube.current(), 1e-6f, "Tube current is incorrect");
+    }
+
+    @Test
+    void testCalculateKg1UsesKorenE1() {
+        var kg = ElectronTubeWire.calculateKg1(50, 0, 10, 600, 300, 1.5f, 0.01f);
+        Assertions.assertTrue(kg > 0 && kg < 100_000, "Calculated Kg1 should be in a realistic range");
     }
 }

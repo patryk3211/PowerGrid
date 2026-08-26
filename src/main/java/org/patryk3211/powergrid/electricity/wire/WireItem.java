@@ -42,6 +42,7 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.HitResult;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedKeys;
@@ -68,11 +69,11 @@ public class WireItem extends Item implements IWire {
     public static <I extends Item, R extends AbstractRegistrate<?>> NonNullUnaryOperator<ItemBuilder<I, R>> properties(
             float resistance, float maxLength, float itemUseMultiplier, float thermalMass, float maxCurrent,
             ResourceLocation texture, float horizontalCoeff, float verticalCoeff, float thickness,
-            boolean colorable, boolean cord) {
+            boolean colorable, boolean cord, boolean insulated) {
         return b -> b.addMiscData(AbstractPowerGridRegistrate.WIRE_ITEMS, prov -> {
             prov.add(b.getName(), new WireItemEntry(
                     resistance, itemUseMultiplier, maxLength, thermalMass, maxCurrent,
-                    texture, horizontalCoeff, verticalCoeff, thickness, colorable, cord
+                    texture, horizontalCoeff, verticalCoeff, thickness, colorable, cord, insulated
             ));
         });
     }
@@ -177,9 +178,10 @@ public class WireItem extends Item implements IWire {
                         PowerGrid.LOGGER.error("Cannot extend wire at start (must be flipped beforehand)");
                         return InteractionResultHolder.fail(null);
                     }
+                    wire.extend(result.points(), newItems);
                     if(endpoint2.type().isConnectable())
                         wire.setEndpoint2(endpoint2);
-                    wire.extend(result.points(), newItems);
+                    wire.sendExtraData();
                     PlayerUtilities.removeItems(player, stack, newItems);
                     return InteractionResultHolder.success(wire);
                 }
@@ -265,11 +267,13 @@ public class WireItem extends Item implements IWire {
             for(var segment : sourceEntity.segments) {
                 segments.add(0, new BlockWireEntity.Point(segment.direction.getOpposite(), segment.gridLength));
             }
-            targetEntity.setEndpoint2(sourceEntity.getEndpoint1());
             targetEntity.extend(segments, sourceEntity.getWireCount());
+            targetEntity.setEndpoint2(sourceEntity.getEndpoint1());
+            targetEntity.sendExtraData();
         } else {
-            targetEntity.setEndpoint2(sourceEntity.getEndpoint2());
             targetEntity.extend(sourceEntity.segments, sourceEntity.getWireCount());
+            targetEntity.setEndpoint2(sourceEntity.getEndpoint2());
+            targetEntity.sendExtraData();
         }
 
         sourceEntity.discard();
@@ -310,9 +314,11 @@ public class WireItem extends Item implements IWire {
             return EventResult.pass();
         if(IWire.isCord(player.level(), stack.getItem()))
             return CordItem.useOn(player, hand, blockPos, direction);
-        var hit = player.pick(PlayerUtilities.getReachDistance(player) + 1.0f, 1.0f, false);
+        var hit = player.pick(PlayerUtilities.getReachDistance(player) + 1.0f, 0.0f, false);
         if(!(hit instanceof BlockHitResult blockHit))
             return EventResult.pass();
+        if(hit.getType() != HitResult.Type.BLOCK || !blockHit.getBlockPos().equals(blockPos))
+            return EventResult.interruptFalse();
 
         var level = player.level();
         var electric = IElectric.getAt(level, blockPos);
@@ -350,7 +356,7 @@ public class WireItem extends Item implements IWire {
         var entry = WireRegistry.forItem(stack.getItem());
         if(entry == null)
             return;
-        Resistance.series(entry.resistancePerItem(), player, tooltip);
+        Resistance.seriesPerMeter(entry.resistancePerItem() * entry.itemsPerMeter(), player, tooltip);
         Current.max(entry.maximumCurrent(), player, tooltip);
         Range.max((int) entry.maximumLength(), tooltip);
         if(stack.getItem() instanceof StringLightCordItem cord)

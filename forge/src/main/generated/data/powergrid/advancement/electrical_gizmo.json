@@ -1,0 +1,34 @@
+{
+  "parent": "powergrid:conductive_casing",
+  "criteria": {
+    "0": {
+      "conditions": {
+        "items": [
+          {
+            "items": "powergrid:electrical_gizmo"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "color": "#DBA213",
+      "translate": "advancement.powergrid.electrical_gizmo.desc"
+    },
+    "icon": {
+      "count": 1,
+      "id": "powergrid:electrical_gizmo"
+    },
+    "title": {
+      "translate": "advancement.powergrid.electrical_gizmo"
+    }
+  },
+  "requirements": [
+    [
+      "0"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

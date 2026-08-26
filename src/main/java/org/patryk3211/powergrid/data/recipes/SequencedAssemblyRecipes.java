@@ -21,6 +21,7 @@ import com.simibubi.create.content.kinetics.deployer.DeployerApplicationRecipe;
 import com.simibubi.create.content.kinetics.press.PressingRecipe;
 import net.minecraft.core.HolderLookup;
 import com.simibubi.create.content.kinetics.saw.CuttingRecipe;
+import com.simibubi.create.content.kinetics.saw.CuttingRecipe;
 import net.minecraft.data.PackOutput;
 import net.minecraft.world.item.Items;
 import org.patryk3211.powergrid.PowerGrid;
@@ -110,7 +111,7 @@ public class SequencedAssemblyRecipes extends SequencedAssemblyRecipeGen {
             .addStep(CuttingRecipe::new, rb -> rb)
             .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.copperIngot()))
             .addStep(PressingRecipe::new, rb -> rb)
-            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.zincSheet())))
+            .addStep(DeployerApplicationRecipe::new, rb -> rb.require(RecipeTags.copperSheet())))
 
             ;
 

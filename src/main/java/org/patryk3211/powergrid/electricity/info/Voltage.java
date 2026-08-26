@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.electricity.info;
 
-import com.simibubi.create.content.equipment.goggles.GogglesItem;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
@@ -26,8 +25,6 @@ import java.util.List;
 
 public class Voltage {
     public static void voltage(String key, ChatFormatting color, float value, Player player, List<Component> tooltip) {
-        boolean hasGoggles = GogglesItem.isWearingGoggles(player);
-
         Lang.translate(key)
                 .style(ChatFormatting.GRAY).addTo(tooltip);
         Lang.builder()
@@ -55,5 +52,13 @@ public class Voltage {
                 .add(Component.nullToEmpty(" ")).add(Lang.number(value))
 //                .add(Text.of(" RPM/V"))
                 .style(ChatFormatting.DARK_AQUA).addTo(tooltip);
+    }
+
+    public static void voc(float value, Player player, List<Component> tooltip) {
+        voltage("tooltip.solar.voc", ChatFormatting.DARK_AQUA, value, player, tooltip);
+    }
+
+    public static void vmp(float value, Player player, List<Component> tooltip) {
+        voltage("tooltip.solar.vmp", ChatFormatting.YELLOW, value, player, tooltip);
     }
 }

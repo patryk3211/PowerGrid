@@ -123,6 +123,9 @@ public class GroundingRodBlockEntity extends ElectricBlockEntity {
         if(!level.isClientSide && damageTickCounter++ >= 10) {
             damageTickCounter = 0;
             // Limit radius to 10 block to avoid having to scan the whole world
+            var sourceDamage = Math.abs(wire.getResistance() * wire.current() / DANGER_POTENTIAL);
+            if(sourceDamage < 1)
+                return;
             var dangerRadius = Math.min(Math.abs(wire.getResistance() * wire.current() / (2 * Math.PI * DANGER_POTENTIAL)), 10);
             var blockRadius = (int) Math.round(dangerRadius);
             var bb = new AABB(worldPosition.offset(-blockRadius, -blockRadius, -blockRadius).getCenter(), worldPosition.offset(blockRadius, blockRadius, blockRadius).getCenter());
@@ -130,11 +133,12 @@ public class GroundingRodBlockEntity extends ElectricBlockEntity {
             var center = worldPosition.getCenter();
             var entities = level.getEntitiesOfClass(LivingEntity.class, bb, e -> e.position().distanceToSqr(center) <= sqrDist && e.onGround());
 
-            Registry<DamageType> registry = level.registryAccess().registryOrThrow(Registries.DAMAGE_TYPE);
-            var source = new GroundingRodDamageSource(registry.getHolder(ModdedDamageTypes.ZAP).get(), this.getBlockState().getBlock());
+            var source = new GroundingRodDamageSource(ModdedDamageTypes.ZAP.holder(level), this.getBlockState().getBlock());
             for(var entity : entities) {
-                // TODO: Scale damage with potential.
-                entity.hurt(source, 1);
+                double entityDistSqr = entity.distanceToSqr(center);
+                double entityDmg = sourceDamage / Math.max(entityDistSqr, 1);
+                if(entityDmg >= 1)
+                    entity.hurt(source, (float) (sourceDamage / entityDmg));
             }
         }
     }

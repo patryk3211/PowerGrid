@@ -22,7 +22,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.Level;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.collections.ModdedTags;
+import org.patryk3211.powergrid.equipment.BoostRecipe;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -39,8 +41,15 @@ public class RecipeApplierMixin {
     )
     private static void powerGrid$recipeTransferNbt(Level level, ItemStack stackIn, Recipe<?> recipe, boolean returnProcessingRemainder, CallbackInfoReturnable<List<ItemStack>> cir) {
         var outputs = cir.getReturnValue();
-        if(outputs == null || outputs.isEmpty() ||
-                !stackIn.is(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag) ||
+        if(outputs == null || outputs.isEmpty())
+            return;
+        if(recipe instanceof BoostRecipe) {
+            if(stackIn.has(ModdedDataComponents.BOOST.get())) {
+                outputs.get(0).set(ModdedDataComponents.BOOST.get(), stackIn.get(ModdedDataComponents.BOOST.get()));
+            }
+            return;
+        }
+        if(!stackIn.is(ModdedTags.Item.CIRCUIT_SCHEMATIC_HOLDER.tag) ||
                 !stackIn.has(DataComponents.CUSTOM_DATA) || !stackIn.get(DataComponents.CUSTOM_DATA).contains("Schematic"))
             return;
         // Modify output with NBT

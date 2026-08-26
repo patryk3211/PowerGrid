@@ -15,7 +15,8 @@ public record WireItemEntry(
         float verticalCoefficient,
         float wireThickness,
         boolean colorable,
-        boolean cord) {
+        boolean cord,
+        boolean insulated) {
 
     public static final Codec<WireItemEntry> CODEC = RecordCodecBuilder.create(instance -> instance.group(
             Codec.FLOAT.fieldOf("resistancePerItem").forGetter(WireItemEntry::resistancePerItem),
@@ -28,7 +29,8 @@ public record WireItemEntry(
             Codec.FLOAT.fieldOf("verticalCoefficient").forGetter(WireItemEntry::verticalCoefficient),
             Codec.FLOAT.fieldOf("wireThickness").forGetter(WireItemEntry::wireThickness),
             Codec.BOOL.fieldOf("colorable").forGetter(WireItemEntry::colorable),
-            Codec.BOOL.fieldOf("cord").forGetter(WireItemEntry::cord)
+            Codec.BOOL.fieldOf("cord").forGetter(WireItemEntry::cord),
+            Codec.BOOL.fieldOf("insulated").forGetter(WireItemEntry::insulated)
     ).apply(instance, WireItemEntry::new));
 
     public float dissipationFactor() {

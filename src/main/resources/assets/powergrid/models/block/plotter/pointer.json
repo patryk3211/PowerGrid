@@ -5,7 +5,7 @@
 	"texture_size": [64, 64],
 	"textures": {
 		"0": "powergrid:block/plotter",
-		"particle": "powergrid:block/plotter"
+		"particle": "powergrid:block/conductive_casing"
 	},
 	"elements": [
 		{
@@ -14,12 +14,12 @@
 			"to": [9, 13, 5],
 			"rotation": {"angle": 0, "axis": "y", "origin": [8, 13, 5]},
 			"faces": {
-				"north": {"uv": [0, 0, 0.5, 0.25], "texture": "#0"},
-				"east": {"uv": [0, 0, 0.25, 0.25], "texture": "#0"},
-				"south": {"uv": [0, 0, 0.5, 0.25], "texture": "#0"},
-				"west": {"uv": [0, 0, 0.25, 0.25], "texture": "#0"},
-				"up": {"uv": [0, 0, 0.25, 0.5], "rotation": 270, "texture": "#0"},
-				"down": {"uv": [0, 0, 0.25, 0.5], "rotation": 90, "texture": "#0"}
+				"north": {"uv": [12.25, 0.25, 12.5, 0.75], "rotation": 90, "texture": "#0"},
+				"east": {"uv": [12.25, 0.5, 12.5, 0.75], "texture": "#0"},
+				"south": {"uv": [12.25, 0.25, 12.5, 0.75], "rotation": 270, "texture": "#0"},
+				"west": {"uv": [12.25, 0.25, 12.5, 0.5], "texture": "#0"},
+				"up": {"uv": [12.25, 0.25, 12.5, 0.75], "rotation": 270, "texture": "#0"},
+				"down": {"uv": [12.25, 0.25, 12.5, 0.75], "rotation": 270, "texture": "#0"}
 			}
 		}
 	]

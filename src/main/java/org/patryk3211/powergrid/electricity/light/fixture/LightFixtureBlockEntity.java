@@ -17,99 +17,19 @@ package org.patryk3211.powergrid.electricity.light.fixture;
 
 import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.ItemInteractionResult;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
-import net.minecraft.world.item.DyeItem;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
-import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
-import org.patryk3211.powergrid.electricity.light.bulb.ILightBulb;
-import org.patryk3211.powergrid.electricity.light.bulb.LightBulbState;
 import org.patryk3211.powergrid.electricity.sim.SwitchedWire;
 
-public class LightFixtureBlockEntity extends ElectricBlockEntity {
+import static net.minecraft.world.level.block.Block.UPDATE_ALL_IMMEDIATE;
+
+public class LightFixtureBlockEntity extends AbstractLightFixtureBlockEntity {
     private SwitchedWire filament;
-    @Nullable
-    private LightBulbState bulbState;
 
     public LightFixtureBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
-        super(type, pos, state);
-        bulbState = null;
-    }
-
-    @Override
-    public void initialize() {
-        super.initialize();
-        if(!level.isClientSide)
-            electricBehaviour.setSyncAppender(bulbState);
-    }
-
-    @Override
-    public void electricalTick() {
-        super.electricalTick();
-        if(bulbState != null) {
-            bulbState.tick();
-            setUnsaved();
-        }
-    }
-
-    private void lightBulbChanged() {
-        if(bulbState == null) {
-            filament.setState(false);
-        } else {
-            filament.setResistance(bulbState.resistance());
-            filament.setState(!bulbState.isBurned());
-        }
-        electricBehaviour.setSyncAppender(bulbState);
-        if(level != null && !level.isClientSide) {
-            notifyUpdate();
-        }
-    }
-
-    @Nullable
-    public LightBulbState getBulbState() {
-        return bulbState;
-    }
-
-    @Override
-    protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
-        super.write(tag, registries, clientPacket);
-        if(bulbState != null) {
-            bulbState.write(tag);
-        }
-    }
-
-    @Override
-    public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
-        super.writeSafe(tag, registries);
-        if(bulbState != null) {
-            bulbState.write(tag);
-        }
-    }
-
-    @Override
-    protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
-        super.read(tag, registries, clientPacket);
-        var currentItem = bulbState != null ? bulbState.getItem() : null;
-        var nbtItem = LightBulbState.getBulbItem(tag);
-        if(currentItem != nbtItem) {
-            if(nbtItem == null) {
-                bulbState = null;
-            } else {
-                bulbState = ((ILightBulb) nbtItem).createState(this);
-            }
-        }
-        if(bulbState != null) {
-            bulbState.read(tag);
-        }
-        lightBulbChanged();
+        super(type, pos, state, true);
     }
 
     @Override
@@ -118,61 +38,11 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
         filament = builder.connectSwitch(1, builder.terminalNode(0), builder.terminalNode(1), false);
     }
 
-    public boolean replaceBulb(Player player, InteractionHand hand, ItemStack usedStack) {
-        assert level != null;
-        boolean result = replaceBulbInternal(player, hand, usedStack);
-        if(result) {
-            lightBulbChanged();
-            if(!level.isClientSide && bulbState == null) {
-                level.setBlock(worldPosition, getBlockState().setValue(LightFixtureBlock.POWER, 0), LightFixtureBlock.UPDATE_ALL);
-            }
-        }
-        return result;
-    }
-
-    private boolean replaceBulbInternal(Player player, InteractionHand hand, ItemStack usedStack) {
-        assert level != null;
-        if(usedStack == null || usedStack.isEmpty()) {
-            if(bulbState == null)
-                return false;
-            if(!level.isClientSide) {
-                if(!bulbState.isBurned())
-                    player.setItemInHand(hand, bulbState.toStack());
-                bulbState = null;
-            }
-            return true;
-        } else {
-            if(bulbState == null) {
-                if(!level.isClientSide) {
-                    var item = usedStack.getItem();
-                    if(item instanceof ILightBulb bulb) {
-                        bulbState = bulb.createState(this);
-                        if(bulb.canBeDyed() && player.getOffhandItem().getItem() instanceof DyeItem dye) {
-                            bulbState.setColor(dye.getDyeColor());
-                        }
-                        if (!player.isCreative())
-                            usedStack.shrink(1);
-                    }
-                }
-                return true;
-            } else if(bulbState.isBurned()) {
-                if(!level.isClientSide) {
-                    bulbState = null;
-                }
-                return true;
-            } else if(bulbState.isOf(usedStack.getItem()) && usedStack.getCount() < usedStack.getMaxStackSize()) {
-                if(!level.isClientSide) {
-                    if(!player.isCreative())
-                        usedStack.grow(1);
-                    bulbState = null;
-                }
-                return true;
-            } else if(player.isCreative() && (usedStack.getItem() instanceof ILightBulb || usedStack.isEmpty())) {
-                bulbState = null;
-                return true;
-            }
-        }
-        return false;
+    @Override
+    public void electricalTick() {
+        super.electricalTick();
+        if(bulbState != null)
+            bulbState.runSpecialEffects(level, worldPosition, getBlockState().getValue(LightFixtureBlock.FACING));
     }
 
     public SwitchedWire getFilament() {
@@ -180,8 +50,13 @@ public class LightFixtureBlockEntity extends ElectricBlockEntity {
     }
 
     @Override
-    protected AABB createRenderBoundingBox() {
-        return new AABB(worldPosition);
+    public void setPowerLevel(int bulbPower) {
+        level.setBlock(worldPosition, getBlockState().setValue(LightFixtureBlock.POWER, bulbPower), UPDATE_ALL_IMMEDIATE);
+    }
+
+    @Override
+    public int getPowerLevel() {
+        return getBlockState().getValue(LightFixtureBlock.POWER);
     }
 
     @Override

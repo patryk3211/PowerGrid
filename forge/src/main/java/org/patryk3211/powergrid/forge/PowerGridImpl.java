@@ -15,7 +15,6 @@
  */
 package org.patryk3211.powergrid.forge;
 
-import com.simibubi.create.api.registry.CreateRegistries;
 import com.simibubi.create.foundation.item.ItemDescription;
 import com.simibubi.create.foundation.item.KineticStats;
 import com.simibubi.create.foundation.item.TooltipModifier;
@@ -59,6 +58,7 @@ import org.patryk3211.powergrid.circuits.components.forge.ComponentRegistryImpl;
 import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.collections.forge.ModdedSoundEventsImpl;
 import org.patryk3211.powergrid.commands.PerformanceCommand;
+import org.patryk3211.powergrid.compat.cc.CCBridge;
 import org.patryk3211.powergrid.compat.cold_sweat.ColdSweatBridge;
 import org.patryk3211.powergrid.compat.tfmg.TFMGBridge;
 import org.patryk3211.powergrid.compat.tfmg.TFMGProxyImpl;
@@ -68,6 +68,8 @@ import org.patryk3211.powergrid.data.EntityTagProvider;
 import org.patryk3211.powergrid.data.ItemTagProvider;
 import org.patryk3211.powergrid.data.recipe.forge.MixingRecipes;
 import org.patryk3211.powergrid.data.recipes.*;
+import org.patryk3211.powergrid.electricity.febridge.FEInverterBlockEntity;
+import org.patryk3211.powergrid.electricity.febridge.forge.FEInverterBlockEntityImpl;
 import org.patryk3211.powergrid.electricity.wire.registry.WireItemEntry;
 import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
 import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryItem;
@@ -112,11 +114,12 @@ public class PowerGridImpl {
 
         SubstituteItemProvider.INSTANCE.shadow(PortableBatteryItem.class, ForgePortableBatteryItem.class);
         SubstituteBlockEntityProvider.INSTANCE.register(PunchCardReaderBlockEntity.class, PunchCardReaderBlockEntityImpl::new);
+        SubstituteBlockEntityProvider.INSTANCE.register(FEInverterBlockEntity.class, FEInverterBlockEntityImpl::new);
         PunchCardMenu.CONSTRUCTORS = PunchCardMenuImpl.constructors();
         PowerGrid.init();
 
         TABS.register("main", () -> CreativeModeTab.builder()
-                .icon(() -> new ItemStack((ItemLike) ModdedItems.WIRE))
+                .icon(() -> new ItemStack(ModdedBlocks.ELECTRIC_MOTOR))
                 .displayItems(new ItemDisplay.BaseItemDisplay(true))
                 .title(net.minecraft.network.chat.Component.translatable("itemGroup.powergrid.main"))
                 .build());
@@ -146,7 +149,7 @@ public class PowerGridImpl {
     @SubscribeEvent
     public static void newDynamicRegistryEvent(DataPackRegistryEvent.NewRegistry event) {
         event.dataPackRegistry(ComponentRegistry.ITEM_REGISTRY_KEY, ComponentRegistry.ITEM_CODEC, ComponentRegistry.ITEM_CODEC);
-        event.dataPackRegistry(WireRegistry.KEY, WireItemEntry.CODEC, WireItemEntry.CODEC);
+        event.dataPackRegistry(WireRegistry.KEY, WireItemEntry.CODEC.orElse(null), WireItemEntry.CODEC);
     }
 
     @SubscribeEvent
@@ -235,6 +238,12 @@ public class PowerGridImpl {
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
         event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, ModdedBlockEntities.PUNCH_CARD_READER.get(),
                 (be, side) -> ((PunchCardReaderBlockEntityImpl) be).getItemHandler(side));
+        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ModdedBlockEntities.FE_INVERTER.get(),
+                (be, side) -> ((FEInverterBlockEntityImpl) be).getEnergyStorage(side));
+
+        if(Platform.isModLoaded("computercraft")) {
+            CCBridge.registerCapabilities(event);
+        }
     }
 
     @SubscribeEvent
@@ -253,6 +262,7 @@ public class PowerGridImpl {
 
             providePonderLang(langConsumer);
             ModdedSoundEvents.provideLang(langConsumer);
+            ModdedAdvancements.provideLang(langConsumer);
         });
 
         generator.addProvider(true, (DataProvider.Factory<CookingRecipes>) (PackOutput o) -> new CookingRecipes(o, registries));
@@ -266,11 +276,17 @@ public class PowerGridImpl {
         generator.addProvider(true, (DataProvider.Factory<SequencedAssemblyRecipes>) (PackOutput o) -> new SequencedAssemblyRecipes(o, registries));
         generator.addProvider(true, (DataProvider.Factory<org.patryk3211.powergrid.data.recipe.forge.SequencedAssemblyRecipes>) (PackOutput o) -> new org.patryk3211.powergrid.data.recipe.forge.SequencedAssemblyRecipes(o, registries));
         generator.addProvider(true, (DataProvider.Factory<DeployerApplicationRecipes>) (PackOutput o) -> new DeployerApplicationRecipes(o, registries));
+        generator.addProvider(true, (DataProvider.Factory<ModdedAdvancements>) (PackOutput o) -> new ModdedAdvancements(o, registries));
 
         generator.addProvider(true, (DataProvider.Factory<BlockTagProvider>) (PackOutput o) -> new BlockTagProvider(o, registries));
         generator.addProvider(true, (DataProvider.Factory<ItemTagProvider>) (PackOutput o) -> new ItemTagProvider(o, registries));
         generator.addProvider(true, (DataProvider.Factory<EntityTagProvider>) (PackOutput o) -> new EntityTagProvider(o, registries));
         generator.addProvider(true, ModdedSoundEvents.provider(output));
+    }
+
+    @SubscribeEvent
+    public static void onRegister(RegisterEvent event) {
+        PowerGrid.onRegister(event.getRegistry());
     }
 
     private static void provideDefaultLang(String fileName, BiConsumer<String, String> consumer) {
@@ -306,12 +322,5 @@ public class PowerGridImpl {
 
     public static void finalizeRegistrate() {
         ((ForgePowerGridRegistrate) PowerGrid.REGISTRATE).registerEventListeners(bus);
-    }
-
-    @SubscribeEvent
-    public static void onRegister(RegisterEvent event) {
-        if (event.getRegistryKey().equals(CreateRegistries.CONTRAPTION_TYPE)) {
-            ModdedContraptions.register();
-        }
     }
 }

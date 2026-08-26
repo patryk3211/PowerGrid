@@ -42,15 +42,11 @@ import org.patryk3211.powergrid.circuits.gui.ComponentPropertiesWidget;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematic;
 import org.patryk3211.powergrid.circuits.schematic.CircuitSchematicRender;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
-import org.patryk3211.powergrid.collections.ModIcons;
-import org.patryk3211.powergrid.collections.ModdedKeys;
-import org.patryk3211.powergrid.collections.ModdedPackets;
-import org.patryk3211.powergrid.collections.ModdedSoundEvents;
+import org.patryk3211.powergrid.collections.*;
 import org.patryk3211.powergrid.network.packets.ChangeScreenC2SPacket;
 import org.patryk3211.powergrid.network.packets.SaveSchematicC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
 
-import java.awt.*;
 import java.util.List;
 import java.util.UUID;
 
@@ -66,6 +62,24 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
 
     public static final int CIRCUIT_SCALE = 8;
     public static final int TRACE_PADDING = 1;
+
+    public final int activeFrontTraceColor = (ModdedConfigs.client().Circuit.traceAlphaTop.get()<< 24)|
+                                       (ModdedConfigs.client().Circuit.traceRedTop.get()<<16)|
+                                       (ModdedConfigs.client().Circuit.traceGreenTop.get()<<8)|
+                                       (ModdedConfigs.client().Circuit.traceBlueTop.get());
+    public final int activeBackTraceColor = (ModdedConfigs.client().Circuit.traceAlphaBottom.get()<< 24)|
+            (ModdedConfigs.client().Circuit.traceRedBottom.get()<<16)|
+            (ModdedConfigs.client().Circuit.traceGreenBottom.get()<<8)|
+            (ModdedConfigs.client().Circuit.traceBlueBottom.get());
+
+    public final int FrontTraceColor = (ModdedConfigs.client().Circuit.traceAlphaTopBehind.get()<< 24)|
+            (ModdedConfigs.client().Circuit.traceRedTop.get()<<16)|
+            (ModdedConfigs.client().Circuit.traceGreenTop.get()<<8)|
+            (ModdedConfigs.client().Circuit.traceBlueTop.get());
+    public final int BackTraceColor = (ModdedConfigs.client().Circuit.traceAlphaBottomBehind.get()<< 24)|
+            (ModdedConfigs.client().Circuit.traceRedBottom.get()<<16)|
+            (ModdedConfigs.client().Circuit.traceGreenBottom.get()<<8)|
+            (ModdedConfigs.client().Circuit.traceBlueBottom.get());
 
     private static final net.minecraft.network.chat.Component TOOLTIP_SAVE = Lang.translateDirect("gui.circuit_designer.save");
     private static final net.minecraft.network.chat.Component TOOLTIP_DISCARD = Lang.translateDirect("gui.circuit_designer.discard");
@@ -295,7 +309,7 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
 
         changed = true;
         playSound(ModdedSoundEvents.UI_PLACE_TRACE);
-        if(schematic.isPad(clickX, clickY) || isTrace)
+        if((schematic.isPad(clickX, clickY) || isTrace) ^ Screen.hasShiftDown()) // Invert (XOR) if shifting
             return CircuitEditWidget.SelectionResult.BEGIN_NEW;
         return CircuitEditWidget.SelectionResult.CONTINUE;
     }
@@ -354,11 +368,21 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
 
         int bpX = bgX + 13, bpY = topPos + 22;
 
-        CircuitSchematicRender.renderLayer(schematic.back(), ctx, bpX, bpY, CIRCUIT_SCALE,
-                backLayer ? COLOR_TRACE_FRONT : COLOR_TRACE_BACK);
-        CircuitSchematicRender.renderLayer(schematic.front(), ctx, bpX, bpY, CIRCUIT_SCALE,
-                backLayer ? COLOR_TRACE_BACK : COLOR_TRACE_FRONT);
+        if(ModdedConfigs.client().Circuit.HighContrastTraces.get()){ //added support for high contrast traces
 
+            //when back is selected
+            CircuitSchematicRender.renderLayer(schematic.back(), ctx, bpX, bpY, CIRCUIT_SCALE,
+                backLayer ? activeBackTraceColor  : BackTraceColor );
+            //when front is selected
+            CircuitSchematicRender.renderLayer(schematic.front(), ctx, bpX, bpY, CIRCUIT_SCALE,
+                    backLayer ? FrontTraceColor : activeFrontTraceColor);
+
+        }else {
+            CircuitSchematicRender.renderLayer(schematic.back(), ctx, bpX, bpY, CIRCUIT_SCALE,
+                    backLayer ? COLOR_TRACE_FRONT : COLOR_TRACE_BACK);
+            CircuitSchematicRender.renderLayer(schematic.front(), ctx, bpX, bpY, CIRCUIT_SCALE,
+                    backLayer ? COLOR_TRACE_BACK : COLOR_TRACE_FRONT);
+        }
         CircuitSchematicRender.renderComponents(schematic, ctx, bpX, bpY, CIRCUIT_SCALE, mouseX, mouseY);
 
         if(currentTool.y > 0) {
@@ -385,12 +409,16 @@ public class CircuitDesignTableEditScreen<T extends CircuitEditMenu<?>> extends 
     @Override
     protected void containerTick() {
         super.containerTick();
-        if(!this.menu.getCarried().isEmpty()) {
-            toolSelect(this.menu.getCarried().getItem());
-            this.menu.setCarried(ItemStack.EMPTY);
+        if(!menu.getCarried().isEmpty()) {
+            toolSelect(menu.getCarried().getItem());
+            menu.setCarried(ItemStack.EMPTY);
         }
         if(unsavedPopupTimeout > 0)
             --unsavedPopupTimeout;
+        if(menu.contentHolder instanceof CircuitDesignTableBlockEntity be) {
+            if(!menu.player.isCreative() && !be.isPowered())
+                save();
+        }
     }
 
     @Override

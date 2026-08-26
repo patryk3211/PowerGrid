@@ -8,7 +8,7 @@
 		"1": "powergrid:block/conductive_casing",
 		"2": "create:block/axis_top",
 		"3": "create:block/axis",
-		"particle": "powergrid:block/punch_card_reader"
+		"particle": "powergrid:block/conductive_casing"
 	},
 	"elements": [
 		{

@@ -18,6 +18,9 @@ package org.patryk3211.powergrid.ponder.scenes;
 import com.simibubi.create.AllItems;
 import com.simibubi.create.content.processing.burner.BlazeBurnerBlock;
 import net.createmod.catnip.math.Pointing;
+import net.createmod.ponder.api.PonderPalette;
+import net.createmod.ponder.api.element.ElementLink;
+import net.createmod.ponder.api.element.WorldSectionElement;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.createmod.ponder.foundation.PonderScene;
@@ -33,8 +36,10 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DoublePlantBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.phys.Vec3;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
@@ -45,10 +50,13 @@ import org.patryk3211.powergrid.electricity.battery.MultiBlockBatteryEntity;
 import org.patryk3211.powergrid.electricity.crt.CRTBlock;
 import org.patryk3211.powergrid.electricity.electromagnet.ElectromagnetBlockEntity;
 import org.patryk3211.powergrid.electricity.electromagnet.MagnetizingBehaviour;
+import org.patryk3211.powergrid.electricity.heater.HeaterBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlockEntity;
-import org.patryk3211.powergrid.electricity.transformer.TransformerMediumBlock;
-import org.patryk3211.powergrid.electricity.transformer.TransformerSmallBlock;
+import org.patryk3211.powergrid.electricity.modulardisplay.ModularDisplayBlockEntity;
+import org.patryk3211.powergrid.electricity.modulardisplay.modules.AlphabetLetterModule;
+import org.patryk3211.powergrid.electricity.modulardisplay.modules.ZeroToNineNumberModule;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarPanelBlock;
 import org.patryk3211.powergrid.kinetics.plotter.PlotterBlockEntity;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardReaderBlockEntity;
 import org.patryk3211.powergrid.ponder.base.PowerGridSceneBuilder;
@@ -63,6 +71,7 @@ public class DeviceScenes {
     public static void heatingCoilBasic(SceneBuilder builder, SceneBuildingUtil util) {
         var scene = new PowerGridSceneBuilder(builder);
         scene.title("heating_coil_basic", "Warming up the atmosphere");
+        scene.setNextUpEnabled(true);
         scene.configureBasePlate(0, 0, 5);
 
         scene.showBasePlate();
@@ -73,13 +82,15 @@ public class DeviceScenes {
 
         var heatingCoil = util.grid().at(3, 1, 2);
         var voltageSource = util.grid().at(6, 2, 2);
+        var deviceConnector = util.grid().at(3, 2, 2);
         scene.world().showSection(util.select().position(4, 2, 1), Direction.DOWN);
         scene.world().showSection(util.select().position(4, 2, 3), Direction.DOWN);
         scene.world().showSection(util.select().position(heatingCoil), Direction.DOWN);
+        scene.world().showSection(util.select().position(deviceConnector), Direction.DOWN);
         scene.idle(10);
 
-        scene.electric().connect(util.grid().at(4, 2, 1), 0, heatingCoil, 0);
-        scene.electric().connect(util.grid().at(4, 2, 3), 0, heatingCoil, 1);
+        scene.electric().connect(util.grid().at(4, 2, 1), 0, deviceConnector, 0);
+        scene.electric().connect(util.grid().at(4, 2, 3), 0, deviceConnector, 1);
         scene.electric().connectInvisible(util.grid().at(4, 2, 1), 0, voltageSource, 0);
         scene.electric().connectInvisible(util.grid().at(4, 2, 3), 0, voltageSource, 1);
         scene.idle(5);
@@ -89,7 +100,10 @@ public class DeviceScenes {
                 .attachKeyFrame()
                 .pointAt(util.vector().topOf(heatingCoil))
                 .placeNearTarget();
-
+        scene.world().modifyBlockEntity(heatingCoil, HeaterBlockEntity.class, c -> {
+            var temp = c.getBehaviour(ThermalBehaviour.TYPE);
+            temp.setTemperature(380);
+        });
         scene.electric().setSource(voltageSource, 32);
         scene.electric().tickFor(10);
         scene.idle(100);
@@ -102,6 +116,10 @@ public class DeviceScenes {
 
         scene.electric().setSource(voltageSource, 38);
         scene.electric().tickFor(10);
+        scene.world().modifyBlockEntity(heatingCoil, HeaterBlockEntity.class, c -> {
+            var temp = c.getBehaviour(ThermalBehaviour.TYPE);
+            temp.setTemperature(510);
+        });
         scene.idle(80);
 
         scene.markAsFinished();
@@ -120,16 +138,22 @@ public class DeviceScenes {
 
         var heatingCoil = util.grid().at(1, 1, 3);
         var voltageSource = util.grid().at(2, 1, 6);
+        var deviceConnector = util.grid().at(1, 2, 3);
         scene.world().showSection(util.select().position(0, 2, 4), Direction.DOWN);
         scene.world().showSection(util.select().position(2, 2, 4), Direction.DOWN);
         scene.world().showSection(util.select().position(heatingCoil), Direction.DOWN);
+        scene.world().showSection(util.select().position(deviceConnector), Direction.DOWN);
         scene.idle(10);
 
-        scene.electric().connect(util.grid().at(0, 2, 4), 0, heatingCoil, 1);
-        scene.electric().connect(util.grid().at(2, 2, 4), 0, heatingCoil, 0);
+        scene.electric().connect(util.grid().at(0, 2, 4), 0, deviceConnector, 0);
+        scene.electric().connect(util.grid().at(2, 2, 4), 0, deviceConnector, 1);
         scene.electric().connectInvisible(util.grid().at(0, 2, 4), 0, voltageSource, 0);
         scene.electric().connectInvisible(util.grid().at(2, 2, 4), 0, voltageSource, 1);
         scene.electric().setSource(voltageSource, 32);
+        scene.world().modifyBlockEntity(heatingCoil, HeaterBlockEntity.class, c -> {
+            var temp = c.getBehaviour(ThermalBehaviour.TYPE);
+            temp.setTemperature(380);
+        });
         scene.electric().tickFor(10);
         scene.idle(10);
 
@@ -166,120 +190,6 @@ public class DeviceScenes {
         scene.overlay().showControls(item2Vec, Pointing.DOWN, 20).withItem(cooked);
 
         scene.idle(20);
-        scene.markAsFinished();
-    }
-
-    public static void transformerSizes(SceneBuilder scene, SceneBuildingUtil util) {
-        scene.title("transformer_sizes", "Transformers");
-        scene.configureBasePlate(0, 0, 5);
-
-        scene.showBasePlate();
-        scene.idle(5);
-
-        var smallTr = util.grid().at(2, 1, 1);
-        scene.world().showSection(util.select().position(smallTr), Direction.DOWN);
-        scene.idle(20);
-
-        scene.overlay().showControls(util.vector().blockSurface(smallTr, Direction.NORTH), Pointing.RIGHT, 30)
-                .withItem(AllItems.WRENCH.asStack());
-        scene.idle(20);
-        scene.world().setBlock(smallTr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState().setValue(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X), false);
-        scene.idle(20);
-
-        var mediumTr = util.grid().at(2, 1, 3);
-        scene.world().showSection(util.select().fromTo(mediumTr, mediumTr.west().above()), Direction.DOWN);
-        scene.idle(20);
-
-        scene.overlay().showControls(util.vector().blockSurface(mediumTr.above(), Direction.NORTH), Pointing.RIGHT, 30)
-                .withItem(AllItems.WRENCH.asStack());
-        scene.idle(20);
-        scene.world().setBlock(mediumTr, ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
-                .setValue(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .setValue(TransformerMediumBlock.PART, 1), false);
-        scene.world().setBlock(mediumTr.west(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
-                .setValue(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .setValue(TransformerMediumBlock.PART, 0), false);
-        scene.world().setBlock(mediumTr.above(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
-                .setValue(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .setValue(TransformerMediumBlock.PART, 3), false);
-        scene.world().setBlock(mediumTr.above().west(), ModdedBlocks.TRANSFORMER_MEDIUM.getDefaultState()
-                .setValue(TransformerMediumBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .setValue(TransformerMediumBlock.PART, 2), false);
-        scene.idle(20);
-
-        scene.overlay().showText(80)
-                .text("Transformers come in different sizes, each of them offering different power capabilities and winding capacities")
-                .attachKeyFrame()
-                .placeNearTarget();
-        scene.idle(90);
-
-        scene.markAsFinished();
-    }
-
-    public static void transformerWinding(SceneBuilder scene, SceneBuildingUtil util) {
-        scene.title("transformer_winding", "Winding a transformer");
-        scene.configureBasePlate(0, 0, 5);
-
-        scene.showBasePlate();
-        scene.idle(10);
-
-        var tr = util.grid().at(2, 1, 2);
-        scene.world().showSection(util.select().position(tr), Direction.DOWN);
-        scene.idle(15);
-
-        scene.overlay().showText(80)
-                .text("To wind a transformer, first select the starting terminal for your winding")
-                .attachKeyFrame()
-                .placeNearTarget();
-        scene.idle(90);
-
-        var stack = new ItemStack(ModdedItems.WIRE.getDelegate(), 1);
-        scene.overlay().showControls(util.vector().of(2.8, 1.9, 2.0), Pointing.RIGHT, 30).withItem(stack);
-        scene.idle(30);
-
-        var side = util.vector().blockSurface(tr, Direction.NORTH);
-        scene.overlay().showText(80)
-                .text("Next, click on the transformer body and pick the number of turn you want to add")
-                .attachKeyFrame()
-                .pointAt(side)
-                .placeNearTarget();
-        scene.idle(50);
-        scene.overlay().showControls(side, Pointing.UP, 30).withItem(stack);
-        scene.idle(40);
-
-        scene.overlay().showText(80)
-                .text("Lastly, select the end terminal for your winding")
-                .attachKeyFrame()
-                .placeNearTarget();
-        scene.idle(90);
-
-        scene.overlay().showControls(util.vector().of(2.2, 1.9, 2.0), Pointing.LEFT, 30).withItem(stack);
-        scene.idle(20);
-        scene.world().setBlock(tr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState()
-                .setValue(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .setValue(TransformerSmallBlock.COILS, 1), false);
-        scene.idle(10);
-
-        scene.effects().indicateSuccess(tr);
-        scene.idle(10);
-
-        scene.overlay().showText(60)
-                .text("Repeat for the secondary winding")
-                .placeNearTarget();
-        scene.idle(50);
-
-        scene.world().setBlock(tr, ModdedBlocks.TRANSFORMER_SMALL.getDefaultState()
-                .setValue(TransformerSmallBlock.HORIZONTAL_AXIS, Direction.Axis.X)
-                .setValue(TransformerSmallBlock.COILS, 2), false);
-        scene.effects().indicateSuccess(tr);
-        scene.idle(30);
-
-        scene.overlay().showText(80)
-                .text("Your transformer will now transform voltage with the ratio you wound")
-                .attachKeyFrame()
-                .placeNearTarget();
-        scene.idle(90);
-
         scene.markAsFinished();
     }
 
@@ -607,8 +517,11 @@ public class DeviceScenes {
         var magnetPos = util.grid().at(2, 3, 2);
         var depotPos = util.grid().at(2, 1, 1);
 
-        scene.world().modifyBlockEntity(magnetPos, ElectromagnetBlockEntity.class, be ->
-                be.getBehaviour(ThermalBehaviour.TYPE).behaviourFlags(0));
+        scene.world().modifyBlockEntity(magnetPos, ElectromagnetBlockEntity.class, be -> {
+                var behavior = be.getBehaviour(ThermalBehaviour.TYPE);
+                if(behavior != null)
+                    behavior.behaviourFlags(0);
+        });
         scene.electric().addSource(magnetPos, 0, 200);
         scene.electric().addSource(magnetPos, 1, 0);
         scene.electric().tickFor(5);
@@ -637,10 +550,10 @@ public class DeviceScenes {
                 .placeNearTarget()
                 .text("The Input items can be dropped or placed on a Depot under the Electromagnet");
         scene.idle(50);
-        var iron = new ItemStack(Items.IRON_INGOT);
-        scene.world().createItemOnBeltLike(depotPos, Direction.NORTH, iron);
+        var alloy = new ItemStack(AllItems.ANDESITE_ALLOY.asItem());
+        scene.world().createItemOnBeltLike(depotPos, Direction.NORTH, alloy);
         var depotCenter = util.vector().centerOf(depotPos.south());
-        scene.overlay().showControls(depotCenter, Pointing.UP, 30).withItem(iron);
+        scene.overlay().showControls(depotCenter, Pointing.UP, 30).withItem(alloy);
         scene.idle(10);
         var type = ElectromagnetBlockEntity.class;
         scene.world().modifyBlockEntity(magnetPos, type, pte -> pte.getMagnetizingBehaviour()
@@ -668,9 +581,9 @@ public class DeviceScenes {
                 .text("When items are provided on a belt...");
         scene.idle(30);
 
-        var ingot = scene.world().createItemOnBelt(beltPos, Direction.SOUTH, iron);
+        var ingot = scene.world().createItemOnBelt(beltPos, Direction.SOUTH, alloy);
         scene.idle(15);
-        var ingot2 = scene.world().createItemOnBelt(beltPos, Direction.SOUTH, iron);
+        var ingot2 = scene.world().createItemOnBelt(beltPos, Direction.SOUTH, alloy);
         scene.idle(15);
         scene.world().stallBeltItem(ingot, true);
         scene.world().modifyBlockEntity(magnetPos, type, pte -> pte.getMagnetizingBehaviour()
@@ -810,6 +723,60 @@ public class DeviceScenes {
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(40);
+        scene.markAsFinished();
+    }
+
+    public static void ceilingTile(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("ceiling_tile", "A stylish ceiling");
+        scene.configureBasePlate(0, 0, 5);
+        scene.showBasePlate();
+
+        scene.idle(10);
+        scene.world().showSection(util.select().position(2, 2, 2), Direction.DOWN);
+        scene.idle(20);
+
+        scene.overlay().showText(60)
+                .text("The Ceiling Tile is a decorative block.")
+                .pointAt(util.vector().of(2.5, 2.25, 2.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(70);
+
+        scene.overlay().showText(60)
+                .text("You can add certain blocks to it to expand its functionality")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(70);
+
+        scene.overlay().showControls(util.vector().of(2.5, 2.5, 2.5), Pointing.DOWN, 30)
+                .withItem(ModdedBlocks.FACTORY_LIGHT.asStack())
+                .rightClick();
+        scene.idle(20);
+
+        scene.world().setBlock(util.grid().at(2, 2, 2), ModdedBlocks.CEILING_TILE_LAMP.getDefaultState(), false);
+        scene.idle(20);
+        scene.effects().indicateSuccess(util.grid().at(2, 2, 2));
+        scene.idle(30);
+
+        scene.world().hideSection(util.select().position(2, 2, 2), Direction.UP);
+        scene.idle(20);
+
+        scene.overlay().showText(80)
+                .text("The Ceiling Tile supports a variety of attachments")
+                .placeNearTarget()
+                .attachKeyFrame();
+
+        scene.idle(20);
+        scene.world().showSection(util.select().position(1, 2, 1), Direction.DOWN);
+        scene.idle(10);
+        scene.world().showSection(util.select().position(3, 2, 1), Direction.DOWN);
+        scene.idle(10);
+        scene.world().showSection(util.select().position(1, 2, 3), Direction.DOWN);
+        scene.idle(10);
+        scene.world().showSection(util.select().position(3, 2, 3), Direction.DOWN);
+        scene.idle(30);
+
         scene.markAsFinished();
     }
 
@@ -1126,4 +1093,670 @@ public class DeviceScenes {
         scene.idle(100);
         scene.markAsFinished();
     }
+
+    public static void solarPanel(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("solar_panel_conditions", "Solar Panel Basics");
+        scene.configureBasePlate(0, 0, 5);
+        scene.showBasePlate();
+
+        var panel1 = util.grid().at(1, 1, 2);
+        var panel2 = util.grid().at(3, 1, 2);
+        var panel3 =  util.grid().at(2, 2, 2);
+        var bearing = util.grid().at(0, 1, 2);
+        var leave1 = util.grid().at(3, 2, 2);
+        var glass = util.grid().at(3, 1, 2);
+        var water =  util.grid().at(2, 1, 2);
+        var leave2 = util.grid().at(1, 1, 2);
+
+        scene.idle(10);
+        var rotatedPanel = scene.world().showIndependentSection(util.select().position(panel1), Direction.DOWN);
+        scene.world().showSection(util.select().position(panel2), Direction.DOWN);
+
+        scene.idle(10);
+        scene.overlay().showText(80)
+                .text("The Solar Panel needs to point at the sun to make power.")
+                .pointAt(util.vector().centerOf(panel2))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.idle(10);
+        scene.overlay().showText(80)
+                .text("The closer to directly pointing at the sun you get, the more power the panel will make.")
+                .pointAt(util.vector().centerOf(panel1))
+                .placeNearTarget();
+        scene.idle(90);
+
+        scene.world().showSection(util.select().position(bearing), Direction.DOWN);
+
+        scene.overlay().showText(100)
+                .text("For pointing with more accuracy you can use the Solar Panel Bearing refer to that ponder for more information.")
+                .pointAt(util.vector().centerOf(bearing))
+                .placeNearTarget();
+        scene.idle(15);
+        scene.world().rotateBearing(bearing, 360, 35 * 2);
+        scene.world().rotateSection(rotatedPanel, 360, 0, 0, 35 * 2);
+        scene.idle(95);
+        scene.world().hideSection(util.select().position(bearing), Direction.UP);
+
+        scene.overlay().showText(70)
+                .text("The Solar Panel needs direct sunlight.")
+                .pointAt(util.vector().centerOf(panel2))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(80);
+
+        scene.world().showSection(util.select().position(leave1), Direction.DOWN);
+        scene.overlay().showText(80)
+                .text("If there are any obstacles in the way it will make substantially less power.")
+                .pointAt(util.vector().centerOf(leave1))
+                .placeNearTarget();
+        scene.idle(90);
+        scene.world().hideSection(util.select().position(leave1), Direction.UP);
+        scene.world().hideSection(util.select().position(glass), Direction.UP);
+        scene.world().hideSection(util.select().position(leave2), Direction.UP);
+        scene.world().hideIndependentSection(rotatedPanel, Direction.UP);
+        scene.idle(15);
+
+        scene.world().replaceBlocks(util.select().position(glass), Blocks.GLASS.defaultBlockState(), false);
+        scene.world().replaceBlocks(util.select().position(water), Blocks.WATER.defaultBlockState(), false);
+        scene.world().replaceBlocks(util.select().position(leave2), Blocks.OAK_LEAVES.defaultBlockState(), false);
+        scene.world().showSection(util.select().fromTo(3, 1, 2, 1, 1, 2), Direction.DOWN);
+
+        scene.idle(10);
+        scene.overlay().showText(100)
+                .text("There are some blocks that let light through like glass, water, leaves and a few other blocks.")
+                .attachKeyFrame();
+        scene.idle(110);
+
+        scene.overlay().showText(30)
+                .text("25%%")
+                .pointAt(util.vector().topOf(leave2))
+                .placeNearTarget();
+        scene.idle(30);
+
+        scene.overlay().showText(30)
+                .text("50%%")
+                .pointAt(util.vector().topOf(water))
+                .placeNearTarget();
+        scene.idle(30);
+
+        scene.overlay().showText(30)
+                .text("75%%")
+                .pointAt(util.vector().topOf(glass))
+                .placeNearTarget();
+        scene.idle(30);
+
+        scene.world().hideSection(util.select().fromTo(3, 1, 2, 1, 1, 2), Direction.UP);
+        scene.idle(15);
+        scene.world().showSection(util.select().fromTo(1,1,1,3,1,3), Direction.DOWN);
+        scene.world().replaceBlocks(util.select().fromTo(1,1,1,3,1,3), Blocks.SAND.defaultBlockState(), false);
+        scene.world().showSection(util.select().position(3, 2, 1), Direction.DOWN);
+        scene.world().replaceBlocks(util.select().position(3, 2, 1), Blocks.DEAD_BUSH.defaultBlockState(), false);
+        scene.world().showSection(util.select().fromTo(3,2,3,3,3,3), Direction.DOWN);
+        scene.world().replaceBlocks(util.select().fromTo(3,2,3,3,3,3), Blocks.CACTUS.defaultBlockState(), false);
+
+        scene.idle(20);
+
+        scene.overlay().showText(80)
+                .text("Biome placement matters, the hotter the Solar Panel gets the less efficient it is.")
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.overlay().showText(90)
+                .text("Placing the Solar Panel in the desert will get you noticeably less overall power than...")
+                .pointAt(util.vector().centerOf(panel3));
+        scene.idle(10);
+        scene.world().showSection(util.select().position(panel3), Direction.DOWN);
+        scene.world().setBlock(panel3, ModdedBlocks.SOLAR_PANEL.getDefaultState()
+                .setValue(SolarPanelBlock.FACING, Direction.DOWN), false);
+        scene.idle(90);
+
+        scene.world().replaceBlocks(util.select().fromTo(1,1,1,3,1,3), Blocks.GRASS_BLOCK.defaultBlockState(), false);
+        scene.world().setBlocks(util.select().position(3,2,3), Blocks.TALL_GRASS.defaultBlockState()
+                .setValue(DoublePlantBlock.HALF, DoubleBlockHalf.LOWER), false);
+        scene.world().setBlocks(util.select().position(3,3,3), Blocks.TALL_GRASS.defaultBlockState()
+                .setValue(DoublePlantBlock.HALF, DoubleBlockHalf.UPPER), false);
+        scene.world().replaceBlocks(util.select().position(3, 2, 1), Blocks.SHORT_GRASS.defaultBlockState(), false);
+
+        scene.overlay().showText(60)
+                .text("Placing one in a plains biome.")
+                .pointAt(util.vector().centerOf(panel3));
+        scene.idle(70);
+
+        scene.world().hideSection(util.select().fromTo(1, 1, 1, 3, 1, 3), Direction.UP);
+        scene.world().hideSection(util.select().position(3, 2, 1), Direction.UP);
+        scene.world().hideSection(util.select().position(3, 2, 3), Direction.UP);
+        scene.world().hideSection(util.select().position(3, 3, 3), Direction.UP);
+        scene.world().hideSection(util.select().position(2, 2, 2), Direction.UP);
+        scene.idle(20);
+
+        scene.world().replaceBlocks(util.select().fromTo(1, 1, 1, 3, 1, 3),
+                ModdedBlocks.SOLAR_PANEL.getDefaultState().setValue(SolarPanelBlock.FACING, Direction.DOWN),
+                false);
+        // 2x2
+        scene.electric().connectPanels(util.grid().at(1, 1, 1), util.grid().at(2, 1, 1));
+        scene.electric().connectPanels(util.grid().at(1, 1, 1), util.grid().at(1, 1, 2));
+        scene.electric().connectPanels(util.grid().at(1, 1, 1), util.grid().at(2, 1, 2));
+        // 1x2
+        scene.electric().connectPanels(util.grid().at(3, 1, 1), util.grid().at(3, 1, 2));
+        // 3x1
+        scene.electric().connectPanels(util.grid().at(1, 1, 3), util.grid().at(2, 1, 3));
+        scene.electric().connectPanels(util.grid().at(1, 1, 3), util.grid().at(3, 1, 3));
+        scene.world().showSection(util.select().fromTo(1, 1, 1, 3, 1, 3), Direction.DOWN);
+        scene.idle(10);
+
+        scene.overlay().showText(80)
+                .text("Solar panels placed next to each other can connect to form a multiblock.")
+                .placeNearTarget()
+                .pointAt(util.vector().of(2, 1.5, 2))
+                .attachKeyFrame();
+        scene.idle(90);
+
+        var wrench = AllItems.WRENCH.asStack();
+        scene.overlay().showControls(util.vector().of(2.5, 1.5, 2.9), Pointing.DOWN, 30)
+                .rightClick()
+                .withItem(wrench);
+        scene.idle(10);
+        scene.world().showSection(util.select().position(4, 1, 4), Direction.DOWN);
+        scene.idle(10);
+        scene.electric().mergePanels(util.grid().at(1, 1, 1), util.grid().at(1, 1, 3));
+        scene.idle(30);
+
+        scene.overlay().showControls(util.vector().of(2.9, 1.5, 2.5), Pointing.DOWN, 30)
+                .rightClick()
+                .withItem(wrench);
+        scene.idle(10);
+        scene.world().showSection(util.select().position(4, 1, 4), Direction.DOWN);
+        scene.idle(10);
+        scene.electric().mergePanels(util.grid().at(1, 1, 1), util.grid().at(3, 1, 1));
+        scene.world().showSection(util.select().position(4, 1, 4), Direction.DOWN);
+        scene.idle(30);
+
+        scene.overlay().showControls(util.vector().of(2.1, 1.5, 2.5), Pointing.DOWN, 30)
+                .rightClick()
+                .withItem(wrench);
+        scene.idle(10);
+        scene.world().showSection(util.select().position(4, 1, 4), Direction.DOWN);
+        scene.idle(10);
+        scene.electric().splitPanels(util.grid().at(1, 1, 1), 1, Direction.EAST);
+        scene.world().showSection(util.select().position(4, 1, 4), Direction.DOWN);
+        scene.idle(30);
+
+        scene.overlay().showText(80)
+                .text("Next scene will show you how to start making power with Solar Panels.");
+        scene.idle(80);
+        scene.setNextUpEnabled(true);
+        scene.markAsFinished();
+    }
+
+    public static void solarPanel2(SceneBuilder builder, SceneBuildingUtil util){
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("solar_panel_power_creation", "Solar Panel Power Generation");
+        scene.configureBasePlate(0, 0, 5);
+
+        var resistor = util.grid().at(2, 1, 1);
+        var deviceConnector = util.grid().at(2, 1, 2);
+        var powerGauge = util.grid().at(4, 1, 2);
+
+        scene.showBasePlate();
+        scene.idle(20);
+        scene.world().replaceBlocks(util.select().position(deviceConnector), ModdedBlocks.SOLAR_PANEL.getDefaultState()
+                .setValue(SolarPanelBlock.FACING, Direction.DOWN), false);
+        scene.world().showSection(util.select().position(deviceConnector), Direction.DOWN);
+        scene.scaleSceneView(2f);
+
+        scene.overlay().showText(100)
+                .text("A Solar Panels output is based on an IV curve, Google \"Solar Panel IV curve\" for an image of a general IV curve.")
+                .attachKeyFrame();
+        scene.idle(110);
+
+        scene.overlay().showText(70)
+                .text("There are a few terms you need to know.")
+                .attachKeyFrame();
+        scene.idle(80);
+
+        scene.overlay().showText(80)
+                .text("Voc is the max voltage of the Solar Panel with no load on it.")
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.overlay().showText(100)
+                .text("Isc is the short current of the Solar Panel aka the current you would get placing a wire between the positive and negative.")
+                .attachKeyFrame();
+        scene.idle(110);
+
+        scene.overlay().showText(150)
+                .text("Vmp and Imp are the points along the IV curve where the Solar Panel makes the most power, these points shift around depending on the environmental conditions of the Solar Panel.")
+                .attachKeyFrame();
+        scene.idle(160);
+
+        scene.scaleSceneView(1f);
+        scene.world().hideSection(util.select().position(deviceConnector), Direction.UP);
+        scene.idle(15);
+        scene.world().restoreBlocks(util.select().position(deviceConnector));
+        scene.world().showSection(util.select().fromTo(0, 1, 0, 4, 1, 4), Direction.DOWN);
+        scene.idle(15);
+        scene.electric().addSource(deviceConnector, 0, 24);
+        scene.electric().connect(deviceConnector, 1, powerGauge, 1);
+        scene.electric().connectInvisible(deviceConnector, 0, powerGauge, 2);
+        scene.electric().connect(powerGauge, 0, resistor, 0, 30);
+        scene.electric().connect(resistor, 1, deviceConnector, 0);
+
+        scene.overlay().showText(90)
+                .text("A simple way to use a Solar Panel is by impedance matching it to your load.")
+                .attachKeyFrame();
+        scene.idle(80);
+
+        scene.overlay().showText(140)
+                .pointAt(util.select().position(resistor).getCenter())
+                .text("For example if a Solar Panels Vmp is 21.2V and Imp is 7.8A, Ohm's law dictates that the optimal load resistance would be 2.71 Ohms.")
+                .attachKeyFrame();
+        scene.idle(130);
+        scene.effects().indicateSuccess(resistor);
+        scene.electric().tickForever();
+        scene.idle(20);
+
+        scene.overlay().showText(90)
+                .text("The further you get from that resistance the less overall power the panel will make.")
+                .attachKeyFrame();
+        scene.idle(80);
+
+        scene.markAsFinished();
+    }
+
+    public static void solarPanelBearing(SceneBuilder builder, SceneBuildingUtil util){
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("solar_panel_bearing", "Solar Panel Bearing Basics");
+        scene.configureBasePlate(0, 0, 7);
+        scene.showBasePlate();
+
+        var bearing = util.grid().at(5, 2, 3);
+        var panelNBlock = util.grid().at(4, 2, 3);
+        var smallCog = util.grid().at(6, 1, 2);
+        var largeCog = util.grid().at(6, 2, 3);
+        var log = util.grid().at(5, 1, 3);
+
+        scene.world().showSection(util.select().position(log), Direction.DOWN);
+        scene.world().showSection(util.select().position(bearing), Direction.DOWN);
+        ElementLink<WorldSectionElement> panelNBlockContraption =
+                scene.world().showIndependentSection(util.select().position(panelNBlock), Direction.DOWN);
+        scene.world().showSection(util.select().position(smallCog), Direction.DOWN);
+        scene.world().showSection(util.select().position(largeCog), Direction.DOWN);
+        ElementLink<WorldSectionElement> panelNBlockContraption2 = null;
+
+        scene.overlay().showOutlineWithText(util.select().position(bearing.west()), 80)
+                .colored(PonderPalette.GREEN)
+                .pointAt(util.vector().blockSurface(panelNBlock, Direction.UP))
+                .placeNearTarget()
+                .attachKeyFrame()
+                .text("The Solar Panel Bearing attaches to Solar Panels placed in front of it.");
+        scene.idle(90);
+
+        scene.world().rotateBearing(bearing, 360, 37 * 2);
+        scene.world().rotateSection(panelNBlockContraption, 360, 0, 0, 37 * 2);
+        scene.world().setKineticSpeed(util.select().position(largeCog), 16);
+        scene.world().setKineticSpeed(util.select().position(smallCog), -32);
+        Vec3 blockSurface = util.vector().blockSurface(bearing, Direction.UP);
+        scene.overlay().showControls(blockSurface, Pointing.DOWN, 60).rightClick();
+
+        scene.overlay().showText(70)
+                .text("By clicking you can assemble the contraption.")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(74);
+        scene.world().setKineticSpeed(util.select().position(largeCog), 0);
+        scene.world().setKineticSpeed(util.select().position(smallCog), 0);
+        scene.idle(11);
+
+        scene.world().hideIndependentSection(panelNBlockContraption, Direction.UP);
+        scene.idle(15);
+        panelNBlockContraption = scene.world().showIndependentSection(util.select().fromTo(4, 2,2, 4, 2, 4), Direction.DOWN);
+
+        scene.overlay().showText(90)
+                .text("You do not need to glue Solar Panels together as long as they are touching.")
+                .pointAt(util.select().position(panelNBlock).getCenter())
+                .attachKeyFrame();
+        scene.idle(30);
+
+        scene.world().rotateBearing(bearing, 360, 37 * 2);
+        scene.world().rotateSection(panelNBlockContraption, 360, 0, 0, 37 * 2);
+        scene.world().setKineticSpeed(util.select().position(largeCog), 16);
+        scene.world().setKineticSpeed(util.select().position(smallCog), -32);
+        scene.idle(74);
+        scene.world().setKineticSpeed(util.select().position(largeCog), 0);
+        scene.world().setKineticSpeed(util.select().position(smallCog), 0);
+        scene.idle(11);
+        scene.world().hideIndependentSection(panelNBlockContraption, Direction.UP);
+        scene.idle(15);
+        scene.world().replaceBlocks(util.select().position(panelNBlock), ModdedBlocks.CONDUCTIVE_CASING.getDefaultState(), false);
+        panelNBlockContraption = scene.world().showIndependentSection(util.select().fromTo(4, 2, 3, 2, 2, 3), Direction.DOWN);
+        panelNBlockContraption2 = scene.world().showIndependentSection(util.select().fromTo(4, 2, 2, 2, 2, 2)
+                .add(util.select().fromTo(4 ,2, 4, 2, 2 ,4)), Direction.DOWN);
+
+        scene.overlay().showText(140)
+                .text("If you do not connect the Solar Panels directly to the face then you need to glue every block that isn't a Solar Panel and glue at least one Solar Panel.")
+                .pointAt(util.select().position(panelNBlock.west()).getCenter())
+                .attachKeyFrame();
+        scene.idle(120);
+
+        scene.overlay().showOutline(PonderPalette.GREEN, "glue", util.select().fromTo(4, 2, 3, 2, 2, 3), 70);
+        scene.overlay().showControls(util.vector().centerOf(util.grid().at(3, 2, 3)).add(0, .4f, 0), Pointing.DOWN, 60)
+                .withItem(AllItems.SUPER_GLUE.asStack());
+        scene.idle(50);
+
+        scene.overlay().showText(70)
+                .text("Gluing like this will only turn the center.")
+                .pointAt(util.select().position(panelNBlock.west()).getCenter())
+                .attachKeyFrame();
+        scene.idle(50);
+
+        scene.world().rotateBearing(bearing, 360, 37 * 2);
+        scene.world().rotateSection(panelNBlockContraption, 360, 0, 0, 37 * 2);
+        scene.world().setKineticSpeed(util.select().position(largeCog), 16);
+        scene.world().setKineticSpeed(util.select().position(smallCog), -32);
+        scene.idle(74);
+        scene.world().setKineticSpeed(util.select().position(largeCog), 0);
+        scene.world().setKineticSpeed(util.select().position(smallCog), 0);
+
+        scene.overlay().showOutline(PonderPalette.GREEN, "glue", util.select().fromTo(4, 2, 3, 2, 2, 3)
+                .add(util.select().fromTo(2, 2, 2, 2, 2, 4)
+                .add(util.select().fromTo(4, 2, 3, 2, 2, 3))), 60);
+        scene.overlay().showControls(util.vector().centerOf(util.grid().at(3, 2, 3)).add(0, .4f, 0), Pointing.DOWN, 60)
+                .withItem(AllItems.SUPER_GLUE.asStack());
+
+        scene.overlay().showText(70)
+                .text("Gluing like this will rotate the center and the Solar Panels.")
+                .pointAt(util.select().position(panelNBlock.west()).getCenter())
+                .attachKeyFrame();
+        scene.idle(60);
+
+        scene.world().rotateBearing(bearing, 360, 37 * 2);
+        scene.world().rotateSection(panelNBlockContraption, 360, 0, 0, 37 * 2);
+        scene.world().rotateSection(panelNBlockContraption2, 360, 0, 0, 37 * 2);
+        scene.world().setKineticSpeed(util.select().position(largeCog), 16);
+        scene.world().setKineticSpeed(util.select().position(smallCog), -32);
+        scene.idle(74);
+        scene.world().setKineticSpeed(util.select().position(largeCog), 0);
+        scene.world().setKineticSpeed(util.select().position(smallCog), 0);
+        scene.idle(20);
+
+        scene.overlay().showText(70)
+                .text("When assembled the output of all connected Solar Panels is combined on the terminals on the bearing.")
+                .attachKeyFrame();
+        scene.idle(80);
+
+        scene.overlay().showText(80)
+                .text("On the side of the block you can change how the power from the Solar Panels is output.")
+                .attachKeyFrame();
+        blockSurface = util.vector().blockSurface(bearing, Direction.NORTH);
+        scene.overlay().showControls(blockSurface, Pointing.RIGHT, 90);
+        scene.overlay().showFilterSlotInput(blockSurface, Direction.NORTH, 90);
+        scene.idle(95);
+
+        scene.overlay().showText(70)
+                .text("The output is in (Strings in parallel * Panels in String).")
+                .attachKeyFrame();
+        scene.idle(80);
+
+        scene.world().rotateSection(panelNBlockContraption, -35, 0, 0, 10);
+        scene.world().rotateSection(panelNBlockContraption2, -35, 0, 0, 10);
+
+        scene.overlay().showText(110)
+                .text("For example this contraption has 6 Solar Panels attached it would give you 4 options (1x6, 2x3, 3x2, 6x1).")
+                .pointAt(util.select().position(panelNBlock.west()).getCenter())
+                .attachKeyFrame();
+        scene.idle(120);
+
+        scene.overlay().showText(120)
+                .text("The first number shows how many strings you have in parallel, and the second number is how many Solar Panels you have in a string.")
+                .attachKeyFrame();
+        scene.idle(130);
+
+        scene.overlay().showText(130)
+                .text("In simplified terms the further the slider is to the left you get more voltage and less current and further to the right is more current less voltage.")
+                .attachKeyFrame();
+        scene.idle(140);
+
+        scene.overlay().showText(130)
+                .text("The max amount of panels in a string is 25, if your Solar Panel amount isn't divisible by 1-9 with a quotient of less than 26 it will not assemble.")
+                .attachKeyFrame();
+        scene.idle(140);
+
+        scene.overlay().showText(70)
+                .text("The fix is to add or remove Solar Panels.")
+                .attachKeyFrame();
+        scene.idle(80);
+
+        scene.markAsFinished();
+    }
+    public static void factoryLight(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("factory_light", "Lighting up your warehouse 101");
+        scene.configureBasePlate(0, 0, 5);
+        scene.showBasePlate();
+        scene.setSceneOffsetY(-2);
+
+        var poles = util.select().fromTo(1, 1, 4, 3, 5, 4)
+        .add(util.select().fromTo(1,5,4,1,6, 2)
+        .add(util.select().fromTo(3,5,4,3,6, 2)));
+        var light = util.select().fromTo(1, 4, 2, 3, 4, 2).add(util.select().position(2, 5, 2));
+        var connector1 = util.grid().at(3,6,2);
+        var connector2 = util.grid().at(1,6,2);
+        var device_connector = util.grid().at(2,5,2);
+        scene.idle(10);
+        scene.world().showSection(poles, Direction.DOWN);
+        scene.idle(20);
+        scene.world().showSection(light, Direction.UP);
+        scene.electric().addSource(connector1, 0, 120);
+        scene.electric().addSource(connector2, 0, 0);
+        scene.idle(10);
+        scene.electric().connect(connector1, 0, device_connector, 1);
+        scene.idle(10);
+        scene.electric().connect(connector2, 0, device_connector, 0);
+        scene.idle(20);
+        ItemStack bulb = new ItemStack(ModdedItems.LIGHT_BULB.get());
+        Vec3 frontVec = util.vector().blockSurface(util.grid().at(1, 4, 3), Direction.WEST);
+                //.add(-.125, 0, 0);
+
+        scene.overlay().showControls(frontVec, Pointing.DOWN, 40).rightClick()
+                .withItem(bulb);
+        scene.overlay().showOutlineWithText(util.select().fromTo(1, 4, 2, 3, 4, 2), 80)
+                .colored(PonderPalette.BLUE)
+                .pointAt(util.vector().blockSurface(util.grid().at(1, 4, 2), Direction.WEST))
+                .placeNearTarget()
+                .attachKeyFrame()
+                        .text("Right-click to add any light bulb");
+        scene.idle(90);
+        scene.electric().tickFor(20);
+
+        scene.markAsFinished();
+    }
+    public static void factoryLightTall(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("factory_light_tall", "Using the Factory Light for tall buildings");
+        scene.configureBasePlate(0, 0, 5);
+        scene.showBasePlate();
+        scene.setSceneOffsetY(-3);
+        scene.scaleSceneView(0.8f);
+        scene.idle(10);
+        scene.world().showSection(util.select().fromTo(0,1,0,4, 8, 4), Direction.DOWN);
+        scene.electric().addSource(util.grid().at(3, 8 , 4), 0, 120);
+        scene.electric().addSource(util.grid().at(1, 8 , 4), 0, 0);
+        scene.idle(10);
+        scene.electric().connect(util.grid().at(3, 8 , 4), 0, util.grid().at(2, 8 , 3), 1);
+        scene.idle(10);
+        scene.electric().connect(util.grid().at(1, 8 , 4), 0, util.grid().at(2, 8 , 3), 0);
+        scene.idle(20);
+        scene.overlay().showOutlineWithText(util.select().position(2,7,3), 80)
+                .colored(PonderPalette.BLUE)
+                .pointAt(util.vector().blockSurface(util.grid().at(2, 7, 3), Direction.WEST))
+                .placeNearTarget()
+                .attachKeyFrame()
+                .text("A Factory light can provide a light level of 15 to the top face of a block up to 16 blocks below it");
+        scene.idle(10);
+        scene.overlay().showText(60)
+                .placeNearTarget()
+                .pointAt(util.vector().topOf(util.grid().at(2, 0,3)))
+                .text("15");
+        scene.idle(80);
+
+        scene.markAsFinished();
+    }
+    public static void factoryLightConnect(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("factory_light_connect", "Connecting Factory Lights together");
+        scene.configureBasePlate(0, 0, 5);
+        scene.showBasePlate();
+        var left = util.select().fromTo(4, 1, 0, 4, 1, 2);
+        var back = util.select().fromTo(2, 1, 4, 0, 1, 4);
+        var both = util.select().fromTo(0, 1, 0, 2, 1, 2);
+        scene.idle(10);
+        scene.world().showSection(left, Direction.DOWN);
+        scene.idle(10);
+        scene.overlay().showOutlineWithText(left, 60)
+                .colored(PonderPalette.BLUE)
+                .pointAt(util.vector().blockSurface(util.grid().at(4, 1, 2), Direction.WEST))
+                .placeNearTarget()
+                .attachKeyFrame()
+                .text("Factory Lights can be connected to adjacent ones like this");
+        scene.idle(70);
+        scene.world().showSection(back, Direction.DOWN);
+        scene.idle(10);
+        scene.overlay().showOutlineWithText(back, 40)
+                .colored(PonderPalette.BLUE)
+                .pointAt(util.vector().blockSurface(util.grid().at(0, 1, 4), Direction.WEST))
+                .placeNearTarget()
+                .attachKeyFrame()
+                .text("Or like this");
+        scene.idle(50);
+        scene.world().showSection(both, Direction.DOWN);
+        scene.idle(10);
+        scene.overlay().showOutlineWithText(both, 40)
+                .colored(PonderPalette.BLUE)
+                .pointAt(util.vector().blockSurface(util.grid().at(0, 1, 1), Direction.WEST))
+                .placeNearTarget()
+                .attachKeyFrame()
+                .text("But not this");
+        scene.idle(50);
+
+        scene.markAsFinished();
+    }
+
+    public static void modularDisplay(SceneBuilder builder, SceneBuildingUtil util){
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("modular_display", "Modular Display");
+        scene.configureBasePlate(0, 0, 5);
+        scene.scaleSceneView(1.75f);
+
+        var pos = util.grid().at(3, 1, 4);
+        var neg = util.grid().at(1, 1, 4);
+        var reset = util.grid().at(0, 1, 3);
+        var block = util.grid().at(2, 1, 2);
+
+
+        scene.showBasePlate();
+        scene.idle(5);
+        scene.world().showSection(util.select().position(pos), Direction.DOWN);
+        scene.world().showSection(util.select().position(neg), Direction.DOWN);
+        scene.world().showSection(util.select().position(block), Direction.DOWN);
+        scene.world().showSection(util.select().position(reset), Direction.DOWN);
+        scene.idle(30);
+
+        scene.overlay().showText(70)
+                .text("You can place modules in by clicking a display module on a empty slot")
+                .pointAt(util.vector().of(2.25, 1.75, 2))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(40);
+
+        scene.world().modifyBlockEntity(block, ModularDisplayBlockEntity.class, be -> {
+            be.modules[0] = new ZeroToNineNumberModule(0, false, DyeColor.WHITE);
+        });
+        scene.effects().indicateSuccess(block);
+        scene.idle(40);
+
+        scene.overlay().showText(60)
+                .text("You can remove them by shift clicking")
+                .pointAt(util.vector().of(2.25, 1.75, 2))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.overlay().showControls(util.vector().of(2.25, 1.75, 2), Pointing.DOWN, 40).rightClick().whileSneaking();
+        scene.idle(40);
+
+        scene.world().modifyBlockEntity(block, ModularDisplayBlockEntity.class, be -> {
+            be.modules[0] = null;
+        });
+
+        scene.idle(20);
+
+        scene.rotateCameraY(-135);
+        scene.idle(20);
+
+        scene.overlay().showText(110)
+                .text("There is a case ground in the center and a positive and reset pin for every slot")
+                .pointAt(util.vector().of(2.5, 1.75, 3))
+                .placeNearTarget()
+                .attachKeyFrame();
+
+        scene.world().modifyBlockEntity(block, ModularDisplayBlockEntity.class, be -> {
+            be.modules[0] = new ZeroToNineNumberModule(0, false, DyeColor.WHITE);
+        });
+        scene.idle(30);
+        scene.electric().connect(neg, 0, block, 8, DyeColor.BLACK);
+        scene.idle(30);
+        scene.electric().connect(pos, 0, block, 0, DyeColor.RED);
+        scene.idle(30);
+        scene.electric().connect(reset, 0, block, 1, DyeColor.BLACK);
+        scene.idle(30);
+
+        scene.rotateCameraY(135);
+        scene.idle(10);
+
+        scene.overlay().showText(70)
+                .text("See display module ponder for instructions on how to use the modules")
+                .pointAt(util.vector().of(2.25, 1.75, 2))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(80);
+
+        scene.overlay().showText(80)
+                .text("You can click and hold on a slot that has a module to change what the module displays")
+                .placeNearTarget()
+                .attachKeyFrame();
+
+        scene.overlay().showControls(util.vector().of(2.25, 1.75, 2), Pointing.DOWN, 20).rightClick();
+        scene.idle(20);
+
+        scene.world().modifyBlockEntity(block, ModularDisplayBlockEntity.class, be -> {
+            be.modules[0] = new AlphabetLetterModule(0, false, DyeColor.WHITE);
+        });
+        scene.idle(70);
+
+        scene.overlay().showText(110)
+                .text("You can click with a wrench on any slot to enable or disable the blanking page for that slot")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(50);
+        scene.overlay().showControls(util.vector().of(2.25, 1.75, 2), Pointing.DOWN, 40)
+                .withItem(AllItems.WRENCH.asStack());
+        scene.idle(70);
+
+        scene.overlay().showText(70)
+                .text("You can dye modules by clicking the slot with dye")
+                .placeNearTarget()
+                .attachKeyFrame();
+
+        scene.overlay().showControls(util.vector().of(2.25, 1.75, 2), Pointing.DOWN, 20)
+                .withItem(Items.RED_DYE.getDefaultInstance()).rightClick();
+        scene.idle(20);
+
+        scene.world().modifyBlockEntity(block, ModularDisplayBlockEntity.class, be -> {
+            be.modules[0] = new AlphabetLetterModule(0, false, DyeColor.RED);
+        });
+        scene.idle(20);
+        scene.markAsFinished();
+    }
+
 }

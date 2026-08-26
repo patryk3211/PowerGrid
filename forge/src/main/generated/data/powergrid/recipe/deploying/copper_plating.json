@@ -1,0 +1,16 @@
+{
+  "type": "create:deploying",
+  "ingredients": [
+    {
+      "item": "minecraft:copper_block"
+    },
+    {
+      "tag": "c:plates/copper"
+    }
+  ],
+  "results": [
+    {
+      "id": "powergrid:copper_plating"
+    }
+  ]
+}

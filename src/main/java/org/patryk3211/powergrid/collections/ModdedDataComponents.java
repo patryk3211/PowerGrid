@@ -18,17 +18,25 @@ package org.patryk3211.powergrid.collections;
 import com.mojang.serialization.Codec;
 import dev.architectury.registry.registries.DeferredRegister;
 import dev.architectury.registry.registries.RegistrySupplier;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.light.string.PatternData;
 import org.patryk3211.powergrid.electricity.wire.WireConnection;
+import org.patryk3211.powergrid.equipment.BoostData;
 
 public class ModdedDataComponents {
     public static final DeferredRegister<DataComponentType<?>> REGISTER = DeferredRegister.create(PowerGrid.MOD_ID, Registries.DATA_COMPONENT_TYPE);
 
     public static final RegistrySupplier<DataComponentType<PatternData>> LIGHT_PATTERN = persistent("pattern", PatternData.CODEC);
     public static final RegistrySupplier<DataComponentType<WireConnection>> CONNECTION_DATA = persistent("connection", WireConnection.CODEC);
+
+    public static final RegistrySupplier<DataComponentType<BoostData>> BOOST = persistent("boost", BoostData.CODEC);
+
+    public static final RegistrySupplier<DataComponentType<BlockPos>> WINDING_CONNECTION = persistent("winding_connection", BlockPos.CODEC);
+
+    public static final RegistrySupplier<DataComponentType<Integer>> PORTABLE_BATTERY_CHARGE = persistent("portable_battery_charge", Codec.INT);
 
     public static <T> RegistrySupplier<DataComponentType<T>> persistent(String id, Codec<T> codec) {
         return REGISTER.register(id, () -> DataComponentType.<T>builder().persistent(codec).build());

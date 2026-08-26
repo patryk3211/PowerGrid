@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.kinetics.generator.rotor;
 
 import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BehaviourType;
+import dev.ryanhcode.sable.companion.SableCompanion;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
@@ -24,9 +25,15 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.base.SegmentedBehaviour;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.collections.ModdedDamageTypes;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.sim.special.IRotor;
@@ -35,6 +42,8 @@ import org.patryk3211.powergrid.kinetics.generator.IRotorAssemblyPart;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
+import static org.patryk3211.powergrid.kinetics.generator.rotor.AbstractRotorBlock.AXIS;
 
 public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> implements IRotor, ElectricBehaviour.SyncAppender {
     public static final BehaviourType<RotorBehaviour> TYPE = new BehaviourType<>("generator_rotor");
@@ -63,11 +72,17 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> implement
 
     public float power;
 
-    public RotorBehaviour(SmartBlockEntity be, float inertia) {
+    private final float damageRadius;
+    private AABB hurtBB;
+    private BlockState bbState;
+    private DamageSource dmgSource;
+
+    public RotorBehaviour(SmartBlockEntity be, float inertia, float damageRadius) {
         super(be, ModdedConfigs.server().kinetics.generatorControls.rotorAssemblyMaxSize.get(),
                 segment -> !segment.blockEntity.getBlockState()
                         .is(ModdedTags.Block.IGNORE_IN_ROTOR_ASSEMBLY_SIZE.tag));
         this.individualInertia = inertia;
+        this.damageRadius = damageRadius;
         setLazyTickRate(100);
     }
 
@@ -113,8 +128,8 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> implement
     @Nullable
     public Direction.Axis getAxis() {
         var state = blockEntity.getBlockState();
-        if(state.hasProperty(AbstractRotorBlock.AXIS))
-            return state.getValue(AbstractRotorBlock.AXIS);
+        if(state.hasProperty(AXIS))
+            return state.getValue(AXIS);
         return null;
     }
 
@@ -126,10 +141,18 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> implement
 		oldAngVel = 0;
     }
 
+    @Override
+    protected void makePeripheral(RotorBehaviour controller) {
+        super.makePeripheral(controller);
+        hasSoundSource = false;
+    }
+
     @Environment(EnvType.CLIENT)
     public void tickAudio() {
-        if(!isController())
+        if(!isController()) {
+            hasSoundSource = false;
             return;
+        }
         if(!hasSoundSource && Math.abs(angularVelocity) > 32) {
             Minecraft.getInstance().getSoundManager().play(new RotorSoundInstance(this));
             hasSoundSource = true;
@@ -276,7 +299,7 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> implement
                     float force = ((Kp * deltaT) + (Kd * deltaAV)) * 20f * inertia;
                     force = Math.min(Math.abs(force), maxForce) * Math.signum(target);
                     angularVelocity += force / 20f / inertia;
-                    segment.forceSupplier.receiveUsedForce(Math.abs(force / maxForce));
+                    segment.forceSupplier.receiveUsedForce(maxForce == 0 ? 0 : Math.abs(force / maxForce));
                     totalForce += force;
 
                     power = force * getAngularVelocityRadians();
@@ -317,6 +340,57 @@ public class RotorBehaviour extends SegmentedBehaviour<RotorBehaviour> implement
             angle = getAngle();
         }
         getWorld().blockEntityChanged(getPos());
+        damageCalc();
+    }
+
+    private void damageCalc() {
+        if(damageRadius == 0 || !ModdedConfigs.server().kinetics.generatorControls.dangerousGenerators.get())
+            return;
+        var state = blockEntity.getBlockState();
+        if(bbState != blockEntity.getBlockState()) {
+            bbState = state;
+            var axis = bbState.getValue(AXIS);
+            var pos = getPos();
+            hurtBB = new AABB(
+                    axis == Direction.Axis.X ? pos.getX() : pos.getX() + 0.5 - damageRadius,
+                    axis == Direction.Axis.Y ? pos.getY() : pos.getY() + 0.5 - damageRadius,
+                    axis == Direction.Axis.Z ? pos.getZ() : pos.getZ() + 0.5 - damageRadius,
+                    axis == Direction.Axis.X ? pos.getX() + 1 : pos.getX() + 0.5 + damageRadius,
+                    axis == Direction.Axis.Y ? pos.getY() + 1 : pos.getY() + 0.5 + damageRadius,
+                    axis == Direction.Axis.Z ? pos.getZ() + 1 : pos.getZ() + 0.5 + damageRadius
+            );
+        }
+        var level = getWorld();
+        if(dmgSource == null)
+            dmgSource = ModdedDamageTypes.SPINNING_ROTOR.simpleDamageSource(level);
+        var entities = level.getEntitiesOfClass(LivingEntity.class, hurtBB);
+        var axis = state.getValue(AXIS);
+        for(var e : entities) {
+            var pos = getPos();
+            var sublevel = SableCompanion.INSTANCE.getContaining(level, pos);
+            var ePos = e.position();
+            if(sublevel != null) {
+                ePos = sublevel.logicalPose().transformPositionInverse(ePos);
+            }
+            var direction = new Vec3(
+                    axis == Direction.Axis.X ? 0 : ePos.x - pos.getX() - 0.5,
+                    axis == Direction.Axis.Y ? 0 : ePos.y - pos.getY() - 0.5,
+                    axis == Direction.Axis.Z ? 0 : ePos.z - pos.getZ() - 0.5
+            );
+            var heading = direction.cross(new Vec3(
+                    axis == Direction.Axis.X ? 1 : 0,
+                    axis == Direction.Axis.Y ? 1 : 0,
+                    axis == Direction.Axis.Z ? 1 : 0
+            ));
+            if(sublevel != null) {
+                heading = sublevel.logicalPose().transformNormal(heading);
+            }
+            var velocity = heading.scale(-getAngularVelocityRadians() * 0.025);
+            e.addDeltaMovement(velocity);
+            float d = (float) (velocity.length() / 0.16);
+            if(!level.isClientSide && d > 1)
+                e.hurt(dmgSource, d);
+        }
     }
 
     @Override

@@ -21,8 +21,11 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public interface Expression {
+    float eval(IVarSet variables);
 
-    float eval(float x);
+    default float eval(float x) {
+        return eval(name -> x);
+    }
 
     private static List<Integer> pass(int startIdx, String eqStr, Function<Character, Boolean> condition) {
         int depth = 0;
@@ -119,8 +122,8 @@ public interface Expression {
         }
         if(eqStr.charAt(0) == '-') {
             return new Negate(parse(eqStr.substring(1)));
-        } else if(eqStr.equals("x")) {
-            return new Variable();
+        } else if(eqStr.length() == 1 && eqStr.matches("[a-zA-Z]")) {
+            return new Variable(eqStr);
         } else {
             for(var entry : UnaryExpressions.EXPRESSIONS.entrySet()) {
                 if(eqStr.startsWith(entry.getKey() + "(")) {
@@ -142,15 +145,21 @@ class Value implements Expression {
     }
 
     @Override
-    public float eval(float x) {
+    public float eval(IVarSet variables) {
         return v;
     }
 }
 
 class Variable implements Expression {
+    private final String name;
+
+    public Variable(String name) {
+        this.name = name;
+    }
+
     @Override
-    public float eval(float x) {
-        return x;
+    public float eval(IVarSet variables) {
+        return variables.get(name);
     }
 }
 
@@ -168,8 +177,8 @@ class Negate extends OneValueExpr {
     }
 
     @Override
-    public float eval(float x) {
-        return -e.eval(x);
+    public float eval(IVarSet variables) {
+        return -e.eval(variables);
     }
 }
 
@@ -179,8 +188,8 @@ class Sqrt extends OneValueExpr {
     }
 
     @Override
-    public float eval(float x) {
-        return (float) Math.sqrt(x);
+    public float eval(IVarSet variables) {
+        return (float) Math.sqrt(e.eval(variables));
     }
 }
 
@@ -190,8 +199,8 @@ class Abs extends OneValueExpr {
     }
 
     @Override
-    public float eval(float x) {
-        return Math.abs(e.eval(x));
+    public float eval(IVarSet variables) {
+        return Math.abs(e.eval(variables));
     }
 }
 
@@ -201,8 +210,8 @@ class Floor extends OneValueExpr {
     }
 
     @Override
-    public float eval(float x) {
-        return (float) Math.floor(e.eval(x));
+    public float eval(IVarSet variables) {
+        return (float) Math.floor(e.eval(variables));
     }
 }
 
@@ -212,8 +221,8 @@ class Ceil extends OneValueExpr {
     }
 
     @Override
-    public float eval(float x) {
-        return (float) Math.ceil(e.eval(x));
+    public float eval(IVarSet variables) {
+        return (float) Math.ceil(e.eval(variables));
     }
 }
 
@@ -223,8 +232,8 @@ class Round extends OneValueExpr {
     }
 
     @Override
-    public float eval(float x) {
-        return Math.round(e.eval(x));
+    public float eval(IVarSet variables) {
+        return Math.round(e.eval(variables));
     }
 }
 
@@ -244,8 +253,8 @@ class Multiply extends TwoValueExpr {
     }
 
     @Override
-    public float eval(float x) {
-        return e1.eval(x) * e2.eval(x);
+    public float eval(IVarSet variables) {
+        return e1.eval(variables) * e2.eval(variables);
     }
 }
 
@@ -255,8 +264,8 @@ class Divide extends TwoValueExpr {
     }
 
     @Override
-    public float eval(float x) {
-        return e1.eval(x) / e2.eval(x);
+    public float eval(IVarSet variables) {
+        return e1.eval(variables) / e2.eval(variables);
     }
 }
 
@@ -266,8 +275,8 @@ class Add extends TwoValueExpr {
     }
 
     @Override
-    public float eval(float x) {
-        return e1.eval(x) + e2.eval(x);
+    public float eval(IVarSet variables) {
+        return e1.eval(variables) + e2.eval(variables);
     }
 }
 
@@ -277,7 +286,7 @@ class Subtract extends TwoValueExpr {
     }
 
     @Override
-    public float eval(float x) {
-        return e1.eval(x) - e2.eval(x);
+    public float eval(IVarSet variables) {
+        return e1.eval(variables) - e2.eval(variables);
     }
 }

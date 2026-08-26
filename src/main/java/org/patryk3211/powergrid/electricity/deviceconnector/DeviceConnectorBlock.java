@@ -99,7 +99,7 @@ public class DeviceConnectorBlock extends Rotation4ElectricBlock implements IBE<
                             terminal = switch(facing) {
                                 case DOWN -> terminal;
                                 case UP -> terminal.rotateAroundX(180);
-                                case EAST -> terminal.rotateAroundZ(-90);
+                                case EAST -> terminal.rotateAroundZ(90).rotateAroundY(180);
                                 case WEST -> terminal.rotateAroundZ(90);
                                 case NORTH -> terminal.rotateAroundZ(90).rotateAroundY(90);
                                 case SOUTH -> terminal.rotateAroundZ(90).rotateAroundY(-90);
@@ -221,7 +221,7 @@ public class DeviceConnectorBlock extends Rotation4ElectricBlock implements IBE<
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
         tooltip.add(Lang.translateDirect("tooltip.device_connector.header"));
-        Resistance.minimum(IFEBridgeHandler.MINIMUM_RESISTANCE, player, tooltip);
+        Resistance.maximum(IFEBridgeHandler.MAXIMUM_RESISTANCE, player, tooltip);
 
         Lang.translate("tooltip.device_connector.rate").style(ChatFormatting.GRAY).addTo(tooltip);
         LangBuilder valueText = Lang.builder().add(Component.nullToEmpty(" "));

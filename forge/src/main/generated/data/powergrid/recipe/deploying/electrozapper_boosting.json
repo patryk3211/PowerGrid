@@ -1,0 +1,16 @@
+{
+  "type": "powergrid:boost_recipe",
+  "ingredients": [
+    {
+      "item": "powergrid:electrozapper"
+    },
+    {
+      "item": "powergrid:integrated_circuit"
+    }
+  ],
+  "results": [
+    {
+      "id": "powergrid:electrozapper"
+    }
+  ]
+}

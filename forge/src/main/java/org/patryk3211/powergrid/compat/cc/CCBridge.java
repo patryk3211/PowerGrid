@@ -1,0 +1,52 @@
+package org.patryk3211.powergrid.compat.cc;
+
+import dan200.computercraft.api.peripheral.PeripheralCapability;
+import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.compat.cc.battery.BatteryPeripheral;
+import org.patryk3211.powergrid.compat.cc.clutch.GeneratorClutchPeripheral;
+import org.patryk3211.powergrid.compat.cc.gauges.CurrentGaugePeripheral;
+import org.patryk3211.powergrid.compat.cc.gauges.EnergyMeterPeripheral;
+import org.patryk3211.powergrid.compat.cc.gauges.PowerGaugePeripheral;
+import org.patryk3211.powergrid.compat.cc.gauges.VoltageGaugePeripheral;
+import org.patryk3211.powergrid.compat.cc.redstone.RedstoneConverterPeripheral;
+
+public class CCBridge {
+    public static void registerCapabilities(RegisterCapabilitiesEvent event) {
+        event.registerBlockEntity(
+                PeripheralCapability.get(),
+                ModdedBlockEntities.VOLTAGE_METER.get(),
+                (be, direction) -> VoltageGaugePeripheral.of(be)
+        );
+        event.registerBlockEntity(
+                PeripheralCapability.get(),
+                ModdedBlockEntities.CURRENT_METER.get(),
+                (be, direction) -> CurrentGaugePeripheral.of(be)
+        );
+        event.registerBlockEntity(
+                PeripheralCapability.get(),
+                ModdedBlockEntities.POWER_METER.get(),
+                (be, direction) -> PowerGaugePeripheral.of(be)
+        );
+        event.registerBlockEntity(
+                PeripheralCapability.get(),
+                ModdedBlockEntities.GENERATOR_CLUTCH.get(),
+                (be, direction) -> new GeneratorClutchPeripheral(be)
+        );
+        event.registerBlockEntity(
+                PeripheralCapability.get(),
+                ModdedBlockEntities.ENERGY_METER.get(),
+                (be, direction) -> new EnergyMeterPeripheral(be)
+        );
+        event.registerBlockEntity(
+                PeripheralCapability.get(),
+                ModdedBlockEntities.MULTIBLOCK_BATTERY.get(),
+                (be, direction) -> new BatteryPeripheral(be)
+        );
+        event.registerBlockEntity(
+                PeripheralCapability.get(),
+                ModdedBlockEntities.REDSTONE_CONVERTER.get(),
+                (be, direction) -> new RedstoneConverterPeripheral(be)
+        );
+    }
+}

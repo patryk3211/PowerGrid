@@ -119,6 +119,7 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
         }
         state = newState;
         setChanged();
+        updateComparators();
     }
 
     private void addExternal(ContactorBlockEntity be) {
@@ -131,6 +132,7 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
             }
             switch1.setState(true);
             switch2.setState(true);
+            updateComparators();
         }
     }
 
@@ -139,7 +141,12 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
         if(external.isEmpty() && !state && switch1 != null) {
             switch1.setState(false);
             switch2.setState(false);
+            updateComparators();
         }
+    }
+
+    private void updateComparators() {
+        level.updateNeighbourForOutputSignal(worldPosition, getBlockState().getBlock());
     }
 
     @Override
@@ -169,6 +176,10 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
         if(!state && external.isEmpty() && switch1 != null && splitCooldown++ >= 100) {
             electricBehaviour.rebuildCircuit(false);
         }
+    }
+
+    public int getSignal() {
+        return switch1 == null || !switch1.getState() ? 0 : 15;
     }
 
     @Override

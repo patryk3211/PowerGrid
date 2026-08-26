@@ -5,12 +5,13 @@ import org.patryk3211.powergrid.network.PacketSet;
 import org.patryk3211.powergrid.network.packets.*;
 
 public class ModPackets {
-    public static final PacketSet PACKETS = PacketSet.builder(PowerGrid.MOD_ID, 15) // increment version on changes
+    public static final PacketSet PACKETS = PacketSet.builder(PowerGrid.MOD_ID, 17) // increment version on changes
 
             // Client to Server
             .c2s(AlternatePlacementStatusC2SPacket.class, AlternatePlacementStatusC2SPacket::new)
             .c2s(BlockWireCutC2SPacket.class, BlockWireCutC2SPacket::new)
             .c2s(BlockWireAttachC2SPacket.class, BlockWireAttachC2SPacket::new)
+            .c2s(CordDetachC2SPacket.class, CordDetachC2SPacket::new)
             .c2s(SaveSchematicC2SPacket.class, SaveSchematicC2SPacket::new)
             .c2s(SaveCardC2SPacket.class, SaveCardC2SPacket::new)
             .c2s(SetCustomDisplayC2SPacket.class, SetCustomDisplayC2SPacket::new)
@@ -20,6 +21,7 @@ public class ModPackets {
             .c2s(MultimeterDataC2SPacket.class, MultimeterDataC2SPacket::new)
             .c2s(UpdateComponentBiPacket.class, UpdateComponentBiPacket::new)
             .c2s(NegotiateSyncC2SPacket.class, NegotiateSyncC2SPacket::new)
+            .c2s(EnergyMeterInteractionC2SPacket.class, EnergyMeterInteractionC2SPacket::new)
 
             // Server to Client
             .s2c(ZapProjectileS2CPacket.class, ZapProjectileS2CPacket::new)
@@ -27,6 +29,8 @@ public class ModPackets {
             .s2c(EntityDataS2CPacket.class, EntityDataS2CPacket::new)
             .s2c(StateS2CPacket.class, StateS2CPacket::new)
             .s2c(UpdateComponentBiPacket.class, UpdateComponentBiPacket::new)
+            .s2c(DisplayBurnoutS2CPacket.class, DisplayBurnoutS2CPacket::new)
+            .s2c(DrillSpeedS2CPacket.class, DrillSpeedS2CPacket::new)
 
             .build();
 }

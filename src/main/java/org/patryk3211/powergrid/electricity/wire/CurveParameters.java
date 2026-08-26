@@ -23,7 +23,7 @@ public class CurveParameters {
     private Vec3 normal;
     private double dx;
     private double dy;
-    private double L;
+    public double L;
     public final Vec3 cross1, cross2;
     public final float thickness;
     public boolean valid;
@@ -43,8 +43,8 @@ public class CurveParameters {
         // Calculate cross parameters
         direction = new Vec3(t2.x - t1.x, t2.y - t1.y, t2.z - t1.z);
         Vec3 v1 = new Vec3(1 - direction.x, 1 - direction.y, 1 - direction.z);
-        cross1 = v1.cross(direction).normalize().scale(thickness * 0.5);
-        cross2 = cross1.cross(direction).normalize().scale(thickness * 0.5);
+        cross1 = v1.cross(direction).normalize().scale(thickness * 0.5 * Math.sqrt(2));
+        cross2 = cross1.cross(direction).normalize().scale(thickness * 0.5 * Math.sqrt(2));
     }
 
     private void calculateCurve() {
@@ -76,9 +76,10 @@ public class CurveParameters {
         }
     }
 
-    public void nudge(double x1, double y1, double z1, double x2, double y2, double z2) {
+    public void nudge(double x1, double y1, double z1, double x2, double y2, double z2, double L) {
         double dX = x2 - x1;
         double dZ = z2 - z1;
+        this.L = L;
         dx = Math.sqrt(dX * dX + dZ * dZ);
         dy = y2 - y1;
         normal = new Vec3(dX / dx, 0, dZ / dx);

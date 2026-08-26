@@ -91,7 +91,8 @@
 		},
 		"gui": {
 			"rotation": [30, -135, 0],
-			"scale": [0.625, 0.625, 0.625]
+			"translation": [0, 2, 0],
+			"scale": [0.9, 0.9, 0.9]
 		},
 		"head": {
 			"rotation": [0, -180, 0],
@@ -105,6 +106,7 @@
 		{
 			"name": "group",
 			"origin": [8, 8, 8],
+			"scope": 0,
 			"color": 0,
 			"children": [0, 1, 2, 3]
 		},

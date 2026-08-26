@@ -13,10 +13,12 @@
     "ChuteBlockEntityMixin",
     "EntityMixin",
     "FanProcessingMixin",
+    "FluidPropagatorMixin",
     "KineticBlockEntityAccessor",
     "LightningAccessor",
     "PlayerMixin",
     "RecipeApplierMixin",
+    "SheepMixin",
     "SoundEntryBuilderMixin",
     "sable.SubLevelAssemblerMixin",
     "simulated.GimbalSensorScrollMixin"

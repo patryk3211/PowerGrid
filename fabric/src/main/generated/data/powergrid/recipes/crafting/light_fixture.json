@@ -2,19 +2,20 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": {
-      "tag": "c:copper_nuggets"
-    },
     "I": {
       "tag": "c:iron_plates"
+    },
+    "P": {
+      "item": "powergrid:pins"
     },
     "Z": {
       "tag": "c:zinc_plates"
     }
   },
   "pattern": [
-    " I ",
-    "CZC"
+    "I",
+    "Z",
+    "P"
   ],
   "result": {
     "item": "powergrid:light_fixture"

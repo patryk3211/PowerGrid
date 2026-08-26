@@ -53,6 +53,7 @@ public class ResistorBlockEntity extends ElectricBlockEntity {
         value = makeScroll();
         value.withResistanceCallback(R -> wire.setResistance(R));
         behaviours.add(value);
+        wire.setResistance(value.getResistance());
     }
 
     @Override
@@ -70,5 +71,13 @@ public class ResistorBlockEntity extends ElectricBlockEntity {
     @Override
     public void electricalTick() {
         applyPower(wire);
+    }
+
+    public void setValue(double value) {
+        wire.setResistance(value);
+    }
+
+    public double getValue() {
+        return wire.getResistance();
     }
 }

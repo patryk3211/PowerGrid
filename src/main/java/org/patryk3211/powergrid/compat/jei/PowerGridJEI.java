@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.compat.jei;
 
 import com.simibubi.create.AllBlocks;
+import com.simibubi.create.AllItems;
 import com.simibubi.create.AllRecipeTypes;
 import com.simibubi.create.Create;
 import com.simibubi.create.compat.jei.*;
@@ -37,7 +38,6 @@ import net.createmod.catnip.config.ConfigBase;
 import net.minecraft.client.renderer.Rect2i;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -139,7 +139,8 @@ public class PowerGridJEI implements IModPlugin {
         var conversionType = (mezz.jei.api.recipe.RecipeType<RecipeHolder<ConversionRecipe>>) (mezz.jei.api.recipe.RecipeType<?>)
                 new mezz.jei.api.recipe.RecipeType<>(Create.asResource("mystery_conversion"), RecipeHolder.class);
         registration.addRecipes(conversionType, List.of(ConversionRecipe.create(
-                new ItemStack(Items.IRON_INGOT), ModdedItems.MAGNET.asStack()
+                AllItems.ANDESITE_ALLOY.asStack(),
+                ModdedItems.MAGNET.asStack()
         )));
     }
 

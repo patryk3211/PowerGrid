@@ -1,0 +1,29 @@
+{
+  "parent": "powergrid:wire_cut",
+  "criteria": {
+    "0": {
+      "trigger": "powergrid:sheep_cut_builtin"
+    }
+  },
+  "display": {
+    "description": {
+      "color": "#DBA213",
+      "translate": "advancement.powergrid.sheep_cut.desc"
+    },
+    "frame": "goal",
+    "hidden": true,
+    "icon": {
+      "count": 1,
+      "id": "powergrid:wire_cutter"
+    },
+    "title": {
+      "translate": "advancement.powergrid.sheep_cut"
+    }
+  },
+  "requirements": [
+    [
+      "0"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

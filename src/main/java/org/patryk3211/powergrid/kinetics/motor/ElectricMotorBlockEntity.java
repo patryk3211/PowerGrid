@@ -24,6 +24,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.advancements.PGAdvancementBehaviour;
+import org.patryk3211.powergrid.collections.ModdedAdvancements;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
@@ -33,6 +35,8 @@ import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.mixin.KineticBlockEntityAccessor;
 
 import java.util.List;
+
+import static org.patryk3211.powergrid.PowerGrid.maxRPM;
 
 public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity implements IElectricEntity {
     public static final int AVERAGING_TICKS = 5;
@@ -48,6 +52,7 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
     private float generatedSpeed = 0;
 
     private float avgSpeed;
+    private float load;
 
     public ElectricMotorBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -63,16 +68,34 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
     }
 
     @Override
+    public void updateFromNetwork(float maxStress, float currentStress, int networkSize) {
+        super.updateFromNetwork(maxStress, currentStress, networkSize);
+        if(ModdedConfigs.server().electricity.motorDynamicResistance.get()) {
+            if (maxStress != 0) {
+                load = Math.max(currentStress / maxStress, 0.05f);
+            } else {
+                load = 0.05f;
+            }
+            coil.setResistance(resistance() / load);
+        }
+    }
+
+    @Override
     public void addBehaviours(List<BlockEntityBehaviour> behaviours) {
         super.addBehaviours(behaviours);
         electricBehaviour = new ElectricBehaviour(this);
         behaviours.add(electricBehaviour);
 
-        var maxPower = 256 * torque() / CONVERSION_CONSTANT;
+        var awards = new PGAdvancementBehaviour(this, ModdedAdvancements.ELECTRIC_MOTOR);
+        behaviours.add(awards);
+
+        var maxPower = maxRPM() * torque() / CONVERSION_CONSTANT;
         var baseFactor = ThermalBehaviour.dissipationFactor(maxPower, 150);
         thermalBehaviour = ThermalBehaviour.simple(this, 3.5f, baseFactor);
-        if(thermalBehaviour != null)
+        if(thermalBehaviour != null) {
             behaviours.add(thermalBehaviour);
+            awards.add(ModdedAdvancements.BLOW_UP);
+        }
     }
 
     protected void applyPower(AbstractElectricWire wire) {
@@ -109,15 +132,20 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
         avgSpeed = 0;
         if(!level.isClientSide || isVirtual()) {
             // Max speed constraints.
-            if(newSpeed > 256)
-                newSpeed = 256;
-            if(newSpeed < -256)
-                newSpeed = -256;
+            if(newSpeed > maxRPM())
+                newSpeed = maxRPM();
+            if(newSpeed < -maxRPM())
+                newSpeed = -maxRPM();
 
             // Update speed from average power.
             if(newSpeed != generatedSpeed) {
                 generatedSpeed = newSpeed;
                 updateGeneratedRotation();
+                if(newSpeed != 0) {
+                    var awards = getBehaviour(PGAdvancementBehaviour.TYPE);
+                    if(awards != null)
+                        awards.awardPlayer(ModdedAdvancements.ELECTRIC_MOTOR);
+                }
             }
         }
     }
@@ -127,7 +155,8 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
         assert level != null;
         if(!level.isClientSide || isVirtual()) {
             applyPower(coil);
-            avgSpeed += (float) (calculateSpeed(coil.power(), torque()) * Math.signum(coil.current()));
+            var V = coil.potentialDifference();
+            avgSpeed += (float) (calculateSpeed(V * V / resistance(), torque()) * Math.signum(coil.current()));
         }
         super.tick();
     }

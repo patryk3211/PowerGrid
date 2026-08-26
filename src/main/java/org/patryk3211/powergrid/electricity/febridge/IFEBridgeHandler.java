@@ -20,7 +20,7 @@ import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 
 public interface IFEBridgeHandler {
-    float MINIMUM_RESISTANCE = 1000;
+    float MAXIMUM_RESISTANCE = 1000;
 
     static float voltToFE() {
         return ModdedConfigs.server().electricity.forgeEnergyPerVolt.getF();
@@ -53,16 +53,16 @@ public interface IFEBridgeHandler {
         long maxCharge = (long) (V * IFEBridgeHandler.voltToFE());
         long missingCharge = maxCharge - getAmount();
         if(missingCharge <= 0) {
-            wire.setResistance(MINIMUM_RESISTANCE);
+            wire.setResistance(MAXIMUM_RESISTANCE);
             return;
         }
 
         float targetWatts = missingCharge / IFEBridgeHandler.wattToFE();
         float resistance = (float) (V * V / targetWatts);
         if(resistance > 0) {
-            wire.setResistance(Math.min(resistance, MINIMUM_RESISTANCE));
+            wire.setResistance(Math.min(resistance, MAXIMUM_RESISTANCE));
         } else {
-            wire.setResistance(MINIMUM_RESISTANCE);
+            wire.setResistance(MAXIMUM_RESISTANCE);
         }
     }
 }

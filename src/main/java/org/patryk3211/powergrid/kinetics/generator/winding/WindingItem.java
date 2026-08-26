@@ -18,8 +18,6 @@ package org.patryk3211.powergrid.kinetics.generator.winding;
 import com.simibubi.create.AllBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.component.DataComponents;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -27,18 +25,16 @@ import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.utility.PlayerUtilities;
 
 import static net.minecraft.world.level.block.state.properties.BlockStateProperties.AXIS;
 import static org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock.ALONG_FIRST_AXIS;
 import static org.patryk3211.powergrid.kinetics.generator.winding.WindingBlock.PART;
-
-
 
 public class WindingItem extends Item {
     public WindingItem(Properties settings) {
@@ -47,14 +43,14 @@ public class WindingItem extends Item {
 
     @Override
     public boolean isFoil(ItemStack stack) {
-        return super.isFoil(stack) || stack.has(DataComponents.CUSTOM_DATA);
+        return super.isFoil(stack) || stack.has(ModdedDataComponents.WINDING_CONNECTION.get());
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, Player user, InteractionHand hand) {
         var stack = user.getItemInHand(hand);
         if(user.isShiftKeyDown()) {
-            stack.remove(DataComponents.CUSTOM_DATA);
+            stack.remove(ModdedDataComponents.WINDING_CONNECTION.get());
             return InteractionResultHolder.success(stack);
         }
         return super.use(world, user, hand);
@@ -66,7 +62,7 @@ public class WindingItem extends Item {
         var world = context.getLevel();
         var stack = context.getItemInHand();
         if(context.getPlayer() != null && context.getPlayer().isShiftKeyDown()) {
-            stack.remove(DataComponents.CUSTOM_DATA);
+            stack.remove(ModdedDataComponents.WINDING_CONNECTION.get());
             return InteractionResult.SUCCESS;
         }
 
@@ -90,17 +86,15 @@ public class WindingItem extends Item {
         if(!hitState.is(AllBlocks.SHAFT.get()))
             return InteractionResult.FAIL;
         
-        if(stack.has(DataComponents.CUSTOM_DATA)) {
+        if(stack.has(ModdedDataComponents.WINDING_CONNECTION.get())) {
             // Has first point
-            var tag = stack.get(DataComponents.CUSTOM_DATA).copyTag();
-            var posArray = tag.getIntArray("Position");
-            var firstPos = new BlockPos(posArray[0], posArray[1], posArray[2]);
+            var firstPos = stack.get(ModdedDataComponents.WINDING_CONNECTION.get());
             if(firstPos.equals(pos))
                 return InteractionResult.FAIL;
 
             var firstState = world.getBlockState(firstPos);
             if(!firstState.is(AllBlocks.SHAFT.get())) {
-                stack.remove(DataComponents.CUSTOM_DATA);
+                stack.remove(ModdedDataComponents.WINDING_CONNECTION.get());
                 return InteractionResult.FAIL;
             }
 
@@ -154,15 +148,13 @@ public class WindingItem extends Item {
                     world.setBlockAndUpdate(start.relative(offsetDir, i), baseState);
                 }
             }
-            stack.remove(DataComponents.CUSTOM_DATA);
+            stack.remove(ModdedDataComponents.WINDING_CONNECTION.get());
             PlayerUtilities.removeItems(context.getPlayer(), stack, length + 1);
             world.playSound(null, pos, baseState.getSoundType().getPlaceSound(), SoundSource.BLOCKS, 1, 1);
         } else {
             if(world.isClientSide)
                 return InteractionResult.SUCCESS;
-            var tag = new CompoundTag();
-            tag.putIntArray("Position", new int[] { pos.getX(), pos.getY(), pos.getZ() });
-            stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+            stack.set(ModdedDataComponents.WINDING_CONNECTION.get(), pos);
         }
 
         return InteractionResult.SUCCESS;

@@ -5,7 +5,7 @@
 	"textures": {
 		"0": "powergrid:block/conductive_casing",
 		"1": "powergrid:block/basin_heater",
-		"particle": "powergrid:block/basin_heater"
+		"particle": "powergrid:block/conductive_casing"
 	},
 	"elements": [
 		{

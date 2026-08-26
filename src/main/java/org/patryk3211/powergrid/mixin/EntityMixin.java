@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.mixin;
 
+import com.simibubi.create.AllItems;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LightningBolt;
@@ -37,7 +38,7 @@ public abstract class EntityMixin {
     private void powerGrid$onLightningStrike(ServerLevel world, LightningBolt lightning, CallbackInfo ci) {
         if((Object) this instanceof ItemEntity item) {
             var stack = item.getItem();
-            if(stack.is(Items.IRON_INGOT)) {
+            if(stack.is(AllItems.ANDESITE_ALLOY.asItem())) {
                 var r = world.random;
                 if(r.nextFloat() < ModdedConfigs.server().recipes.lightningMagnetizationChance.getF()) {
                     // Success

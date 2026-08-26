@@ -18,17 +18,24 @@ package org.patryk3211.powergrid.circuits.schematic;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.GuiGraphics;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 
 import java.util.List;
 
 import static org.patryk3211.powergrid.circuits.editor.CircuitDesignTableEditScreen.TRACE_PADDING;
 import static org.patryk3211.powergrid.circuits.schematic.CircuitLayer.GRID_TO_GRID_SCALE;
 
+
+
 @Environment(EnvType.CLIENT)
 public class CircuitSchematicRender {
     public static final int COLOR_TERMINAL = 0xFFFCB603;
+
+    //TODO: add a setting to change the trace colors
     public static final int COLOR_TRACE_FRONT = 0xFFFFFFFF;
     public static final int COLOR_TRACE_BACK = 0x80FFFFFF;
+    public static final int COLOR_TRACE_FRONT_HC = 0xFFFF0000;
+    public static final int COLOR_TRACE_BACK_HC = 0x8000FF00;
     public static final int COLOR_COMPONENT_OUTLINE = 0x80F078EE;
     public static final int COLOR_SELECT_OUTLINE = 0x80EBBA34;
 
