@@ -19,6 +19,7 @@ import com.simibubi.create.content.kinetics.belt.transport.TransportedItemStack;
 import com.simibubi.create.content.processing.sequenced.SequencedAssemblyRecipe;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import com.simibubi.create.foundation.recipe.RecipeApplier;
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import net.createmod.catnip.math.VecHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.Container;
@@ -29,6 +30,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
+import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.electromagnet.recipe.MagnetizingRecipe;
@@ -79,11 +81,21 @@ public class ElectromagnetBlockEntity extends ElectricBlockEntity implements Mag
         wire = builder.connect(resistance(), builder.terminalNode(0), builder.terminalNode(1));
     }
 
+    @ExpectPlatform
+    public static int tryTransferPower(ItemStack item, int power, boolean simulate) {
+        throw new AssertionError();
+    }
+
     @Override
     public boolean tryProcessOnBelt(TransportedItemStack input, List<ItemStack> outputList, boolean simulate) {
         var recipe = getRecipe(input.stack);
-        if(recipe.isEmpty())
-            return false;
+        if(recipe.isEmpty()) {
+            int power = (int)(wire.power() * ModdedConfigs.server().electricity.forgeEnergyPerWatt.getF()) * magnetizingBehaviour.runningTicks;
+            int transferred = tryTransferPower(input.stack, power, simulate);
+            if (simulate) return transferred > 0;
+            outputList.add(input.stack);
+            return transferred > 0;
+        }
         if(simulate)
             return true;
 
@@ -103,8 +115,11 @@ public class ElectromagnetBlockEntity extends ElectricBlockEntity implements Mag
     public boolean tryProcessInWorld(ItemEntity itemEntity, boolean simulate) {
         var item = itemEntity.getItem();
         var recipe = getRecipe(item);
-        if(recipe.isEmpty())
-            return false;
+        if(recipe.isEmpty()) {
+            int power = (int)(wire.power() * ModdedConfigs.server().electricity.forgeEnergyPerWatt.getF()) * magnetizingBehaviour.runningTicks;
+            int transferred = tryTransferPower(item, power, simulate);
+            return transferred > 0;
+        }
         if(simulate)
             return true;
 

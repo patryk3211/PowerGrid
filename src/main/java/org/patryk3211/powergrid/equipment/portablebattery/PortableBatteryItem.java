@@ -17,6 +17,7 @@ package org.patryk3211.powergrid.equipment.portablebattery;
 
 import com.simibubi.create.content.equipment.armor.BacktankItem;
 import com.simibubi.create.content.equipment.armor.BaseArmorItem;
+import dev.architectury.injectables.annotations.ExpectPlatform;
 import com.simibubi.create.content.equipment.armor.CapacityEnchantment;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -101,5 +102,16 @@ public class PortableBatteryItem extends BaseArmorItem implements CapacityEnchan
                 .add(Lang.numberConstant(charge * 100))
                 .add(Component.literal("%"))
                 .style(ChatFormatting.AQUA).addTo(tooltip);
+    }
+
+    public void onWornTick(ItemStack batteryStack, Player player) {
+        ItemStack heldStack = player.getMainHandItem();
+        if (heldStack.isEmpty()) return;
+        tryTransferPower(heldStack, batteryStack, player);
+    }
+
+    @ExpectPlatform
+    public static void tryTransferPower(ItemStack heldStack, ItemStack batteryStack, Player player) {
+        throw new AssertionError();
     }
 }
