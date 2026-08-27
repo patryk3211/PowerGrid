@@ -33,11 +33,16 @@ import static net.minecraft.ChatFormatting.*;
 
 public class ElectricPropertiesUtils {
     public static Component header(boolean shift) {
-        MutableComponent keyShift = CreateLang.translateDirect("tooltip.keyShift")
-                .plainCopy()
-                .withStyle(shift ? WHITE : GRAY);
-        return Lang.translateDirect("tooltip.holdForDescription", keyShift)
-                .withStyle(DARK_GRAY);
+        String[] holdDesc = Lang.translateDirect("tooltip.holdForDescription", "$")
+                .getString()
+                .split("\\$");
+        MutableComponent keyShift = CreateLang.translateDirect("tooltip.keyShift");
+        MutableComponent tabBuilder = Component.empty();
+        tabBuilder.append(Component.literal(holdDesc[0]).withStyle(DARK_GRAY));
+        tabBuilder.append(keyShift.plainCopy()
+                .withStyle(shift ? WHITE : GRAY));
+        tabBuilder.append(Component.literal(holdDesc[1]).withStyle(DARK_GRAY));
+        return tabBuilder;
     }
 
     public static void modify(IHaveElectricProperties properties, ItemStack stack, Player player, TooltipFlag flags, List<Component> tooltip) {
