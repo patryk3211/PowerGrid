@@ -17,7 +17,11 @@ package org.patryk3211.powergrid.electricity.electricswitch;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
@@ -26,20 +30,20 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 
 public class LvSwitchBlock extends SurfaceSwitchBlock {
     private static final TerminalBoundingBox[] DOWN_TERMINALS = new TerminalBoundingBox[] {
-            // INDEX 0: Middle Pin (Common / Input) - Z: 6.5 to 9.5 (Length = 3)
-            new TerminalBoundingBox(IDecoratedTerminal.INPUT, 3.5, 0, 6.5, 12.5, 2, 9.5),
+            // (Common / Input)
+            new TerminalBoundingBox(IDecoratedTerminal.INPUT, 6.5, 0, 2.5, 9, 2, 4.5),
 
-            // INDEX 1: Edge 1 (Output A) - Z: 2.5 to 4.5
-            new TerminalBoundingBox(IDecoratedTerminal.OUTPUT, 6.5, 0, 2.5, 9.5, 2, 4.5),
+            // (Output A)
+            new TerminalBoundingBox(IDecoratedTerminal.OUTPUT, 5.5, 0, 11.5, 7.5, 2, 13.5),
 
-            // INDEX 2: Edge 2 (Output B) - Z: 11.5 to 13.5
-            new TerminalBoundingBox(IDecoratedTerminal.OUTPUT, 6.5, 0, 11.5, 9.5, 2, 13.5)
+            // (Output B)
+            new TerminalBoundingBox(IDecoratedTerminal.OUTPUT, 8.5, 0, 11.5, 10.5, 2, 13.5)
     };
 
     private static final VoxelShape SHAPE_DOWN = Shapes.or(
-            box(5.5, 0, 4.5, 10.5, 2, 11.5),
-            box(5.5, 2, 5.5, 10.5, 5, 10.5),
-            box(6.5, 0, 2.5, 9.5, 2, 13.5)
+            box(6.5, 0, 2.5, 9, 2, 4.5),
+            box(5.5, 0, 11.5, 7.5, 2, 13.5),
+            box(8.5, 0, 11.5, 10.5, 2, 13.5)
     );
 
     public LvSwitchBlock(Properties settings) {
