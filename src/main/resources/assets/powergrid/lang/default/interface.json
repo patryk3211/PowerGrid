@@ -237,8 +237,6 @@
   "powergrid.gui.modular_display.blank": "Blanking page: ",
 
   "powergrid.gui.button_overlay.mode": "Button mode: ",
-  "powergrid.gui.button_overlay.nc": "Normally closed",
-  "powergrid.gui.button_overlay.no": "Normally open",
 
   "powergrid.recipe.category.circuit_design": "Circuit Designing",
   "powergrid.recipe.category.circuit_assembly": "Circuit Assembly",

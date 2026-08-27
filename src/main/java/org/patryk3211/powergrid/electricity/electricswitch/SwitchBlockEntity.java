@@ -40,7 +40,6 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
     private Float overvoltResistance;
     private boolean isButton;
     private boolean isSPDT;
-    private boolean isNormallyClosed;
     private int buttonTimeout = 0;
     private boolean playEffect
             = false;
@@ -103,7 +102,7 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
     public void setState(boolean state) {
         switchState = state;
         if (overvoltResistance == null) {
-            boolean wire1Active = isButton ? (state != isNormallyClosed) : state;
+            boolean wire1Active = state;
             if (wire_1 != null) {
                 wire_1.setState(wire1Active);
             }
@@ -119,20 +118,11 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
         }
     }
 
-    public void setNormallyClosed(boolean normallyClosed) {
-        isNormallyClosed = normallyClosed;
-    }
-
-    public boolean isNormallyClosed() {
-        return isNormallyClosed;
-    }
-
     @Override
     protected void read(CompoundTag tag, boolean clientPacket) {
         super.read(tag, clientPacket);
         if (isButton) {
             buttonTimeout = tag.getByte("Timeout");
-            isNormallyClosed = tag.getBoolean("NormallyClosed");
         }
         if (tag.contains("Overvolted")) {
             overvoltResistance = tag.getFloat("Overvolted");
@@ -155,7 +145,6 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
         }
         if(isButton) {
             tag.putByte("Timeout", (byte) buttonTimeout);
-            tag.putBoolean("NormallyClosed", isNormallyClosed);
         }
     }
 
@@ -173,7 +162,7 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
         switchState = !getBlockState().getValue(SwitchBlock.OPEN);
 
         // Terminal 0 is Common (COM)
-        boolean wire1Active = isButton ? (switchState != isNormallyClosed) : switchState;
+        boolean wire1Active = switchState;
         wire_1 = builder.connectSwitch(resistance(), builder.terminalNode(0), builder.terminalNode(1), wire1Active);
 
         if (overvoltResistance != null) {

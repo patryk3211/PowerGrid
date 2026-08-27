@@ -60,7 +60,6 @@ public class PlacementOverlay {
         overlayProviders.add(WirePreview::distanceOverlay);
         overlayProviders.add(TerminalHandler::overlayText);
         overlayProviders.add(ThermometerItemRenderer::overlayText);
-        overlayProviders.add(SwitchBlock::overlayText);
         overlayProviders.add(ModularDisplayBlockEntity::overlayText);
     }
 
