@@ -102,4 +102,5 @@
   "powergrid.component.property.thyratron_ih": "Holding Current",
   "powergrid.component.property.thyratron_ih.summary": "Minimum anode current needed to keep the plasma ionized. Below this, the tube extinguishes and the grid regains control"
 
+  "powergrid.component.property.modular_display_blanking_page": "Remove blanking page"
 }

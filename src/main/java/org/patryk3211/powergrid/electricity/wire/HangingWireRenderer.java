@@ -191,8 +191,8 @@ public class HangingWireRenderer extends EntityRenderer<HangingWireEntity> {
                     thickness, thicknessOffset, thickness, thicknessOffset);
             quad(ms.last(), buffer, light, color,
                     x2 + cross1.x, y2 + cross1.y, z2 + cross1.z,
-                    x2 + cross2.x, y2 + cross2.y, z2 + cross2.z,
                     x2 - cross2.x, y2 - cross2.y, z2 - cross2.z,
+                    x2 + cross2.x, y2 + cross2.y, z2 + cross2.z,
                     x2 - cross1.x, y2 - cross1.y, z2 - cross1.z,
                     x2 - x1, y2 - y1, z2 - z1,
                     thickness, thicknessOffset, thickness, thicknessOffset);

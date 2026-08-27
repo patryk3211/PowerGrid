@@ -47,8 +47,8 @@ public class AlphabetLetterModule implements IDisplayModule {
     }
 
     @Override
-    public ResourceLocation getDisplayTexture() {
-        return PowerGrid.texture("block/modular_display/alphabet");
+    public String getDisplayTexture() {
+        return "block/modular_display/alphabet";
     }
 
     public boolean getHalfClick() {

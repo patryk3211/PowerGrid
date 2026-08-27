@@ -45,8 +45,8 @@ public class HexadecimalAlphanumericModule implements IDisplayModule {
     }
 
     @Override
-    public ResourceLocation getDisplayTexture() {
-        return PowerGrid.texture("block/modular_display/zerotof");
+    public String getDisplayTexture() {
+        return "block/modular_display/zerotof";
     }
 
     public DisplayModuleType getDisplayModuleType() {

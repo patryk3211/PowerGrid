@@ -765,8 +765,6 @@ public class CircuitScenes {
                 .attachKeyFrame();
         scene.idle(80);
 
-
-
         scene.overlay().showText(90)
                 .text("The way to reset the module is to ground the reset line and then pulse the power again")
                 .pointAt(util.vector().of(2.5, 1.45, 2.5))
@@ -788,9 +786,50 @@ public class CircuitScenes {
             be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
             be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 0);
         });
-        scene.idle(20);
+        scene.idle(40);
         scene.electric().removeWire(resetwire);
 
+        scene.overlay().showText(100)
+                .text("There is an option to remove the blanking page and it will stop on the last character instead")
+                .pointAt(util.vector().of(2.5, 1.45, 2.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(60);
+
+        scene.effects().indicateSuccess(board);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.REMOVE_BLANKING_PAGE, true);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 7);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(5);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 8);
+        });
+        scene.idle(15);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 8);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(5);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 9);
+        });
+        scene.idle(30);
+        resetwire = scene.electric().connect(reset, 0, board, 2, DyeColor.BLACK);
+        scene.idle(30);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 9);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, true);
+        });
+        scene.idle(5);
+        scene.world().modifyBlockEntity(board, CircuitBoardBlockEntity.class, be -> {
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.HALF_CLICK, false);
+            be.getSchematic().components().get(0).set(ModularDisplayComponent.INDEX, 0);
+        });
+        scene.electric().removeWire(resetwire);
         scene.idle(20);
 
         scene.overlay().showText(60)

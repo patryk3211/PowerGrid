@@ -57,7 +57,7 @@ public class ModdedAdvancements implements DataProvider {
     ZAPPER = create("zapper", b -> b
             .icon(ModdedItems.ELECTROZAPPER)
             .title("I cast lightning bolt! ...gun")
-            .description("Obtain an Electron-Zapper")
+            .description("Obtain an Electro-Zapper")
             .after(ELECTRICAL_GIZMO)
             .whenIconCollected()),
     ACID = create("acid", b -> b

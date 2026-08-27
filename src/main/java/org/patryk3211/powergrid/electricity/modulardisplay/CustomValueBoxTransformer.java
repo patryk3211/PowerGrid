@@ -1,12 +1,14 @@
 package org.patryk3211.powergrid.electricity.modulardisplay;
 
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.simibubi.create.AllItems;
 import com.simibubi.create.foundation.blockEntity.behaviour.ValueBoxTransform;
 import dev.engine_room.flywheel.lib.transform.TransformStack;
 import net.createmod.catnip.math.AngleHelper;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.DyeItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LevelAccessor;
@@ -76,6 +78,7 @@ public class CustomValueBoxTransformer extends ValueBoxTransform {
             Minecraft mc = Minecraft.getInstance();
             ItemStack held = mc.player.getMainHandItem();
             if (held.getItem() instanceof DyeItem) return false;
+            if (AllItems.WRENCH.isIn(mc.player.getItemInHand(InteractionHand.MAIN_HAND))) return false;
         }
 
         if (blockEntity.modules[bestSlot] == null) return false;

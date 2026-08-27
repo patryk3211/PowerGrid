@@ -37,8 +37,8 @@ public class ZeroToNineNumberModule implements IDisplayModule {
     }
 
     @Override
-    public ResourceLocation getDisplayTexture() {
-        return PowerGrid.texture("block/modular_display/zerotonine");
+    public String getDisplayTexture() {
+        return "block/modular_display/zerotonine";
     }
 
     public float getDisplayTextureSize() {
