@@ -31,13 +31,13 @@ import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
 public class LvSwitchBlock extends SurfaceSwitchBlock {
     private static final TerminalBoundingBox[] DOWN_TERMINALS = new TerminalBoundingBox[] {
             // (Common / Input)
-            new TerminalBoundingBox(IDecoratedTerminal.INPUT, 6.5, 0, 2.5, 9.5, 2, 4.5),
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6.5, 0, 2.5, 9.5, 2, 4.5),
 
             // (Output A)
-            new TerminalBoundingBox(IDecoratedTerminal.OUTPUT, 5.5, 0, 11.5, 7.5, 2, 13.5),
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 5.5, 0, 11.5, 7.5, 2, 13.5),
 
             // (Output B)
-            new TerminalBoundingBox(IDecoratedTerminal.OUTPUT, 8.5, 0, 11.5, 10.5, 2, 13.5)
+            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 8.5, 0, 11.5, 10.5, 2, 13.5)
     };
 
     private static final VoxelShape SHAPE_DOWN = Shapes.or(
