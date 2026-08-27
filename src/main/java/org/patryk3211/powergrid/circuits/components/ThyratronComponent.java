@@ -61,7 +61,7 @@ public class ThyratronComponent extends MirrorableComponent implements IRendered
             v -> Unit.CURRENT.formatWithPrefixes(v).string());
     public static final FloatProperty HEATER_VOLTAGE = new FloatProperty(PowerGrid.MOD_ID, "tube_heater_voltage", 6f, 1f, 16f);
     public static final CalculatedProperty<Float> HEATER_POWER = new CalculatedProperty<>(PowerGrid.MOD_ID, "tube_heater_power",
-            state -> 300f,
+            state -> 150f,
             value -> String.format("%.1f W", value));
 
     private static final float DISCHARGE_CONDUCTANCE = 50f;
@@ -207,7 +207,7 @@ public class ThyratronComponent extends MirrorableComponent implements IRendered
             strike = data.strike.getValue(partialTicks);
         }
 
-        int heaterAlpha = (int) (heater * 48);
+        int heaterAlpha = (int) (heater * 82);
         if (heaterAlpha > 0) {
             var buffer = CachedBuffers.partial(ModdedPartialModels.THYRATRON_GLOW, be.getBlockState());
             buffer
