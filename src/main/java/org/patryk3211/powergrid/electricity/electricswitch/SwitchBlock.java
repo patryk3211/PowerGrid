@@ -83,10 +83,8 @@ public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlo
             return InteractionResult.PASS;
         if(!player.isShiftKeyDown()) {
             if(!AllItems.WRENCH.isIn(player.getItemInHand(hand))) {
-                var isOpen = !state.getValue(OPEN);
-                if(isButton){
-                    isOpen = false;
-                }
+                boolean isOpen = !isButton && !state.getValue(OPEN);
+                
                 world.setBlockAndUpdate(pos, state.setValue(OPEN, isOpen));
                 if(!world.isClientSide) {
                     if(isButton){

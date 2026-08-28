@@ -51,15 +51,15 @@ public class SwitchComponent extends OrientableComponent implements IInteractabl
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, @NotNull ThermalBuilder.IEmitter thermals) {
         boolean state = placed.get(STATE);
-        var wire1 = builder.connectSwitch(0.1f, builder.terminalNode(0), builder.terminalNode(1), state);
-        var wire2 = builder.connectSwitch(0.1f, builder.terminalNode(0), builder.terminalNode(2), !state);
-        placed.add(wire1);
-        placed.add(wire2);
+        var noWire = builder.connectSwitch(0.1f, builder.terminalNode(0), builder.terminalNode(2), state);
+        var ncWire = builder.connectSwitch(0.1f, builder.terminalNode(0), builder.terminalNode(1), !state);
+        placed.add(noWire);
+        placed.add(ncWire);
         thermals.builder()
                 .setMaxCurrent(16, 0.1f, 150)
                 .setThermalMass(0.01f)
-                .addHeatSource(wire1)
-                .addHeatSource(wire2);
+                .addHeatSource(noWire)
+                .addHeatSource(ncWire);
     }
 
     @Override

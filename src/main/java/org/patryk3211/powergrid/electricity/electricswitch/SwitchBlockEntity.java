@@ -33,8 +33,8 @@ import org.patryk3211.powergrid.utility.Lang;
 import java.util.List;
 
 public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggleInformation {
-    private SwitchedWire wire_1;
-    private SwitchedWire wire_2;
+    private SwitchedWire wire_no;
+    private SwitchedWire wire_nc;
     private float maxVoltage;
     private boolean switchState;
     private Float overvoltResistance;
@@ -67,20 +67,32 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
 
     @Override
     public void electricalTick() {
-        if (wire_1 != null) {
-            applyPower(wire_1);
-            if (wire_1.isConverged() && Math.abs(wire_1.potentialDifference()) > maxVoltage && overvoltResistance == null) {
-                wire_1.setState(true);
+        if (wire_no != null) {
+            applyPower(wire_no);
+            if (wire_no.isConverged() && Math.abs(wire_no.potentialDifference()) > maxVoltage && overvoltResistance == null) {
+                wire_no.setState(true);
                 overvoltResistance = level.random.nextFloat() * 1000f;
-                wire_1.setResistance(overvoltResistance);
+                wire_no.setResistance(overvoltResistance);
                 playEffect = true;
                 notifyUpdate();
             }
         }
 
+        if (wire_nc != null) {
+            applyPower(wire_nc);
+            if (wire_nc.isConverged() && Math.abs(wire_nc.potentialDifference()) > maxVoltage && overvoltResistance == null) {
+                wire_nc.setState(true);
+                overvoltResistance = level.random.nextFloat() * 1000f;
+                wire_nc.setResistance(overvoltResistance);
+                playEffect = true;
+                notifyUpdate();
+            }
+        }
+
+
         // Only process wire_2 if this is an SPDT switch
-        if (isSPDT && wire_2 != null) {
-            applyPower(wire_2);
+        if (isSPDT && wire_nc != null) {
+            applyPower(wire_nc);
         }
     }
 
@@ -103,11 +115,11 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
         switchState = state;
         if (overvoltResistance == null) {
             boolean wire1Active = state;
-            if (wire_1 != null) {
-                wire_1.setState(wire1Active);
+            if (wire_no != null) {
+                wire_no.setState(wire1Active);
             }
-            if (isSPDT && wire_2 != null) {
-                wire_2.setState(!wire1Active);
+            if (isSPDT && wire_nc != null) {
+                wire_nc.setState(!wire1Active);
             }
         }
         if (isButton && state) {
@@ -128,6 +140,12 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
             overvoltResistance = tag.getFloat("Overvolted");
             if (overvoltResistance <= 0)
                 overvoltResistance = 1f;
+
+            wire_nc.setResistance(overvoltResistance);
+            wire_nc.setState(true);
+            wire_no.setResistance(overvoltResistance);
+            wire_no.setState(true);
+
             if (tag.getBoolean("Effect") && level != null && level.isClientSide)
                 overvoltEffect();
         }
@@ -161,23 +179,12 @@ public class SwitchBlockEntity extends ElectricBlockEntity implements IHaveGoggl
         maxVoltage = block.getMaxVoltage();
         switchState = !getBlockState().getValue(SwitchBlock.OPEN);
 
-        // Terminal 0 is Common (COM)
         boolean wire1Active = switchState;
-        wire_1 = builder.connectSwitch(resistance(), builder.terminalNode(0), builder.terminalNode(1), wire1Active);
-
-        if (overvoltResistance != null) {
-            wire_1.setResistance(overvoltResistance);
-            wire_1.setState(true);
-        }
+        wire_no = builder.connectSwitch(resistance(), builder.terminalNode(0), builder.terminalNode(1), wire1Active);
 
         if (isSPDT) {
             boolean wire2Active = !wire1Active;
-            wire_2 = builder.connectSwitch(resistance(), builder.terminalNode(0), builder.terminalNode(2), wire2Active);
-
-            if (overvoltResistance != null) {
-                wire_2.setResistance(overvoltResistance);
-                wire_2.setState(true);
-            }
+            wire_nc = builder.connectSwitch(resistance(), builder.terminalNode(0), builder.terminalNode(2), wire2Active);
         }
     }
 
