@@ -215,6 +215,7 @@ public class Components {
             .footprint(3, 3, b -> b
                     .addPad(0, 1, 0)
                     .addPad(2, 1, 1)
+                    .addPad(2, 2, 2)
                     .withItem().withOutline()
             )
             .item(ModdedBlocks.LV_BUTTON)
