@@ -16,6 +16,7 @@
 package org.patryk3211.powergrid.circuits.circuitboard;
 
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -163,7 +164,7 @@ public class BakedCircuit {
         tag.put("Thermal", thermalTag);
     }
 
-    public void read(CompoundTag tag, boolean clientPacket) {
+    public void read(HolderLookup.Provider registries, CompoundTag tag, boolean clientPacket) {
         if(tag.contains("Thermal")) {
             var thermalTag = tag.getCompound("Thermal");
             for(var unit : thermalUnits) {
@@ -215,7 +216,7 @@ public class BakedCircuit {
                     var tagProperties = compound.getCompound("Properties");
                     for(var property : placed.component.getProperties()) {
                         var tagEntry = tagProperties.get(property.id().toString());
-                        var readValue = property.read(tagEntry);
+                        var readValue = property.read(registries, tagEntry);
                         if(tagEntry != null && !placed.get(property).equals(readValue)) {
                             // Value changed
                             placed.getEntry(property).setValueRaw(readValue);

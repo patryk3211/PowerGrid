@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.circuits.components.properties;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.Nullable;
@@ -51,7 +52,7 @@ public class IntProperty extends ComponentProperty<Integer> {
     }
 
     @Override
-    public Integer read(@Nullable Tag element) {
+    public Integer read(HolderLookup.Provider registries, @Nullable Tag element) {
         if(element == null)
             return defaultValue;
         if(element.getId() != Tag.TAG_INT)
@@ -61,7 +62,7 @@ public class IntProperty extends ComponentProperty<Integer> {
     }
 
     @Override
-    public Tag write(Integer value) {
+    public Tag write(HolderLookup.Provider registries, Integer value) {
         return IntTag.valueOf(value);
     }
 

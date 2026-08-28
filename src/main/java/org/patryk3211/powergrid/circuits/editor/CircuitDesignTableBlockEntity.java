@@ -86,13 +86,13 @@ public class CircuitDesignTableBlockEntity extends ElectricBlockEntity implement
     @Override
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.write(tag, registries, clientPacket);
-        tag.put("Schematic", schematic.serializeNbt());
+        tag.put("Schematic", schematic.serializeNbt(level.registryAccess()));
     }
 
     @Override
     protected void read(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
         super.read(tag, registries, clientPacket);
-        schematic.deserializeNbt(tag.getCompound("Schematic"));
+        schematic.deserializeNbt(level.registryAccess(), tag.getCompound("Schematic"));
         if(clientPacket)
             schematicChanged = true;
     }
@@ -114,7 +114,7 @@ public class CircuitDesignTableBlockEntity extends ElectricBlockEntity implement
                 return;
             stack.shrink(1);
         }
-        var result = schematic.toItemStack();
+        var result = schematic.toItemStack(level.registryAccess());
         inventory.setItem(2, result);
         schematic.clear();
         notifyUpdate();
@@ -130,7 +130,7 @@ public class CircuitDesignTableBlockEntity extends ElectricBlockEntity implement
             inventory.setItem(1, stack);
         }
         try {
-            schematic.deserializeNbt(stack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Schematic"));
+            schematic.deserializeNbt(level.registryAccess(), stack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Schematic"));
         } catch(RuntimeException e) {
             PowerGrid.LOGGER.error("Failed to load schematic from item: ", e);
         }

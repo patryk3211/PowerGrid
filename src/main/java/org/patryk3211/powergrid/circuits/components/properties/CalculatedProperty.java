@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.circuits.components.properties;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
@@ -42,12 +43,12 @@ public class CalculatedProperty<T> extends ComponentProperty<T> {
     }
 
     @Override
-    public T read(@Nullable Tag element) {
+    public T read(HolderLookup.Provider registries, @Nullable Tag element) {
         return null;
     }
 
     @Override
-    public Tag write(T value) {
+    public Tag write(HolderLookup.Provider registries, T value) {
         return null;
     }
 

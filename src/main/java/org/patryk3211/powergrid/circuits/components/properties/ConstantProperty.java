@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.circuits.components.properties;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.Nullable;
@@ -41,12 +42,12 @@ public class ConstantProperty extends ComponentProperty<String> {
     }
 
     @Override
-    public String read(@Nullable Tag element) {
+    public String read(HolderLookup.Provider registries, @Nullable Tag element) {
         return this.value.getString();
     }
 
     @Override
-    public Tag write(String value) {
+    public Tag write(HolderLookup.Provider registries, String value) {
         return null;
     }
 

@@ -18,6 +18,7 @@ package org.patryk3211.powergrid.circuits.schematic;
 import net.createmod.catnip.math.VecHelper;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
@@ -61,13 +62,13 @@ public class PlacedComponent {
     public Object customData;
     public boolean destroyed;
 
-    public PlacedComponent(CompoundTag tag, int version) {
+    public PlacedComponent(HolderLookup.Provider provider, CompoundTag tag, int version) {
         this(get(tag.getString("Id")), tag.getInt("X"), tag.getInt("Y"), tag.contains("UUID") ? tag.getUUID("UUID") : null);
         if(CircuitSchematic.VERSION != version)
             component.dataFixup(tag, version);
         var propertyMap = tag.getCompound("Properties");
         for(var entry : properties) {
-            entry.read(propertyMap);
+            entry.read(provider, propertyMap);
         }
     }
 
@@ -129,7 +130,7 @@ public class PlacedComponent {
             callback.get().accept(world);
     }
 
-    public CompoundTag serializeNbt() {
+    public CompoundTag serializeNbt(HolderLookup.Provider provider) {
         var tag = new CompoundTag();
 
         var id = ComponentRegistry.getId(component);
@@ -141,7 +142,7 @@ public class PlacedComponent {
         if(!properties.isEmpty()) {
             var propertyMap = new CompoundTag();
             for(var entry : properties) {
-                entry.write(propertyMap);
+                entry.write(provider, propertyMap);
             }
             tag.put("Properties", propertyMap);
         }
@@ -149,7 +150,7 @@ public class PlacedComponent {
         return tag;
     }
 
-    public Tag serializeSafeNbt() {
+    public Tag serializeSafeNbt(HolderLookup.Provider provider) {
         var tag = new CompoundTag();
 
         var id = ComponentRegistry.getId(component);
@@ -162,7 +163,7 @@ public class PlacedComponent {
             for(var entry : properties) {
                 if(entry.property.isUnsafe())
                     continue;
-                entry.write(propertyMap);
+                entry.write(provider, propertyMap);
             }
             tag.put("Properties", propertyMap);
         }

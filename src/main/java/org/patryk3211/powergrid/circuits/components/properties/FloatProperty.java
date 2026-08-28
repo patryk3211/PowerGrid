@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.circuits.components.properties;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.FloatTag;
 import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.Nullable;
@@ -88,7 +89,7 @@ public class FloatProperty extends ComponentProperty<Float> {
     }
 
     @Override
-    public Float read(@Nullable Tag element) {
+    public Float read(HolderLookup.Provider registries, @Nullable Tag element) {
         if(element == null)
             return defaultValue;
         if(element.getId() != Tag.TAG_FLOAT)
@@ -98,7 +99,7 @@ public class FloatProperty extends ComponentProperty<Float> {
     }
 
     @Override
-    public Tag write(Float value) {
+    public Tag write(HolderLookup.Provider registries, Float value) {
         return FloatTag.valueOf(value);
     }
 
