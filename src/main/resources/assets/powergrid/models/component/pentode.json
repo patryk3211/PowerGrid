@@ -9,7 +9,7 @@
 		{
 			"name": "head",
 			"from": [0, 2.5, 0],
-			"to": [3, 7.5, 3],
+			"to": [3, 6.5, 3],
 			"rotation": {"angle": 0, "axis": "y", "origin": [0, 2.5, 0]},
 			"faces": {
 				"north": {"uv": [3, 12, 6, 16], "texture": "#0"},
@@ -48,7 +48,6 @@
 			}
 		}
 	],
-	"display": {},
 	"groups": [
 		{
 			"name": "electronTube",
