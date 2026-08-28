@@ -24,6 +24,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.client.sounds.SoundManager;
+import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.network.chat.Component;
@@ -103,7 +104,8 @@ public class CircuitDesignTableLoadScreen extends AbstractSimiContainerScreen<Ci
             }
             Files.deleteIfExists(file);
             try (OutputStream out = Files.newOutputStream(file, StandardOpenOption.CREATE)) {
-                NbtIo.writeCompressed(this.menu.contentHolder.schematic.serializeNbt(), out);
+                RegistryAccess registries = Minecraft.getInstance().level.registryAccess();
+                NbtIo.writeCompressed(this.menu.contentHolder.schematic.serializeNbt(registries), out);
             }
             back();
         } catch (IOException e) {
@@ -125,7 +127,8 @@ public class CircuitDesignTableLoadScreen extends AbstractSimiContainerScreen<Ci
             }
             try (InputStream in = Files.newInputStream(file, StandardOpenOption.READ)) {
                 var nbt = NbtIo.readCompressed(in, NbtAccounter.unlimitedHeap());
-                var schematic = CircuitSchematic.fromNbt(nbt);
+                RegistryAccess registries = Minecraft.getInstance().level.registryAccess();
+                var schematic = CircuitSchematic.fromNbt(registries, nbt);
                 var name = fileNameInput.getValue();
                 if(name.endsWith(".nbt")) {
                     name = name.substring(0, name.length() - 4);

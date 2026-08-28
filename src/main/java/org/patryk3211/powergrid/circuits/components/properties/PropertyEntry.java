@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.circuits.components.properties;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import org.patryk3211.powergrid.circuits.schematic.PlacedComponent;
 
@@ -37,19 +38,19 @@ public class PropertyEntry<T> {
         }
     }
 
-    public void read(CompoundTag compound) {
+    public void read(HolderLookup.Provider registries, CompoundTag compound) {
         if(property instanceof CalculatedProperty<T>)
             return;
         var element = compound.get(property.id().toString());
         if(element == null) {
             value = property.defaultValue();
         } else {
-            value = property.read(element);
+            value = property.read(registries, element);
         }
     }
 
-    public void write(CompoundTag compound) {
-        var element = property.write(value);
+    public void write(HolderLookup.Provider registries, CompoundTag compound) {
+        var element = property.write(registries, value);
         if(element == null)
             return;
         compound.put(property.id().toString(), element);
@@ -88,9 +89,9 @@ public class PropertyEntry<T> {
         }
 
         @Override
-        public void read(CompoundTag compound) { }
+        public void read(HolderLookup.Provider provider, CompoundTag compound) { }
         @Override
-        public void write(CompoundTag compound) { }
+        public void write(HolderLookup.Provider provider, CompoundTag compound) { }
 
         @Override
         public void setValue(String value) {

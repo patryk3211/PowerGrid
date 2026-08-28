@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.circuits.schematic;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -70,21 +71,21 @@ public class CircuitSchematic {
         this.name = name;
     }
 
-    public static CircuitSchematic fromNbt(CompoundTag nbt) {
+    public static CircuitSchematic fromNbt(HolderLookup.Provider provider, CompoundTag nbt) {
         if(nbt == null)
             return null;
         var schematic = new CircuitSchematic();
-        schematic.deserializeNbt(nbt);
+        schematic.deserializeNbt(provider, nbt);
         return schematic;
     }
 
-    public static CircuitSchematic fromStack(ItemStack stack) {
+    public static CircuitSchematic fromStack(HolderLookup.Provider provider, ItemStack stack) {
         if(stack.isEmpty() || !stack.has(DataComponents.CUSTOM_DATA))
             return null;
-        return fromNbt(stack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Schematic"));
+        return fromNbt(provider, stack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Schematic"));
     }
 
-    public CompoundTag serializeNbt() {
+    public CompoundTag serializeNbt(HolderLookup.Provider provider) {
         var tag = new CompoundTag();
         tag.put("Front", front.serializeNbt());
         tag.put("Back", back.serializeNbt());
@@ -93,7 +94,7 @@ public class CircuitSchematic {
 
         var list = new ListTag();
         for(var component : components) {
-            list.add(component.serializeNbt());
+            list.add(component.serializeNbt(provider));
         }
         tag.put("Components", list);
         if(name != null) {
@@ -102,7 +103,7 @@ public class CircuitSchematic {
         return tag;
     }
 
-    public CompoundTag serializeSafeNbt() {
+    public CompoundTag serializeSafeNbt(HolderLookup.Provider provider) {
         var tag = new CompoundTag();
         tag.put("Front", front.serializeNbt());
         tag.put("Back", back.serializeNbt());
@@ -111,7 +112,7 @@ public class CircuitSchematic {
 
         var list = new ListTag();
         for(var component : components) {
-            list.add(component.serializeSafeNbt());
+            list.add(component.serializeSafeNbt(provider));
         }
         tag.put("Components", list);
         if(name != null) {
@@ -120,7 +121,7 @@ public class CircuitSchematic {
         return tag;
     }
 
-    public void deserializeNbt(CompoundTag tag) {
+    public void deserializeNbt(HolderLookup.Provider provider, CompoundTag tag) {
         try {
             // Default to legacy full pixel traces
             boolean fullPixelTraces = true;
@@ -143,7 +144,7 @@ public class CircuitSchematic {
             var list = tag.getList("Components", Tag.TAG_COMPOUND);
             for (var element : list) {
                 try {
-                    components.add(new PlacedComponent((CompoundTag) element, version));
+                    components.add(new PlacedComponent(provider, (CompoundTag) element, version));
                 } catch (RuntimeException e) {
                     PowerGrid.LOGGER.error("Failed to deserialize circuit component NBT", e);
                 }
@@ -227,10 +228,10 @@ public class CircuitSchematic {
         return components;
     }
 
-    public ItemStack toItemStack() {
+    public ItemStack toItemStack(HolderLookup.Provider provider) {
         var stack = ModdedItems.CIRCUIT_SCHEMATIC.asStack();
         var tag = new CompoundTag();
-        tag.put("Schematic", serializeSafeNbt());
+        tag.put("Schematic", serializeSafeNbt(provider));
         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
         if(name != null)
             stack.set(DataComponents.CUSTOM_NAME, Component.literal(name));
