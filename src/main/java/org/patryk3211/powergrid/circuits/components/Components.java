@@ -115,9 +115,9 @@ public class Components {
             .register();
 
     public static final RegistryEntry<SwitchComponent> SWITCH = REGISTRATE.component("switch", SwitchComponent::new)
-            .footprint(4, 3, b -> b
+            .footprint(3, 3, b -> b
                     .addPad(0, 1, 0)
-                    .addPad(2, 1, 1)
+                    .addPad(2, 0, 1)
                     .addPad(2, 2, 2)
                     .withItem().withOutline())
             .item(ModdedBlocks.LV_SWITCH)
@@ -215,7 +215,7 @@ public class Components {
     public static final RegistryEntry<ButtonComponent> BUTTON = REGISTRATE.component("button", ButtonComponent::new)
             .footprint(3, 3, b -> b
                     .addPad(0, 1, 0)
-                    .addPad(2, 1, 1)
+                    .addPad(2, 0, 1)
                     .addPad(2, 2, 2)
                     .withItem().withOutline()
             )
