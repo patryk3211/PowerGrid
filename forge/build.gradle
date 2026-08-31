@@ -43,6 +43,10 @@ dependencies {
     // TIS-3D
     modCompileOnly("maven.modrinth:tis3d-renewed:${tis3d_version}")
 
+    // Farmer's Delight
+    //modLocalRuntime("maven.modrinth:farmers-delight:${project.minecraft_version}-1.3.4")
+    modCompileOnly("maven.modrinth:farmers-delight:${project.minecraft_version}-${farmers_delight_version}")
+
     // CC: Tweaked
     modCompileOnly("cc.tweaked:cc-tweaked-${project.minecraft_version}-core-api:${cc_tweaked_version}")
     modCompileOnly("cc.tweaked:cc-tweaked-${project.minecraft_version}-forge-api:${cc_tweaked_version}")
