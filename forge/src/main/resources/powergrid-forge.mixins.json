@@ -6,10 +6,11 @@
   "mixins": [
     "ArmInteractionPointMixin",
     "BasinRecipeMixin",
+    "CookingPotBlockEntityMixin",
     "EntityTrackerAccessor",
-    "HeatableBlockEntityMixin",
     "PlayerDrillMixin",
     "ItemAccessor",
+    "SkilletBlockEntityMixin",
     "ThreadedAnvilChunkStorageAccessor"
   ],
   "injectors": {
