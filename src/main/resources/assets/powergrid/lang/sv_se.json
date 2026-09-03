@@ -773,7 +773,7 @@
   "powergrid.ponder.punch_card_reader.text_3": "För att den ska fungera måste den ha en kenetisk input. Rotations hastigheten styr hastigheten som kortet läses.",
   "powergrid.ponder.punch_card_reader.text_4": "Hålkort kan läggas till manuellt eller automatiskt.",
   "powergrid.ponder.redstone_converter.header": "Läser redstone",
-  "powergrid.ponder.redstone_converter.text_1": "Redstone konverteraren är en enher soom konverterar redstone signaler till resistans förändringar",
+  "powergrid.ponder.redstone_converter.text_1": "Redstone konverteraren är en enhet som konverterar redstone signaler till resistans förändringar",
   "powergrid.ponder.redstone_converter.text_2": "Dess interna struktur är lik en potentiometer",
   "powergrid.ponder.redstone_converter.text_3": "Resistansen mellan två ikke-inverterande och uttags plattorna kommer att gå ned med en tillsatt signal...",
   "powergrid.ponder.redstone_converter.text_4": "...medans resistansen mellan inverterande och uttags plattorna går upp",
