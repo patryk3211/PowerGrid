@@ -1,0 +1,89 @@
+{
+	"format_version": "1.21.6",
+	"credit": "Made with Blockbench",
+	"textures": {
+		"1": "powergrid:block/component/thyratron"
+	},
+	"elements": [
+		{
+			"name": "head",
+			"from": [0, 2.5, 0],
+			"to": [3, 9.5, 3],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 2.5, 0]},
+			"faces": {
+				"north": {"uv": [3, 9, 6, 16], "texture": "#1"},
+				"east": {"uv": [0, 9, 3, 16], "texture": "#1"},
+				"south": {"uv": [9, 9, 12, 16], "texture": "#1"},
+				"west": {"uv": [6, 9, 9, 16], "texture": "#1"},
+				"up": {"uv": [3, 7, 0, 4], "texture": "#1"},
+				"down": {"uv": [6, 4, 3, 7], "texture": "#1"}
+			}
+		},
+		{
+			"name": "middle",
+			"from": [0.5, 2, 0.5],
+			"to": [2.5, 3, 2.5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [-0.5, 2, -0.5]},
+			"faces": {
+				"north": {"uv": [13, 6, 15, 7], "texture": "#1"},
+				"east": {"uv": [10, 5, 12, 6], "texture": "#1"},
+				"south": {"uv": [9, 6, 11, 7], "texture": "#1"},
+				"west": {"uv": [11, 6, 13, 7], "texture": "#1"}
+			}
+		},
+		{
+			"name": "anode cap",
+			"from": [0.5, 10, 0.5],
+			"to": [2.5, 12, 2.5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [-0.5, 10.5, -0.5]},
+			"faces": {
+				"north": {"uv": [11, 6, 13, 8], "texture": "#1"},
+				"east": {"uv": [11, 4, 13, 6], "texture": "#1"},
+				"south": {"uv": [13, 6, 15, 8], "texture": "#1"},
+				"west": {"uv": [13, 4, 15, 6], "texture": "#1"},
+				"up": {"uv": [11, 6, 9, 4], "texture": "#1"},
+				"down": {"uv": [11, 6, 9, 8], "texture": "#1"}
+			}
+		},
+		{
+			"name": "base",
+			"from": [0, 0, 0],
+			"to": [3, 2, 3],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, -7, 0]},
+			"faces": {
+				"north": {"uv": [9, 0, 12, 2], "texture": "#1"},
+				"east": {"uv": [12, 0, 15, 2], "texture": "#1"},
+				"south": {"uv": [12, 2, 15, 4], "texture": "#1"},
+				"west": {"uv": [9, 2, 12, 4], "texture": "#1"},
+				"up": {"uv": [6, 0, 9, 3], "texture": "#1"}
+			}
+		},
+		{
+			"name": "separator",
+			"from": [1, 9.5, 1],
+			"to": [2, 10.5, 2],
+			"rotation": {"angle": 0, "axis": "y", "origin": [-0.5, 10, -0.5]},
+			"faces": {
+				"north": {"uv": [6, 3, 7, 4], "texture": "#1"},
+				"east": {"uv": [2, 3, 3, 4], "texture": "#1"},
+				"south": {"uv": [4, 3, 5, 4], "texture": "#1"},
+				"west": {"uv": [0, 3, 1, 4], "texture": "#1"}
+			}
+		}
+	],
+	"display": {
+		"thirdperson_righthand": {
+			"rotation": [65.25, 0, 0],
+			"translation": [10.25, 0, 0]
+		}
+	},
+	"groups": [
+		{
+			"name": "thyratron",
+			"origin": [8, 8, 8],
+			"scope": 0,
+			"color": 0,
+			"children": [0, 1, 2, 3, 4]
+		}
+	]
+}

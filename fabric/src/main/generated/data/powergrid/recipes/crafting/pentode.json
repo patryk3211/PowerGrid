@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "A": {
+      "item": "minecraft:amethyst_shard"
+    },
+    "I": {
+      "tag": "c:iron_plates"
+    },
+    "T": {
+      "item": "powergrid:triode"
+    }
+  },
+  "pattern": [
+    "A",
+    "T",
+    "I"
+  ],
+  "result": {
+    "item": "powergrid:pentode"
+  },
+  "show_notification": true
+}

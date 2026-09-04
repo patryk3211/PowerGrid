@@ -229,9 +229,60 @@ public class CircuitScenes {
         scene.markAsFinished();
     }
 
-    public static void electronTube(SceneBuilder builder, SceneBuildingUtil util) {
+    public static void triode(SceneBuilder builder, SceneBuildingUtil util) {
         var scene = new PowerGridSceneBuilder(builder);
-        scene.title("circuit_electron_tube", "Electron tube");
+        scene.title("circuit_triode", "Triode");
+        scene.configureBasePlate(0, 0, 3);
+        scene.scaleSceneView(3.0f);
+
+        scene.showBasePlate();
+        scene.idle(5);
+        scene.world().showSection(util.select().position(1, 1, 1), Direction.DOWN);
+
+        scene.electric().addSource(util.grid().at(1, 1, 1), 3, 0);
+        scene.electric().addSource(util.grid().at(1, 1, 1), 1, 0);
+        scene.electric().addSource(util.grid().at(1, 1, 1), 0, 50);
+        scene.electric().tickFor(10);
+        scene.idle(10);
+
+        scene.overlay().showText(70)
+                .text("The Triode is a vacuum tube that can amplify signals")
+                .pointAt(util.vector().of(1.5, 1.125, 1.25))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(80);
+
+        scene.overlay().showText(60)
+                .text("To make it conduct, first power the heating element")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(70);
+
+        scene.electric().addSource(util.grid().at(1, 1, 1), 2, 6);
+        scene.electric().tickFor(10);
+        scene.effects().indicateSuccess(util.grid().at(1, 1, 1));
+        scene.idle(30);
+
+        scene.overlay().showText(80)
+                .text("With the anode positive, current flows from anode to cathode")
+                .pointAt(util.vector().of(1.625, 1.25, 1.875))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.overlay().showText(80)
+                .text("The Grid pin controls how much of that current is allowed to flow")
+                .pointAt(util.vector().of(1.25, 1.25, 1.875))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
+
+        scene.markAsFinished();
+    }
+
+    public static void pentode(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("circuit_pentode", "Pentode");
         scene.configureBasePlate(0, 0, 3);
         scene.scaleSceneView(3.0f);
 
@@ -244,15 +295,15 @@ public class CircuitScenes {
         scene.electric().tickFor(10);
         scene.idle(10);
 
-        scene.overlay().showText(70)
-                .text("The Electron Tube is a non-linear electrical component which can amplify signals")
+        scene.overlay().showText(80)
+                .text("The Pentode adds a Screen Grid (G2) between the control grid and the anode")
                 .pointAt(util.vector().of(1.5, 1.125, 1.25))
                 .placeNearTarget()
                 .attachKeyFrame();
-        scene.idle(80);
+        scene.idle(90);
 
         scene.overlay().showText(60)
-                .text("To make it work, first you need to power its heating element")
+                .text("As with a triode, the heater must be powered before the tube will conduct")
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(70);
@@ -263,22 +314,60 @@ public class CircuitScenes {
         scene.idle(30);
 
         scene.overlay().showText(80)
-                .text("It will then start conducting current from anode to cathode. This current can be controlled with the Grid pin")
+                .text("The screen must be positively biased for the tube to conduct")
                 .pointAt(util.vector().of(1.625, 1.25, 1.875))
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(90);
 
+        scene.electric().addSource(util.grid().at(1, 1, 1), 1, 50);
+        scene.electric().tickFor(10);
+        scene.idle(30);
+
+        scene.markAsFinished();
+    }
+
+    public static void thyratron(SceneBuilder builder, SceneBuildingUtil util) {
+        var scene = new PowerGridSceneBuilder(builder);
+        scene.title("circuit_thyratron", "Thyratron");
+        scene.configureBasePlate(0, 0, 3);
+        scene.scaleSceneView(3.0f);
+
+        scene.showBasePlate();
+        scene.idle(5);
+        scene.world().showSection(util.select().position(1, 1, 1), Direction.DOWN);
+
+        var board = util.grid().at(1, 1, 1);
+        scene.electric().addSource(board, 3, 0);
+        scene.electric().addSource(board, 1, 0);
+        scene.electric().addSource(board, 4, 80);
+        scene.electric().tickFor(10);
+        scene.idle(10);
+
         scene.overlay().showText(80)
-                .text("A negative voltage can be applied to the grid. A small change there can result in a major change of the anode current")
-                .pointAt(util.vector().of(1.25, 1.25, 1.875))
+                .text("The Thyratron is a gas-filled tube that conducts from anode to cathode")
+                .pointAt(util.vector().of(1.5, 1.85, 1.5))
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(90);
 
-        scene.electric().addSource(util.grid().at(1, 1, 1), 1, -5);
+        scene.overlay().showText(60)
+                .text("First power the heating element")
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(70);
+
+        scene.electric().addSource(board, 2, 6);
         scene.electric().tickFor(10);
+        scene.effects().indicateSuccess(board);
         scene.idle(30);
+
+        scene.overlay().showText(80)
+                .text("When the anode is positive enough, the tube fires and conducts")
+                .pointAt(util.vector().of(1.5, 1.85, 1.5))
+                .placeNearTarget()
+                .attachKeyFrame();
+        scene.idle(90);
 
         scene.markAsFinished();
     }

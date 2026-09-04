@@ -58,6 +58,7 @@ import static org.patryk3211.powergrid.PowerGrid.REGISTRATE;
 import static org.patryk3211.powergrid.collections.ModdedTags.forgeItemTag;
 import static org.patryk3211.powergrid.collections.ModdedTags.wires;
 import static org.patryk3211.powergrid.utility.DataProviderUtility.barrier;
+import static org.patryk3211.powergrid.utility.DataProviderUtility.generated;
 import static org.patryk3211.powergrid.utility.DataProviderUtility.itemWithParent;
 
 public class ModdedItems {
@@ -185,6 +186,18 @@ public class ModdedItems {
             .register();
     public static final ItemEntry<Item> CAPACITOR = ingredient("capacitor");
     public static final ItemEntry<Item> POTENTIOMETER = ingredient("potentiometer");
+    public static final ItemEntry<Item> TRIODE = REGISTRATE.item("triode", Item::new)
+            .lang("Triode")
+            .model(generated())
+            .register();
+    public static final ItemEntry<Item> PENTODE = REGISTRATE.item("pentode", Item::new)
+            .lang("Pentode")
+            .model(generated())
+            .register();
+    public static final ItemEntry<Item> THYRATRON = REGISTRATE.item("thyratron", Item::new)
+            .lang("Thyratron")
+            .model(generated())
+            .register();
     public static final ItemEntry<Item> REGULATOR_TUBE = ingredient("regulator_tube");
     public static final ItemEntry<Item> NEON_BULB = ingredient("neon_bulb");
     public static final ItemEntry<Item> BARRETTER_TUBE = ingredient("barretter_tube");

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "E": {
+      "item": "minecraft:ender_pearl"
+    },
+    "H": {
+      "item": "powergrid:heavy_wire_connector"
+    },
+    "I": {
+      "tag": "forge:plates/iron"
+    }
+  },
+  "pattern": [
+    "H",
+    "E",
+    "I"
+  ],
+  "result": {
+    "item": "powergrid:thyratron"
+  },
+  "show_notification": true
+}

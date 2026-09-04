@@ -42,7 +42,9 @@ public class ModdedPartialModels {
 
     public static final PartialModel SPARK_GAP_ARM = block("spark_gap/arm");
 
-    public static final PartialModel ELECTRON_TUBE_GLOW = model("component/electron_tube_glow");
+    public static final PartialModel ELECTRON_TUBE_GLOW = model("component/triode_glow");
+    public static final PartialModel PENTODE_GLOW = model("component/pentode_glow");
+    public static final PartialModel THYRATRON_GLOW = model("component/thyratron_glow");
     public static final PartialModel REGULATOR_TUBE_GLOW = model("component/regulator_tube_glow");
     public static final PartialModel POTENTIOMETER_KNOB = model("component/potentiometer_knob");
 

@@ -74,10 +74,10 @@ public class ComponentRegistry {
                 .registryOrThrow(ComponentRegistry.ITEM_REGISTRY_KEY);
         for(var entry : registry.entrySet()) {
             if(stack.is(entry.getValue().item()))
-                return entry.getKey().location();
+                return remapId(entry.getKey().location());
             var tag = entry.getValue().tag();
             if(tag.isPresent() && stack.is(tag.get()))
-                return entry.getKey().location();
+                return remapId(entry.getKey().location());
         }
         return null;
     }
@@ -97,12 +97,20 @@ public class ComponentRegistry {
                 .registryOrThrow(ComponentRegistry.ITEM_REGISTRY_KEY);
         for(var entry : registry.entrySet()) {
             if(entry.getValue().item() == item)
-                return get(entry.getKey().location());
+                return get(remapId(entry.getKey().location()));
             var tag = entry.getValue().tag();
             if(tag.isPresent() && item.builtInRegistryHolder().is(tag.get()))
-                return get(entry.getKey().location());
+                return get(remapId(entry.getKey().location()));
         }
         return null;
+    }
+
+    // Leftover component_items/electron_tube.json still maps create:electron_tube
+    // after the component was renamed to triode.
+    private static ResourceLocation remapId(ResourceLocation id) {
+        if ("powergrid:electron_tube".equals(id.toString()))
+            return PowerGrid.asResource("triode");
+        return id;
     }
 
     @NotNull
