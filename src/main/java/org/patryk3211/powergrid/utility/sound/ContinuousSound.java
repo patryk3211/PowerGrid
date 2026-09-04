@@ -20,28 +20,62 @@ import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 
+import java.util.function.BooleanSupplier;
+
 public class ContinuousSound extends AbstractTickableSoundInstance {
-    private float sharedPitch;
-    private SoundScape scape;
-    private float relativeVolume;
+    private final float sharedPitch;
+    private final SoundScape scape;
+    private final float relativeVolume;
+    private final BooleanSupplier stillPlaying;
+    private final float targetVolume;
+    private final float fadeSpeed;
 
     protected ContinuousSound(SoundEvent event, SoundScape scape, float sharedPitch, float relativeVolume) {
         super(event, SoundSource.AMBIENT, SoundInstance.createUnseededRandom());
         this.scape = scape;
         this.sharedPitch = sharedPitch;
         this.relativeVolume = relativeVolume;
+        this.stillPlaying = null;
+        this.targetVolume = 0;
+        this.fadeSpeed = 0;
         this.looping = true;
         this.delay = 0;
         this.relative = false;
     }
 
+    public ContinuousSound(SoundEvent event, SoundSource source, double x, double y, double z,
+                           float volume, float pitch, int fadeTicks, BooleanSupplier stillPlaying) {
+        super(event, source, SoundInstance.createUnseededRandom());
+        this.scape = null;
+        this.sharedPitch = pitch;
+        this.relativeVolume = 1f;
+        this.stillPlaying = stillPlaying;
+        this.targetVolume = volume;
+        this.fadeSpeed = fadeTicks <= 0 ? volume : volume / fadeTicks;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.volume = 0;
+        this.looping = true;
+        this.delay = 0;
+        this.relative = false;
+        this.attenuation = Attenuation.LINEAR;
+    }
+
+    @Override
+    public boolean canStartSilent() {
+        return scape == null;
+    }
+
     public void remove() {
+        looping = false;
+        volume = 0;
         stop();
     }
 
     @Override
     public float getVolume() {
-        return scape.getVolume() * relativeVolume;
+        return scape != null ? scape.getVolume() * relativeVolume : volume;
     }
 
     @Override
@@ -51,20 +85,30 @@ public class ContinuousSound extends AbstractTickableSoundInstance {
 
     @Override
     public double getX() {
-        return scape.getMeanPos().x;
+        return scape != null ? scape.getMeanPos().x : x;
     }
 
     @Override
     public double getY() {
-        return scape.getMeanPos().y;
+        return scape != null ? scape.getMeanPos().y : y;
     }
 
     @Override
     public double getZ() {
-        return scape.getMeanPos().z;
+        return scape != null ? scape.getMeanPos().z : z;
     }
 
     @Override
-    public void tick() {}
-
+    public void tick() {
+        if (stillPlaying == null)
+            return;
+        boolean on = stillPlaying.getAsBoolean();
+        float target = on ? targetVolume : 0;
+        if (volume < target)
+            volume = Math.min(target, volume + fadeSpeed);
+        else if (volume > target)
+            volume = Math.max(target, volume - fadeSpeed * 2f);
+        if (!on && volume <= 0.001f)
+            remove();
+    }
 }

@@ -66,5 +66,19 @@
 
   "block.powergrid.electric_pump.tooltip.summary": "An _Electric_ version of the _Mechanical Pump_",
 
-  "block.powergrid.fe_inverter.tooltip.summary": "Converts _Forge Energy_ into _Electricity_ using advanced technology. Use the _Control Pin_ to adjust the output voltage and improve power conversion."
+  "block.powergrid.fe_inverter.tooltip.summary": "Converts _Forge Energy_ into _Electricity_ using advanced technology. Use the _Control Pin_ to adjust the output voltage and improve power conversion.",
+
+  "item.powergrid.triode.tooltip.summary": "A vacuum tube that amplifies signals. Anode current is controlled by a small voltage on the _Grid_.",
+  "item.powergrid.triode.tooltip.condition1": "When the Heater is powered",
+  "item.powergrid.triode.tooltip.behaviour1": "Conducts from _Anode_ to _Cathode_. A small change in _Grid_ voltage produces a large change in anode current.",
+
+  "item.powergrid.pentode.tooltip.summary": "A vacuum tube like a triode, with an extra _Screen Grid_ (G2) between the control grid and the anode for higher gain.",
+  "item.powergrid.pentode.tooltip.condition1": "When the Heater is powered",
+  "item.powergrid.pentode.tooltip.behaviour1": "The _Screen_ must be positively biased. It shields the anode from the control grid and allows higher gain than a triode.",
+
+  "item.powergrid.thyratron.tooltip.summary": "A gas-filled tube that latches on when anode voltage exceeds a grid-controlled strike voltage. Once fired, the grid loses control until anode current drops or reverses.",
+  "item.powergrid.thyratron.tooltip.condition1": "When the Heater is powered",
+  "item.powergrid.thyratron.tooltip.behaviour1": "Fires when anode voltage exceeds the strike voltage set by the _Grid_. A positive grid pulse can trigger conduction.",
+  "item.powergrid.thyratron.tooltip.condition2": "Once fired",
+  "item.powergrid.thyratron.tooltip.behaviour2": "Stays _latched on_ even if the grid is driven negative. Extinguishes only when anode current drops below holding or reverses."
 }

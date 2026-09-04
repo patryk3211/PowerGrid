@@ -155,6 +155,15 @@
     ],
     "subtitle": "powergrid.subtitle.relay_click"
   },
+  "thyratron_hum": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:thyratron_hum"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.thyratron_hum"
+  },
   "transformer": {
     "sounds": [
       {

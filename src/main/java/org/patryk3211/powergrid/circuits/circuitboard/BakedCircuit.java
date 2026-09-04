@@ -65,26 +65,28 @@ public class BakedCircuit {
         var pos = be.getBlockPos();
         var offset = Vec3.atLowerCornerOf(pos);
         for(var placed : schematic.components()) {
-            var nodeIndexSet = new HashSet<Integer>();
+            int maxIndex = -1;
             for(var pad : placed.footprint().getPads().values()) {
                 if(pad.nodeIndex() >= 0)
-                    nodeIndexSet.add(pad.nodeIndex());
+                    maxIndex = Math.max(maxIndex, pad.nodeIndex());
             }
-            var external = placed.component.emitExternalTerminals();
-            int nodeOffset = external ? result.externalNodes.size() : result.internalNodes.size();
-            for(var i = 0; i < nodeIndexSet.size(); ++i) {
-                if(external) {
-                    var node = new OwnedFloatingNode(new BlockWireEndpoint(pos, nodeOffset + i));
+            int nodeCount = maxIndex + 1;
+            var nodes = new FloatingNode[Math.max(nodeCount, 0)];
+            boolean anyExternal = false;
+            for(var i = 0; i < nodeCount; ++i) {
+                if(placed.component.isExternalNode(i)) {
+                    var node = new OwnedFloatingNode(new BlockWireEndpoint(pos, result.externalNodes.size()));
                     result.externalNodes.add(node);
+                    nodes[i] = node;
+                    anyExternal = true;
                 } else {
                     var node = new FloatingNode();
                     result.internalNodes.add(node);
+                    nodes[i] = node;
                 }
             }
-            // Turns pad index into the corresponding component node.
-            Function<Integer, FloatingNode> provider = external ?
-                    index -> (FloatingNode) result.externalNodes.get(index + nodeOffset) :
-                    index -> (FloatingNode) result.internalNodes.get(index + nodeOffset);
+            // Turns local node index into the corresponding component node.
+            Function<Integer, FloatingNode> provider = index -> nodes[index];
             result.padNodeProviderMap.put(placed, provider);
 
             var builder = new ComponentCircuitBuilder(pos, provider, result.internalNodes, result.wires);
@@ -113,7 +115,7 @@ public class BakedCircuit {
                     .forEach(result.thermalUnits::add);
             result.tickedComponents.add(placed);
 
-            if(external) {
+            if(anyExternal) {
                 var bbs = placed.component.terminals(placed);
                 bbs.stream().map(bb -> bb.offset(placed.x / 16f, 2 / 16f, placed.y / 16f)).forEach(result.terminals::add);
             }

@@ -131,6 +131,11 @@ public class ModdedSoundEvents {
             .category(SoundSource.BLOCKS)
             .build(),
 
+    THYRATRON_FIRE = create("thyratron_fire").subtitle("Thyratron fires")
+            .playExisting(SoundEvents.FIREWORK_ROCKET_BLAST, 0.35f, 1.85f)
+            .category(SoundSource.BLOCKS)
+            .build(),
+
     MICROSWITCH_ON = create("uswitch_on").subtitle("Switch clicks")
             .playExisting(SoundEvents.WOODEN_BUTTON_CLICK_ON, 1.0f, 2.0f)
             .category(SoundSource.BLOCKS)
@@ -152,6 +157,10 @@ public class ModdedSoundEvents {
             .build(),
 
     TRANSFORMER_HUM = create("transformer").subtitle("Transformer hum")
+            .category(SoundSource.BLOCKS)
+            .build(),
+
+    THYRATRON_HUM = create("thyratron_hum").subtitle("Thyratron hums")
             .category(SoundSource.BLOCKS)
             .build(),
 
