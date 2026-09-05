@@ -67,11 +67,14 @@ public class SawItem extends AxeItem {
                 stack.hurtAndBreak(1, miningEntity, EquipmentSlot.MAINHAND);
             }
             if(player.isShiftKeyDown() && power >= 0.3f && !level.isClientSide) {
-                Optional<AbstractBlockBreakQueue> dynamicTree = TreeCutter.findDynamicTree(state.getBlock(), pos);
-                if (dynamicTree.isPresent()) {
-                    dynamicTree.get().destroyBlocks(level, null, (pos1, stack1) -> dropTreeItem(level, pos1, stack1));
-                } else {
-                    TreeCutter.findTree(level, pos, state).destroyBlocks(level, null, (pos1, stack1) -> dropTreeItem(level, pos1, stack1));
+                if (TreeCutter.isLog(state) || TreeCutter.isRoot(state) || TreeCutter.isVerticalPlant(state) ||
+                        TreeCutter.isChorus(state)) {
+                    Optional<AbstractBlockBreakQueue> dynamicTree = TreeCutter.findDynamicTree(state.getBlock(), pos);
+                    if (dynamicTree.isPresent()) {
+                        dynamicTree.get().destroyBlocks(level, null, (pos1, stack1) -> dropTreeItem(level, pos1, stack1));
+                    } else {
+                        TreeCutter.findTree(level, pos, state).destroyBlocks(level, null, (pos1, stack1) -> dropTreeItem(level, pos1, stack1));
+                    }
                 }
             }
             return true;
