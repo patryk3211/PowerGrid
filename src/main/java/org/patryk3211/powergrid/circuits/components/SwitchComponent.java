@@ -50,12 +50,16 @@ public class SwitchComponent extends OrientableComponent implements IInteractabl
 
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, @NotNull ThermalBuilder.IEmitter thermals) {
-        var wire = builder.connectSwitch(0.1f, builder.terminalNode(0), builder.terminalNode(1), placed.get(STATE));
-        placed.add(wire);
+        boolean state = placed.get(STATE);
+        var noWire = builder.connectSwitch(0.1f, builder.terminalNode(0), builder.terminalNode(2), state);
+        var ncWire = builder.connectSwitch(0.1f, builder.terminalNode(0), builder.terminalNode(1), !state);
+        placed.add(noWire);
+        placed.add(ncWire);
         thermals.builder()
                 .setMaxCurrent(16, 0.1f, 150)
                 .setThermalMass(0.01f)
-                .addHeatSource(wire);
+                .addHeatSource(noWire)
+                .addHeatSource(ncWire);
     }
 
     @Override
@@ -88,7 +92,9 @@ public class SwitchComponent extends OrientableComponent implements IInteractabl
         super.stateUpdated(placed);
         if(placed.wires.isEmpty())
             return;
-        ((SwitchedWire) placed.wires.get(0)).setState(placed.get(STATE));
+        boolean state = placed.get(STATE);
+        ((SwitchedWire) placed.wires.get(0)).setState(state);
+        ((SwitchedWire) placed.wires.get(1)).setState(!state);
         placed.onClientWorld(() -> world -> modelChanged(placed.getPos()));
     }
 

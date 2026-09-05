@@ -70,6 +70,14 @@ public interface IDecoratedTerminal {
             .translate("generic.case_common")
             .style(ChatFormatting.BLUE)
             .component();
+    Component NORMALLY_OPEN = Lang.builder()
+            .translate("generic.no")
+            .style(ChatFormatting.BLUE)
+            .component();
+    Component NORMALLY_CLOSED = Lang.builder()
+            .translate("generic.nc")
+            .style(ChatFormatting.BLUE)
+            .component();
 
     int RED = 0xFF3B3B;
     int BLUE = 0x3B80FF;

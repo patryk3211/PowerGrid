@@ -165,6 +165,8 @@
   "powergrid.generic.case_common": "Case Common",
   "powergrid.generic.enabled": "Enabled",
   "powergrid.generic.disabled": "Disabled",
+  "powergrid.generic.nc": "Normally closed",
+  "powergrid.generic.no": "Normally open",
 
   "powergrid.contactor.switch1": "Switch 1",
   "powergrid.contactor.switch2": "Switch 2",
@@ -237,9 +239,6 @@
   "powergrid.gui.modular_display.blank": "Blanking page: ",
 
   "powergrid.gui.button_overlay.mode": "Button mode: ",
-  "powergrid.gui.button_overlay.nc": "Normally closed",
-  "powergrid.gui.button_overlay.no": "Normally open",
-
   "powergrid.recipe.category.circuit_design": "Circuit Designing",
   "powergrid.recipe.category.circuit_assembly": "Circuit Assembly",
 

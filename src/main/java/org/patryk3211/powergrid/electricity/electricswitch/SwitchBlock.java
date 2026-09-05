@@ -56,6 +56,7 @@ public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlo
 
     protected float maxVoltage = 200f;
     protected boolean isButton = false;
+    protected boolean isSPDT = false;
 
     public SwitchBlock(Properties settings) {
         super(settings);
@@ -71,6 +72,9 @@ public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlo
     public boolean isButton() {
         return isButton;
     }
+    public boolean isSPDT() {
+        return isSPDT;
+    }
 
     @Override
     public InteractionResult use(BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
@@ -79,27 +83,19 @@ public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlo
             return InteractionResult.PASS;
         if(!player.isShiftKeyDown()) {
             if(!AllItems.WRENCH.isIn(player.getItemInHand(hand))) {
-                var isOpen = !state.getValue(OPEN);
-                if(!isButton) {
-                    world.setBlockAndUpdate(pos, state.setValue(OPEN, isOpen));
-                    if(!world.isClientSide)
-                        withBlockEntityDo(world, pos, be -> be.setState(!isOpen));
-                    useSound(world, pos, isOpen);
-                } else {
-                    if(!isOpen) {
-                        world.setBlockAndUpdate(pos, state.setValue(OPEN, false));
-                        useSound(world, pos, false);
-                    }
-                    if(!world.isClientSide)
+                boolean isOpen = !isButton && !state.getValue(OPEN);
+                
+                world.setBlockAndUpdate(pos, state.setValue(OPEN, isOpen));
+                if(!world.isClientSide) {
+                    if(isButton){
                         withBlockEntityDo(world, pos, be -> be.setState(true));
+                    }
+                    else {
+                        boolean finalIsOpen = isOpen;
+                        withBlockEntityDo(world, pos, be -> be.setState(!finalIsOpen));
+                    }
                 }
-                return InteractionResult.SUCCESS;
-            } else if (isButton) {
-                if(!world.isClientSide)
-                    withBlockEntityDo(world, pos, be -> {
-                        be.setNormallyClosed(!be.isNormallyClosed());
-                        be.setState(false);
-                    });
+                useSound(world, pos, isOpen);
                 return InteractionResult.SUCCESS;
             }
         }
@@ -129,25 +125,5 @@ public abstract class SwitchBlock extends ElectricBlock implements IBE<SwitchBlo
         Resistance.series(resistance(), player, tooltip);
         Current.max(stack, player, tooltip);
         Voltage.max(maxVoltage, player, tooltip);
-    }
-
-    @Nullable
-    @Environment(EnvType.CLIENT)
-    public static Component overlayText(Player player) {
-        if(!AllItems.WRENCH.isIn(player.getItemInHand(InteractionHand.MAIN_HAND)))
-            return null;
-        HitResult hit = Minecraft.getInstance().hitResult;
-        if(!(hit instanceof BlockHitResult blockHit) || blockHit.getType() == HitResult.Type.MISS)
-            return null;
-        var state = Minecraft.getInstance().level.getBlockState(blockHit.getBlockPos());
-        if(!(state.getBlock() instanceof SwitchBlock switchBlock) || !switchBlock.isButton())
-            return null;
-        boolean nc = switchBlock.getBlockEntityOptional(Minecraft.getInstance().level, blockHit.getBlockPos())
-                .map(SwitchBlockEntity::isNormallyClosed).orElse(false);
-        return Lang.translate("gui.button_overlay.mode")
-                .add(Lang.translate("gui.button_overlay." + (nc ? "nc" : "no"))
-                        .style(ChatFormatting.BLUE))
-                .style(ChatFormatting.GRAY)
-                .component();
     }
 }

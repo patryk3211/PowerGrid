@@ -425,8 +425,6 @@
   "powergrid.generic.unit.watt": "W",
   "powergrid.generic.unit.watt.name": "Watt",
   "powergrid.gui.button_overlay.mode": "Knapp Läge: ",
-  "powergrid.gui.button_overlay.nc": "Normalt stängd",
-  "powergrid.gui.button_overlay.no": "Normalt öppen",
   "powergrid.gui.carbon_pile.current_resistance": "Nuvarande resistans:",
   "powergrid.gui.carbon_pile.info_header": "Kolstapel information",
   "powergrid.gui.carbon_pile.max_resistance": "Maximal resistans:",
