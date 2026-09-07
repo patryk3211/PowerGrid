@@ -138,6 +138,7 @@ public class PowerGridImpl {
     public static void newDynamicRegistryEvent(DataPackRegistryEvent.NewRegistry event) {
         event.dataPackRegistry(ComponentRegistry.ITEM_REGISTRY_KEY, ComponentRegistry.ITEM_CODEC, ComponentRegistry.ITEM_CODEC);
         event.dataPackRegistry(WireRegistry.KEY, WireItemEntry.CODEC.orElse(null), WireItemEntry.CODEC);
+        event.dataPackRegistry(SolarBiomeRegistry.KEY, SolarBiomeEntry.CODEC.orElse(null), SolarBiomeEntry.CODEC);
     }
 
     @SubscribeEvent
