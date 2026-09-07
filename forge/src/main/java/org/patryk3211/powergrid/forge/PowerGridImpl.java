@@ -61,6 +61,8 @@ import org.patryk3211.powergrid.data.recipe.forge.MixingRecipes;
 import org.patryk3211.powergrid.data.recipes.*;
 import org.patryk3211.powergrid.electricity.febridge.FEInverterBlockEntity;
 import org.patryk3211.powergrid.electricity.febridge.forge.FEInverterBlockEntityImpl;
+import org.patryk3211.powergrid.electricity.solarpanel.registry.SolarBiomeEntry;
+import org.patryk3211.powergrid.electricity.solarpanel.registry.SolarBiomeRegistry;
 import org.patryk3211.powergrid.electricity.wire.registry.WireItemEntry;
 import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
 import org.patryk3211.powergrid.kinetics.punchcard.PunchCardMenu;

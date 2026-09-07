@@ -19,7 +19,9 @@ public class SolarBiomeRegistry {
             var holder = test.getHolder(i);
             if (holder.isPresent()){
                 var biomeEntry = holder.get().value();
-                result = biomeEntry.biome().equals(level.getBiome(pos).getRegisteredName()) ? biomeEntry : null;
+                var biomeName = level.getBiome(pos).unwrap().map((resourceKey) ->
+                        resourceKey.location().toString(), (biome) -> "[unregistered " + biome + "]");
+                result = biomeEntry.biome().equals(biomeName) ? biomeEntry : null;
             }
         }
         return result;
