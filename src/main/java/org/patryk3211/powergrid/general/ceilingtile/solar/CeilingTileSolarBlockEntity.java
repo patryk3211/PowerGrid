@@ -24,6 +24,8 @@ import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarHelper;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarHelper.DDAHit;
+import org.patryk3211.powergrid.electricity.solarpanel.registry.SolarBiomeEntry;
+import org.patryk3211.powergrid.electricity.solarpanel.registry.SolarBiomeRegistry;
 
 import java.util.*;
 
@@ -44,6 +46,8 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity {
     private Vector3d panelNormal;
     protected Direction facing = Direction.DOWN; //imitate facing on normal horizontal panel
     private double irradiance;
+    private float solarConstant = 1361;
+    private SolarBiomeEntry solarBiomeEntry;
 
     private final Map<BlockPos, CeilingTileSolarBlockEntity> connectedPanelBEs = new HashMap<>();
     private final Set<BlockPos> connectedPanels = new HashSet<>();
@@ -110,11 +114,18 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity {
         var subLevel = SableCompanion.INSTANCE.getContaining(this);
 
         if (firstTick || subLevel != null) {
-            ambientTemp = AThermalBehaviour.getAmbientTemperature(world, blockPos);
+            solarBiomeEntry = SolarBiomeRegistry.forBiome(world, blockPos);
+            if (solarBiomeEntry != null && solarBiomeEntry.overrideTemp()){
+                ambientTemp = solarBiomeEntry.biomeTemp();
+            } else {
+                ambientTemp = AThermalBehaviour.getAmbientTemperature(world, blockPos);
+            }
             if (ambientTemp <= AThermalBehaviour.ABSOLUTE_ZERO)
                 ambientTemp = 22f;
             firstTick = false;
             getPlacedBlockRotation();
+            if (solarBiomeEntry != null && solarBiomeEntry.overrideSolarConstant())
+                solarConstant = solarBiomeEntry.solarConstant();
         }
 
         if(subLevel != null) {
@@ -147,15 +158,26 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity {
     }
 
     public double getIrradiance(double AM, double cloudCover, int YPos, Level world) {
-        if (AM == Double.POSITIVE_INFINITY) return 0;
-        var transmittance = 1 - cloudCover;
-        var irradiance = SOLAR_CONSTANT * Math.pow(0.7,Math.pow(AM, 0.678));
-        irradiance = irradiance * ((((YPos - 70) / 250f) * 0.04f) + 1); //70 is around average world height, but it could also be put to sea level
-        if (irradiance > SOLAR_CONSTANT) irradiance = SOLAR_CONSTANT;
+        double transmittance = 1, irradiance;
+        if (AM == Double.POSITIVE_INFINITY)
+            if (solarBiomeEntry == null || !solarBiomeEntry.disableAtmosphere()) {
+                return 0;
+            } else AM = 0;
+
+        if (solarBiomeEntry == null || !solarBiomeEntry.disableWeather())
+            transmittance = 1 - cloudCover;
+        if (solarBiomeEntry == null || !solarBiomeEntry.disableAtmosphere()) {
+            irradiance = solarConstant * Math.pow(0.7, Math.pow(AM, 0.678));
+        } else irradiance = solarConstant;
+        if (solarBiomeEntry == null || !solarBiomeEntry.disableAtmosphere())
+            irradiance = irradiance * ((((YPos - 70) / 250f) * 0.04f) + 1); //70 is around average world height, but it could also be put to sea level
+        if (irradiance > solarConstant) irradiance = solarConstant;
 
         double sunAngle = world.getSunAngle(0);
         Vector3d sunDir = new Vector3d(-Math.sin(sunAngle), Math.cos(sunAngle), 0);
-        if (sunDir.y <= 0) return 0;
+        if (sunDir.y <= 0)
+            if (solarBiomeEntry == null || !solarBiomeEntry.enableFullRotation())
+                return 0;
 
         if (rayCastDelay-- == 0){
             if (connectedPanels.isEmpty()){
@@ -180,7 +202,7 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity {
                 * (1 + cloudCover) * ((1 + panelNormal.y()) / 2);
         double reflected = ALBEDO_FRAC * (Math.max(0, sunDir.y) * irradiance * transmittance) * ((1 - panelNormal.y()) / 2.0);
 
-        if (!skyVisible) {
+        if (!skyVisible || solarBiomeEntry != null && solarBiomeEntry.disableAtmosphere()) {
             diffuseLight = 0;
             reflected = 0;
         }

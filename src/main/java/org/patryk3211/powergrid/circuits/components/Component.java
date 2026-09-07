@@ -171,7 +171,7 @@ public abstract class Component {
      * Data fixer, handles changes between updates.
      * @param tag Tag to modify
      */
-    public void dataFixup(@NotNull CompoundTag tag) {
+    public void dataFixup(@NotNull CompoundTag tag, int version) {
 
     }
 

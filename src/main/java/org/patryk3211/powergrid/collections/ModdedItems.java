@@ -22,6 +22,7 @@ import com.tterrag.registrate.builders.ItemBuilder;
 import com.tterrag.registrate.util.entry.ItemEntry;
 import com.tterrag.registrate.util.nullness.NonNullUnaryOperator;
 import dev.architectury.injectables.annotations.ExpectPlatform;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import org.patryk3211.powergrid.AbstractPowerGridRegistrate;
@@ -213,21 +214,25 @@ public class ModdedItems {
             .transform(customRenderer(() -> ElectroZapperItemRenderer::new))
             .model(itemWithParent("item/electrozapper/item"))
             .lang("Electro-Zapper")
+            .tag(ItemTags.DURABILITY_ENCHANTABLE)
             .register();
 
     public static final ItemEntry<ElectroBatonItem> ELECTROBATON = REGISTRATE.item("electrobaton", ElectroBatonItem::new)
             .model(itemWithParent("item/electrobaton/item"))
             .lang("Electro-Baton")
+            .tag(ItemTags.SWORDS)
             .register();
 
     public static final ItemEntry<DrillItem> PORTABLE_DRILL = REGISTRATE.item("portable_drill", DrillItem::new)
             .transform(customRenderer(() -> DrillItemRenderer::new))
             .model(itemWithParent("item/drill/item"))
+            .tag(ItemTags.PICKAXES)
             .register();
 
     public static final ItemEntry<SawItem> PORTABLE_SAW = REGISTRATE.item("portable_saw", SawItem::new)
             .transform(customRenderer(() -> SawItemRenderer::new))
             .model(itemWithParent("item/saw/item"))
+            .tag(ItemTags.AXES)
             .register();
 
     public static final ItemEntry<BacktankItem.BacktankBlockItem> PORTABLE_BATTERY_PLACEABLE = REGISTRATE.item("portable_battery_placeable",

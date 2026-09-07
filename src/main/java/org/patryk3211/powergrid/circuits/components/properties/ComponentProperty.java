@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.circuits.components.properties;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
@@ -65,8 +66,8 @@ public abstract class ComponentProperty<T> {
     public abstract T parse(String value) throws RuntimeException;
     public abstract String toString(T value);
 
-    public abstract T read(@Nullable Tag element);
-    public abstract Tag write(T value);
+    public abstract T read(HolderLookup.Provider registries, @Nullable Tag element);
+    public abstract Tag write(HolderLookup.Provider registries, T value);
 
     public abstract T defaultValue();
 

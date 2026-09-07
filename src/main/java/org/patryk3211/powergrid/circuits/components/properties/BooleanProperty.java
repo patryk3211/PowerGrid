@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.circuits.components.properties;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.ByteTag;
 import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.Nullable;
@@ -35,7 +36,7 @@ public class BooleanProperty extends ComponentProperty<Boolean> {
     }
 
     @Override
-    public Boolean read(@Nullable Tag element) {
+    public Boolean read(HolderLookup.Provider registries, @Nullable Tag element) {
         if(element == null)
             return false;
         if(element.getId() != Tag.TAG_BYTE)
@@ -44,7 +45,7 @@ public class BooleanProperty extends ComponentProperty<Boolean> {
     }
 
     @Override
-    public Tag write(Boolean value) {
+    public Tag write(HolderLookup.Provider registries, Boolean value) {
         return ByteTag.valueOf(value);
     }
 

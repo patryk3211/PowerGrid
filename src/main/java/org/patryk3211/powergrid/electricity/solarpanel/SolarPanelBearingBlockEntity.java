@@ -32,6 +32,8 @@ import org.patryk3211.powergrid.electricity.base.Rotation4ElectricBlock;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarHelper.DDAHit;
+import org.patryk3211.powergrid.electricity.solarpanel.registry.SolarBiomeEntry;
+import org.patryk3211.powergrid.electricity.solarpanel.registry.SolarBiomeRegistry;
 import org.patryk3211.powergrid.kinetics.base.ElectricKineticBlockEntity;
 
 import java.util.List;
@@ -54,6 +56,8 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     private boolean skyVisible = false;
     protected SolarPanelBearingBlockScrollBehaviour parallelNumbers;
     private Vector3d panelNormal;
+    private float solarConstant = 1361;
+    private SolarBiomeEntry solarBiomeEntry;
 
     protected CurrentSourceWire currentSource;
     protected ElectricWire seriesResistor;
@@ -148,10 +152,15 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
         var pos = SableCompanion.INSTANCE.projectOutOfSubLevel(level, getContraptionCenter(movedContraption));
         var contraptionCenterPos = BlockPos.containing(JOMLConversion.toMojang(pos));
 
-        ambientTemp = AThermalBehaviour.getAmbientTemperature(world, contraptionCenterPos);
-        if (ambientTemp <= AThermalBehaviour.ABSOLUTE_ZERO)
-            ambientTemp = 22f;
+        solarBiomeEntry = SolarBiomeRegistry.forBiome(world, contraptionCenterPos);
+        if (solarBiomeEntry != null && solarBiomeEntry.overrideTemp()){
+            ambientTemp = solarBiomeEntry.biomeTemp();
+        } else {
+            ambientTemp = AThermalBehaviour.getAmbientTemperature(world, contraptionCenterPos);
+        }
         float cloudCover = getWeather(world);
+        if (solarBiomeEntry != null && solarBiomeEntry.overrideSolarConstant())
+            solarConstant = solarBiomeEntry.solarConstant();
 
         if (contraption.panelNormal == null) return;
         Vec3 localDir = new Vec3(contraption.panelNormal.x, contraption.panelNormal.y, contraption.panelNormal.z);
@@ -181,11 +190,20 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
     }
 
     public double getIrradiance(double AM, double cloudCover, int YPos, Level world) {
-        if (AM == Double.POSITIVE_INFINITY) return 0;
-        var transmittance = 1 - cloudCover;
-        var irradiance = SOLAR_CONSTANT * Math.pow(0.7,Math.pow(AM, 0.678));
-        irradiance = irradiance * ((((YPos - 70) / 250f) * 0.04f) + 1); //70 is around average world height, but it could also be put to sea level
-        if (irradiance > SOLAR_CONSTANT) irradiance = SOLAR_CONSTANT;
+        double transmittance = 1, irradiance;
+        if (AM == Double.POSITIVE_INFINITY)
+            if (solarBiomeEntry == null || !solarBiomeEntry.disableAtmosphere()) {
+                return 0;
+            } else AM = 0;
+
+        if (solarBiomeEntry == null || !solarBiomeEntry.disableWeather())
+            transmittance = 1 - cloudCover;
+        if (solarBiomeEntry == null || !solarBiomeEntry.disableAtmosphere()) {
+            irradiance = solarConstant * Math.pow(0.7, Math.pow(AM, 0.678));
+        } else irradiance = solarConstant;
+        if (solarBiomeEntry == null || !solarBiomeEntry.disableAtmosphere())
+            irradiance = irradiance * ((((YPos - 70) / 250f) * 0.04f) + 1); //70 is around average world height, but it could also be put to sea level
+        if (irradiance > solarConstant) irradiance = solarConstant;
 
         if (rayCastDelay-- == 0){
             sunVisibility = sunRaycast(world);
@@ -196,7 +214,9 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
 
         double sunAngle = world.getSunAngle(0);
         Vector3d sunDir = new Vector3d(-Math.sin(sunAngle), Math.cos(sunAngle), 0);
-        if (sunDir.y <= 0) return 0;
+        if (sunDir.y <= 0)
+            if (solarBiomeEntry == null || !solarBiomeEntry.enableFullRotation())
+                return 0;
 
         double cosIncidence = Math.max(0, sunDir.dot(panelNormal));
         cosIncidence = Math.max(0, cosIncidence);
@@ -204,7 +224,7 @@ public class SolarPanelBearingBlockEntity extends ElectricKineticBlockEntity imp
                 * (1 + cloudCover) * ((1 + panelNormal.y()) / 2);
         double reflected = ALBEDO_FRAC * (Math.max(0, sunDir.y) * irradiance * transmittance) * ((1 - panelNormal.y()) / 2.0);
 
-        if (!skyVisible){
+        if (!skyVisible || solarBiomeEntry != null && solarBiomeEntry.disableAtmosphere()) {
             diffuseLight = 0;
             reflected = 0;
         }

@@ -101,35 +101,37 @@ public class ElectronTubeComponent extends MirrorableComponent implements IRende
     }
 
     @Override
-    public void dataFixup(@NotNull CompoundTag tag) {
-        var props = tag.getCompound("Properties");
-        // tube_kp present means saved under the full Koren model (or already migrated)
-        if(props.contains(K_P.id().toString()))
-            return;
+    public void dataFixup(@NotNull CompoundTag tag, int version) {
+        if(version == 1) {
+            var props = tag.getCompound("Properties");
+            // tube_kp present means saved under the full Koren model (or already migrated)
+            if (props.contains(K_P.id().toString()))
+                return;
 
-        var fromAnodeResistance = props.contains("powergrid:tube_anode_resistance");
-        if(fromAnodeResistance) {
-            var resistance = props.getFloat("powergrid:tube_anode_resistance");
-            var kg = ElectronTubeWire.calculateKg1(
-                    1, 0,
-                    props.getFloat(GAIN.id().toString()),
-                    K_P.defaultValue(),
-                    K_VB.defaultValue(),
-                    EX.defaultValue(),
-                    1 / resistance);
-            PowerGrid.LOGGER.info("Fixing electron tube anode resistance ({}) into k_g ({})", resistance, kg);
-            props.putFloat(K_G.id().toString(), kg);
-            props.remove("powergrid:tube_anode_resistance");
-        } else if(props.contains(K_G.id().toString())) {
-            var kg = props.getFloat(K_G.id().toString());
-            PowerGrid.LOGGER.info("Migrating electron tube k_g from {} to {} for Koren model", kg, kg * 2);
-            props.putFloat(K_G.id().toString(), kg * 2f);
+            var fromAnodeResistance = props.contains("powergrid:tube_anode_resistance");
+            if (fromAnodeResistance) {
+                var resistance = props.getFloat("powergrid:tube_anode_resistance");
+                var kg = ElectronTubeWire.calculateKg1(
+                        1, 0,
+                        props.getFloat(GAIN.id().toString()),
+                        K_P.defaultValue(),
+                        K_VB.defaultValue(),
+                        EX.defaultValue(),
+                        1 / resistance);
+                PowerGrid.LOGGER.info("Fixing electron tube anode resistance ({}) into k_g ({})", resistance, kg);
+                props.putFloat(K_G.id().toString(), kg);
+                props.remove("powergrid:tube_anode_resistance");
+            } else if (props.contains(K_G.id().toString())) {
+                var kg = props.getFloat(K_G.id().toString());
+                PowerGrid.LOGGER.info("Migrating electron tube k_g from {} to {} for Koren model", kg, kg * 2);
+                props.putFloat(K_G.id().toString(), kg * 2f);
+            }
+
+            props.putFloat(K_P.id().toString(), K_P.defaultValue());
+            props.putFloat(K_VB.id().toString(), K_VB.defaultValue());
+            props.putFloat(EX.id().toString(), EX.defaultValue());
+            tag.put("Properties", props);
         }
-
-        props.putFloat(K_P.id().toString(), K_P.defaultValue());
-        props.putFloat(K_VB.id().toString(), K_VB.defaultValue());
-        props.putFloat(EX.id().toString(), EX.defaultValue());
-        tag.put("Properties", props);
     }
 
     public static class RenderData {

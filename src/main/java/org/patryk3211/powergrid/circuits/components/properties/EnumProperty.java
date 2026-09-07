@@ -15,6 +15,7 @@
  */
 package org.patryk3211.powergrid.circuits.components.properties;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.IntTag;
 import net.minecraft.nbt.Tag;
 import org.jetbrains.annotations.Nullable;
@@ -68,7 +69,7 @@ public class EnumProperty<T extends Enum<T>> extends ComponentProperty<T> {
     }
 
     @Override
-    public T read(@Nullable Tag element) {
+    public T read(HolderLookup.Provider registries, @Nullable Tag element) {
         if(element == null)
             return defaultValue;
         if(element.getId() != Tag.TAG_INT)
@@ -78,7 +79,7 @@ public class EnumProperty<T extends Enum<T>> extends ComponentProperty<T> {
     }
 
     @Override
-    public Tag write(T value) {
+    public Tag write(HolderLookup.Provider registries, T value) {
         return IntTag.valueOf(value.ordinal());
     }
 

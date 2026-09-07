@@ -35,7 +35,6 @@ import net.minecraft.data.PackOutput;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.ItemLike;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.InterModComms;
@@ -70,6 +69,8 @@ import org.patryk3211.powergrid.data.recipe.forge.MixingRecipes;
 import org.patryk3211.powergrid.data.recipes.*;
 import org.patryk3211.powergrid.electricity.febridge.FEInverterBlockEntity;
 import org.patryk3211.powergrid.electricity.febridge.forge.FEInverterBlockEntityImpl;
+import org.patryk3211.powergrid.electricity.solarpanel.registry.SolarBiomeEntry;
+import org.patryk3211.powergrid.electricity.solarpanel.registry.SolarBiomeRegistry;
 import org.patryk3211.powergrid.electricity.wire.registry.WireItemEntry;
 import org.patryk3211.powergrid.electricity.wire.registry.WireRegistry;
 import org.patryk3211.powergrid.equipment.portablebattery.PortableBatteryItem;
@@ -150,6 +151,7 @@ public class PowerGridImpl {
     public static void newDynamicRegistryEvent(DataPackRegistryEvent.NewRegistry event) {
         event.dataPackRegistry(ComponentRegistry.ITEM_REGISTRY_KEY, ComponentRegistry.ITEM_CODEC, ComponentRegistry.ITEM_CODEC);
         event.dataPackRegistry(WireRegistry.KEY, WireItemEntry.CODEC.orElse(null), WireItemEntry.CODEC);
+        event.dataPackRegistry(SolarBiomeRegistry.KEY, SolarBiomeEntry.CODEC.orElse(null), SolarBiomeEntry.CODEC);
     }
 
     @SubscribeEvent

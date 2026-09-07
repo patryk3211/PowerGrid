@@ -60,6 +60,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
     private boolean removed = false;
     private boolean paused = true;
     private boolean reducedSync = false;
+    public int inhibitSyncCount = 0;
 
     private int syncCount = 0;
     private int lastSyncCount = 0;
@@ -481,6 +482,15 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
         if(syncAppender != null)
             syncAppender.readFromSync(buffer);
         ++syncCount;
+    }
+
+    @Override
+    public boolean shouldSync() {
+        if(inhibitSyncCount > 0) {
+            --inhibitSyncCount;
+            return false;
+        }
+        return true;
     }
 
     @Override

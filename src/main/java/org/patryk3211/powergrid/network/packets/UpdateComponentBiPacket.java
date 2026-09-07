@@ -44,7 +44,7 @@ public class UpdateComponentBiPacket implements S2CPacket, C2SPacket {
         assert componentId >= 0;
         propertyId = property.id();
         propertyValue = new CompoundTag();
-        component.getEntry(property).write(propertyValue);
+        component.getEntry(property).write(be.getLevel().registryAccess(), propertyValue);
     }
 
     public UpdateComponentBiPacket(CircuitBoardBlockEntity be, PlacedComponent component, ResourceLocation propertyId) {
@@ -53,7 +53,7 @@ public class UpdateComponentBiPacket implements S2CPacket, C2SPacket {
         assert componentId >= 0;
         this.propertyId = propertyId;
         propertyValue = new CompoundTag();
-        component.getEntry(propertyId).write(propertyValue);
+        component.getEntry(propertyId).write(be.getLevel().registryAccess(), propertyValue);
     }
 
     public UpdateComponentBiPacket(FriendlyByteBuf buf) {
@@ -76,7 +76,7 @@ public class UpdateComponentBiPacket implements S2CPacket, C2SPacket {
         be.ifPresent(circuit -> {
             var placed = circuit.getSchematic().components().get(componentId);
             var entry = placed.getEntry(propertyId);
-            entry.read(propertyValue);
+            entry.read(world.registryAccess(), propertyValue);
             placed.stateUpdated();
             if(!world.isClientSide) {
                 // Server must broadcast this update to all clients

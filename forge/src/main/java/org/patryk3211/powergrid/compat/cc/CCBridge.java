@@ -9,6 +9,7 @@ import org.patryk3211.powergrid.compat.cc.gauges.CurrentGaugePeripheral;
 import org.patryk3211.powergrid.compat.cc.gauges.EnergyMeterPeripheral;
 import org.patryk3211.powergrid.compat.cc.gauges.PowerGaugePeripheral;
 import org.patryk3211.powergrid.compat.cc.gauges.VoltageGaugePeripheral;
+import org.patryk3211.powergrid.compat.cc.redstone.RedstoneConverterPeripheral;
 
 public class CCBridge {
     public static void registerCapabilities(RegisterCapabilitiesEvent event) {
@@ -41,6 +42,11 @@ public class CCBridge {
                 PeripheralCapability.get(),
                 ModdedBlockEntities.MULTIBLOCK_BATTERY.get(),
                 (be, direction) -> new BatteryPeripheral(be)
+        );
+        event.registerBlockEntity(
+                PeripheralCapability.get(),
+                ModdedBlockEntities.REDSTONE_CONVERTER.get(),
+                (be, direction) -> new RedstoneConverterPeripheral(be)
         );
     }
 }

@@ -148,10 +148,10 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         notifyUpdate();
     }
 
-    public void setAdditionalData(CompoundTag tag) {
+    public void setAdditionalData(HolderLookup.Provider registries, CompoundTag tag) {
         if(baked == null)
             return;
-        baked.read(tag, false);
+        baked.read(registries, tag, false);
         if(!level.isClientSide)
             notifyUpdate();
     }
@@ -362,7 +362,7 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
 
     @Override
     protected void write(CompoundTag tag, HolderLookup.Provider registries, boolean clientPacket) {
-        tag.put("Schematic", schematic.serializeNbt());
+        tag.put("Schematic", schematic.serializeNbt(registries));
         if(baked != null)
             baked.write(tag);
         super.write(tag, registries, clientPacket);
@@ -371,7 +371,7 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     @Override
     public void writeSafe(CompoundTag tag, HolderLookup.Provider registries) {
         super.writeSafe(tag, registries);
-        tag.put("Schematic", schematic.serializeSafeNbt());
+        tag.put("Schematic", schematic.serializeSafeNbt(registries));
     }
 
     @Override
@@ -383,11 +383,11 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         }
         super.read(tag, registries, clientPacket);
         if(!clientPacket || tag.getBoolean("Rebuild") || baked == null) {
-            schematic.deserializeNbt(tag.getCompound("Schematic"));
+            schematic.deserializeNbt(registries, tag.getCompound("Schematic"));
             bakeCircuit();
         }
         if(baked != null)
-            baked.read(tag, clientPacket);
+            baked.read(registries, tag, clientPacket);
     }
 
     @Override
@@ -554,7 +554,7 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
     public ItemRequirement getRequiredItems(BlockState state) {
         var stack = ModdedBlocks.CIRCUIT_BOARD.asStack();
         var tag = new CompoundTag();
-        tag.put("Schematic", schematic.serializeSafeNbt());
+        tag.put("Schematic", schematic.serializeSafeNbt(level.registryAccess()));
         stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
         return new ItemRequirement(ItemRequirement.ItemUseType.CONSUME, stack);
     }

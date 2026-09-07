@@ -41,7 +41,7 @@ public class SaveSchematicC2SPacket implements C2SPacket {
 
     public <T extends BlockEntity&ISchematicHolder> SaveSchematicC2SPacket(T be, @Nullable String name, CircuitSchematic schematic) {
         pos = be.getBlockPos();
-        nbt = schematic.serializeNbt();
+        nbt = schematic.serializeNbt(be.getLevel().registryAccess());
         this.name = name;
     }
 
@@ -77,7 +77,7 @@ public class SaveSchematicC2SPacket implements C2SPacket {
         var be = player.serverLevel().getBlockEntity(pos);
         if(be instanceof CircuitDesignTableBlockEntity table) {
             if(nbt != null) {
-                table.getSchematic().deserializeNbt(nbt);
+                table.getSchematic().deserializeNbt(player.serverLevel().registryAccess(), nbt);
                 table.setSchematicName(name);
                 table.notifyUpdate();
 
@@ -94,7 +94,7 @@ public class SaveSchematicC2SPacket implements C2SPacket {
             }
         } else if(be instanceof ISchematicHolder holder) {
             if(player.isCreative() && nbt != null) {
-                holder.setSchematic(CircuitSchematic.fromNbt(nbt));
+                holder.setSchematic(CircuitSchematic.fromNbt(player.serverLevel().registryAccess(), nbt));
             }
         }
     }

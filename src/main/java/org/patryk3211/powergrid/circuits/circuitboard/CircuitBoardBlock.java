@@ -20,6 +20,8 @@ import dev.architectury.registry.menu.MenuRegistry;
 import net.createmod.catnip.math.VecHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.MethodsReturnNonnullByDefault;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -105,8 +107,8 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
     @Override
     public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack stack) {
         withBlockEntityDo(world, pos, be -> {
-            be.setSchematic(CircuitSchematic.fromStack(stack));
-            be.setAdditionalData(stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag());
+            be.setSchematic(CircuitSchematic.fromStack(world.registryAccess(), stack));
+            be.setAdditionalData(world.registryAccess(), stack.getOrDefault(DataComponents.CUSTOM_DATA, CustomData.EMPTY).copyTag());
         });
         super.setPlacedBy(world, pos, state, placer, stack);
     }
@@ -182,7 +184,7 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
         var stack = super.getCloneItemStack(level, pos, state);
         withBlockEntityDo(level, pos, be -> {
             var tag = new CompoundTag();
-            tag.put("Schematic", be.getSchematic().serializeNbt());
+            tag.put("Schematic", be.getSchematic().serializeNbt(level.registryAccess()));
             stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
         });
         return stack;
@@ -378,13 +380,16 @@ public class CircuitBoardBlock extends ElectricBlock implements IBE<CircuitBoard
 
     @Override
     public void appendHoverText(ItemStack stack, Item.TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        var schematic = CircuitSchematic.fromStack(stack);
-        if(schematic != null && schematic.getName() != null) {
-            tooltipComponents.add(Lang
-                    .translate("circuit_board.tooltip.schematic")
-                    .add(Component.literal(schematic.getName()))
-                    .style(ChatFormatting.GRAY)
-                    .component());
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level != null) {
+            var schematic = CircuitSchematic.fromStack(level.registryAccess(), stack);
+            if(schematic != null && schematic.getName() != null) {
+                tooltipComponents.add(Lang
+                        .translate("circuit_board.tooltip.schematic")
+                        .add(Component.literal(schematic.getName()))
+                        .style(ChatFormatting.GRAY)
+                        .component());
+            }
         }
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

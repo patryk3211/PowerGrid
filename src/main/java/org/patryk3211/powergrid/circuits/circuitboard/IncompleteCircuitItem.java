@@ -17,6 +17,9 @@ package org.patryk3211.powergrid.circuits.circuitboard;
 
 import net.createmod.catnip.theme.Color;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -42,8 +45,8 @@ public class IncompleteCircuitItem extends Item {
         super(settings.stacksTo(1));
     }
 
-    private static CompoundTag makeAssemblyTag(CompoundTag schematicTag) {
-        var schematic = CircuitSchematic.fromNbt(schematicTag);
+    private static CompoundTag makeAssemblyTag(HolderLookup.Provider registries, CompoundTag schematicTag) {
+        var schematic = CircuitSchematic.fromNbt(registries, schematicTag);
         var componentAmounts = new HashMap<org.patryk3211.powergrid.circuits.components.Component, Integer>();
         int componentCount = 0;
         for(var placed : schematic.components()) {
@@ -87,7 +90,7 @@ public class IncompleteCircuitItem extends Item {
             return null;
         var tag = circuit.get(DataComponents.CUSTOM_DATA).copyTag();
         if(!tag.contains("Assembly")) {
-            tag.put("Assembly", makeAssemblyTag(tag.getCompound("Schematic")));
+            tag.put("Assembly", makeAssemblyTag(level.registryAccess(), tag.getCompound("Schematic")));
         }
         if(!insertComponent(level, tag.getCompound("Assembly"), component))
             return null;
@@ -133,7 +136,9 @@ public class IncompleteCircuitItem extends Item {
         if(!stack.get(DataComponents.CUSTOM_DATA).contains("Assembly")) {
             if(!stack.get(DataComponents.CUSTOM_DATA).contains("Schematic"))
                 return;
-            assemblyTag = makeAssemblyTag(stack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Schematic"));
+            ClientLevel level = Minecraft.getInstance().level;
+            if (level == null) return;
+            assemblyTag = makeAssemblyTag(level.registryAccess(), stack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Schematic"));
         } else {
             assemblyTag = stack.get(DataComponents.CUSTOM_DATA).copyTag().getCompound("Assembly");
         }
