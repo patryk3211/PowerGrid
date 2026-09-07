@@ -24,9 +24,9 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.advancements.PGAdvancementBehaviour;
 import org.patryk3211.powergrid.advancements.PowerGridAdvancement;
 import org.patryk3211.powergrid.collections.ModdedAdvancements;
+import org.patryk3211.powergrid.electricity.base.AThermalBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.IElectricEntity;
-import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.AbstractElectricWire;
 
 import java.util.List;
@@ -34,7 +34,7 @@ import java.util.List;
 public abstract class ElectricKineticBlockEntity extends KineticBlockEntity implements IElectricEntity {
     protected ElectricBehaviour electricBehaviour;
     @Nullable
-    protected ThermalBehaviour thermalBehaviour;
+    protected AThermalBehaviour thermalBehaviour;
 
     public ElectricKineticBlockEntity(BlockEntityType<?> typeIn, BlockPos pos, BlockState state) {
         super(typeIn, pos, state);
@@ -71,7 +71,7 @@ public abstract class ElectricKineticBlockEntity extends KineticBlockEntity impl
     }
 
     @Nullable
-    public ThermalBehaviour specifyThermalBehaviour() {
+    public AThermalBehaviour specifyThermalBehaviour() {
         return null;
     }
 

@@ -21,7 +21,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import net.minecraft.core.Direction;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
-import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.base.AThermalBehaviour;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -40,7 +40,7 @@ public abstract class AirCurrentMixin {
     @Shadow public Direction direction;
 
     @Unique
-    private final List<ThermalBehaviour> powerGrid$affectedThermals = new ArrayList<>();
+    private final List<AThermalBehaviour> powerGrid$affectedThermals = new ArrayList<>();
     @Unique
     private final List<CircuitBoardBlockEntity> powerGrid$affectedCircuits = new ArrayList<>();
 
@@ -63,7 +63,7 @@ public abstract class AirCurrentMixin {
             return;
         for(int i = 1; i <= limit; ++i) {
             var pos = start.relative(direction, i);
-            var thermal = BlockEntityBehaviour.get(world, pos, ThermalBehaviour.TYPE);
+            var thermal = BlockEntityBehaviour.get(world, pos, AThermalBehaviour.TYPE);
             float factor = 1.0f - (float) (i - 1) / limit;
             if(thermal != null) {
                 thermal.addCoolingMultiplier((AirCurrent) (Object) this, factor * initialStrength);

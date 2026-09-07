@@ -30,8 +30,10 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -45,12 +47,12 @@ import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLine;
 import org.patryk3211.powergrid.network.packets.StateS2CPacket;
 
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchronizedElement {
-    public static final BehaviourType<ThermalBehaviour> TYPE = new BehaviourType<>("thermal");
+public class ThermalBehaviour extends AThermalBehaviour implements ISynchronizedElement {
     public static final float STANDARD_TEMPERATURE = 22.0f;
     public static final float ABSOLUTE_ZERO = -273.15f;
     public static final int OVERHEAT_TICKS = 2;
@@ -210,7 +212,7 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
     public void addCoolingMultiplier(AirCurrent current, float value) {
         if((behaviourFlags & IGNORE_EXTRA_COOLING) != 0)
             return;
-        var tracked = trackedBehaviour != null ? get(getWorld(), trackedBehaviour, TYPE) : null;
+        var tracked = trackedBehaviour != null ? getThermal(getWorld(), trackedBehaviour) : null;
         if(tracked != null) {
             tracked.addCoolingMultiplier(current, value);
         } else {
@@ -228,7 +230,7 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
     public void removeCoolingMultiplier(AirCurrent current) {
         if((behaviourFlags & IGNORE_EXTRA_COOLING) != 0)
             return;
-        var tracked = trackedBehaviour != null ? get(getWorld(), trackedBehaviour, TYPE) : null;
+        var tracked = trackedBehaviour != null ? getThermal(getWorld(), trackedBehaviour) : null;
         if(tracked != null) {
             tracked.removeCoolingMultiplier(current);
         } else {
@@ -254,7 +256,7 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
         var world = getWorld();
         var pos = getPos();
         if(!world.isClientSide || blockEntity.isVirtual()) {
-            var tracked = trackedBehaviour != null ? get(world, trackedBehaviour, TYPE) : null;
+            var tracked = trackedBehaviour != null ? getThermal(world, trackedBehaviour) : null;
             if (tracked != null) {
                 this.temperature = tracked.temperature;
             }
@@ -307,7 +309,7 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
                 }
             }
         } else {
-            var tracked = trackedBehaviour != null ? get(world, trackedBehaviour, TYPE) : null;
+            var tracked = trackedBehaviour != null ? getThermal(world, trackedBehaviour) : null;
             if (tracked != null) {
                 this.temperature = tracked.temperature;
             }
@@ -439,4 +441,19 @@ public class ThermalBehaviour extends BlockEntityBehaviour implements ISynchroni
     public interface IParticleConsumer {
         void accept(double x, double y, double z);
     }
+    
+	public static ThermalBehaviour getThermal(BlockGetter reader, BlockPos pos) {
+		BlockEntity be;
+		try {
+			be = reader.getBlockEntity(pos);
+		} catch (ConcurrentModificationException e) {
+			be = null;
+		}
+		if (be == null)
+			return null;
+		if (!(be instanceof SmartBlockEntity ste))
+			return null;
+        BlockEntityBehaviour behaviour = ste.getBehaviour(TYPE);
+		return behaviour != null && behaviour instanceof ThermalBehaviour therm ? therm : null;
+	}
 }

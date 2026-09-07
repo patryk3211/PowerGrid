@@ -15,7 +15,6 @@ import net.createmod.catnip.math.BlockFace;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.BlockAndTintGetter;
 import net.minecraft.world.level.LevelAccessor;
@@ -24,6 +23,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
+import org.patryk3211.powergrid.electricity.base.AThermalBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
@@ -56,7 +56,7 @@ public class ElectricPumpBlockEntity extends ElectricBlockEntity implements IHav
     }
 
     @Override
-    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+    public @Nullable AThermalBehaviour specifyThermalBehaviour() {
         float power = 256 / ModdedConfigs.server().electricity.electricPumpPower.getF();
         return ThermalBehaviour.forMaxPower(this, 1.0f, power * 1.2f);
     }

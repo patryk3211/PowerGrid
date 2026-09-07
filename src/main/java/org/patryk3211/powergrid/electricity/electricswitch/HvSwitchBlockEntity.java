@@ -34,6 +34,7 @@ import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedConfigs;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
+import org.patryk3211.powergrid.electricity.base.AThermalBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.particles.HvSparkSoundInstance;
 import org.patryk3211.powergrid.electricity.particles.SparkSoundOwner;
@@ -61,7 +62,7 @@ public class HvSwitchBlockEntity extends ElectricKineticBlockEntity implements S
     }
 
     @Override
-    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+    public @Nullable AThermalBehaviour specifyThermalBehaviour() {
         return ThermalBehaviour.fromConfig(this);
     }
 

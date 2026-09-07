@@ -91,8 +91,8 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
         behaviours.add(electricBehaviour);
 
         thermalBehaviour = specifyThermalBehaviour();
-        if(thermalBehaviour != null) {
-            thermalBehaviour.behaviourFlags(ThermalBehaviour.OVERHEAT_PARTICLES)
+        if(thermalBehaviour != null && thermalBehaviour instanceof ThermalBehaviour thermal) {
+            thermal.behaviourFlags(ThermalBehaviour.OVERHEAT_PARTICLES)
                     .overheatCallback(this::overheated);
             behaviours.add(thermalBehaviour);
         }
@@ -121,8 +121,8 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
                 attachBehaviourLate(electricBehaviour);
             }
             updateThermals();
-            if(thermalBehaviour != null)
-                thermalBehaviour.track(null);
+            if(thermalBehaviour != null && thermalBehaviour instanceof ThermalBehaviour thermal)
+                thermal.track(null);
         } else {
             if(!(electricBehaviour instanceof ProxyElectricBehaviour)) {
                 var old = electricBehaviour;
@@ -133,8 +133,8 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
                 sourceCoupling = null;
             }
             var controller = getControllerBE();
-            if(controller != null && thermalBehaviour != null)
-                thermalBehaviour.track(controller.thermalBehaviour);
+            if(controller != null && thermalBehaviour != null && thermalBehaviour instanceof ThermalBehaviour thermal)
+                thermal.track((ThermalBehaviour)controller.thermalBehaviour);
         }
         if(wires != null) {
             // Rewire connected wires.
@@ -161,8 +161,8 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
 
         if(!isController()) {
             var controller = getControllerBE();
-            if (controller != null && thermalBehaviour != null)
-                thermalBehaviour.track(getControllerBE().thermalBehaviour);
+            if (controller != null && thermalBehaviour != null && thermalBehaviour instanceof ThermalBehaviour thermal)
+                thermal.track((ThermalBehaviour)getControllerBE().thermalBehaviour);
         }
 
         if (updateConnectivity)
@@ -328,11 +328,11 @@ public class MultiBlockBatteryEntity extends BatteryBlockEntity implements IMult
     }
 
     private void updateThermals() {
-        if(thermalBehaviour != null) {
+        if(thermalBehaviour != null && thermalBehaviour instanceof ThermalBehaviour thermal) {
             var block = getBlockState().getBlock();
             var factor = ThermalBehaviour.dissipationFactor(ThermalValues.getPower(block), 175f);
-            thermalBehaviour.setDissipationFactor(factor * getSize());
-            thermalBehaviour.setThermalMass(ThermalValues.getMass(block) * getSize());
+            thermal.setDissipationFactor(factor * getSize());
+            thermal.setThermalMass(ThermalValues.getMass(block) * getSize());
         }
     }
 

@@ -21,6 +21,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import org.patryk3211.powergrid.collections.ModdedAdvancements;
+import org.patryk3211.powergrid.electricity.base.AThermalBehaviour;
 import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 
 import java.util.List;
@@ -37,7 +38,7 @@ public class PotatoBatteryBlockEntity extends BatteryBlockEntity {
     }
 
     @Override
-    public @Nullable ThermalBehaviour specifyThermalBehaviour() {
+    public @Nullable AThermalBehaviour specifyThermalBehaviour() {
         var b = ThermalBehaviour.simple(this, 0.2f, 0.01f, 100f);
         if(b != null)
             b.behaviourFlags(ThermalBehaviour.OVERHEAT_PARTICLES);

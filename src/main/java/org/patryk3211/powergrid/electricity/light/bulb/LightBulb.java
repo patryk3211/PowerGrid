@@ -30,7 +30,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.base.AThermalBehaviour;
 import org.patryk3211.powergrid.electricity.info.IHaveElectricProperties;
 import org.patryk3211.powergrid.electricity.info.Power;
 import org.patryk3211.powergrid.electricity.info.Resistance;
@@ -119,7 +119,7 @@ public class LightBulb extends Item implements ILightBulb, IHaveElectricProperti
     public static <I extends LightBulb, P> NonNullUnaryOperator<ItemBuilder<I, P>> setProperties(float ratedPower, float ratedVoltage, float minResistance, float thermalMass) {
         float R_max = ratedVoltage * ratedVoltage / ratedPower;
         final float operatingTemperature = 1450f;
-        final float dissipationFactor = ratedPower / (operatingTemperature - ThermalBehaviour.STANDARD_TEMPERATURE);
+        final float dissipationFactor = ratedPower / (operatingTemperature - AThermalBehaviour.STANDARD_TEMPERATURE);
         NonNullUnaryOperator<ItemBuilder<I, P>> result = setProperties(minResistance, R_max, operatingTemperature, dissipationFactor, operatingTemperature + 400f, thermalMass);
         return result.andThen(b -> {
             b.onRegister(item -> {
