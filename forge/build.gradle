@@ -38,7 +38,7 @@ dependencies {
 //    modCompileOnly "me.shedaniel:RoughlyEnoughItems-api-forge:$rei_version"
 
     // Create: The Factory Must Grow
-    modCompileOnly "curse.maven:tfmg-community-edition-1653026:8665896"
+    modCompileOnly "curse.maven:tfmg-community-edition-1653026:8723583"
 
     // TIS-3D
     modCompileOnly("maven.modrinth:tis3d-renewed:${tis3d_version}")
