@@ -15,19 +15,34 @@
  */
 package org.patryk3211.powergrid.electricity.electricswitch;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.patryk3211.powergrid.collections.ModdedSoundEvents;
 import org.patryk3211.powergrid.electricity.base.IDecoratedTerminal;
 import org.patryk3211.powergrid.electricity.base.TerminalBoundingBox;
+import org.patryk3211.powergrid.utility.Lang;
 
 public class LvSwitchBlock extends SurfaceSwitchBlock {
+
+    //new TerminalBoundingBox(IDecoratedTerminal.POSITIVE, 9.5, 14, 6.5, 12.5, 16, 9.5)
+    //                    .withColor(IDecoratedTerminal.RED),
     private static final TerminalBoundingBox[] DOWN_TERMINALS = new TerminalBoundingBox[] {
-            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6.5, 0, 2.5, 9.5, 2, 4.5),
-            new TerminalBoundingBox(IDecoratedTerminal.CONNECTOR, 6.5, 0, 11.5, 9.5, 2, 13.5)
+            // (Common / Input)
+            new TerminalBoundingBox(IDecoratedTerminal.COMMON, 6.5, 0, 2.5, 9.5, 2, 4.5),
+
+            // (Output A)
+            new TerminalBoundingBox(IDecoratedTerminal.NORMALLY_CLOSED, 5.5, 0, 11.5, 7.5, 2, 13.5),
+
+            // (Output B)
+            new TerminalBoundingBox(IDecoratedTerminal.NORMALLY_OPEN, 8.5, 0, 11.5, 10.5, 2, 13.5)
     };
 
     private static final VoxelShape SHAPE_DOWN = Shapes.or(
@@ -38,6 +53,7 @@ public class LvSwitchBlock extends SurfaceSwitchBlock {
     public LvSwitchBlock(Properties settings) {
         super(settings);
         this.maxVoltage = 320;
+        this.isSPDT = true;
         setTerminalCollection(switchDownTerminals(this, DOWN_TERMINALS, SHAPE_DOWN));
     }
 

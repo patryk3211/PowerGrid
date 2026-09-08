@@ -394,6 +394,8 @@
   "powergrid.component.property.voltage_gauge_max": "Max Voltage",
   "powergrid.contactor.switch1": "Switch 1",
   "powergrid.contactor.switch2": "Switch 2",
+  "powergrid.generic.nc": "Normally closed",
+  "powergrid.generic.no": "Normally open",
   "powergrid.contraption.assembly.invalid_panel_amount": "Sum of Solar Panels is not divisible by 1-9 with less than 26 quotient, add or remove Solar Panels",
   "powergrid.contraption.assembly.mismatched_panel_facing": "All Solar Panels need to be facing the same direction",
   "powergrid.contraption.assembly.not_enough_panels": "Attached structure does not include enough Solar Panels, a minimum of 1 is required",

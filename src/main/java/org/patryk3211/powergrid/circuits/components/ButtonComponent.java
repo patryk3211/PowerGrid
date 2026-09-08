@@ -52,18 +52,23 @@ public class ButtonComponent extends OrientableComponent implements IInteractabl
 
     @Override
     public void bake(@NotNull PlacedComponent placed, @NotNull ComponentCircuitBuilder builder, ThermalBuilder.@NotNull IEmitter thermals) {
-        var wire = builder.connectSwitch(0.1f, builder.terminalNode(0), builder.terminalNode(1), false);
-        placed.add(wire);
+        var noWire = builder.connectSwitch(0.1f, builder.terminalNode(0), builder.terminalNode(2), false);
+        var ncWire = builder.connectSwitch(0.1f, builder.terminalNode(0), builder.terminalNode(1), true);
+        placed.add(noWire);
+        placed.add(ncWire);
         thermals.builder()
                 .setMaxCurrent(16, 0.1f, 150)
                 .setThermalMass(0.01f)
-                .addHeatSource(wire);
+                .addHeatSource(noWire)
+                .addHeatSource(ncWire);
     }
 
     @Override
     public boolean tick(@NotNull PlacedComponent placed) {
         var state = placed.get(STATE);
-        if(state > 0) {
+        boolean isPressed = state > 0;
+
+        if(isPressed) {
             --state;
             placed.set(STATE, state);
             if(state == 0) {
@@ -71,9 +76,15 @@ public class ButtonComponent extends OrientableComponent implements IInteractabl
                 placed.onClientWorld(() -> world -> modelChanged(placed.getPos()));
             }
         }
+
         if(!placed.wires.isEmpty()) {
-            var wire = (SwitchedWire) placed.wires.get(0);
-            wire.setState((state == 0) == placed.get(NC));
+            boolean wire1Active = isPressed ^ placed.get(NC);
+
+            var noWire = (SwitchedWire) placed.wires.get(0);
+            noWire.setState(wire1Active);
+
+            var ncWire = (SwitchedWire) placed.wires.get(1);
+            ncWire.setState(!wire1Active);
         }
         return true;
     }
