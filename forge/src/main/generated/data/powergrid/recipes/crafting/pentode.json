@@ -2,23 +2,23 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "E": {
-      "item": "minecraft:ender_pearl"
-    },
-    "H": {
-      "item": "powergrid:heavy_wire_connector"
+    "A": {
+      "item": "minecraft:amethyst_shard"
     },
     "I": {
       "tag": "forge:plates/iron"
+    },
+    "T": {
+      "item": "powergrid:triode"
     }
   },
   "pattern": [
-    "H",
-    "E",
+    "A",
+    "T",
     "I"
   ],
   "result": {
-    "item": "powergrid:thyratron"
+    "item": "powergrid:pentode"
   },
   "show_notification": true
 }

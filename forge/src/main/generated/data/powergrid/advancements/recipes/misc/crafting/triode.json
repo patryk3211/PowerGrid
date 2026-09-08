@@ -6,7 +6,7 @@
         "items": [
           {
             "items": [
-              "powergrid:heavy_wire_connector"
+              "create:iron_sheet"
             ]
           }
         ]
@@ -15,7 +15,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "powergrid:crafting//thyratron"
+        "recipe": "powergrid:crafting//triode"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -28,7 +28,7 @@
   ],
   "rewards": {
     "recipes": [
-      "powergrid:crafting//thyratron"
+      "powergrid:crafting//triode"
     ]
   },
   "sends_telemetry_event": false

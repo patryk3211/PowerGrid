@@ -326,6 +326,10 @@ public class ComponentFootprint {
                     keyShort == null ? null : Component.translatable(sharedKeyBase + "." + keyShort));
         }
 
+        public Builder addPadSharedText(int x, int y, int nodeIndex, @NotNull String key) {
+            return addPadSharedText(x, y, nodeIndex, key, key + ".short");
+        }
+
         public Builder withOutline() {
             outline = true;
             return this;

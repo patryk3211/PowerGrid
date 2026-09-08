@@ -18,7 +18,6 @@ package org.patryk3211.powergrid.circuits.components;
 import com.simibubi.create.AllItems;
 import com.tterrag.registrate.util.entry.RegistryEntry;
 import net.minecraft.world.item.Items;
-import org.patryk3211.powergrid.circuits.schematic.ComponentFootprint;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedItems;
 import org.patryk3211.powergrid.collections.ModdedTags;
@@ -39,33 +38,33 @@ public class Components {
 
     public static final RegistryEntry<ElectronTubeComponent> TRIODE = REGISTRATE.component("triode", ElectronTubeComponent::new)
             .footprint(3, 3, b -> b
-                    .addPad(0, 0, 2, "Anode", "A")
-                    .addPad(1, 1, 0, "Cathode", "C")
-                    .addPad(2, 0, 1, "Grid", "G")
-                    .addPad(0, 2, 3, "Heater", "H")
-                    .addPadSharedText(2, 2, 4, "triode.3", "triode.3.short")
+                    .addPadSharedText(0, 0, 2, "tube.anode")
+                    .addPadSharedText(1, 1, 0, "tube.cathode")
+                    .addPadSharedText(2, 0, 1, "tube.grid")
+                    .addPadSharedText(0, 2, 3, "tube.heater")
+                    .addPadSharedText(2, 2, 4, "tube.heater")
                     .withItem().withOutline())
             .item(ModdedItems.TRIODE)
             .register();
 
     public static final RegistryEntry<PentodeComponent> PENTODE = REGISTRATE.component("pentode", PentodeComponent::new)
             .footprint(3, 3, b -> b
-                    .addPad(0, 0, 2, "Anode", "A")
+                    .addPadSharedText(0, 0, 2, "tube.anode")
                     .addPad(1, 0, 5, "Screen", "G2")
-                    .addPad(2, 0, 1, "Grid", "G")
-                    .addPad(1, 1, 0, "Cathode", "C")
-                    .addPad(0, 2, 3, "Heater", "H")
-                    .addPadSharedText(2, 2, 4, "pentode.3", "pentode.3.short")
+                    .addPadSharedText(2, 0, 1, "tube.grid")
+                    .addPadSharedText(1, 1, 0, "tube.cathode")
+                    .addPadSharedText(0, 2, 3, "tube.heater")
+                    .addPadSharedText(2, 2, 4, "tube.heater")
                     .withItem().withOutline())
             .item(ModdedItems.PENTODE)
             .register();
 
     public static final RegistryEntry<ThyratronComponent> THYRATRON = REGISTRATE.component("thyratron", ThyratronComponent::new)
             .footprint(3, 3, b -> b
-                    .addPad(1, 1, 0, "Cathode", "C")
-                    .addPad(1, 0, 1, "Grid", "G")
-                    .addPad(0, 2, 3, "Heater", "H")
-                    .addPadSharedText(2, 2, 4, "thyratron.3", "thyratron.3.short")
+                    .addPadSharedText(1, 1, 0, "tube.cathode")
+                    .addPadSharedText(1, 0, 1, "tube.grid")
+                    .addPadSharedText(0, 2, 3, "tube.heater")
+                    .addPadSharedText(2, 2, 4, "tube.heater")
                     .withItem().withOutline())
             .item(ModdedItems.THYRATRON)
             .register();

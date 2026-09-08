@@ -25,8 +25,8 @@
     "powergrid:fuse_holder",
     "powergrid:wire_connector",
     "powergrid:redstone_relay",
-    "powergrid:regulator_tube",
     "powergrid:thyratron",
+    "powergrid:regulator_tube",
     "powergrid:diode"
   ]
 }

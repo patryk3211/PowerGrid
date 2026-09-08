@@ -18,12 +18,12 @@
   "component.powergrid.display_module.reset": "Reset",
   "component.powergrid.display_module.reset.short": "R",
 
-  "component.powergrid.thyratron.0": "Cathode",
-  "component.powergrid.thyratron.0.short": "C",
-  "component.powergrid.thyratron.1": "Grid",
-  "component.powergrid.thyratron.1.short": "G",
-  "component.powergrid.thyratron.2": "Anode",
-  "component.powergrid.thyratron.2.short": "A",
-  "component.powergrid.thyratron.3": "Heater",
-  "component.powergrid.thyratron.3.short": "H"
+  "component.powergrid.tube.cathode": "Cathode",
+  "component.powergrid.tube.cathode.short": "C",
+  "component.powergrid.tube.anode": "Anode",
+  "component.powergrid.tube.anode.short": "A",
+  "component.powergrid.tube.grid": "Grid",
+  "component.powergrid.tube.grid.short": "G",
+  "component.powergrid.tube.heater": "Heater",
+  "component.powergrid.tube.heater.short": "H"
 }

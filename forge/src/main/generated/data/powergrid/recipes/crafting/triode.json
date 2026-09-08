@@ -2,23 +2,23 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "E": {
-      "item": "minecraft:ender_pearl"
-    },
-    "H": {
-      "item": "powergrid:heavy_wire_connector"
+    "G": {
+      "item": "minecraft:glowstone_dust"
     },
     "I": {
       "tag": "forge:plates/iron"
+    },
+    "Q": {
+      "item": "create:polished_rose_quartz"
     }
   },
   "pattern": [
-    "H",
-    "E",
+    "Q",
+    "G",
     "I"
   ],
   "result": {
-    "item": "powergrid:thyratron"
+    "item": "powergrid:triode"
   },
   "show_notification": true
 }
