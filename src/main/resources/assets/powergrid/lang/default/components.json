@@ -39,6 +39,11 @@
   "powergrid.component.property.switch_state": "State",
   "powergrid.component.property.button_nc": "Normally Closed",
 
+  "powergrid.component.property.edge_connections": "Enable Edge Connections",
+  "powergrid.component.property.edge_connections.summary": "Enable connecting circuit boards together at their edges",
+  "powergrid.component.property.vertical_passthrough": "Enable Vertical Connections",
+  "powergrid.component.property.vertical_passthrough.summary": "Enable connecting back to back circuit boards together",
+
   "powergrid.component.property.relay_threshold": "Threshold Voltage",
   "powergrid.component.property.relay_threshold.summary": "Voltage above which the relay triggers",
   "powergrid.component.property.relay_current": "Threshold Current",

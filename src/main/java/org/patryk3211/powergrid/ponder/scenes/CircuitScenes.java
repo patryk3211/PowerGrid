@@ -15,14 +15,14 @@
  */
 package org.patryk3211.powergrid.ponder.scenes;
 
+import com.simibubi.create.content.schematics.requirement.ItemRequirement;
 import net.createmod.ponder.api.scene.SceneBuilder;
 import net.createmod.ponder.api.scene.SceneBuildingUtil;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.DyeColor;
 import org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlockEntity;
-import org.patryk3211.powergrid.circuits.components.IRedstoneComponent;
-import org.patryk3211.powergrid.circuits.components.ModularDisplayComponent;
-import org.patryk3211.powergrid.circuits.components.PotentiometerComponent;
+import org.patryk3211.powergrid.circuits.components.*;
+import org.patryk3211.powergrid.electricity.creative.CreativeSourceBlockEntity;
 import org.patryk3211.powergrid.electricity.light.fixture.LightFixtureBlock;
 import org.patryk3211.powergrid.electricity.modulardisplay.DisplayModuleType;
 import org.patryk3211.powergrid.ponder.base.PowerGridSceneBuilder;
@@ -461,6 +461,46 @@ public class CircuitScenes {
                 .attachKeyFrame();
         scene.idle(90);
 
+        scene.world().hideIndependentSection(middle, Direction.UP);
+        scene.world().hideIndependentSection(left, Direction.UP);
+        scene.world().hideIndependentSection(right, Direction.UP);
+        scene.idle(15);
+
+        var cb = util.grid().at(2, 2, 1);
+        var wc1 = util.grid().at(1, 1, 0);
+        var wc2 = util.grid().at(3, 1, 0);
+        var cvs = util.grid().at(2, 1, 0);
+
+
+        scene.world().showSection(util.select().position(cb), Direction.DOWN);
+        scene.world().showSection(util.select().position(2, 2, 2), Direction.DOWN);
+        scene.idle(15);
+
+        scene.world().showSection(util.select().position(wc1), Direction.DOWN);
+        scene.world().showSection(util.select().position(wc2), Direction.DOWN);
+        scene.idle(15);
+
+        scene.electric().connect(wc1, 0, cb, 0);
+        scene.electric().connectInvisible(cvs, 0, wc1, 0);
+        scene.electric().connect(wc2, 0, cb, 1);
+        scene.electric().connectInvisible(cvs, 1, wc2, 0);
+
+        scene.world().modifyBlockEntity(cvs, CreativeSourceBlockEntity.class, be -> {
+            be.setValue(12);
+        });
+
+        scene.electric().tickFor(20);
+        scene.idle(15);
+
+        scene.overlay().showText(100)
+                .text("Vias can also be used to connect back to back circuit boards")
+                .pointAt(util.vector().of(2.5, 2.9, 2))
+                .placeNearTarget()
+                .attachKeyFrame();
+
+        scene.idle(60);
+        scene.rotateCameraY(-90);
+        scene.idle(30);
         scene.markAsFinished();
     }
 
