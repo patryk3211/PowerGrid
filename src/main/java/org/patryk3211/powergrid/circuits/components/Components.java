@@ -47,7 +47,7 @@ public class Components {
             .item(ModdedItems.TRIODE)
             .register();
 
-    public static final RegistryEntry<PentodeComponent> PENTODE = REGISTRATE.component("pentode", PentodeComponent::new)
+    public static final RegistryEntry<Component, PentodeComponent> PENTODE = REGISTRATE.component("pentode", PentodeComponent::new)
             .footprint(3, 3, b -> b
                     .addPadSharedText(0, 0, 2, "tube.anode")
                     .addPad(1, 0, 5, "Screen", "G2")
@@ -59,7 +59,7 @@ public class Components {
             .item(ModdedItems.PENTODE)
             .register();
 
-    public static final RegistryEntry<ThyratronComponent> THYRATRON = REGISTRATE.component("thyratron", ThyratronComponent::new)
+    public static final RegistryEntry<Component, ThyratronComponent> THYRATRON = REGISTRATE.component("thyratron", ThyratronComponent::new)
             .footprint(3, 3, b -> b
                     .addPadSharedText(1, 1, 0, "tube.cathode")
                     .addPadSharedText(1, 0, 1, "tube.grid")
