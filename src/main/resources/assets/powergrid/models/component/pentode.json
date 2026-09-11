@@ -1,0 +1,57 @@
+{
+	"format_version": "1.21.6",
+	"credit": "Made with Blockbench",
+	"textures": {
+		"0": "powergrid:block/component/pentode",
+		"particle": "powergrid:block/component/pentode"
+	},
+	"elements": [
+		{
+			"name": "head",
+			"from": [0, 2.5, 0],
+			"to": [3, 7.5, 3],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, 2.5, 0]},
+			"faces": {
+				"north": {"uv": [3, 11, 6, 16], "texture": "#0"},
+				"east": {"uv": [0, 11, 3, 16], "texture": "#0"},
+				"south": {"uv": [9, 11, 12, 16], "texture": "#0"},
+				"west": {"uv": [6, 11, 9, 16], "texture": "#0"},
+				"up": {"uv": [6, 11, 3, 8], "texture": "#0"},
+				"down": {"uv": [9, 8, 6, 11], "texture": "#0"}
+			}
+		},
+		{
+			"name": "middle",
+			"from": [0.5, 2, 0.5],
+			"to": [2.5, 3, 2.5],
+			"rotation": {"angle": 0, "axis": "y", "origin": [-0.5, 2, -0.5]},
+			"faces": {
+				"north": {"uv": [10, 7, 12, 8], "texture": "#0"},
+				"east": {"uv": [8, 7, 10, 8], "texture": "#0"},
+				"south": {"uv": [14, 7, 16, 8], "texture": "#0"},
+				"west": {"uv": [12, 7, 14, 8], "texture": "#0"}
+			}
+		},
+		{
+			"from": [0, 0, 0],
+			"to": [3, 2, 3],
+			"rotation": {"angle": 0, "axis": "y", "origin": [0, -7, 0]},
+			"faces": {
+				"north": {"uv": [6, 0, 9, 2], "texture": "#0"},
+				"east": {"uv": [6, 0, 9, 2], "texture": "#0"},
+				"south": {"uv": [6, 0, 9, 2], "texture": "#0"},
+				"west": {"uv": [6, 0, 9, 2], "texture": "#0"},
+				"up": {"uv": [9, 0, 12, 3], "texture": "#0"}
+			}
+		}
+	],
+	"groups": [
+		{
+			"name": "electronTube",
+			"origin": [8, 8, 8],
+			"scope": 0,
+			"color": 0,
+			"children": [0, 1, 2]
+		}
+	]
+}

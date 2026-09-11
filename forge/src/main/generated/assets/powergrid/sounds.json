@@ -177,6 +177,24 @@
     ],
     "subtitle": "powergrid.subtitle.spark"
   },
+  "thyratron_fire": {
+    "sounds": [
+      {
+        "type": "event",
+        "name": "minecraft:entity.firework_rocket.blast"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.thyratron_fire"
+  },
+  "thyratron_hum": {
+    "sounds": [
+      {
+        "type": "file",
+        "name": "powergrid:thyratron_hum"
+      }
+    ],
+    "subtitle": "powergrid.subtitle.thyratron_hum"
+  },
   "transformer": {
     "sounds": [
       {

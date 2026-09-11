@@ -21,6 +21,7 @@ import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.Mth;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -71,10 +72,11 @@ public class ElectricMotorBlockEntity extends GeneratingKineticBlockEntity imple
     public void updateFromNetwork(float maxStress, float currentStress, int networkSize) {
         super.updateFromNetwork(maxStress, currentStress, networkSize);
         if(ModdedConfigs.server().electricity.motorDynamicResistance.get()) {
+            final float minLoad = ModdedConfigs.server().electricity.motorMinimumLoad.getF();
             if (maxStress != 0) {
-                load = Math.max(currentStress / maxStress, 0.05f);
+                load = Mth.clamp(currentStress / maxStress, minLoad, 1.0f);
             } else {
-                load = 0.05f;
+                load = minLoad;
             }
             coil.setResistance(resistance() / load);
         }

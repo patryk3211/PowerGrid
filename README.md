@@ -20,6 +20,7 @@ You can join the <a href="https://discord.gg/QQqqEnJqGz">Community Discord Serve
 
 ## Contributing
 Reporting a bug? Make sure to test it with the latest version available. Describe the steps it takes to reproduce it and include anything that can help with resolving it (screenshots, videos, logs)
+Wanting to translate the mod? Theres a guide for that! See the [TRANSLATING.md](./TRANSLATING.md) file.
 
 ## Building
 To build the mod from source you need to run either `:forge:build` or `fabric:build` gradle task, your mod jar will be located in `forge/build/libs` or `fabric/build/libs`.

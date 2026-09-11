@@ -92,6 +92,8 @@ public class PlacedComponent {
     }
 
     private static Component get(String id) {
+        if ("powergrid:electron_tube".equals(id))
+            id = "powergrid:triode";
         return ComponentRegistry.get(ResourceLocation.parse(id));
     }
 

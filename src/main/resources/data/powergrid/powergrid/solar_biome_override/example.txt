@@ -1,0 +1,2 @@
+Refer to /src/main/java/org/patryk3211/powergrid/electricity/solarpanel/registry/SolarBiomeEntry
+for the layout of the data pack and explanations of all parameters
