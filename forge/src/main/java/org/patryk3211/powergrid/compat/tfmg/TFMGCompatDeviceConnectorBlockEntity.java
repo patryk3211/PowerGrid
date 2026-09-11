@@ -30,7 +30,7 @@ import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlock
 import org.patryk3211.powergrid.electricity.deviceconnector.DeviceConnectorBlockEntity;
 
 public class TFMGCompatDeviceConnectorBlockEntity extends DeviceConnectorBlockEntity implements IElectric {
-    public ElectricBlockValues data = new ElectricBlockValues(getPos());
+    public ElectricBlockValues data = new ElectricBlockValues(getBlockPos());
     private int voltage;
     private boolean powerRefresh = false;
     private boolean firstUpdate = false;
@@ -82,8 +82,8 @@ public class TFMGCompatDeviceConnectorBlockEntity extends DeviceConnectorBlockEn
     }
 
     @Override
-    public BlockPos getPos() {
-        return getBlockPos();
+    public long getPos() {
+        return getBlockPos().asLong();
     }
 
     @Override
