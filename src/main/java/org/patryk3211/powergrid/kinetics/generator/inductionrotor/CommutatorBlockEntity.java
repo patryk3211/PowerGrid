@@ -39,7 +39,7 @@ import java.util.List;
 
 public class CommutatorBlockEntity extends RotorBlockEntity implements IElectricEntity, IElectric {
     protected ElectricBehaviour electricBehaviour;
-    protected ThermalBehaviour thermalBehaviour;
+    protected AThermalBehaviour thermalBehaviour;
     protected GeneratorCoupling source;
     private GeneratorCoupling oldSource;
     private float resistance;

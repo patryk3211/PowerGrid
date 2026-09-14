@@ -15,14 +15,15 @@ import org.joml.Vector3d;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedTags;
 import org.patryk3211.powergrid.electricity.GlobalElectricNetworks;
+import org.patryk3211.powergrid.electricity.base.AThermalBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBehaviour;
 import org.patryk3211.powergrid.electricity.base.ElectricBlockEntity;
 import org.patryk3211.powergrid.electricity.base.ProxyElectricBehaviour;
-import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
 import org.patryk3211.powergrid.electricity.sim.ElectricWire;
 import org.patryk3211.powergrid.electricity.sim.node.CurrentSourceWire;
 import org.patryk3211.powergrid.electricity.sim.special.TransmissionLinePart;
 import org.patryk3211.powergrid.electricity.solarpanel.SolarHelper;
+import org.patryk3211.powergrid.electricity.solarpanel.SolarHelper.DDAHit;
 import org.patryk3211.powergrid.electricity.solarpanel.registry.SolarBiomeEntry;
 import org.patryk3211.powergrid.electricity.solarpanel.registry.SolarBiomeRegistry;
 
@@ -117,9 +118,9 @@ public class CeilingTileSolarBlockEntity extends ElectricBlockEntity {
             if (solarBiomeEntry != null && solarBiomeEntry.overrideTemp()){
                 ambientTemp = solarBiomeEntry.biomeTemp();
             } else {
-                ambientTemp = ThermalBehaviour.getAmbientTemperature(world, blockPos);
+                ambientTemp = AThermalBehaviour.getAmbientTemperature(world, blockPos);
             }
-            if (ambientTemp <= ThermalBehaviour.ABSOLUTE_ZERO)
+            if (ambientTemp <= AThermalBehaviour.ABSOLUTE_ZERO)
                 ambientTemp = 22f;
             firstTick = false;
             getPlacedBlockRotation();

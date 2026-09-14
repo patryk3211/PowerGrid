@@ -37,7 +37,7 @@ import org.jetbrains.annotations.Nullable;
 import org.joml.Quaternionf;
 import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
-import org.patryk3211.powergrid.electricity.base.ThermalBehaviour;
+import org.patryk3211.powergrid.electricity.base.AThermalBehaviour;
 import org.patryk3211.powergrid.utility.Lang;
 import org.patryk3211.powergrid.utility.Unit;
 
@@ -54,7 +54,7 @@ public class ThermometerItemRenderer extends CustomRenderedItemModelRenderer {
         if(player != null && (player.getMainHandItem().is(item) || player.getOffhandItem().is(item))) {
             if (mc.hitResult != null && mc.hitResult.getType() == HitResult.Type.BLOCK) {
                 var hit = (BlockHitResult) mc.hitResult;
-                var behaviour = BlockEntityBehaviour.get(mc.level, hit.getBlockPos(), ThermalBehaviour.TYPE);
+                var behaviour = BlockEntityBehaviour.get(mc.level, hit.getBlockPos(), AThermalBehaviour.TYPE);
                 if(behaviour != null) {
                     var target = Mth.clamp((behaviour.getTemperature() - 22f) / (175f - 22f), 0, 1.125f);
                     goTo(target);

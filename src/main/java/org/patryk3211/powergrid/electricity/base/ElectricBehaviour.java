@@ -435,7 +435,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
 
     @Override
     public void writeToSync(FriendlyByteBuf buffer, boolean useDoubles, Function<OwnedFloatingNode, TransmissionLine> lineGetter) {
-        var thermal = blockEntity.getBehaviour(ThermalBehaviour.TYPE);
+        var thermal = blockEntity.getBehaviour(AThermalBehaviour.TYPE);
         if(thermal != null) {
             buffer.writeFloat(thermal.getTemperature());
         }
@@ -463,7 +463,7 @@ public class ElectricBehaviour extends BlockEntityBehaviour implements ISynchron
 
     @Override
     public void readFromSync(FriendlyByteBuf buffer, boolean useDoubles) {
-        var thermal = blockEntity.getBehaviour(ThermalBehaviour.TYPE);
+        var thermal = blockEntity.getBehaviour(AThermalBehaviour.TYPE);
         if(thermal != null) {
             thermal.setTemperature(buffer.readFloat());
         }
