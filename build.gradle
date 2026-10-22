@@ -33,10 +33,16 @@ allprojects {
 		maven { url = "https://mvn.devos.one/releases" } // Porting Lib releases
 		maven { url = "https://mvn.devos.one/snapshots" } // Create and several dependencies
 		maven { url = "https://modmaven.dev/" } // Flywheel
+		maven { 
+			name = "Create Mod Maven"
+			url = "https://maven.createmod.net" 
+		}
 		maven {
 			url = "https://maven.jamieswhiteshirt.com/libs-release"
 			content {
 				excludeGroup "dev.ryanhcode.sable-companion"
+				excludeGroup "com.simibubi.create"
+				excludeGroup "net.createmod.ponder"
 			}
 		} // Reach Entity Attributes
 		maven {
