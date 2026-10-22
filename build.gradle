@@ -4,7 +4,7 @@ plugins {
 	id 'maven-publish'
 	id 'architectury-plugin' version '3.4-SNAPSHOT'
 	id 'dev.architectury.loom' version '1.13+' apply false
-	id "com.github.johnrengelman.shadow" version "8.1.1"
+	id 'com.gradleup.shadow' version '8.3.5'
 	id 'me.modmuss50.mod-publish-plugin' version '1.0.0' apply false
 }
 
@@ -168,7 +168,7 @@ changelogFile.createNewFile()
 subprojects {
 	if(project.name == 'native')
 		return;
-	apply plugin: "com.github.johnrengelman.shadow"
+	apply plugin: "com.gradleup.shadow"
 	apply plugin: "me.modmuss50.mod-publish-plugin"
 
 	configurations.configureEach {
