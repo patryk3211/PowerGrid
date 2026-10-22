@@ -572,19 +572,16 @@ public class WindingBlockEntity extends ElectricBlockEntity implements IMultipar
     private void dissolveParallels() {
         assert level != null;
         if(parallelPositions != null) {
-            
             var positionsSnapshot = java.util.List.copyOf(parallelPositions);
 
             for(var parallelPos : positionsSnapshot) {
                 var be = level.getBlockEntity(parallelPos, ModdedBlockEntities.WINDING.get());
-                if (be.isPresent()) {
-                    var winding = be.get();
-                    totalCoilCount += winding.getCoilCount();
-                    resistance += winding.getCoilCount() * winding.resistance();
-                } else {
-                    parallelPositions.remove(windingPos);
-                }
+                be.ifPresent(winding -> {
+                    winding.ownerPosition = null;
+                    winding.calculateElectricalParameters();
+                });
             }
+            parallelPositions = null;
         }
         if(ownerPosition != null)
             PowerGrid.LOGGER.info("Non-owner winding is dissolving parallels");
