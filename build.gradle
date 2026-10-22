@@ -42,14 +42,7 @@ allprojects {
 			name = "Create Mod Maven"
 			url = "https://maven.createmod.net" 
 		}
-		maven {
-			url = "https://maven.jamieswhiteshirt.com/libs-release"
-			content {
-				excludeGroup "com.simibubi.create"
-				excludeGroup "net.createmod.ponder"
-				excludeGroupAndSubgroups "dev.ryanhcode"
-			}
-		} // Reach Entity Attributes
+		
 		maven {
 			name = "RyanHCode Maven"
 			url = "https://maven.ryanhcode.dev/releases"
@@ -81,7 +74,14 @@ allprojects {
 			content { includeGroup("maven.modrinth") }
 		}
 
-		maven { url = "https://maven.terraformersmc.com/releases" } // Mod Menu, EMI
+		maven { 
+			url = "https://jamieswhiteshirt.com"
+			metadataSources { mavenPom(); artifact() } // skips searching unneeded metadata
+		}
+		maven { 
+			url = "https://terraformersmc.com"
+			metadataSources { mavenPom(); artifact() }
+		} // Mod Menu, EMI
 
 		maven { url = "https://maven.squiddev.cc" } // CC: Tweaked
 		maven { // Sable Companion
