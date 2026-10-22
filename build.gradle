@@ -33,7 +33,16 @@ allprojects {
 		maven { url = "https://mvn.devos.one/releases" } // Porting Lib releases
 		maven { url = "https://mvn.devos.one/snapshots" } // Create and several dependencies
 		maven { url = "https://modmaven.dev/" } // Flywheel
-		maven { url = "https://maven.jamieswhiteshirt.com/libs-release" } // Reach Entity Attributes
+		maven {
+			url = "https://maven.jamieswhiteshirt.com/libs-release"
+			content {
+				excludeGroup "dev.ryanhcode.sable-companion"
+			}
+		} // Reach Entity Attributes
+		maven {
+			name = "RyanHCode Maven"
+			url = "https://maven.ryanhcode.dev/releases"
+		}
 		maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven" } // Forge Config API Port
 //		maven { url = "https://maven.ithundxr.dev/snapshots" } // Registrate
 		maven { url = "https://maven.tterrag.com/" } // Registrate
