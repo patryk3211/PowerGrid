@@ -27,6 +27,11 @@ allprojects {
 	}
 
 	repositories {
+
+		maven { url = "https://createmod.net" }
+		maven { url = "https://ryanhcode.dev" }
+		mavenCentral()
+		
 		maven { url = "https://maven.parchmentmc.org" } // Parchment mappings
 		maven { url = "https://maven.neoforged.net/releases" }
 
