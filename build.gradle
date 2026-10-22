@@ -255,6 +255,10 @@ subprojects {
 		}
 	}
 
+	tasks.withType(Jar).configureEach {
+		duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+	}
+
 	tasks.named("shadowJar") {
 		configurations = [ project.configurations.shadowCommon ]
 		archiveClassifier = "dev-shadow"
