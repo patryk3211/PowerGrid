@@ -40,9 +40,9 @@ allprojects {
 		maven {
 			url = "https://maven.jamieswhiteshirt.com/libs-release"
 			content {
-				excludeGroup "dev.ryanhcode.sable-companion"
 				excludeGroup "com.simibubi.create"
 				excludeGroup "net.createmod.ponder"
+				excludeGroupAndSubgroups "dev.ryanhcode"
 			}
 		} // Reach Entity Attributes
 		maven {
