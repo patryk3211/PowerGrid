@@ -74,7 +74,7 @@ public abstract class ComplexEntityRaycastMixin {
             currentHitDistance = startVec.distanceToSqr(currentHitPoint);
         }
 
-        for(var potentialHitEntity : ((LevelEntitiesAccessor) world).getEntities().getAll()) {
+        for(var potentialHitEntity : ((LevelEntitiesAccessor) world).getEntities2().getAll()) {
             if(potentialHitEntity.isSpectator() || !(potentialHitEntity instanceof IComplexRaycast))
                 continue;
             // Perform a cheap bounding box distance check first before going for the complex cast.
