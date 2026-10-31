@@ -927,52 +927,68 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
         // Make sure endpoints are always up to date in line parts.
         // TODO: Verify that this doesn't brake a bunch of things
         addAndMigrateNode(endpoint);
-        parts = List.copyOf(parts);
-        boolean continueResolving = false;
-        for(var part : parts) {
+        var stack = new ArrayDeque<TraceFrame>();
+        stack.push(new TraceFrame(endpoint, parts, null));
+        while(!stack.isEmpty()) {
+            var frame = stack.peek();
+            if(frame.index == frame.parts.size()) {
+                stack.pop();
+                if(stack.isEmpty())
+                    return frame.continueResolving;
+                if(frame.continueResolving) {
+                    // Resolve the parent's part after tracing the child, as before.
+                    makeTransmissionLine(frame.parentPart);
+                    stack.peek().continueResolving = true;
+                }
+                continue;
+            }
+            var part = frame.parts.get(frame.index++);
             if(part.getLine() != null) {
                 // This branch connects to a valid line, back-trace and resolve all line parts.
-                continueResolving = true;
+                frame.continueResolving = true;
             }
-            if(parts.size() == 1) {
+            if(frame.parts.size() == 1) {
                 if(ModdedConfigs.logsEnabled())
-                    PowerGrid.LOGGER.debug("Found edge line at {}", endpoint);
-                if(part.getEndpoint1().equals(endpoint)) {
+                    PowerGrid.LOGGER.debug("Found edge line at {}", frame.endpoint);
+                if(part.getEndpoint1().equals(frame.endpoint)) {
                     // Check endpoint2
                     if(part.getEndpoint2().isValid(world)) {
                         // Resolve segment
                         makeTransmissionLine(part);
-                        return true;
+                        frame.continueResolving = true;
                     }
-                } else if(part.getEndpoint2().equals(endpoint)) {
+                } else if(part.getEndpoint2().equals(frame.endpoint)) {
                     // Check endpoint1
                     if(part.getEndpoint1().isValid(world)) {
                         // Resolve segment
                         makeTransmissionLine(part);
-                        return true;
+                        frame.continueResolving = true;
                     }
                 } else {
                     PowerGrid.LOGGER.warn("[1] Part was expected to have this endpoint");
                 }
-                break;
+                continue;
             }
             if(ModdedConfigs.logsEnabled())
-                PowerGrid.LOGGER.debug("Continuing line trace through {}", endpoint);
-            if(part.getEndpoint1().equals(endpoint)) {
-                if(traceTree(part.getEndpoint2(), visited)) {
-                    makeTransmissionLine(part);
-                    continueResolving = true;
-                }
-            } else if(part.getEndpoint2().equals(endpoint)) {
-                if(traceTree(part.getEndpoint1(), visited)) {
-                    makeTransmissionLine(part);
-                    continueResolving = true;
-                }
+                PowerGrid.LOGGER.debug("Continuing line trace through {}", frame.endpoint);
+            IWireEndpoint other;
+            if(part.getEndpoint1().equals(frame.endpoint)) {
+                other = part.getEndpoint2();
+            } else if(part.getEndpoint2().equals(frame.endpoint)) {
+                other = part.getEndpoint1();
             } else {
                 PowerGrid.LOGGER.warn("[2] Part was expected to have this endpoint");
+                continue;
             }
+            if(!visited.add(other))
+                continue;
+            var otherParts = partNodeMap.get(globalExternalNodes.get(other));
+            if(otherParts == null)
+                continue;
+            addAndMigrateNode(other);
+            stack.push(new TraceFrame(other, otherParts, part));
         }
-        return continueResolving;
+        return false;
     }
 
     private void resolveTree(@NotNull IWireEndpoint endpoint) {
@@ -1266,6 +1282,20 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                 toCheck.add(connected);
             }
             node.remove();
+        }
+    }
+
+    private static class TraceFrame {
+        public final IWireEndpoint endpoint;
+        public final List<TransmissionLinePart> parts;
+        public final TransmissionLinePart parentPart;
+        public int index = 0;
+        public boolean continueResolving = false;
+
+        public TraceFrame(IWireEndpoint endpoint, Collection<TransmissionLinePart> parts, TransmissionLinePart parentPart) {
+            this.endpoint = endpoint;
+            this.parts = List.copyOf(parts);
+            this.parentPart = parentPart;
         }
     }
 
