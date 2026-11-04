@@ -572,7 +572,9 @@ public class WindingBlockEntity extends ElectricBlockEntity implements IMultipar
     private void dissolveParallels() {
         assert level != null;
         if(parallelPositions != null) {
-            for(var parallelPos : parallelPositions) {
+            var positionsSnapshot = java.util.List.copyOf(parallelPositions);
+
+            for(var parallelPos : positionsSnapshot) {
                 var be = level.getBlockEntity(parallelPos, ModdedBlockEntities.WINDING.get());
                 be.ifPresent(winding -> {
                     winding.ownerPosition = null;

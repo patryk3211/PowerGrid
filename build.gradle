@@ -4,7 +4,7 @@ plugins {
 	id 'maven-publish'
 	id 'architectury-plugin' version '3.4-SNAPSHOT'
 	id 'dev.architectury.loom' version '1.13+' apply false
-	id "com.github.johnrengelman.shadow" version "7.1.2"
+	id 'com.gradleup.shadow' version '8.3.5'
 	id 'me.modmuss50.mod-publish-plugin' version '1.0.0' apply false
 }
 
@@ -27,13 +27,26 @@ allprojects {
 	}
 
 	repositories {
+
+		maven { url = "https://createmod.net" }
+		maven { url = "https://ryanhcode.dev" }
+		mavenCentral()
+		
 		maven { url = "https://maven.parchmentmc.org" } // Parchment mappings
 		maven { url = "https://maven.neoforged.net/releases" }
 
 		maven { url = "https://mvn.devos.one/releases" } // Porting Lib releases
 		maven { url = "https://mvn.devos.one/snapshots" } // Create and several dependencies
 		maven { url = "https://modmaven.dev/" } // Flywheel
-		maven { url = "https://maven.jamieswhiteshirt.com/libs-release" } // Reach Entity Attributes
+		maven { 
+			name = "Create Mod Maven"
+			url = "https://maven.createmod.net" 
+		}
+		
+		maven {
+			name = "RyanHCode Maven"
+			url = "https://maven.ryanhcode.dev/releases"
+		}
 		maven { url = "https://raw.githubusercontent.com/Fuzss/modresources/main/maven" } // Forge Config API Port
 //		maven { url = "https://maven.ithundxr.dev/snapshots" } // Registrate
 		maven { url = "https://maven.tterrag.com/" } // Registrate
@@ -61,7 +74,14 @@ allprojects {
 			content { includeGroup("maven.modrinth") }
 		}
 
-		maven { url = "https://maven.terraformersmc.com/releases" } // Mod Menu, EMI
+		maven { 
+			url = "https://jamieswhiteshirt.com"
+			metadataSources { mavenPom(); artifact() } // skips searching unneeded metadata
+		}
+		maven { 
+			url = "https://terraformersmc.com"
+			metadataSources { mavenPom(); artifact() }
+		} // Mod Menu, EMI
 
 		maven { url = "https://maven.squiddev.cc" } // CC: Tweaked
 		maven { // Sable Companion
@@ -148,7 +168,7 @@ changelogFile.createNewFile()
 subprojects {
 	if(project.name == 'native')
 		return;
-	apply plugin: "com.github.johnrengelman.shadow"
+	apply plugin: "com.gradleup.shadow"
 	apply plugin: "me.modmuss50.mod-publish-plugin"
 
 	configurations.configureEach {
@@ -233,6 +253,10 @@ subprojects {
 		from({ -> projNative.tasks.buildWindows.outputs }) {
 			into('native/windows')
 		}
+	}
+
+	tasks.withType(Jar).configureEach {
+		duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 	}
 
 	tasks.named("shadowJar") {
