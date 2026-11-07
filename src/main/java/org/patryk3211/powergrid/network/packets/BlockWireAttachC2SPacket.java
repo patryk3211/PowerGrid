@@ -21,6 +21,7 @@ import net.minecraft.world.InteractionHand;
 import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.electricity.wire.*;
 import org.patryk3211.powergrid.network.SimplePacket;
+import org.valkyrienskies.mod.common.VSGameUtilsKt;
 
 import java.util.function.Supplier;
 
@@ -75,7 +76,9 @@ public class BlockWireAttachC2SPacket implements SimplePacket {
                 return;
             }
 
-            var existingEndpoint = WireEndpointType.deserialize(stack.getTagElement("Connection"));
+        var existingEndpoint = WireEndpointType.deserialize(stack.getTagElement("Connection"));
+        if(existingEndpoint != null && existingEndpoint.getShip(player.level()) != VSGameUtilsKt.getShipManaging(entity))
+            return;
 
             IWireEndpoint endpoint;
             if(gridPoint <= 1 && index == 0) {

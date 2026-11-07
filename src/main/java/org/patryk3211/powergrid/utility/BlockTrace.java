@@ -96,9 +96,9 @@ public class BlockTrace {
 
     public static Vec3 alignPosition(Vec3 position) {
         return new Vec3(
-                (int) Math.round(position.x * TraceState.GRID_SIZE) / (float) TraceState.GRID_SIZE - 1/32f,
-                (int) Math.round(position.y * TraceState.GRID_SIZE) / (float) TraceState.GRID_SIZE - 1/32f,
-                (int) Math.round(position.z * TraceState.GRID_SIZE) / (float) TraceState.GRID_SIZE - 1/32f
+                Math.round(position.x * TraceState.GRID_SIZE) / (double) TraceState.GRID_SIZE - 1.0 / 32.0,
+                Math.round(position.y * TraceState.GRID_SIZE) / (double) TraceState.GRID_SIZE - 1.0 / 32.0,
+                Math.round(position.z * TraceState.GRID_SIZE) / (double) TraceState.GRID_SIZE - 1.0 / 32.0
         );
     }
 

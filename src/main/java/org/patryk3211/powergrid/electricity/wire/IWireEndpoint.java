@@ -22,6 +22,8 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.patryk3211.powergrid.electricity.sim.ElectricalNetwork;
 import org.patryk3211.powergrid.electricity.sim.node.OwnedFloatingNode;
+import org.valkyrienskies.core.api.ships.Ship;
+import org.valkyrienskies.mod.common.VSGameUtilsKt;
 
 public interface IWireEndpoint {
     WireEndpointType type();
@@ -63,5 +65,9 @@ public interface IWireEndpoint {
 
     default IWireEndpoint makeOffset(BlockPos offset) {
         return null;
+    }
+
+    default Ship getShip(Level world) {
+        return VSGameUtilsKt.getShipManagingPos(world, getExactPosition(world));
     }
 }
