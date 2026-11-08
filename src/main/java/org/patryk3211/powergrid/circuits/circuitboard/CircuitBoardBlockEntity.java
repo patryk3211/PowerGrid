@@ -58,6 +58,7 @@ import org.patryk3211.powergrid.utility.ClientSideAccess;
 import org.patryk3211.powergrid.utility.Lang;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 import static org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock.HORIZONTAL_FACING;
 import static org.patryk3211.powergrid.circuits.circuitboard.CircuitBoardBlock.ROTATION;
@@ -295,11 +296,11 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
                     processHeader(be, placed, expected);
                 }
                 if(neighborFacing == facing.getClockWise()) {
-                    int[] expected = new int[]{placed.x, placed.y};
+                    int[] expected = new int[]{placed.y, placed.x};
                     processHeader(be, placed, expected);
                 }
                 if(neighborFacing == facing.getCounterClockWise()) {
-                    int[] expected = new int[]{Mth.abs(placed.x - 15), Mth.abs(placed.y - 15)};
+                    int[] expected = new int[]{Mth.abs(placed.y - 15), Mth.abs(placed.x - 15)};
                     processHeader(be, placed, expected);
                 }
             } else if(dir == Direction.DOWN) {
@@ -312,11 +313,11 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
                     processHeader(be, placed, expected);
                 }
                 if(neighborFacing == facing.getClockWise()) {
-                    int[] expected = new int[]{Mth.abs(placed.x - 15), Mth.abs(placed.y - 15)};
+                    int[] expected = new int[]{Mth.abs(placed.y - 15), Mth.abs(placed.x - 15)};
                     processHeader(be, placed, expected);
                 }
                 if(neighborFacing == facing.getCounterClockWise()) {
-                    int[] expected = new int[]{placed.x, placed.y};
+                    int[] expected = new int[]{placed.y, placed.x};
                     processHeader(be, placed, expected);
                 }
             } else if (this.getBlockState().getValue(ROTATION) == 1 && be.getBlockState().getValue(ROTATION) == 1) {
@@ -362,7 +363,7 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         }
     }
 
-    private void edgeConnect() {
+    protected void edgeConnect() {
         disconnectViad();
         var state = getBlockState();
         for(var orientation : Orientation.values()) {
@@ -394,7 +395,12 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
             if (state.getValue(ROTATION) == 0 || state.getValue(ROTATION) == 2) {
                 var dir = state.getValue(ROTATION) == 0 ? Direction.DOWN : Direction.UP;
                 var opt = level.getBlockEntity(worldPosition.relative(dir), ModdedBlockEntities.CIRCUIT_BOARD.get());
-                opt.ifPresent(be -> processBehind(be, dir));
+                var rotation = this.getBlockState().getValue(ROTATION);
+                opt.ifPresent(be -> {
+                    var beRot = be.getBlockState().getValue(ROTATION);
+                    if (beRot == 0 && rotation == 2 || beRot == 2 && rotation == 0)
+                        processBehind(be, dir);
+                });;
             }
         }
     }
@@ -541,6 +547,35 @@ public class CircuitBoardBlockEntity extends ElectricBlockEntity implements IEle
         componentCache.put(ofClass, components);
         return components;
     }
+
+    public Stream<PlacedComponent> getComponentsStream() {
+        return schematic.components().stream();
+    }
+
+    public <T> @Nullable PlacedComponent getComponent(Class<T> ofClass, int x, int y) {
+        Stream<PlacedComponent> searcher = componentCache.containsKey(ofClass) ?
+            componentCache.get(ofClass).stream() : schematic.components().stream();
+        for (var iter = searcher.iterator(); iter.hasNext();) {
+            PlacedComponent placed = iter.next();
+            if (placed.x != x && placed.y != y) continue;
+            if (!ofClass.isInstance(placed.component)) continue;
+            return placed;
+        }
+        return null;
+    }
+
+    public <T> @Nullable PlacedComponent getComponent(Class<T> ofClass, UUID uuid) {
+        Stream<PlacedComponent> searcher = componentCache.containsKey(ofClass) ?
+            componentCache.get(ofClass).stream() : schematic.components().stream();
+        for (var iter = searcher.iterator(); iter.hasNext();) {
+            PlacedComponent placed = iter.next();
+            if (!uuid.equals(placed.uuid)) continue;
+            if (!ofClass.isInstance(placed.component)) continue;
+            return placed;
+        }
+        return null;
+    }
+
 
     @Override
     public void invalidate() {

@@ -19,6 +19,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import org.patryk3211.powergrid.collections.ModdedBlockEntities;
+import org.patryk3211.powergrid.collections.ModdedBlocks;
 import org.patryk3211.powergrid.electricity.sim.calculation.Precalculated;
 import org.patryk3211.powergrid.electricity.sim.calculation.PrecalculatedN;
 import org.patryk3211.powergrid.electricity.sim.calculation.StampedSupplier;
@@ -37,6 +39,7 @@ public class InductionRotorBlockEntity extends RotorBlockEntity {
     @Override
     public void initialize() {
         super.initialize();
+        canPlace();
         neighborsChanged();
     }
 
@@ -66,6 +69,48 @@ public class InductionRotorBlockEntity extends RotorBlockEntity {
             }
         }
         totalField.updateDependency(deps);
+    }
+
+    public void canPlace() {
+        assert level != null;
+        var state = getBlockState();
+        var thisBlock = state.getBlock();
+        var rotorAxis = state.getValue(InductionRotorBlock.AXIS);
+        boolean canPlace = true;
+        for(var dir : Direction.values()) {
+            if(dir.getAxis() == rotorAxis)
+                continue;
+            Direction.Axis axis2;
+            if(dir.getAxis() != Direction.Axis.X && rotorAxis != Direction.Axis.X) {
+                axis2 = Direction.Axis.X;
+            } else if(dir.getAxis() != Direction.Axis.Y && rotorAxis != Direction.Axis.Y) {
+                axis2 = Direction.Axis.Y;
+            } else {
+                axis2 = Direction.Axis.Z;
+            }
+            for(int i = -1; i <= 1; ++i) {
+                var posInner = worldPosition.relative(dir, 1).relative(axis2, i);
+                var posOuter = worldPosition.relative(dir, 2).relative(axis2, i);
+
+                if (level.getBlockState(posInner).getBlock() == ModdedBlocks.GENERATOR_INDUCTION_ROTOR.get()) {
+                    if (thisBlock == ModdedBlocks.GENERATOR_LARGE_INDUCTION_ROTOR.get()) {
+                        canPlace = false;
+                    }
+                }
+                if (level.getBlockState(posInner).getBlock() == ModdedBlocks.GENERATOR_LARGE_INDUCTION_ROTOR.get()) {
+                    canPlace = false;
+                }
+                if (level.getBlockState(posOuter).getBlock() == ModdedBlocks.GENERATOR_LARGE_INDUCTION_ROTOR.get()) {
+                    if (this instanceof LargeInductionRotorBlockEntity) {
+                        canPlace = false;
+                    }
+                }
+                if (!canPlace) {
+                    level.destroyBlock(this.getBlockPos(), true);
+                    break;
+                }
+            }
+        }
     }
 
     private void recalculateField(StampedSupplier<Precalculated<Float>>[] deps, Precalculated<Float>.ValueHandler handler) {
