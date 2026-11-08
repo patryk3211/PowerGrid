@@ -77,7 +77,7 @@ public class ContactorBlockEntity extends ElectricBlockEntity {
                 });
     }
 
-    private void setState(boolean newState) {
+    protected void setState(boolean newState) {
         if(newState || external.isEmpty()) {
             if(switch1 != null) {
                 switch1.setState(newState);
