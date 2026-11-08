@@ -302,6 +302,10 @@ public class WorldNetworks extends SavedData implements NetworkGraph.IGraphModif
                     }
                     continue;
                 }
+                if(!serverWorld.areEntitiesLoaded(chunk.toLong())) {
+                    entry.getValue().ticks = 0;
+                    continue;
+                }
                 var remove = entry.getValue().ticks++ >= 10;
                 var entityIter = entry.getValue().entities.iterator();
                 while(entityIter.hasNext()) {
