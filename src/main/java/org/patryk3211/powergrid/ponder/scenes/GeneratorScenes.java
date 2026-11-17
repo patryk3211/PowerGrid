@@ -279,27 +279,27 @@ public class GeneratorScenes {
         scene.world().showSection(util.select().fromTo(3, 2, 3, 4, 2, 3), Direction.DOWN);
         scene.idle(10);
         scene.overlay().showText(80)
-                .text("The Stator, built out of Coils strung on Shafts (and optionally Housings)")
+                .text("The coils (and optionally housings), also called the Stator.")
                 .pointAt(util.vector().of(4, 2, 4))
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(90);
         scene.overlay().showText(80)
-                .text("This part generates a magnetic field, through a process called Excitation")
+                .text("These coils create a magnetic field around the armature using electric current. This magnetic field is called Excitation.")
                 .placeNearTarget();
         scene.idle(90);
 
         scene.world().showSection(util.select().fromTo(2, 2, 4, 6, 2, 4), Direction.DOWN);
         scene.idle(10);
         scene.overlay().showText(80)
-                .text("As well as the Armature, built out of Rotors, a Commutator, and a Clutch")
+                .text("The Armature consists of the rotors, one or more generator clutches, and a commutator. The rotors need Rotational Force and Excitation to produce power")
                 .pointAt(util.vector().of(4, 3, 4.5))
                 .attachKeyFrame()
                 .placeNearTarget();
         scene.idle(90);
 
         scene.overlay().showText(80)
-                .text("This is where electricity is generated. In typical setups, electrical load should be connected to the commutator.")
+                .text("The commutator is where the rotor connects to the wires. In typical setups, electrical load, or devices that use electrical power, should be connected to the commutator.")
                 .pointAt(util.vector().of(2.5, 3, 4.5))
                 .placeNearTarget();
         scene.idle(90);
@@ -315,7 +315,7 @@ public class GeneratorScenes {
         scene.idle(10);
 
         scene.overlay().showText(80)
-                .text("To start generating electricity you must provide an Excitation Current to the Stator, through a Device Connector")
+                .text("To start generating electricity, the coils need to be given electrical power via a device connector.")
                 .attachKeyFrame()
                 .placeNearTarget();
         scene.idle(90);
@@ -332,7 +332,7 @@ public class GeneratorScenes {
         scene.idle(10);
 
         scene.overlay().showText(60)
-                .text("Now lets crank up the voltage!")
+                .text("Now, lets crank up the voltage!")
                 .placeNearTarget();
         scene.idle(70);
         scene.electric().tickForever();
@@ -370,11 +370,11 @@ public class GeneratorScenes {
         scene.idle(10);
 
         scene.overlay().showText(60)
-                .text("At this point you might have thought of a small problem.")
+                .text("At this point, you might've noticed a small problem.")
                 .placeNearTarget();
         scene.idle(70);
         scene.overlay().showText(80)
-                .text("How do you provide excitation current if you have no other power source?")
+                .text("How do you start a generator if you don't have any electricity to excite the coils?")
                 .placeNearTarget();
         scene.idle(90);
         scene.overlay().showText(70)
@@ -382,7 +382,7 @@ public class GeneratorScenes {
                 .placeNearTarget();
         scene.idle(80);
         scene.overlay().showText(80)
-                .text("The stator coils posses a small residual magnetic field which can be used to start a feedback reaction.")
+                .text("Even though they're not being powered, the coils still have a small magnetic field. We can connect the coils directly to the generator's commutator to use it.")
                 .pointAt(util.vector().of(2.5, 2.5, 4))
                 .attachKeyFrame()
                 .placeNearTarget();
@@ -391,7 +391,7 @@ public class GeneratorScenes {
         scene.world().showSection(util.select().fromTo(6, 1, 1, 6, 3, 1), Direction.DOWN);
         scene.idle(15);
         scene.overlay().showText(70)
-                .text("To have better control of the output voltage, we'll use a Rheostat.")
+                .text("You'll want a resistor in the way of the voltage, since the generator would produce too much voltage for the coils to handle and overheat without it. For this, we'll use a Rheostat.")
                 .pointAt(util.vector().of(6.5, 2.75, 1.5))
                 .attachKeyFrame()
                 .placeNearTarget();
@@ -410,7 +410,7 @@ public class GeneratorScenes {
         scene.idle(30);
 
         scene.overlay().showText(60)
-                .text("...and negative to negative")
+                .text("...and negative through the resistor to negative")
                 .placeNearTarget();
         scene.idle(40);
         scene.electric().connect(commutator, 0, wireconn1, 0, DyeColor.BLUE);
@@ -427,19 +427,19 @@ public class GeneratorScenes {
                 .attachKeyFrame();
         scene.idle(70);
         scene.overlay().showText(100)
-                .text("1.Rotation direction - The generator will only work when spinning one way, stator wiring must be flipped for it to work the other way.")
+                .text("1.Rotation direction - The generator will only work when spinning one way, you would have to flip the positive and negative wiring to make it work the other way.")
                 .pointAt(util.vector().of(3.5, 2.75, 3.5))
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(110);
         scene.overlay().showText(100)
-                .text("2.Resistance - The 'excitation loop resistance' must be low enough to allow for the field to build up, but not too low as to not overpower the coils.")
+                .text("2.Resistance - Less resistance lets more excitation build and produces more energy, however too much power to the coils can cause them to overheat. Balance resistance carefully!")
                 .pointAt(util.vector().of(6.5, 2.75, 1.5))
                 .placeNearTarget()
                 .attachKeyFrame();
         scene.idle(110);
         scene.overlay().showText(100)
-                .text("3.Rotation speed - The generator must spin fast enough to generate enough of the initial starting current and build up the field.")
+                .text("3.Rotation speed - Since the coil's excitation relies on the generator's own power to keep producing power, rotation speed has a much greater effect than in an externally excited generator.")
                 .pointAt(util.vector().of(3.5, 2.75, 4))
                 .placeNearTarget()
                 .attachKeyFrame();
