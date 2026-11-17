@@ -680,7 +680,7 @@
   "powergrid.ponder.generator_1.text_3": "These coils create a magnetic field around the armature using electric current. This magnetic field is called Excitation.",
   "powergrid.ponder.generator_1.text_4": "The Armature consists of the rotors, one or more generator clutches, and a commutator. The rotors need RPM and Excitation to produce power.",
   "powergrid.ponder.generator_1.text_5": "The commutator is where the rotor connects to the wires. In typical setups, electrical load, or devices that use electrical power, should be connected to the commutator.",
-  "powergrid.ponder.generator_1.text_6": "To start generating electricity, the coils need to be given electricity via a device connector.",
+  "powergrid.ponder.generator_1.text_6": "To start generating electricity, the coils need to be given electrical power via a device connector.",
   "powergrid.ponder.generator_1.text_7": "Now lets crank up the voltage!",
   "powergrid.ponder.generator_2.header": "Self-starting generator",
   "powergrid.ponder.generator_2.text_1": "At this point, you might've noticed a small problem.",
