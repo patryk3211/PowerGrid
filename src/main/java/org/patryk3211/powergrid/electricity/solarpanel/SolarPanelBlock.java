@@ -55,10 +55,10 @@ public class SolarPanelBlock extends DirectionalElectricBlock implements IBE<Sol
 
     @Override
     public void appendProperties(ItemStack stack, Player player, List<Component> tooltip) {
-        Voltage.voc(24.1f, player, tooltip);
-        Current.isc(3.56f, player, tooltip);
-        Voltage.vmp(19.26f, player, tooltip);
-        Current.imp(3.26f, player, tooltip);
+        Voltage.voc((float) SolarHelper.vocRef(), player, tooltip);
+        Current.isc((float) SolarHelper.iscRef(), player, tooltip);
+        Voltage.vmp((float) SolarHelper.vmp(), player, tooltip);
+        Current.imp((float) SolarHelper.imp(), player, tooltip);
     }
 
     @Override
