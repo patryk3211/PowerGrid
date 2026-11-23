@@ -41,6 +41,7 @@ import org.patryk3211.powergrid.PowerGrid;
 import org.patryk3211.powergrid.collections.ModdedPartialModels;
 import org.patryk3211.powergrid.electricity.wire.HangingWireRenderer;
 import org.patryk3211.powergrid.electricity.wire.WireEndpointType;
+import org.patryk3211.powergrid.utility.VSUtils;
 
 @Environment(EnvType.CLIENT)
 public class MultimeterItemRenderer extends CustomRenderedItemModelRenderer {
@@ -112,11 +113,13 @@ public class MultimeterItemRenderer extends CustomRenderedItemModelRenderer {
             case 0 -> {
                 var pos = WireEndpointType.deserialize(data.getCompound("Pos"));
                 if(pos != null && pos.isValid(world)) {
-                    renderProbe(pos.getExactPosition(world).subtract(origin), buffer, matrixStack, world, player, 0xFFFF4040);
+                    var position = VSUtils.projectToWorld(world, pos.getExactPosition(world));
+                    renderProbe(position.subtract(origin), buffer, matrixStack, world, player, 0xFFFF4040);
                 }
                 var neg = WireEndpointType.deserialize(data.getCompound("Neg"));
                 if(neg != null && neg.isValid(world)) {
-                    renderProbe(neg.getExactPosition(world).subtract(origin), buffer, matrixStack, world, player, 0xFF202020);
+                    var position = VSUtils.projectToWorld(world, neg.getExactPosition(world));
+                    renderProbe(position.subtract(origin), buffer, matrixStack, world, player, 0xFF202020);
                 }
             }
             case 1 -> {

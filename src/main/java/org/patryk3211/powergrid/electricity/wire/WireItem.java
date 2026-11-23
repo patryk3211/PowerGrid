@@ -77,6 +77,12 @@ public class WireItem extends Item implements IWire {
     }
 
     public static InteractionResultHolder<BlockWireEntity> connect(Level world, ItemStack stack, Player player, IWireEndpoint endpoint1, IWireEndpoint endpoint2) {
+        if(endpoint1.getShip(world) != endpoint2.getShip(world)) {
+            // Abort, block wires must be in the same sublevel.
+            if(player != null)
+                player.displayClientMessage(Lang.translate("message.connection_failed").style(ChatFormatting.RED).component(), true);
+            return InteractionResultHolder.fail(null);
+        }
         var entry = WireRegistry.forItem(world, stack.getItem());
         if(endpoint1.type() == WireEndpointType.BLOCK_WIRE && endpoint2.type() == WireEndpointType.BLOCK_WIRE)
             return mergeWires(world, stack, player, (BlockWireEntityEndpoint) endpoint1, (BlockWireEntityEndpoint) endpoint2);

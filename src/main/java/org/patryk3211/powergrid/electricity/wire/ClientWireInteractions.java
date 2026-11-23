@@ -32,6 +32,7 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Vector3f;
 import org.lwjgl.glfw.GLFW;
 import org.patryk3211.powergrid.collections.ModdedItems;
+import org.patryk3211.powergrid.collections.ModdedDataComponents;
 import org.patryk3211.powergrid.collections.ModdedPackets;
 import org.patryk3211.powergrid.electricity.wire.powercord.CordEntity;
 import org.patryk3211.powergrid.network.packets.AlternatePlacementStatusC2SPacket;
@@ -39,6 +40,7 @@ import org.patryk3211.powergrid.network.packets.BlockWireAttachC2SPacket;
 import org.patryk3211.powergrid.network.packets.BlockWireCutC2SPacket;
 import org.patryk3211.powergrid.network.packets.CordDetachC2SPacket;
 import org.patryk3211.powergrid.utility.Lang;
+import org.valkyrienskies.mod.common.VSGameUtilsKt;
 
 @Environment(EnvType.CLIENT)
 public class ClientWireInteractions {
@@ -173,6 +175,12 @@ public class ClientWireInteractions {
         var stack = mc.player.getItemInHand(InteractionHand.MAIN_HAND);
         if(entity.getItem() != stack.getItem()) {
             mc.player.displayClientMessage(Lang.translate("message.connection_incorrect_wire_type").style(ChatFormatting.RED).component(), true);
+            return InteractionResult.FAIL;
+        }
+
+        var existingEndpoint = WireEndpointType.deserialize(stack.getTagElement("Connection"));
+        if(existingEndpoint != null && existingEndpoint.getShip(mc.level) != VSGameUtilsKt.getShipManaging(entity)) {
+            mc.player.displayClientMessage(Lang.translate("message.connection_failed").style(ChatFormatting.RED).component(), true);
             return InteractionResult.FAIL;
         }
 

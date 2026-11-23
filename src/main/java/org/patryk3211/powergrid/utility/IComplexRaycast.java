@@ -15,10 +15,13 @@
  */
 package org.patryk3211.powergrid.utility;
 
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 public interface IComplexRaycast {
     @Nullable
     Vec3 raycast(Vec3 min, Vec3 max);
+
+    AABB getDeVSedBB();
 }
